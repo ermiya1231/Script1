@@ -1,0 +1,118 @@
+-- Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Variables
+local NoclipConnection
+local Clip = true
+
+-- Functions
+local function noclip()
+    Clip = false
+    local function Nocl()
+        if Clip == false and LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") and part.CanCollide then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end
+    NoclipConnection = RunService.Stepped:Connect(Nocl)
+end
+
+local function clip()
+    if NoclipConnection then NoclipConnection:Disconnect() end
+    Clip = true
+end
+
+-- GUI Creation
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "NoclipGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0,120,0,60)
+Frame.Position = UDim2.new(0.05,0,0.05,0)
+Frame.BackgroundColor3 = Color3.fromRGB(0,120,255)
+Frame.BorderSizePixel = 0
+Frame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0,20) -- لبه‌ها کمی کلفت‌تر
+UICorner.Parent = Frame
+
+-- Title Label
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1,0,0,20)
+Title.Position = UDim2.new(0,0,0,0)
+Title.BackgroundTransparency = 1
+Title.Text = "رد شدن از همه چیز"
+Title.Font = Enum.Font.SourceSansBold
+Title.TextScaled = true
+Title.TextColor3 = Color3.new(1,1,1)
+Title.Parent = Frame
+
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(1, -10, 1, -30)
+Button.Position = UDim2.new(0,5,0,25)
+Button.BackgroundColor3 = Color3.fromRGB(255,0,0)
+Button.Text = "خاموش"
+Button.Font = Enum.Font.SourceSansBold
+Button.TextScaled = true
+Button.TextColor3 = Color3.new(1,1,1)
+Button.Parent = Frame
+
+local Enabled = false
+
+-- Toggle Noclip
+Button.MouseButton1Click:Connect(function()
+    Enabled = not Enabled
+    if Enabled then
+        Button.Text = "روشن"
+        Button.BackgroundColor3 = Color3.fromRGB(0,255,0)
+        noclip()
+    else
+        Button.Text = "خاموش"
+        Button.BackgroundColor3 = Color3.fromRGB(255,0,0)
+        clip()
+    end
+end)
+
+-- Draggable
+local dragging = false
+local dragInput, mousePos, framePos
+
+Frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        mousePos = input.Position
+        framePos = Frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - mousePos
+        Frame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X,
+                                   framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Start Noclip disabled
+clip()
