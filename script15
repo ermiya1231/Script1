@@ -1,0 +1,108 @@
+local player = game.Players.LocalPlayer
+
+-- GUI که بعد از مرگ هم باقی بمونه
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- ساخت دکمه
+local dropButton = Instance.new("TextButton")
+dropButton.Text = "انداختن وسیله"
+dropButton.Position = UDim2.new(0, 10, 0, 200)
+dropButton.Size = UDim2.new(0, 120, 0, 40)
+dropButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+dropButton.TextColor3 = Color3.new(1, 1, 1)
+dropButton.BorderSizePixel = 0 -- حاشیه خارجی خاموش شد
+dropButton.Parent = gui
+
+-- اضافه کردن حاشیه‌ها داخل دکمه
+local function createInnerBorder(parent)
+    local thickness = 3
+    local color = Color3.fromRGB(100,100,100)
+
+    -- بالا
+    local top = Instance.new("Frame")
+    top.Size = UDim2.new(1, 0, 0, thickness)
+    top.Position = UDim2.new(0,0,0,0)
+    top.BackgroundColor3 = color
+    top.BorderSizePixel = 0
+    top.Parent = parent
+
+    -- پایین
+    local bottom = Instance.new("Frame")
+    bottom.Size = UDim2.new(1,0,0,thickness)
+    bottom.Position = UDim2.new(0,0,1,-thickness)
+    bottom.BackgroundColor3 = color
+    bottom.BorderSizePixel = 0
+    bottom.Parent = parent
+
+    -- چپ
+    local left = Instance.new("Frame")
+    left.Size = UDim2.new(0, thickness, 1, 0)
+    left.Position = UDim2.new(0,0,0,0)
+    left.BackgroundColor3 = color
+    left.BorderSizePixel = 0
+    left.Parent = parent
+
+    -- راست
+    local right = Instance.new("Frame")
+    right.Size = UDim2.new(0, thickness, 1, 0)
+    right.Position = UDim2.new(1,-thickness,0,0)
+    right.BackgroundColor3 = color
+    right.BorderSizePixel = 0
+    right.Parent = parent
+end
+
+createInnerBorder(dropButton)
+
+-- تابع انداختن وسیله
+local function onDropButtonClicked()
+    local character = player.Character
+    if character then
+        local tool = character:FindFirstChildWhichIsA("Tool")
+        if tool then
+            tool.Parent = workspace
+        end
+    end
+end
+
+dropButton.MouseButton1Click:Connect(onDropButtonClicked)
+
+-- قابلیت جابه‌جایی با موس و لمس
+local UserInputService = game:GetService("UserInputService")
+
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    dropButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+dropButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = dropButton.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+dropButton.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
