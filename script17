@@ -1,0 +1,89 @@
+-- GUI خیلی کوچک و خوشگل برای R6 / R15
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "MiniR6R15_GUI"
+
+-- پنل خیلی کوچک
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 100, 0, 55)
+frame.Position = UDim2.new(0.45, 0, 0.8, 0)
+frame.BackgroundColor3 = Color3.fromRGB(65, 105, 225)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+-- گوشه گرد
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = frame
+
+-- سایه نرم
+local shadow = Instance.new("ImageLabel", frame)
+shadow.ZIndex = 0
+shadow.Image = "rbxassetid://1316045217"
+shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+shadow.ImageTransparency = 0.7
+shadow.ScaleType = Enum.ScaleType.Slice
+shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+shadow.Size = UDim2.new(1, 10, 1, 10)
+shadow.Position = UDim2.new(0, -5, 0, -5)
+shadow.BackgroundTransparency = 1
+
+-- قابلیت Drag برای موبایل و PC
+local UIS = game:GetService("UserInputService")
+local dragging, dragStart, startPos
+local function update(input)
+	local delta = input.Position - dragStart
+	frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
+end)
+UIS.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		update(input)
+	end
+end)
+
+-- دکمه R6
+local btnR6 = Instance.new("TextButton", frame)
+btnR6.Size = UDim2.new(0, 40, 0, 22)
+btnR6.Position = UDim2.new(0.08, 0, 0.35, 0)
+btnR6.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+btnR6.Text = "R6"
+btnR6.TextColor3 = Color3.new(1,1,1)
+btnR6.Font = Enum.Font.GothamBold
+btnR6.TextScaled = true
+local c1 = Instance.new("UICorner", btnR6)
+c1.CornerRadius = UDim.new(0, 8)
+
+-- دکمه R15
+local btnR15 = Instance.new("TextButton", frame)
+btnR15.Size = UDim2.new(0, 40, 0, 22)
+btnR15.Position = UDim2.new(0.55, 0, 0.35, 0)
+btnR15.BackgroundColor3 = Color3.fromRGB(100, 255, 150)
+btnR15.Text = "R15"
+btnR15.TextColor3 = Color3.new(0,0,0)
+btnR15.Font = Enum.Font.GothamBold
+btnR15.TextScaled = true
+local c2 = Instance.new("UICorner", btnR15)
+c2.CornerRadius = UDim.new(0, 8)
+
+-- افکت Hover برای PC
+btnR6.MouseEnter:Connect(function() btnR6.BackgroundColor3 = Color3.fromRGB(230,80,80) end)
+btnR6.MouseLeave:Connect(function() btnR6.BackgroundColor3 = Color3.fromRGB(255,100,100) end)
+btnR15.MouseEnter:Connect(function() btnR15.BackgroundColor3 = Color3.fromRGB(80,230,120) end)
+btnR15.MouseLeave:Connect(function() btnR15.BackgroundColor3 = Color3.fromRGB(100,255,150) end)
+
+-- عملکرد دکمه‌ها
+btnR6.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
+end)
+btnR15.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
+end)
