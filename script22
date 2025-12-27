@@ -6,9 +6,10 @@ local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 
-
+-- اگر اسم فولدر فرق داره، فقط اسمشو عوض کن
 local folder = workspace:WaitForChild("QuartzCollectibles")
 
+-- فقط برای اینکه ارور نده
 local title = {Text = ""}
 
 local Window = OrionLib:MakeWindow({Name = "هک 666 | Superpower Simulator: Chakra", HidePremium = true, IntroEnabled = false, SaveConfig = false, ConfigFolder = "OrionTest"})
