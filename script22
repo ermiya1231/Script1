@@ -1,0 +1,322 @@
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/orionlib')))()
+local enabled = false
+local running = false
+
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+-- اگر اسم فولدر فرق داره، فقط اسمشو عوض کن
+local folder = workspace:WaitForChild("QuartzCollectibles")
+
+-- فقط برای اینکه ارور نده
+local title = {Text = ""}
+
+local Window = OrionLib:MakeWindow({Name = "هک 666 | Superpower Simulator: Chakra", HidePremium = true, IntroEnabled = false, SaveConfig = false, ConfigFolder = "OrionTest"})
+
+local Tab = Window:MakeTab({
+	Name = "Main",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+Tab:AddToggle({
+	Name = "تمرین دادن همه قدرت ها",
+	Default = false,
+	Callback = function(Value)
+turr = Value
+ while turr and task.wait(0.15) do
+local ab = {"Strength", "Defense", "Agility"}
+for _, tex in ipairs(ab) do
+ local args = {
+    [1] = tex
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Training"):FireServer(unpack(args))
+end
+ end
+	end    
+})
+
+Tab:AddToggle({
+ Name = "خرید اتوماتیک قدرت",
+ Default = false,
+ Callback = function(Value)
+kika = Value
+  while kika and task.wait(0.05) do
+local args = {
+    [1] = "Strength"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("UpgradeMultiplier"):FireServer(unpack(args))
+  end
+ end    
+})
+
+Tab:AddToggle({
+ Name = "خرید اتوماتیک دفاع",
+ Default = false,
+ Callback = function(Value)
+fufu = Value
+  while fufu and task.wait(0.05) do
+local args = {
+    [1] = "Defense"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("UpgradeMultiplier"):FireServer(unpack(args))
+  end
+ end    
+})
+
+Tab:AddToggle({
+ Name = "خرید اتوماتیک سرعت",
+ Default = false,
+ Callback = function(Value)
+fuck = Value
+   while fuck and task.wait(0.05) do
+local args = {
+    [1] = "Agility"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("UpgradeMultiplier"):FireServer(unpack(args))
+   end
+ end    
+})
+
+Tab:AddButton({
+ Name = "ردیم کد ها",
+ Callback = function()
+local args = {
+    [1] = "SUPER"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("VerifyFollow"):InvokeServer(unpack(args))
+
+local args = {
+    [1] = "RELEASE"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("UseCode"):InvokeServer(unpack(args))
+
+local args = {
+    [1] = "2XCOINS"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("UseCode"):InvokeServer(unpack(args))
+   end    
+})
+
+local shards = {"Red", "Orange", "Green", "Blue", "Purple", "Silver", "Pink"}
+Tab:AddButton({
+ Name = "تکمیل کردن مرحله ی استن لی",
+ Callback = function()
+local args = {
+    [1] = "Stan Lee"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("QuestGiverInteract"):FireServer(unpack(args))
+
+for _, name in ipairs(shards) do
+local args = {
+    [1] = workspace:WaitForChild("ScavengerPieces"):WaitForChild(name .. " Shard")
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ScavengerHunt"):FireServer(unpack(args))
+end
+
+local args = {
+    [1] = "Stan Lee"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("QuestGiverInteract"):FireServer(unpack(args))
+   end    
+})
+
+Tab:AddDropdown({
+	Name = "تلپورت به هر مدل دشمن",
+	Default = "1",
+	Options = {"Brawler", "Goon", "Crook", "Purger", "Brute", "Destroyer"},
+	Callback = function(Value)
+for _, person in ipairs(workspace:GetDescendants()) do
+  if person:IsA("Humanoid") and person.Parent.Name == Value and person.Health > 0 then
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = person.RootPart.CFrame * CFrame.new(0, 0, 1)
+task.wait(0.4)
+  end
+end
+	end    
+})
+
+Tab:AddToggle({
+ Name = "مشت زدن اتوماتیک(برای فارم دشمن)",
+ Default = false,
+ Callback = function(Value)
+gyh = Value
+    while gyh and task.wait(0.1) do
+game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 1)
+    end
+ end    
+})
+
+local function tatata()
+local healhs = {}
+for _, player in ipairs(game.Players:GetPlayers()) do
+   if player.Character.Humanoid then
+table.insert(healhs, player.Name .. ": " .. player.Character.Humanoid.MaxHealth)
+  end
+end
+  return table.concat(healhs, "\n")
+end
+
+Tab:AddButton({
+ Name = "شناسایی جان همه بازیکن ها",
+ Callback = function()
+        OrionLib:MakeNotification({
+	Name = "Budgie Hub",
+	Content = "\n" .. tatata(),
+	Image = "rbxassetid://4483345998",
+	Time = 5
+        })
+   end    
+})
+
+Tab:AddButton({
+ Name = "انتی AFK",
+ Callback = function()
+ for i,v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
+  v:Disable()
+ end
+   end    
+})
+
+Tab:AddToggle({
+ Name = "فارم Brawlers",
+ Default = false,
+ Callback = function(Value)
+tatat = Value
+  while tatat do
+ for _, person in ipairs(workspace:GetDescendants()) do
+    pcall(function()
+      if tatat == false then return end
+  if person:IsA("Humanoid") and person.Parent.Name == "Brawler" and person.Health > 0 then
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = person.RootPart.CFrame * CFrame.new(0, 0, 1)
+task.wait(0.4)
+   end
+  end)
+ end
+ task.wait(0.25)
+end
+ end    
+})
+
+Tab:AddToggle({
+ Name = "فارم goons",
+ Default = false,
+ Callback = function(Value)
+tbtbt = Value
+   while tbtbt do
+ for _, person in ipairs(workspace:GetDescendants()) do
+    pcall(function()
+      if tbtbt == false then return end
+  if person:IsA("Humanoid") and person.Parent.Name == "Goon" and person.Health > 0 then
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = person.RootPart.CFrame * CFrame.new(0, 0, 1)
+task.wait(0.4)
+   end
+  end)
+ end
+ task.wait(0.25)
+end
+ end    
+})
+
+Tab:AddToggle({
+ Name = "فارم crooks",
+ Default = false,
+ Callback = function(Value)
+tctct = Value
+  while tctct do
+ for _, person in ipairs(workspace:GetDescendants()) do
+    pcall(function()
+      if tctct == false then return end
+  if person:IsA("Humanoid") and person.Parent.Name == "Crook" and person.Health > 0 then
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = person.RootPart.CFrame * CFrame.new(0, 0, 1)
+task.wait(0.4)
+   end
+  end)
+ end
+ task.wait(0.25)
+end
+ end    
+})
+
+Tab:AddToggle({
+ Name = "فارم purgers",
+ Default = false,
+ Callback = function(Value)
+tdtdt = Value
+  while tdtdt do
+ for _, person in ipairs(workspace:GetDescendants()) do
+    pcall(function()
+      if tdtdt == false then return end
+  if person:IsA("Humanoid") and person.Parent.Name == "Purger" and person.Health > 0 then
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = person.RootPart.CFrame * CFrame.new(0, 0, 1)
+task.wait(0.4)
+   end
+  end)
+ end
+ task.wait(0.25)
+end
+ end    
+})
+
+Tab:AddToggle({
+ Name = "فارم brutes",
+ Default = false,
+ Callback = function(Value)
+tetet = Value
+  while tetet do
+ for _, person in ipairs(workspace:GetDescendants()) do
+    pcall(function()
+      if tetet == false then return end
+  if person:IsA("Humanoid") and person.Parent.Name == "Brute" and person.Health > 0 then
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = person.RootPart.CFrame * CFrame.new(0, 0, 1)
+task.wait(0.4)
+   end
+  end)
+ end
+ task.wait(0.25)
+end
+ end    
+})
+
+Tab:AddToggle({
+	Name = "تلپورت اتوماتیک به کریستال ها",
+	Default = false,
+	Callback = function(Value)
+		enabled = Value
+
+		if enabled then
+			task.spawn(function()
+				while enabled do
+					if not running then
+						running = true
+
+						for _, item in ipairs(folder:GetChildren()) do
+							if not enabled then break end
+
+							local part = item:IsA("BasePart") and item 
+								or item:FindFirstChildWhichIsA("BasePart")
+
+							if part then
+								hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
+								task.wait(0.5)
+							end
+						end
+
+						running = false
+					end
+					task.wait(0.3)
+				end
+			end)
+		end
+	end
+})
