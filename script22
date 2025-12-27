@@ -6,10 +6,9 @@ local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 
--- اگر اسم فولدر فرق داره، فقط اسمشو عوض کن
+
 local folder = workspace:WaitForChild("QuartzCollectibles")
 
--- فقط برای اینکه ارور نده
 local title = {Text = ""}
 
 local Window = OrionLib:MakeWindow({Name = "هک 666 | Superpower Simulator: Chakra", HidePremium = true, IntroEnabled = false, SaveConfig = false, ConfigFolder = "OrionTest"})
@@ -171,7 +170,7 @@ Tab:AddButton({
  Name = "شناسایی جان همه بازیکن ها",
  Callback = function()
         OrionLib:MakeNotification({
-	Name = "Budgie Hub",
+	Name = "هک 666",
 	Content = "\n" .. tatata(),
 	Image = "rbxassetid://4483345998",
 	Time = 5
