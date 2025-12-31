@@ -1,13 +1,16 @@
 local gameId = game.PlaceId
-
 local supportedGames = {
-    [6839171747] = "https://raw.githubusercontent.com/XasonYTB/ZeScript-Doors/refs/heads/main/Doors",
-   }
+    [6839171747] = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script25",
+}
 
 local function loadScript(url)
+    -- SET AUTHORIZATION GLOBALS BEFORE LOADING
+    _G.AUTH_KEY = "DOORS_SCRIPT_V1_AUTH_2024"
+    _G.SCRIPT_VERSION = "1.0.0"
+    _G.AUTHORIZED_SOURCE = "OFFICIAL_LOADER"
+    
     local success, result = pcall(function()
-        local code = game:HttpGet(url)  -- Added HttpGet to fetch the code
-        loadstring(code)()
+        return loadstring(game:HttpGet(url))()
     end)
     
     if not success then
@@ -16,12 +19,6 @@ local function loadScript(url)
             Title = "Script Hub",
             Text = "Failed to load script!",
             Duration = 5
-        })
-    else
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Script Hub",
-            Text = "Script loaded successfully!",
-            Duration = 3
         })
     end
 end
