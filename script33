@@ -1,0 +1,189 @@
+-------------------------------------------------
+-- Services
+-------------------------------------------------
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-------------------------------------------------
+-- GUI Create
+-------------------------------------------------
+local gui = Instance.new("ScreenGui")
+gui.Name = "ProClickGUI"
+gui.ResetOnSpawn = false
+gui.Parent = PlayerGui
+
+local main = Instance.new("Frame")
+main.Size = UDim2.fromOffset(220, 120)
+main.Position = UDim2.fromScale(0.05, 0.4)
+main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+main.BorderSizePixel = 0
+main.Active = true
+main.Parent = gui
+main.Name = "Main"
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
+
+-------------------------------------------------
+-- Drag System (Mobile + PC)
+-------------------------------------------------
+do
+	local dragging, dragStart, startPos
+
+	local function update(input)
+		local delta = input.Position - dragStart
+		main.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+
+	main.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = main.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and (
+			input.UserInputType == Enum.UserInputType.MouseMovement
+			or input.UserInputType == Enum.UserInputType.Touch
+		) then
+			update(input)
+		end
+	end)
+end
+
+-------------------------------------------------
+-- Title
+-------------------------------------------------
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "⚡ Pro Click Panel"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextColor3 = Color3.fromRGB(255, 200, 80)
+title.Parent = main
+
+-------------------------------------------------
+-- Button Template
+-------------------------------------------------
+local function createButton(text, posY, color)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0.9, 0, 0, 32)
+	btn.Position = UDim2.new(0.05, 0, 0, posY)
+	btn.BackgroundColor3 = color
+	btn.Text = text
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
+	btn.BorderSizePixel = 0
+	btn.Parent = main
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+	return btn
+end
+
+-------------------------------------------------
+-- Buttons
+-------------------------------------------------
+local fireBtn = createButton("🔥 Fire ClickDetectors", 38, Color3.fromRGB(70,140,255))
+local promptBtn = createButton("⚡ Instant Prompt: OFF", 76, Color3.fromRGB(255,90,90))
+
+-------------------------------------------------
+-- Fire ClickDetectors
+-------------------------------------------------
+local function fireAllClickDetectors()
+	if not fireclickdetector then
+		warn("fireclickdetector پشتیبانی نمی‌شود")
+		return
+	end
+
+	for _, d in ipairs(workspace:GetDescendants()) do
+		if d:IsA("ClickDetector") then
+			pcall(function()
+				fireclickdetector(d)
+			end)
+		end
+	end
+end
+
+fireBtn.MouseButton1Click:Connect(fireAllClickDetectors)
+
+-------------------------------------------------
+-- Instant ProximityPrompt (FIXED)
+-------------------------------------------------
+local originalHoldTimes = {}
+local instantPromptEnabled = false
+
+local function applyPromptState(prompt)
+	if not prompt:IsA("ProximityPrompt") then return end
+
+	-- ذخیره مقدار اصلی فقط یک بار
+	if originalHoldTimes[prompt] == nil then
+		originalHoldTimes[prompt] = prompt.HoldDuration
+	end
+    	if instantPromptEnabled then
+		prompt.HoldDuration = 0
+	else
+		-- بازگردانی مقدار اصلی
+		local original = originalHoldTimes[prompt]
+		if original ~= nil then
+			prompt.HoldDuration = original
+		end
+	end
+end
+
+local function refreshAllPrompts()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("ProximityPrompt") then
+			applyPromptState(obj)
+		end
+	end
+end
+
+-- پرامپت‌های جدید
+workspace.DescendantAdded:Connect(function(obj)
+	if obj:IsA("ProximityPrompt") then
+		task.wait()
+		applyPromptState(obj)
+	end
+end)
+
+-- دکمه ON / OFF
+promptBtn.MouseButton1Click:Connect(function()
+	instantPromptEnabled = not instantPromptEnabled
+
+	if instantPromptEnabled then
+		promptBtn.Text = "⚡ Instant Prompt: ON"
+		promptBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+	else
+		promptBtn.Text = "⚡ Instant Prompt: OFF"
+		promptBtn.BackgroundColor3 = Color3.fromRGB(255,90,90)
+	end
+
+	refreshAllPrompts()
+end)
+
+-------------------------------------------------
+-- Color Animation (visual)
+-------------------------------------------------
+task.spawn(function()
+	while true do
+		for h = 0, 1, 0.02 do
+			title.TextColor3 = Color3.fromHSV(h, 0.8, 1)
+			task.wait(0.05)
+		end
+	end
+end)
