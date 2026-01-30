@@ -1,4 +1,4 @@
-local LibraryUrl = "https://raw.githubusercontent.com/Vovabro46/trash/refs/heads/main/Test.lua"
+local LibraryUrl = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script37"
 local Success, Library = pcall(function()
     return loadstring(game:HttpGet(LibraryUrl))()
 end)
