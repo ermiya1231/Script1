@@ -82,8 +82,8 @@ btnR15.MouseLeave:Connect(function() btnR15.BackgroundColor3 = Color3.fromRGB(10
 
 -- عملکرد دکمه‌ها
 btnR6.MouseButton1Click:Connect(function()
-	loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script40"))()
 end)
 btnR15.MouseButton1Click:Connect(function()
-	loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script41"))()
 end)
