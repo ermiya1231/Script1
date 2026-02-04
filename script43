@@ -1,0 +1,45 @@
+local gameId = game.PlaceId
+
+local supportedGames = {
+    [73400209769501] = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script42",
+   }
+
+local function loadScript(url)
+    local success, result = pcall(function()
+        local code = game:HttpGet(url)  -- Added HttpGet to fetch the code
+        loadstring(code)()
+    end)
+    
+    if not success then
+        warn("Failed to load script: " .. tostring(result))
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Script Hub",
+            Text = "Failed to load script!",
+            Duration = 5
+        })
+    else
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Script Hub",
+            Text = "Script loaded successfully!",
+            Duration = 3
+        })
+    end
+end
+
+if supportedGames[gameId] then
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Script Hub",
+        Text = "Loading script for this game...",
+        Duration = 3
+    })
+    
+    loadScript(supportedGames[gameId])
+else
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Script Hub",
+        Text = "This game is not supported yet!",
+        Duration = 5
+    })
+    
+    print("Unsupported game. Place ID: " .. tostring(gameId))
+end
