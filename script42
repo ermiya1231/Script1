@@ -1,0 +1,319 @@
+-- Create ScreenGui
+local gui = Instance.new("ScreenGui")
+gui.Name = "LuxuryUI3"
+gui.ResetOnSpawn = false
+gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Main compact frame (glass style)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 300)
+frame.Position = UDim2.new(0.5, -110, 0.5, -150)
+frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.BackgroundTransparency = 0.35
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 14)
+corner.Parent = frame
+
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200,200,200))
+}
+gradient.Transparency = NumberSequence.new{
+    NumberSequenceKeypoint.new(0, 0.3),
+    NumberSequenceKeypoint.new(1, 0.6)
+}
+gradient.Rotation = 45
+gradient.Parent = frame
+
+-- DRAG BAR (for moving GUI)
+local dragBar = Instance.new("Frame")
+dragBar.Size = UDim2.new(1, 0, 0, 32)
+dragBar.BackgroundTransparency = 0.4
+dragBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+dragBar.Parent = frame
+
+local dragCorner = Instance.new("UICorner")
+dragCorner.CornerRadius = UDim.new(0, 14)
+dragCorner.Parent = dragBar
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -32, 1, 0)
+title.BackgroundTransparency = 1
+title.Text = "پنل مارکوس تاور ساخته شده توسط 666"
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = dragBar
+
+-- Collapse/Expand button
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 24, 0, 24)
+toggleBtn.Position = UDim2.new(1, -28, 0, 4)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+toggleBtn.BackgroundTransparency = 0.2
+toggleBtn.Text = "▲"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 14
+toggleBtn.TextColor3 = Color3.fromRGB(0,0,0)
+toggleBtn.BorderSizePixel = 0
+toggleBtn.Parent = dragBar
+
+local crnToggle = Instance.new("UICorner")
+crnToggle.CornerRadius = UDim.new(0, 6)
+crnToggle.Parent = toggleBtn
+
+-- Drag system
+local UIS = game:GetService("UserInputService")
+local dragging = false
+local dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    )
+end
+
+dragBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+dragBar.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch) then
+        update(input)
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+-- ScrollFrame
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -14, 1, -40)
+scroll.Position = UDim2.new(0, 7, 0, 35)
+scroll.ScrollBarThickness = 5
+scroll.BackgroundTransparency = 1
+scroll.Parent = frame
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 4)
+layout.Parent = scroll
+
+local buttonHeight = 28
+local padding = 4
+local buttonCount = 11
+scroll.CanvasSize = UDim2.new(0, 0, 0, (buttonHeight + padding) * buttonCount)
+
+-- Function to create buttons
+local function createButton(name, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -6, 0, buttonHeight)
+    btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BackgroundTransparency = 0.2
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    btn.BorderSizePixel = 0
+    btn.Parent = scroll
+
+    local crn = Instance.new("UICorner")
+    crn.CornerRadius = UDim.new(0, 8)
+    crn.Parent = btn
+
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundTransparency = 0.1
+    end)
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundTransparency = 0.2
+    end)
+
+    btn.MouseButton1Click:Connect(callback)
+end
+
+-- Create 18 buttons (replace scripts later)
+createButton("ادمین infinite Yield", function()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+end)
+
+createButton("تمام کردن تاور", function()
+local targetPosition = Vector3.new(-1444, 4485, -1483)
+
+local function teleportToPosition()
+local player = game.Players.LocalPlayer
+
+player.Character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+end
+
+teleportToPosition()
+end)
+
+createButton("لقب Label سرورساید", function()
+local ToggleTagEvent = game.ReplicatedStorage:FindFirstChild("ToggleTagEvent")
+
+if ToggleTagEvent and ToggleTagEvent:IsA("RemoteEvent") then
+    ToggleTagEvent:FireServer()
+else
+    warn("RemoteEvent Not Found 666")
+end
+end)
+
+createButton("پنل دستگاه غذاو نوشابه", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script33"))()
+end)
+
+createButton("وسایل سرورساید", function()
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local grabtoolsFunc
+
+local function grabtools()
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+        if humanoid then
+            for _, child in ipairs(workspace:GetChildren()) do
+                if child:IsA("Tool") then
+                    humanoid:EquipTool(child)
+                end
+            end
+
+            if grabtoolsFunc then
+                grabtoolsFunc:Disconnect()
+            end
+
+            grabtoolsFunc = workspace.ChildAdded:Connect(function(child)
+                if child:IsA("Tool") then
+                    humanoid:EquipTool(child)
+                end
+            end)
+
+            print("Grabtools activated")
+        end
+    end
+end
+
+local function ungrabtools()
+    if grabtoolsFunc then
+        grabtoolsFunc:Disconnect()
+    end
+
+    print("Grabtools deactivated")
+end
+
+-- فعال کردن grabtools برای یک ثانیه به محض اجرا شدن اسکریپت
+grabtools()
+wait(1)
+ungrabtools()
+end)
+
+createButton("انداختن همه وسایل", function()
+-- سرویس‌های مورد نیاز
+local Players = game:GetService("Players")
+
+-- تابع برای انتقال ابزارها
+local function equipAndDropTools()
+    -- انتقال ابزارها از Backpack به Character
+    for _, tool in pairs(Players.LocalPlayer.Backpack:GetChildren()) do
+        if tool:IsA("Tool") then
+            tool.Parent = Players.LocalPlayer.Character
+        end
+    end
+
+    -- صبر برای یک لحظه
+    wait(0.1)
+
+    -- انتقال ابزارها از Character به workspace
+    for _, tool in pairs(Players.LocalPlayer.Character:GetChildren()) do
+        if tool:IsA("Tool") then
+            tool.Parent = workspace
+        end
+    end
+end
+
+-- اجرای تابع به محض بارگیری اسکریپت
+equipAndDropTools()
+end)
+
+createButton("پنل Fling", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/K1LAS1K/Ultimate-Fling-GUI/main/flingscript.lua"))()
+end)
+
+createButton("دستیار (لوکال)", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script4"))()
+end)
+
+createButton("دنس های سرورساید", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script6"))()
+end)
+
+createButton("پرتاب با لمس", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script7"))()
+end)
+
+createButton("پرواز", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script10"))()
+end)
+
+-- Buttons 8 to 18
+for i = 8, 36 do
+    createButton("Button"..i, function()
+        -- جای اسکریپت شما
+    end)
+end
+
+-- Collapse / Expand functionality
+-- Rainbow Animation
+local RunService = game:GetService("RunService")
+local hue = 0
+
+RunService.RenderStepped:Connect(function(dt)
+    hue = (hue + dt * 0.2) % 1 -- سرعت تغییر رنگ
+    local color = Color3.fromHSV(hue, 1, 1) -- 
+    
+    -- اعمال روی Frame اصلی
+    frame.BackgroundColor3 = color
+    
+    -- اعمال روی Toggle Button
+    toggleBtn.BackgroundColor3 = color
+    
+    -- اعمال روی همه دکمه‌های ScrollFrame
+    for _, btn in pairs(scroll:GetChildren()) do
+        if btn:IsA("TextButton") then
+            btn.BackgroundColor3 = color
+        end
+    end
+end)
+
+local collapsed = false
+toggleBtn.MouseButton1Click:Connect(function()
+    if collapsed then
+        scroll.Visible = true
+        frame.Size = UDim2.new(0, 220, 0, 300)
+        toggleBtn.Text = "▲"
+        collapsed = false
+    else
+        scroll.Visible = false
+        frame.Size = UDim2.new(0, 220, 0, 40)
+        toggleBtn.Text = "▼"
+        collapsed = true
+    end
+end)
