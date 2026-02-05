@@ -1,0 +1,19 @@
+local Players = game:GetService("Players")
+
+local soundId = "rbxassetid://139188421510869"
+
+local function playSound()
+    local sound = Instance.new("Sound")
+    sound.SoundId = soundId
+    sound.Looped = true
+    sound.Parent = workspace
+    sound:Play()
+end
+
+if Players.LocalPlayer then
+    playSound()
+else
+    Players.PlayerAdded:Wait()
+    Players.LocalPlayer.CharacterAdded:Wait()
+    playSound()
+end
