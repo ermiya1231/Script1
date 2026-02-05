@@ -118,7 +118,7 @@ layout.Parent = scroll
 
 local buttonHeight = 28
 local padding = 4
-local buttonCount = 11
+local buttonCount = 12
 scroll.CanvasSize = UDim2.new(0, 0, 0, (buttonHeight + padding) * buttonCount)
 
 -- Function to create buttons
@@ -271,6 +271,10 @@ end)
 
 createButton("پرواز", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script10"))()
+end)
+
+createButton("موزیک Aura", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script44"))()
 end)
 
 -- Buttons 8 to 18
