@@ -1,0 +1,71 @@
+local function setupNPC(humanoid)
+    local character = humanoid.Parent
+    if not character or game.Players:GetPlayerFromCharacter(character) then return end
+    
+    local highlight = character:FindFirstChildOfClass("Highlight")
+    if not highlight then
+        highlight = Instance.new("Highlight")
+        highlight.FillTransparency = 0.5
+        highlight.OutlineTransparency = 0
+        highlight.Parent = character
+    end
+    
+    local billboard = character:FindFirstChild("NPCHealthDisplay")
+    if not billboard then
+        billboard = Instance.new("BillboardGui")
+        billboard.Name = "NPCHealthDisplay"
+        billboard.Size = UDim2.new(4, 0, 1.5, 0)
+        billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Adornee = character:FindFirstChild("Head") or character.PrimaryPart or character:FindFirstChildWhichIsA("BasePart")
+        
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.Text = "HP: " .. (humanoid.MaxHealth > 0 and math.floor(humanoid.Health) or 0)
+        textLabel.Font = Enum.Font.SourceSansBold
+        textLabel.TextSize = 18
+        textLabel.TextColor3 = Color3.new(1, 1, 1)
+        textLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+        textLabel.TextStrokeTransparency = 0.5
+        textLabel.Parent = billboard
+        
+        billboard.Parent = character
+    end
+    
+    if not humanoid:GetAttribute("HealthConnected") then
+        humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+            local hpText = "HP: " .. (humanoid.MaxHealth > 0 and math.floor(humanoid.Health) or 0)
+            if billboard and billboard:FindFirstChildOfClass("TextLabel") then
+                billboard:FindFirstChildOfClass("TextLabel").Text = hpText
+            end
+        end)
+        humanoid:SetAttribute("HealthConnected", true)
+    end
+end
+
+for _, descendant in pairs(workspace:GetDescendants()) do
+    if descendant:IsA("Humanoid") then
+        setupNPC(descendant)
+    end
+end
+
+workspace.DescendantAdded:Connect(function(descendant)
+    if descendant:IsA("Humanoid") then
+        setupNPC(descendant)
+    end
+end)
+
+while true do
+    wait(5)
+    for _, descendant in pairs(workspace:GetDescendants()) do
+        if descendant:IsA("Humanoid") then
+            local character = descendant.Parent
+            if character and not game.Players:GetPlayerFromCharacter(character) then
+                if not character:FindFirstChildOfClass("Highlight") then
+                    setupNPC(descendant)
+                end
+            end
+        end
+    end
+end
