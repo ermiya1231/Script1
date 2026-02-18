@@ -1,8 +1,11 @@
--------------------------------------------------
+-- LocalScript: ProClickPanelWithSwimBypass
+-- قرار بدین داخل StarterPlayerScripts
+
 -- Services
--------------------------------------------------
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -15,7 +18,7 @@ gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 120)
+main.Size = UDim2.fromOffset(220, 160) -- افزایش ارتفاع برای دکمهٔ جدید
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -100,6 +103,7 @@ end
 -------------------------------------------------
 local fireBtn = createButton("🔥 Fire ClickDetectors", 38, Color3.fromRGB(70,140,255))
 local promptBtn = createButton("⚡ Instant Prompt: OFF", 76, Color3.fromRGB(255,90,90))
+local swimBtn = createButton("🌊 Swim Disable: OFF", 114, Color3.fromRGB(255,90,90))
 
 -------------------------------------------------
 -- Fire ClickDetectors
@@ -134,7 +138,7 @@ local function applyPromptState(prompt)
 	if originalHoldTimes[prompt] == nil then
 		originalHoldTimes[prompt] = prompt.HoldDuration
 	end
-    	if instantPromptEnabled then
+	if instantPromptEnabled then
 		prompt.HoldDuration = 0
 	else
 		-- بازگردانی مقدار اصلی
@@ -174,6 +178,156 @@ promptBtn.MouseButton1Click:Connect(function()
 	end
 
 	refreshAllPrompts()
+end)
+
+-------------------------------------------------
+-- Swim Disable (Client-side best-effort)
+-------------------------------------------------
+local swimDisabled = false
+local connections = {} -- نگهداری کانکشن‌ها برای قطع در صورت لزوم
+
+-- کمک‌کننده: حذف Body* داخل کاراکتر (که میتونه باعث شنا بشه)
+local function removeBodyForces(character)
+	for _, obj in ipairs(character:GetDescendants()) do
+		if obj:IsA("BodyVelocity") or obj:IsA("BodyForce") or obj:IsA("BodyPosition") or obj:IsA("VectorForce") or obj:IsA("AlignPosition") or obj:IsA("AlignOrientation") then
+			pcall(function() obj:Destroy() end)
+		end
+	end
+end
+
+-- شناسایی پارت‌هایی که احتمالا "آب" هستند و برای این کلاینت پنهان‌شان کن
+local function hideWaterPartsClientSide()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			local ok, isWater = pcall(function()
+				return (obj.Material == Enum.Material.Water) or (string.find(string.lower(obj.Name), "water") ~= nil)
+			end)
+			if ok and isWater then
+				-- این خاصیت فقط برای client محلی اثر دارد
+				pcall(function()
+					-- LocalTransparencyModifier مقدار بین 0..1 میگیرد؛ 1 = کاملا پنهان برای این کلاینت
+					obj.LocalTransparencyModifier = 1
+				end)
+				-- تلاش میکنیم برخورد را هم غیرقابل لمس کنیم (ممکن است برای سرور هم تلاش ارسال شود و نادیده گرفته شود)
+				pcall(function() obj.CanCollide = false end)
+			end
+		end
+	end
+end
+
+-- برگرداندن حالت پنهان‌سازی (در صورت خاموش شدن)
+local function unhideWaterPartsClientSide()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			local ok, isWater = pcall(function()
+				return (obj.Material == Enum.Material.Water) or (string.find(string.lower(obj.Name), "water") ~= nil)
+			end)
+			if ok and isWater then
+				pcall(function() obj.LocalTransparencyModifier = 0 end)
+				-- نادیده گرفتن خطا هنگام بازیابی
+			end
+		end
+	end
+end
+
+-- تلاش برای فوراً غیرفعال کردن حالت شنا برای یک Humanoid/Character
+local function disableSwimImmediate(character)
+	if not character or not character.Parent then return end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local root = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+	if humanoid then
+		-- حذف نیروهای احتمالی
+		removeBodyForces(character)
+
+		-- تلاش برای غیرفعال کردن State Swimming
+		pcall(function() humanoid:ChangeState(Enum.HumanoidStateType.Running) end)
+		-- اگر متد SetStateEnabled موجود باشه، سعی می‌کنیم Swimming رو غیرفعال کنیم (این ممکنه client-side عمل کنه)
+		pcall(function() humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false) end)
+
+		-- کمی بازیکن رو به بالا هل میدیم تا از آب بیرون بیاد (این روی کلاینت اعمال میشه)
+		if root then
+			pcall(function()
+				-- حرکتی کوچک به بالا (تنظیم عدد اگر لازم بود)
+				local safeOffset = Vector3.new(0, 3, 0)
+				root.CFrame = root.CFrame + safeOffset
+				-- و سرعت عمودی رو صفر می‌کنیم
+				root.Velocity = Vector3.new(root.Velocity.X, 0, root.Velocity.Z)
+			end)
+		end
+	end
+end
+
+-- وقتی بازیکن وارد آب یا حالت شنا میشه، این اجرا میشه
+local function onCharacterAdded(character)
+	-- قطع کانکشن‌های قبلی مرتبط با کاراکتر (ایمن سازی)
+	if connections[character] then
+		for _, c in ipairs(connections[character]) do
+			pcall(function() c:Disconnect() end)
+		end
+	end
+	connections[character] = {}
+
+	-- وصل شدن به StateChanged
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local root = character:WaitForChild("HumanoidRootPart", 5) -- صبر کوتاه برای Root
+
+	if humanoid then
+		local connState = humanoid.StateChanged:Connect(function(old, new)
+			if swimDisabled and new == Enum.HumanoidStateType.Swimming then
+				-- وقتی وضعیت شنا فعال شد، فوری غیرفعالش کن
+				disableSwimImmediate(character)
+			end
+		end)
+		table.insert(connections[character], connState)
+	end
+
+	-- تشخیص برخورد با پارت‌های آب (Touched)
+	if root then
+		local connTouch = root.Touched:Connect(function(part)
+			if not swimDisabled then return end
+			local ok, isWater = pcall(function()
+				return (part.Material == Enum.Material.Water) or (string.find(string.lower(part.Name), "water") ~= nil)
+			end)
+			if ok and isWater then
+				-- فوراً شنا رو غیرفعال کن و آن پارت آب را برای این کلاینت پنهان کن
+				disableSwimImmediate(character)
+				pcall(function()
+					part.LocalTransparencyModifier = 1
+					part.CanCollide = false
+				end)
+			end
+		end)
+		table.insert(connections[character], connTouch)
+	end
+end
+
+-- اگر کاراکتر همین الان وجود داشته باشه
+if LocalPlayer.Character then
+	onCharacterAdded(LocalPlayer.Character)
+end
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+
+-- دکمه ON / OFF
+swimBtn.MouseButton1Click:Connect(function()
+	swimDisabled = not swimDisabled
+
+	if swimDisabled then
+		swimBtn.Text = "🌊 Swim Disable: ON"
+		swimBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+
+		-- اعمال مخفی‌سازی آب برای Partها و غیرفعالسازی وضعیت شنا برای کاراکتر فعلی
+		hideWaterPartsClientSide()
+		if LocalPlayer.Character then
+			disableSwimImmediate(LocalPlayer.Character)
+		end
+	else
+		swimBtn.Text = "🌊 Swim Disable: OFF"
+		swimBtn.BackgroundColor3 = Color3.fromRGB(255,90,90)
+
+		-- برگردوندن حالت آب‌هایی که ما محلی پنهان کردیم
+		unhideWaterPartsClientSide()
+		-- اگر خواستی میشه دوباره State Swimming رو فعال گذاشت (ما به طور مشخص کاری نمی‌کنیم تا بازی رفتار پیش‌فرض را داشته باشد)
+	end
 end)
 
 -------------------------------------------------
