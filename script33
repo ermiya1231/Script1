@@ -529,7 +529,7 @@ end)
 -------------------------------------------------
 -- Fixed WallShot (Object Remover)
 -------------------------------------------------
-local WallWaitTime = 10 -- مدت زمان غیب بودن (ثانیه)
+local WallWaitTime = 5 -- مدت زمان غیب بودن (ثانیه)
 
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end 
