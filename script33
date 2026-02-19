@@ -22,6 +22,7 @@ main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
 main.Active = true
+main.ClipsDescendants = true
 main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
 
@@ -30,7 +31,6 @@ Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
 -------------------------------------------------
 do
 	local dragging, dragStart, startPos
-
 	local function update(input)
 		local delta = input.Position - dragStart
 		main.Position = UDim2.new(
@@ -40,14 +40,12 @@ do
 			startPos.Y.Offset + delta.Y
 		)
 	end
-
 	main.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			dragStart = input.Position
 			startPos = main.Position
-
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
 					dragging = false
@@ -55,7 +53,6 @@ do
 			end)
 		end
 	end)
-
 	UserInputService.InputChanged:Connect(function(input)
 		if dragging and (
 			input.UserInputType == Enum.UserInputType.MouseMovement
@@ -122,20 +119,17 @@ end)
 -------------------------------------------------
 local originalHoldTimes = {}
 local instantPromptEnabled = false
-
 local function applyPromptState(prompt)
 	if not prompt:IsA("ProximityPrompt") then return end
 	if originalHoldTimes[prompt] == nil then
 		originalHoldTimes[prompt] = prompt.HoldDuration
 	end
-
 	if instantPromptEnabled then
 		prompt.HoldDuration = 0
 	else
 		prompt.HoldDuration = originalHoldTimes[prompt]
 	end
 end
-
 local function refreshAllPrompts()
 	for _, obj in ipairs(workspace:GetDescendants()) do
 		if obj:IsA("ProximityPrompt") then
@@ -143,17 +137,14 @@ local function refreshAllPrompts()
 		end
 	end
 end
-
 workspace.DescendantAdded:Connect(function(obj)
 	if obj:IsA("ProximityPrompt") then
 		task.wait()
 		applyPromptState(obj)
 	end
 end)
-
 promptBtn.MouseButton1Click:Connect(function()
 	instantPromptEnabled = not instantPromptEnabled
-
 	if instantPromptEnabled then
 		promptBtn.Text = "⚡ Instant Prompt: ON"
 		promptBtn.BackgroundColor3 = Color3.fromRGB(80,200,120)
@@ -161,7 +152,6 @@ promptBtn.MouseButton1Click:Connect(function()
 		promptBtn.Text = "⚡ Instant Prompt: OFF"
 		promptBtn.BackgroundColor3 = Color3.fromRGB(255,90,90)
 	end
-
 	refreshAllPrompts()
 end)
 
@@ -169,25 +159,18 @@ end)
 -- Swim Disable
 -------------------------------------------------
 local swimDisabled = false
-
 local function setupCharacter(char)
 	local humanoid = char:WaitForChild("Humanoid")
-
 	humanoid.StateChanged:Connect(function(_, new)
 		if swimDisabled and new == Enum.HumanoidStateType.Swimming then
 			humanoid:ChangeState(Enum.HumanoidStateType.Running)
 		end
 	end)
 end
-
-if LocalPlayer.Character then
-	setupCharacter(LocalPlayer.Character)
-end
+if LocalPlayer.Character then setupCharacter(LocalPlayer.Character) end
 LocalPlayer.CharacterAdded:Connect(setupCharacter)
-
 swimBtn.MouseButton1Click:Connect(function()
 	swimDisabled = not swimDisabled
-
 	if swimDisabled then
 		swimBtn.Text = "🌊 Swim Disable: ON"
 		swimBtn.BackgroundColor3 = Color3.fromRGB(80,200,120)
@@ -198,19 +181,27 @@ swimBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- Name2 Fake Scanner (SMART + FAST)
+-- Name2 Smart Scanner (2 Layer System)
 -------------------------------------------------
 local scanning = false
 local scanCompleted = false
-
 local blacklist = {}
+local originalTouch = {}
 
--- لیست اسم‌های خطرناک
+-- 🟥 لیست عمومی (نیمه هوشمند)
 local dangerNames = {
-	"kill","killpart","killbrick","lava","damage","dead","death",
-	"void","die","hurt","trap","spike","toxic","acid","burn",
-    "death","void","trap","part",
-	"explode","laser","danger"
+	"kill","killpart","killbrick","killzone",
+	"lava","acid","toxic",
+	"damage","hurt","death","die",
+	"void","fall","burn","fire",
+	"explode","laser","trap","spike",
+	"danger","hazard","push","damagepart","pusher"
+}
+
+-- 🟨 لیست دقیق (100% خطرناک)
+local exactNames = {
+	"Part",
+	"part"
 }
 
 local function notify(text)
@@ -224,25 +215,48 @@ local function notify(text)
 	label.TextSize = 14
 	label.Parent = gui
 	Instance.new("UICorner", label)
-
-	task.delay(2, function()
-		label:Destroy()
-	end)
+	task.delay(2, function() label:Destroy() end)
 end
 
-local function isDanger(name)
+-- 🧠 چک خطر
+local function isDanger(part)
+	local name = part.Name
+
+	-- 🔥 چک دقیق (اولویت بالا)
+	for _, exact in ipairs(exactNames) do
+		if name == exact then
+			return true
+		end
+	end
+
+	-- 🔥 چک عمومی
 	name = name:lower()
 	for _, word in ipairs(dangerNames) do
 		if string.find(name, word) then
 			return true
 		end
 	end
+
 	return false
 end
 
 local function disableTouch(part)
 	if part:IsA("BasePart") then
-		part.CanTouch = false
+		-- فقط چیزایی که واقعا تاچ دارن
+		if part.CanTouch then
+			if originalTouch[part] == nil then
+				originalTouch[part] = part.CanTouch
+			end
+			part.CanTouch = false
+		end
+	end
+end
+
+local function restoreTouch()
+	for part, state in pairs(originalTouch) do
+		if part and part.Parent then
+			part.CanTouch = state
+		end
 	end
 end
 
@@ -258,46 +272,41 @@ local function fakeScan()
 	scanning = true
 	notify("Scan Started...")
 
-	-- 🔥 اسکن سریع (واقعی ولی بدون تست)
 	for _, obj in ipairs(workspace:GetDescendants()) do
 		if obj:IsA("BasePart") then
-			if isDanger(obj.Name) then
+			if isDanger(obj) then
 				blacklist[obj] = true
 			end
 		end
 	end
 
-	-- ⏳ فیک تایم برای حس خفن
 	task.wait(1)
 
-	-- اعمال
 	for part,_ in pairs(blacklist) do
 		disableTouch(part)
 	end
 
 	scanning = false
 	scanCompleted = true
-
 	notify("Scan Completed ✅")
 end
 
 scanBtn.MouseButton1Click:Connect(function()
 	if scanning then return end
 
-	if not scanCompleted then
+	local enabled = scanBtn.Text:find("ON")
+
+	if enabled then
+		scanBtn.Text = "💵 God Mode(KillBrick): OFF"
+		scanBtn.BackgroundColor3 = Color3.fromRGB(255,90,90)
+		restoreTouch()
+	else
 		scanBtn.Text = "💵 God Mode(KillBrick): ON"
 		scanBtn.BackgroundColor3 = Color3.fromRGB(80,200,120)
-		task.spawn(fakeScan)
-	else
-		local enabled = scanBtn.Text:find("ON")
 
-		if enabled then
-			scanBtn.Text = "💵 God Mode(KillBrick): OFF"
-			scanBtn.BackgroundColor3 = Color3.fromRGB(255,90,90)
+		if not scanCompleted then
+			task.spawn(fakeScan)
 		else
-			scanBtn.Text = "💵 God Mode(KillBrick): ON"
-			scanBtn.BackgroundColor3 = Color3.fromRGB(80,200,120)
-
 			for part,_ in pairs(blacklist) do
 				disableTouch(part)
 			end
