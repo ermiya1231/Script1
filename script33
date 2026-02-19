@@ -17,7 +17,7 @@ gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 200)
+main.Size = UDim2.fromOffset(220, 240)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -100,6 +100,7 @@ local fireBtn = createButton("🔥 Fire ClickDetectors", 38, Color3.fromRGB(70,1
 local promptBtn = createButton("⚡ Instant Prompt: OFF", 76, Color3.fromRGB(255,90,90))
 local swimBtn = createButton("🌊 Swim Disable: OFF", 114, Color3.fromRGB(255,90,90))
 local scanBtn = createButton("💵 God Mode(KillBrick): OFF", 152, Color3.fromRGB(255,90,90))
+local espBtn = createButton("👁️ ESP & Hitbox: OFF", 190, Color3.fromRGB(255,90,90))
 
 -------------------------------------------------
 -- Fire ClickDetectors
@@ -437,6 +438,92 @@ scanBtn.MouseButton1Click:Connect(function()
 			end
 		end
 	end
+end)
+
+-------------------------------------------------
+-- Final ESP, Tracer & Hitbox (Direct Method)
+-------------------------------------------------
+local espEnabled = false
+local tracerFolder = gui:FindFirstChild("TracerFolder") or Instance.new("Folder", gui)
+tracerFolder.Name = "TracerFolder"
+
+-- تنظیمات هیت‌باکس (دقیقاً مثل اسکریپت شما)
+local HB_SIZE = 40
+
+RunService.RenderStepped:Connect(function()
+    if not espEnabled then 
+        tracerFolder:ClearAllChildren()
+        return 
+    end
+
+    tracerFolder:ClearAllChildren()
+
+    for _, v in ipairs(game:GetService('Players'):GetPlayers()) do
+        if v.Name ~= LocalPlayer.Name and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            -- ۱. بخش هیت‌باکس (دقیقاً طبق اسکریپت خودت)
+            pcall(function()
+                local root = v.Character.HumanoidRootPart
+                root.Size = Vector3.new(HB_SIZE, HB_SIZE, HB_SIZE)
+                root.Transparency = 1 -- نامرئی طبق خواسته شما
+                root.CanCollide = false
+                -- root.BrickColor = BrickColor.new("Really blue") -- چون نامرئیه نیازی نیست
+                -- root.Material = "Neon"
+                
+                -- اعمال ESP (Highlight)
+                local hl = v.Character:FindFirstChild("ESPHighlight") or Instance.new("Highlight", v.Character)
+                hl.Name = "ESPHighlight"
+                hl.FillColor = Color3.fromRGB(255, 255, 0)
+                hl.Enabled = true
+            end)
+
+            -- ۲. بخش Tracer (خط راهنما)
+            pcall(function()
+                local root = v.Character.HumanoidRootPart
+                local pos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(root.Position)
+                if onScreen then
+                    local line = Instance.new("Frame")
+                    line.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+                    line.BorderSizePixel = 0
+                    line.AnchorPoint = Vector2.new(0.5, 0.5)
+                    local startPos = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                    local endPos = Vector2.new(pos.X, pos.Y)
+                    local distance = (startPos - endPos).Magnitude
+                    line.Size = UDim2.fromOffset(distance, 1.2)
+                    line.Position = UDim2.fromOffset((startPos.X + endPos.X) / 2, (startPos.Y + endPos.Y) / 2)
+                    line.Rotation = math.deg(math.atan2(endPos.Y - startPos.Y, endPos.X - startPos.X))
+                    line.Parent = tracerFolder
+                end
+            end)
+        end
+    end
+end)
+
+-- کد دکمه برای روشن و خاموش کردن
+espBtn.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    
+    if espEnabled then
+        espBtn.Text = "👁️ ESP & Hitbox: ON"
+        espBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+    else
+        espBtn.Text = "👁️ ESP & Hitbox: OFF"
+        espBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+        
+        -- ریست کردن همه بازیکن‌ها به حالت عادی
+        for _, v in ipairs(game:GetService('Players'):GetPlayers()) do
+            pcall(function()
+                if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                    v.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 1)
+                    v.Character.HumanoidRootPart.Transparency = 1
+                    v.Character.HumanoidRootPart.CanCollide = true
+                    if v.Character:FindFirstChild("ESPHighlight") then
+                        v.Character.ESPHighlight.Enabled = false
+                    end
+                end
+            end)
+        end
+        tracerFolder:ClearAllChildren()
+    end
 end)
 
 -------------------------------------------------
