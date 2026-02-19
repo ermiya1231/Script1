@@ -441,13 +441,13 @@ scanBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- Final ESP, Tracer & Hitbox (Direct Method)
+-- Final ESP, Tracer, Hitbox & Wallshot (Optimized)
 -------------------------------------------------
 local espEnabled = false
 local tracerFolder = gui:FindFirstChild("TracerFolder") or Instance.new("Folder", gui)
 tracerFolder.Name = "TracerFolder"
 
--- تنظیمات هیت‌باکس (دقیقاً مثل اسکریپت شما)
+-- تنظیمات هیت‌باکس (سایز 40 طبق آخرین نسخه موفق)
 local HB_SIZE = 40
 
 RunService.RenderStepped:Connect(function()
@@ -460,14 +460,13 @@ RunService.RenderStepped:Connect(function()
 
     for _, v in ipairs(game:GetService('Players'):GetPlayers()) do
         if v.Name ~= LocalPlayer.Name and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-            -- ۱. بخش هیت‌باکس (دقیقاً طبق اسکریپت خودت)
+            -- ۱. بخش هیت‌باکس و Wallshot (بهینه شده)
             pcall(function()
                 local root = v.Character.HumanoidRootPart
                 root.Size = Vector3.new(HB_SIZE, HB_SIZE, HB_SIZE)
-                root.Transparency = 1 -- نامرئی طبق خواسته شما
-                root.CanCollide = false
-                -- root.BrickColor = BrickColor.new("Really blue") -- چون نامرئیه نیازی نیست
-                -- root.Material = "Neon"
+                root.Transparency = 1 -- نامرئی برای وال‌شات تمیز
+                root.CanCollide = false -- جلوگیری از گیر کردن در زمین
+                root.CanQuery = true -- کلید اصلی Wallshot (اجازه برخورد تیر از پشت دیوار)
                 
                 -- اعمال ESP (Highlight)
                 local hl = v.Character:FindFirstChild("ESPHighlight") or Instance.new("Highlight", v.Character)
@@ -503,19 +502,21 @@ espBtn.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     
     if espEnabled then
-        espBtn.Text = "👁️ ESP & Hitbox: ON"
+        espBtn.Text = "🎯 Wallshot & ESP: ON"
         espBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
     else
-        espBtn.Text = "👁️ ESP & Hitbox: OFF"
+        espBtn.Text = "🎯 Wallshot & ESP: OFF"
         espBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
         
-        -- ریست کردن همه بازیکن‌ها به حالت عادی
+        -- ریست کردن تمام بازیکن‌ها به حالت عادی
         for _, v in ipairs(game:GetService('Players'):GetPlayers()) do
             pcall(function()
                 if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                    v.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 1)
-                    v.Character.HumanoidRootPart.Transparency = 1
-                    v.Character.HumanoidRootPart.CanCollide = true
+                    local root = v.Character.HumanoidRootPart
+                    root.Size = Vector3.new(2, 2, 1)
+                    root.Transparency = 1
+                    root.CanCollide = true
+                    root.CanQuery = true -- برگرداندن به حالت پیش‌فرض
                     if v.Character:FindFirstChild("ESPHighlight") then
                         v.Character.ESPHighlight.Enabled = false
                     end
@@ -523,6 +524,47 @@ espBtn.MouseButton1Click:Connect(function()
             end)
         end
         tracerFolder:ClearAllChildren()
+    end
+end)
+-------------------------------------------------
+-- Fixed WallShot (Object Remover)
+-------------------------------------------------
+local WallWaitTime = 10 -- مدت زمان غیب بودن (ثانیه)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end 
+    
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and espEnabled then
+        local mouse = LocalPlayer:GetMouse()
+        local target = mouse.Target
+        
+        -- شرط مهم: هدف نباید هیت‌باکس خودمون (HumanoidRootPart بزرگ شده) یا کاراکتر خودمون باشه
+        if target and target:IsA("BasePart") then
+            local isAHitbox = (target.Name == "HumanoidRootPart") -- اگه اسمش HRP بود یعنی هیت‌باکسه
+            local isAPlayer = target.Parent:FindFirstChildOfClass("Humanoid")
+            
+            -- فقط اگه دیوار یا پارت معمولی بود (نه آدم) غیبش کن
+            if not isAPlayer and not target:IsDescendantOf(LocalPlayer.Character) then
+                pcall(function()
+                    if target.Size.Magnitude < 200 then -- جلوگیری از جابجایی زمین اصلی
+                        local originalCFrame = target.CFrame
+                        local originalAnchored = target.Anchored
+                        
+                        -- فرستادن به آسمان
+                        target.Anchored = true
+                        target.CFrame = originalCFrame + Vector3.new(0, 5000, 0)
+                        
+                        -- برگشت بعد از زمان تعیین شده
+                        task.delay(WallWaitTime, function()
+                            if target and target.Parent then
+                                target.CFrame = originalCFrame
+                                target.Anchored = originalAnchored
+                            end
+                        end)
+                    end
+                end)
+            end
+        end
     end
 end)
 
