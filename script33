@@ -30,7 +30,7 @@ gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 470)
+main.Size = UDim2.fromOffset(220, 430)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -93,7 +93,7 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 400) -- سایز کامل پنل شما
+local originalSize = UDim2.fromOffset(220, 430) -- سایز کامل پنل شما
 local collapsedSize = UDim2.fromOffset(220, 30) -- فقط ارتفاع تایتل
 
 local collapseBtn = Instance.new("TextButton")
