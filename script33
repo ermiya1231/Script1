@@ -367,7 +367,7 @@ local blacklist = {} -- نگهداری پارت‌های پیدا شده
 local originalTouch = {}
 
 -- لیست کلمات دقیق و عمومی (بهینه شده)
-local dangerNames = {"kill", "lava", "acid", "toxic", "poison", "damage", "death", "die", "burn", "fire", "spike", "saw", "hazard","killpart", "pusher", "damagepart", "push", "punch", "brick", "killbrick"}
+local dangerNames = {"kill", "lava", "acid", "toxic", "poison", "damage", "death", "die", "burn", "fire", "spike", "saw", "hazard","killpart", "pusher", "damagepart", "push", "punch", "brick", "killbrick", "pipe"}
 local exactNames = {"Part", "part"}
 
 local function notify(text)
