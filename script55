@@ -1,7 +1,7 @@
 local gameId = game.PlaceId
 
 local supportedGames = {
-    [6417854155] = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script42",
+    [6417854155] = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script56",
    }
 
 local function loadScript(url)
