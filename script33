@@ -1,13 +1,21 @@
--------------------------------------------------
--- Services
--------------------------------------------------
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local workspace = game:GetService("Workspace")
 
+-- Helper Functions
+local function partowner(part)
+    return part.ReceiveAge == 0
+end
+
+local function isnpc(ins)
+    local humanoid = ins:FindFirstChildOfClass("Humanoid")
+    local player = Players:GetPlayerFromCharacter(ins)
+    return humanoid and not player
+end
 -------------------------------------------------
 -- GUI Create
 -------------------------------------------------
@@ -17,7 +25,7 @@ gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 240)
+main.Size = UDim2.fromOffset(220, 320)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -93,6 +101,7 @@ local function createButton(text, posY, color)
 	return btn
 end
 
+local killAuraConn
 -------------------------------------------------
 -- Buttons
 -------------------------------------------------
@@ -100,7 +109,9 @@ local fireBtn = createButton("🔥 Fire ClickDetectors", 38, Color3.fromRGB(70,1
 local promptBtn = createButton("⚡ Instant Prompt: OFF", 76, Color3.fromRGB(255,90,90))
 local swimBtn = createButton("🌊 Swim Disable: OFF", 114, Color3.fromRGB(255,90,90))
 local scanBtn = createButton("💵 God Mode(KillBrick): OFF", 152, Color3.fromRGB(255,90,90))
-local espBtn = createButton("👁️ ESP & Hitbox: OFF", 190, Color3.fromRGB(255,90,90))
+local espBtn = createButton("👁️ ESP & Hitbox & Wallshot: OFF", 190, Color3.fromRGB(255,90,90))
+local killBtn   = createButton("💀 NPC Kill Aura: OFF", 228, Color3.fromRGB(255,90,90))
+local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 266, Color3.fromRGB(255,90,90))
 
 -------------------------------------------------
 -- Fire ClickDetectors
@@ -502,10 +513,10 @@ espBtn.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     
     if espEnabled then
-        espBtn.Text = "🎯 Wallshot & ESP: ON"
+        espBtn.Text = "👁️ ESP & Hitbox & Wallshot: ON"
         espBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
     else
-        espBtn.Text = "🎯 Wallshot & ESP: OFF"
+        espBtn.Text = "👁️ ESP & Hitbox & Wallshot: OFF"
         espBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
         
         -- ریست کردن تمام بازیکن‌ها به حالت عادی
@@ -565,6 +576,83 @@ UserInputService.InputBegan:Connect(function(input, gpe)
                 end)
             end
         end
+    end
+end)
+
+-------------------------------------------------
+-- Kill Aura Logic (Fixed & Integrated)
+-------------------------------------------------
+local killAuraEnabled = false
+local killAuraConn
+
+killBtn.MouseButton1Click:Connect(function()
+    killAuraEnabled = not killAuraEnabled
+    if killAuraEnabled then
+        killBtn.Text = "💀 NPC Kill Aura: ON"
+        killBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+        
+        killAuraConn = RunService.Stepped:Connect(function()
+            local char = LocalPlayer.Character
+            local hrp1 = char and char:FindFirstChild("HumanoidRootPart")
+            if not hrp1 then return end
+
+            -- استفاده از SimulationRadius برای به دست گرفتن فیزیک
+            LocalPlayer.SimulationRadius = 150
+
+            local objects = workspace:GetPartBoundsInRadius(hrp1.Position, 18)
+            for _, part in pairs(objects) do
+                local model = part:FindFirstAncestorOfClass("Model")
+                if model and isnpc(model) and model ~= char then
+                    local hrp = model:FindFirstChild("HumanoidRootPart")
+                    local hum = model:FindFirstChildOfClass("Humanoid")
+                    
+                    if hrp and partowner(hrp) and not hrp.Anchored then
+                        hum:ChangeState(Enum.HumanoidStateType.Dead)
+                        hum.Health = 0
+                    end
+                end
+            end
+        end)
+    else
+        killBtn.Text = "💀 NPC Kill Aura: OFF"
+        killBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+        if killAuraConn then killAuraConn:Disconnect() end
+    end
+end)
+
+-------------------------------------------------
+-- LOGIC: NPC JUMP AURA (The "Disco" Mode)
+-------------------------------------------------
+local npcJumpEnabled = false
+local npcJumpConn
+
+npcJumpBtn.MouseButton1Click:Connect(function()
+    npcJumpEnabled = not npcJumpEnabled
+    npcJumpBtn.Text = npcJumpEnabled and "🕺 NPC Jump Aura: ON" or "🕺 NPC Jump Aura: OFF"
+    npcJumpBtn.BackgroundColor3 = npcJumpEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    
+    if npcJumpEnabled then
+        npcJumpConn = RunService.Heartbeat:Connect(function()
+            local hrp1 = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp1 then return end
+            
+            -- گرفتن کنترل فیزیکی اشیاء نزدیک
+            LocalPlayer.SimulationRadius = 200
+            settings().Physics.AllowSleep = false
+            
+            for _, part in pairs(workspace:GetPartBoundsInRadius(hrp1.Position, 25)) do
+                local m = part:FindFirstAncestorOfClass("Model")
+                if m and isnpc(m) then
+                    local hum = m:FindFirstChildOfClass("Humanoid")
+                    if hum then
+                        -- مجبور کردن NPC به پرش
+                        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end
+        end)
+    else
+        if npcJumpConn then npcJumpConn:Disconnect(); npcJumpConn = nil end
     end
 end)
 
