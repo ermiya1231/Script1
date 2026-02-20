@@ -5,6 +5,11 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local workspace = game:GetService("Workspace")
+local xrayEnabled = false
+local originalTransparency = {}
+local noclipEnabled = false
+local noclipConn = nil
+local antiSlapEnabled = false
 
 -- Helper Functions
 local function partowner(part)
@@ -25,13 +30,14 @@ gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 320)
+main.Size = UDim2.fromOffset(220, 440)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
 main.Active = true
 main.ClipsDescendants = true
 main.Parent = gui
+main.ClipsDescendants = true -- این خط خیلی مهمه
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
 
 -------------------------------------------------
@@ -84,6 +90,37 @@ title.TextColor3 = Color3.fromRGB(255, 200, 80)
 title.Parent = main
 
 -------------------------------------------------
+-- 🔽 EXPAND / COLLAPSE SYSTEM
+-------------------------------------------------
+local isCollapsed = false
+local originalSize = UDim2.fromOffset(220, 400) -- سایز کامل پنل شما
+local collapsedSize = UDim2.fromOffset(220, 30) -- فقط ارتفاع تایتل
+
+local collapseBtn = Instance.new("TextButton")
+collapseBtn.Size = UDim2.fromOffset(25, 25)
+collapseBtn.Position = UDim2.new(1, -30, 0, 2)
+collapseBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+collapseBtn.Text = "-"
+collapseBtn.TextColor3 = Color3.new(1, 1, 1)
+collapseBtn.Font = Enum.Font.GothamBold
+collapseBtn.TextSize = 20
+collapseBtn.Parent = main
+Instance.new("UICorner", collapseBtn).CornerRadius = UDim.new(0, 5)
+
+collapseBtn.MouseButton1Click:Connect(function()
+    isCollapsed = not isCollapsed
+    
+    -- استفاده از TweenService برای نرم باز و بسته شدن (خیلی خفن‌تر می‌شه)
+    local targetSize = isCollapsed and collapsedSize or originalSize
+    local targetText = isCollapsed and "+" or "-"
+    
+    game:GetService("TweenService"):Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+        Size = targetSize
+    }):Play()
+    
+    collapseBtn.Text = targetText
+end)
+-------------------------------------------------
 -- Button Template
 -------------------------------------------------
 local function createButton(text, posY, color)
@@ -112,6 +149,10 @@ local scanBtn = createButton("💵 God Mode(KillBrick): OFF", 152, Color3.fromRG
 local espBtn = createButton("👁️ ESP & Hitbox & Wallshot: OFF", 190, Color3.fromRGB(255,90,90))
 local killBtn   = createButton("💀 NPC Kill Aura: OFF", 228, Color3.fromRGB(255,90,90))
 local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 266, Color3.fromRGB(255,90,90))
+local xrayBtn = createButton("💎 X-Ray Vision: OFF", 304, Color3.fromRGB(255, 90, 90))
+local noclipBtn = createButton("👻 NoClip: OFF", 342, Color3.fromRGB(255, 90, 90))
+local antiSlapBtn = createButton("✋ Anti Slap: OFF", 380, Color3.fromRGB(255, 90, 90))
+-- نکته: حتماً سایز فریم اصلی (main.Size) را به (220, 400) تغییر بده تا جا برای دکمه‌های جدید باشد.
 
 -------------------------------------------------
 -- Fire ClickDetectors
@@ -318,139 +359,90 @@ swimBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- Name2 Smart Scanner (2 Layer System)
+-- 💵 OPTIMIZED GOD MODE (Scan Once Only)
 -------------------------------------------------
-local scanning = false
-local scanCompleted = false
-local blacklist = {}
+local godModeEnabled = false
+local hasScanned = false -- وضعیت اسکن اول
+local blacklist = {} -- نگهداری پارت‌های پیدا شده
 local originalTouch = {}
 
--- 🟥 لیست عمومی (نیمه هوشمند)
-local dangerNames = {
-	"kill","killpart","killbrick","killzone",
-	"lava","acid","toxic",
-	"damage","hurt","death","die",
-	"void","fall","burn","fire",
-	"explode","laser","trap","spike",
-	"danger","hazard","pusher","damagepart"
-}
-
--- 🟨 لیست دقیق (100% خطرناک)
-local exactNames = {
-	"Part",
-	"part"
-}
+-- لیست کلمات دقیق و عمومی (بهینه شده)
+local dangerNames = {"kill", "lava", "acid", "toxic", "poison", "damage", "death", "die", "burn", "fire", "spike", "saw", "hazard","killpart", "pusher", "damagepart", "push", "punch", "brick", "killbrick"}
+local exactNames = {"Part", "part"}
 
 local function notify(text)
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.new(0, 250, 0, 40)
-	label.Position = UDim2.new(1, -260, 1, -60)
-	label.BackgroundColor3 = Color3.fromRGB(20,20,20)
-	label.TextColor3 = Color3.new(1,1,1)
-	label.Text = text
-	label.Font = Enum.Font.GothamBold
-	label.TextSize = 14
-	label.Parent = gui
-	Instance.new("UICorner", label)
-	task.delay(2, function() label:Destroy() end)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 280, 0, 40)
+    label.Position = UDim2.new(1, -300, 1, -60)
+    label.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Text = text
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 14
+    label.Parent = gui
+    Instance.new("UICorner", label)
+    task.delay(3, function() if label then label:Destroy() end end)
 end
 
--- 🧠 چک خطر
-local function isDanger(part)
-	local name = part.Name
-
-	-- 🔥 چک دقیق (اولویت بالا)
-	for _, exact in ipairs(exactNames) do
-		if name == exact then
-			return true
-		end
-	end
-
-	-- 🔥 چک عمومی
-	name = name:lower()
-	for _, word in ipairs(dangerNames) do
-		if string.find(name, word) then
-			return true
-		end
-	end
-
-	return false
-end
-
-local function disableTouch(part)
-	if part:IsA("BasePart") then
-		-- فقط چیزایی که واقعا تاچ دارن
-		if part.CanTouch then
-			if originalTouch[part] == nil then
-				originalTouch[part] = part.CanTouch
-			end
-			part.CanTouch = false
-		end
-	end
-end
-
-local function restoreTouch()
-	for part, state in pairs(originalTouch) do
-		if part and part.Parent then
-			part.CanTouch = state
-		end
-	end
-end
-
-local function fakeScan()
-	if scanCompleted then
-		notify("Using saved scan...")
-		for part,_ in pairs(blacklist) do
-			disableTouch(part)
-		end
-		return
-	end
-
-	scanning = true
-	notify("Scan Started...")
-
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("BasePart") then
-			if isDanger(obj) then
-				blacklist[obj] = true
-			end
-		end
-	end
-
-	task.wait(1)
-
-	for part,_ in pairs(blacklist) do
-		disableTouch(part)
-	end
-
-	scanning = false
-	scanCompleted = true
-	notify("Scan Completed ✅")
+local function isValidDangerName(name)
+    for _, exact in ipairs(exactNames) do
+        if name == exact then return true end
+    end
+    local lowerName = name:lower()
+    for _, word in ipairs(dangerNames) do
+        if string.find(lowerName, word) then return true end
+    end
+    return false
 end
 
 scanBtn.MouseButton1Click:Connect(function()
-	if scanning then return end
+    godModeEnabled = not godModeEnabled
+    
+    if godModeEnabled then
+        scanBtn.Text = "💵 God Mode: ON"
+        scanBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
 
-	local enabled = scanBtn.Text:find("ON")
+        if not hasScanned then
+            -- 🛡️ فقط بار اول این بخش اجرا می‌شود
+            notify("Scan Started (First Time)...")
+            task.wait(0.2)
+            
+            local foundCount = 0
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and isValidDangerName(obj.Name) then
+                    foundCount = foundCount + 1
+                    table.insert(blacklist, obj) -- ذخیره در لیست سیاه برای همیشه
+                    originalTouch[obj] = obj.CanTouch
+                end
+            end
+            
+            hasScanned = true -- علامت‌گذاری که اسکن انجام شد
+            notify("Scan Completed! " .. tostring(foundCount) .. " KillParts Found")
+        else
+            -- ⚡ دفعات بعد بلافاصله فعال می‌شود
+            notify("God Mode Shield Re-Activated")
+        end
 
-	if enabled then
-		scanBtn.Text = "💵 God Mode(KillBrick): OFF"
-		scanBtn.BackgroundColor3 = Color3.fromRGB(255,90,90)
-		restoreTouch()
-	else
-		scanBtn.Text = "💵 God Mode(KillBrick): ON"
-		scanBtn.BackgroundColor3 = Color3.fromRGB(80,200,120)
-
-		if not scanCompleted then
-			task.spawn(fakeScan)
-		else
-			for part,_ in pairs(blacklist) do
-				disableTouch(part)
-			end
-		end
-	end
+        -- غیرفعال کردن تمام پارت‌های لیست سیاه
+        for _, part in ipairs(blacklist) do
+            if part and part.Parent then
+                pcall(function() part.CanTouch = false end)
+            end
+        end
+    else
+        -- ❌ خاموش کردن
+        scanBtn.Text = "💵 God Mode: OFF"
+        scanBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+        
+        for _, part in ipairs(blacklist) do
+            if part and part.Parent then
+                -- برگرداندن به حالت اولیه (معمولاً true)
+                pcall(function() part.CanTouch = true end)
+            end
+        end
+        notify("God Mode Shield De-Activated")
+    end
 end)
-
 -------------------------------------------------
 -- Final ESP, Tracer, Hitbox & Wallshot (Optimized)
 -------------------------------------------------
@@ -655,6 +647,164 @@ npcJumpBtn.MouseButton1Click:Connect(function()
         if npcJumpConn then npcJumpConn:Disconnect(); npcJumpConn = nil end
     end
 end)
+
+-------------------------------------------------
+-- 💎 LIGHTWEIGHT X-RAY (Anti-Lag Version)
+-------------------------------------------------
+local xrayTask -- برای مدیریت حلقه بهینه
+
+local function applyXray()
+    -- استفاده از pcall برای جلوگیری از توقف اسکریپت در صورت وجود پارت‌های خاص
+    pcall(function()
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                -- چک کردن اینکه پارت متعلق به بازیکن نباشد
+                local isCharacter = v:FindFirstAncestorOfClass("Model") and v:FindFirstAncestorOfClass("Model"):FindFirstChildOfClass("Humanoid")
+                
+                if not isCharacter then
+                    -- اعمال شفافیت فقط برای کلاینت
+                    v.LocalTransparencyModifier = xrayEnabled and 0.5 or 0
+                end
+            end
+        end
+    end)
+end
+
+xrayBtn.MouseButton1Click:Connect(function()
+    xrayEnabled = not xrayEnabled
+    
+    if xrayEnabled then
+        xrayBtn.Text = "💎 X-Ray Vision: ON"
+        xrayBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+        
+        -- ایجاد یک حلقه بهینه که هر 2 ثانیه یکبار اجرا می‌شود (بدون لگ)
+        xrayTask = task.spawn(function()
+            while xrayEnabled do
+                applyXray()
+                task.wait(2) -- زمان انتظار برای جلوگیری از فشار به سیستم
+            end
+        end)
+        notify("X-Ray Activated (No-Lag Mode) 👁️")
+    else
+        xrayBtn.Text = "💎 X-Ray Vision: OFF"
+        xrayBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+        
+        xrayEnabled = false
+        -- برگرداندن همه چیز به حالت عادی
+        task.spawn(applyXray)
+        notify("X-Ray De-Activated")
+    end
+end)
+
+-------------------------------------------------
+-- 👻 PRO NOCLIP (Instant Toggle)
+-------------------------------------------------
+local function toggleNoclip()
+    if noclipEnabled then
+        -- فعال کردن NoClip با استفاده از حلقه فیزیکی
+        noclipConn = RunService.Stepped:Connect(function()
+            if noclipEnabled and LocalPlayer.Character then
+                for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+        notify("NoClip Activated 👻")
+    else
+        -- 🛑 بخش حیاتی: خاموش کردن آنی
+        if noclipConn then
+            noclipConn:Disconnect()
+            noclipConn = nil
+        end
+        
+        -- برگرداندن فوری برخورد به تمام اعضای بدن
+        if LocalPlayer.Character then
+            for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+        notify("NoClip De-Activated ✅")
+    end
+end
+
+noclipBtn.MouseButton1Click:Connect(function()
+    noclipEnabled = not noclipEnabled
+    
+    if noclipEnabled then
+        noclipBtn.Text = "👻 NoClip: ON"
+        noclipBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+    else
+        noclipBtn.Text = "👻 NoClip: OFF"
+        noclipBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+    end
+    
+    toggleNoclip()
+end)
+
+-------------------------------------------------
+-- ✋ ANTI SLAP LOGIC (Instant Clean)
+-------------------------------------------------
+local function cleanPhysics(obj, char)
+    if not antiSlapEnabled then return end
+    
+    -- حذف نیروهایی که باعث پرتاب شدن یا چرخش کاراکتر می‌شوند
+    if obj:IsA("BodyAngularVelocity") or obj:IsA("BodyGyro") or obj:IsA("BodyVelocity") then
+        -- یک چک امنیتی برای اینکه نیروهای ضروری خود بازی حذف نشوند (طبق اسکریپت اصلی خودت)
+        local isSafe = (obj:IsA("BodyGyro") and obj.P == 90000) or (obj:IsA("BodyVelocity") and obj.Velocity == Vector3.new(0,0,0))
+        
+        if not isSafe then
+            pcall(function()
+                obj:Destroy()
+                if char and char:FindFirstChild("Humanoid") then
+                    char.Humanoid.Sit = false
+                    char.Humanoid.PlatformStand = false
+                end
+            end)
+        end
+    end
+end
+
+-- مانیتور کردن کاراکتر برای نیروهای جدید
+local function monitorCharacter(char)
+    if not char then return end
+    
+    -- بررسی اجزای فعلی
+    for _, v in ipairs(char:GetDescendants()) do
+        cleanPhysics(v, char)
+    end
+    
+    -- بررسی اجزایی که بعداً اضافه می‌شوند (مثل وقتی کسی به شما سیلی می‌زند)
+    char.DescendantAdded:Connect(function(desc)
+        if antiSlapEnabled then
+            cleanPhysics(desc, char)
+        end
+    end)
+end
+
+-- فعال‌سازی دکمه
+antiSlapBtn.MouseButton1Click:Connect(function()
+    antiSlapEnabled = not antiSlapEnabled
+    
+    if antiSlapEnabled then
+        antiSlapBtn.Text = "✋ Anti Slap: ON"
+        antiSlapBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+        notify("Anti Slap Activated 🛡️")
+        if LocalPlayer.Character then
+            monitorCharacter(LocalPlayer.Character)
+        end
+    else
+        antiSlapBtn.Text = "✋ Anti Slap: OFF"
+        antiSlapBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+        notify("Anti Slap Disabled")
+    end
+end)
+
+-- وصل کردن به کاراکترهای جدید بعد از هر بار اسپاون
+LocalPlayer.CharacterAdded:Connect(monitorCharacter)
 
 -------------------------------------------------
 -- Color Animation
