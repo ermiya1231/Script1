@@ -359,41 +359,43 @@ swimBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- 💵 OPTIMIZED GOD MODE (Scan Once Only)
+-- 🛡️ ULTIMATE GOD MODE (Auto-Scan New Parts)
 -------------------------------------------------
 local godModeEnabled = false
-local hasScanned = false -- وضعیت اسکن اول
-local blacklist = {} -- نگهداری پارت‌های پیدا شده
-local originalTouch = {}
+local blacklist = {} -- لیست تمام پارت‌های خطرناک (قدیمی و جدید)
 
--- لیست کلمات دقیق و عمومی (بهینه شده)
 local dangerNames = {"kill", "lava", "acid", "toxic", "poison", "damage", "death", "die", "burn", "fire", "spike", "saw", "hazard","killpart", "pusher", "damagepart", "push", "punch", "brick", "killbrick", "pipe"}
 local exactNames = {"Part", "part"}
 
-local function notify(text)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0, 280, 0, 40)
-    label.Position = UDim2.new(1, -300, 1, -60)
-    label.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-    label.TextColor3 = Color3.new(1, 1, 1)
-    label.Text = text
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 14
-    label.Parent = gui
-    Instance.new("UICorner", label)
-    task.delay(3, function() if label then label:Destroy() end end)
-end
-
-local function isValidDangerName(name)
+-- تابع چک کردن اسم پارت
+local function isDanger(obj)
+    if not obj:IsA("BasePart") then return false end
     for _, exact in ipairs(exactNames) do
-        if name == exact then return true end
+        if obj.Name == exact then return true end
     end
-    local lowerName = name:lower()
+    local lowerName = obj.Name:lower()
     for _, word in ipairs(dangerNames) do
         if string.find(lowerName, word) then return true end
     end
     return false
 end
+
+-- تابع خاموش کردن پارت
+local function disablePart(part)
+    if godModeEnabled then
+        pcall(function() part.CanTouch = false end)
+    end
+    if not table.find(blacklist, part) then
+        table.insert(blacklist, part)
+    end
+end
+
+-- ⚡ گوش دادن به پارت‌های جدیدی که به بازی اضافه می‌شوند
+workspace.DescendantAdded:Connect(function(obj)
+    if isDanger(obj) then
+        disablePart(obj)
+    end
+end)
 
 scanBtn.MouseButton1Click:Connect(function()
     godModeEnabled = not godModeEnabled
@@ -401,46 +403,25 @@ scanBtn.MouseButton1Click:Connect(function()
     if godModeEnabled then
         scanBtn.Text = "💵 God Mode: ON"
         scanBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
-
-        if not hasScanned then
-            -- 🛡️ فقط بار اول این بخش اجرا می‌شود
-            notify("Scan Started (First Time)...")
-            task.wait(0.2)
-            
-            local foundCount = 0
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("BasePart") and isValidDangerName(obj.Name) then
-                    foundCount = foundCount + 1
-                    table.insert(blacklist, obj) -- ذخیره در لیست سیاه برای همیشه
-                    originalTouch[obj] = obj.CanTouch
-                end
-            end
-            
-            hasScanned = true -- علامت‌گذاری که اسکن انجام شد
-            notify("Scan Completed! " .. tostring(foundCount) .. " KillParts Found")
-        else
-            -- ⚡ دفعات بعد بلافاصله فعال می‌شود
-            notify("God Mode Shield Re-Activated")
-        end
-
-        -- غیرفعال کردن تمام پارت‌های لیست سیاه
-        for _, part in ipairs(blacklist) do
-            if part and part.Parent then
-                pcall(function() part.CanTouch = false end)
+        
+        -- اسکن تمام پارت‌های فعلی
+        local count = 0
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if isDanger(obj) then
+                disablePart(obj)
+                count = count + 1
             end
         end
+        notify("God Mode Active! Protected against " .. count .. " parts")
     else
-        -- ❌ خاموش کردن
         scanBtn.Text = "💵 God Mode: OFF"
         scanBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
         
+        -- روشن کردن دوباره تمام پارت‌ها
         for _, part in ipairs(blacklist) do
-            if part and part.Parent then
-                -- برگرداندن به حالت اولیه (معمولاً true)
-                pcall(function() part.CanTouch = true end)
-            end
+            pcall(function() if part then part.CanTouch = true end end)
         end
-        notify("God Mode Shield De-Activated")
+        notify("Shield De-Activated")
     end
 end)
 -------------------------------------------------
