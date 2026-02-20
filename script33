@@ -30,7 +30,7 @@ gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 440)
+main.Size = UDim2.fromOffset(220, 475)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
