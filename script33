@@ -632,7 +632,7 @@ npcJumpBtn.MouseButton1Click:Connect(function()
             LocalPlayer.SimulationRadius = 200
             settings().Physics.AllowSleep = false
             
-            for _, part in pairs(workspace:GetPartBoundsInRadius(hrp1.Position, 25)) do
+            for _, part in pairs(workspace:GetPartBoundsInRadius(hrp1.Position, 12)) do
                 local m = part:FindFirstAncestorOfClass("Model")
                 if m and isnpc(m) then
                     local hum = m:FindFirstChildOfClass("Humanoid")
