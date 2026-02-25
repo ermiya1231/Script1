@@ -649,27 +649,8 @@ npcJumpBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- 💎 LIGHTWEIGHT X-RAY (Anti-Lag Version)
+-- 💎 ULTRA LIGHT X-RAY (Execute Once Mode)
 -------------------------------------------------
-local xrayTask -- برای مدیریت حلقه بهینه
-
-local function applyXray()
-    -- استفاده از pcall برای جلوگیری از توقف اسکریپت در صورت وجود پارت‌های خاص
-    pcall(function()
-        for _, v in ipairs(workspace:GetDescendants()) do
-            if v:IsA("BasePart") then
-                -- چک کردن اینکه پارت متعلق به بازیکن نباشد
-                local isCharacter = v:FindFirstAncestorOfClass("Model") and v:FindFirstAncestorOfClass("Model"):FindFirstChildOfClass("Humanoid")
-                
-                if not isCharacter then
-                    -- اعمال شفافیت فقط برای کلاینت
-                    v.LocalTransparencyModifier = xrayEnabled and 0.5 or 0
-                end
-            end
-        end
-    end)
-end
-
 xrayBtn.MouseButton1Click:Connect(function()
     xrayEnabled = not xrayEnabled
     
@@ -677,22 +658,33 @@ xrayBtn.MouseButton1Click:Connect(function()
         xrayBtn.Text = "💎 X-Ray Vision: ON"
         xrayBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
         
-        -- ایجاد یک حلقه بهینه که هر 2 ثانیه یکبار اجرا می‌شود (بدون لگ)
-        xrayTask = task.spawn(function()
-            while xrayEnabled do
-                applyXray()
-                task.wait(2) -- زمان انتظار برای جلوگیری از فشار به سیستم
+        -- فقط یک بار کل محیط را اسکن می‌کند (بدون هیچ حلقه‌ای)
+        pcall(function()
+            for _, v in ipairs(workspace:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    -- فیلتر کردن برای اینکه خود بازیکن‌ها شفاف نشوند
+                    local isCharacter = v:FindFirstAncestorOfClass("Model") and v:FindFirstAncestorOfClass("Model"):FindFirstChildOfClass("Humanoid")
+                    
+                    if not isCharacter then
+                        v.LocalTransparencyModifier = 0.5
+                    end
+                end
             end
         end)
-        notify("X-Ray Activated (No-Lag Mode) 👁️")
+        notify("X-Ray: Snapshot Applied 📸")
     else
         xrayBtn.Text = "💎 X-Ray Vision: OFF"
         xrayBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
         
-        xrayEnabled = false
-        -- برگرداندن همه چیز به حالت عادی
-        task.spawn(applyXray)
-        notify("X-Ray De-Activated")
+        -- برگرداندن همه چیز به حالت عادی (فقط یک بار)
+        pcall(function()
+            for _, v in ipairs(workspace:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.LocalTransparencyModifier = 0
+                end
+            end
+        end)
+        notify("X-Ray: Vision Reset")
     end
 end)
 
