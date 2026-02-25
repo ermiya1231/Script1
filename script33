@@ -29,7 +29,7 @@ gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 400)
+main.Size = UDim2.fromOffset(220, 432)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -92,7 +92,7 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 400) -- سایز کامل پنل شما
+local originalSize = UDim2.fromOffset(220, 432) -- سایز کامل پنل شما
 local collapsedSize = UDim2.fromOffset(220, 30) -- فقط ارتفاع تایتل
 
 local collapseBtn = Instance.new("TextButton")
@@ -150,6 +150,7 @@ local killBtn   = createButton("💀 NPC Kill Aura: OFF", 228, Color3.fromRGB(25
 local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 266, Color3.fromRGB(255,90,90))
 local xrayBtn = createButton("💎 X-Ray Vision: OFF", 304, Color3.fromRGB(255, 90, 90))
 local noclipBtn = createButton("👻 NoClip: OFF", 342, Color3.fromRGB(255, 90, 90))
+local climbBtn = createButton("🧗 Wall Climb : OFF", 380, Color3.fromRGB(255, 90, 90))
 
 -- نکته: حتماً سایز فریم اصلی (main.Size) را به (220, 400) تغییر بده تا جا برای دکمه‌های جدید باشد.
 
@@ -742,6 +743,85 @@ noclipBtn.MouseButton1Click:Connect(function()
     end
     
     toggleNoclip()
+end)
+
+-------------------------------------------------
+-- 🧗 GHOST TRUSS CLIMB (ON/OFF)
+-------------------------------------------------
+local climbEnabled = false
+local climbConn = nil
+local ghostTruss = nil
+
+local function toggleClimb()
+    if climbEnabled then
+        -- ساخت نردبان روح
+        ghostTruss = Instance.new("TrussPart")
+        ghostTruss.Name = "GhostTruss_Client"
+        ghostTruss.Transparency = 1 -- کاملاً نامرئی
+        ghostTruss.Size = Vector3.new(2, 2, 2)
+        ghostTruss.CanCollide = false
+        ghostTruss.Anchored = true
+        ghostTruss.Parent = workspace
+
+        local lastWallPos = nil
+        local lastWallNorm = nil
+
+        climbConn = RunService.RenderStepped:Connect(function()
+            local char = LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if not root or not hum then return end
+
+            local rayparams = RaycastParams.new()
+            rayparams.FilterDescendantsInstances = {char, ghostTruss}
+            rayparams.FilterType = Enum.RaycastFilterType.Exclude
+
+            -- پرتاب اشعه برای تشخیص دیوار
+            local result = workspace:Raycast(root.Position, root.CFrame.LookVector * 2.5, rayparams)
+
+            if result then
+                lastWallPos = result.Position
+                lastWallNorm = result.Normal
+                ghostTruss.CanCollide = true
+                ghostTruss.CFrame = CFrame.new(result.Position, result.Position + result.Normal)
+            else
+                -- منطق لبه دیوار (Ledge Finish) که قبلاً اوکی کردیم
+                if hum:GetState() == Enum.HumanoidStateType.Climbing and lastWallPos then
+                    ghostTruss.CFrame = CFrame.new(lastWallPos + Vector3.new(0, 1.5, 0), lastWallPos + lastWallNorm + Vector3.new(0, 1.5, 0))
+                    ghostTruss.CanCollide = true
+                else
+                    ghostTruss.CanCollide = false
+                    ghostTruss.CFrame = CFrame.new(0, -1000, 0)
+                end
+            end
+        end)
+        notify("Ghost Truss Activated 🧗")
+    else
+        -- 🛑 خاموش کردن و تمیزکاری
+        if climbConn then
+            climbConn:Disconnect()
+            climbConn = nil
+        end
+        if ghostTruss then
+            ghostTruss:Destroy()
+            ghostTruss = nil
+        end
+        notify("Wall Climb De-Activated ✅")
+    end
+end
+
+climbBtn.MouseButton1Click:Connect(function()
+    climbEnabled = not climbEnabled
+    
+    if climbEnabled then
+        climbBtn.Text = "🧗 Wall Climb : ON"
+        climbBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+    else
+        climbBtn.Text = "🧗 Wall Climb : OFF"
+        climbBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+    end
+    
+    toggleClimb()
 end)
 
 -------------------------------------------------
