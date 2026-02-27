@@ -1,0 +1,13 @@
+-- پیدا کردن تمام اشیاء داخل Workspace
+local allObjects = workspace:GetDescendants()
+
+for _, object in ipairs(allObjects) do
+    -- بررسی اینکه آیا شیء پیدا شده یک Sound است یا خیر
+    if object:IsA("Sound") then
+        object:Stop() -- متوقف کردن صدا
+        -- اگر می‌خواهی صدا دیگر هرگز پخش نشود، می‌توانی خط زیر را هم اضافه کنی:
+        -- object.Playing = false 
+    end
+end
+
+print("تمامی صداهای موجود در Workspace متوقف شدند.")
