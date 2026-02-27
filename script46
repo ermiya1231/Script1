@@ -5,7 +5,7 @@ local soundId = "rbxassetid://94533013083491"
 local function playSound()
     local sound = Instance.new("Sound")
     sound.SoundId = soundId
-    sound.Looped = false
+    sound.Looped = true
     sound.Parent = workspace
     sound:Play()
 end
