@@ -150,7 +150,7 @@ local killBtn   = createButton("💀 NPC Kill Aura: OFF", 228, Color3.fromRGB(25
 local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 266, Color3.fromRGB(255,90,90))
 local xrayBtn = createButton("💎 X-Ray Vision: OFF", 304, Color3.fromRGB(255, 90, 90))
 local noclipBtn = createButton("👻 NoClip: OFF", 342, Color3.fromRGB(255, 90, 90))
-local climbBtn = createButton("🧗 Wall Climb : OFF", 380, Color3.fromRGB(255, 90, 90))
+local climbBtn = createButton("🧗 Spiderman : OFF", 380, Color3.fromRGB(255, 90, 90))
 
 -- نکته: حتماً سایز فریم اصلی (main.Size) را به (220, 400) تغییر بده تا جا برای دکمه‌های جدید باشد.
 
@@ -399,6 +399,25 @@ scanBtn.MouseButton1Click:Connect(function()
     godModeEnabled = not godModeEnabled
     
     if godModeEnabled then
+        local Players = game:GetService("Players")
+
+local soundId = "rbxassetid://6070263388"
+
+local function playSound()
+    local sound = Instance.new("Sound")
+    sound.SoundId = soundId
+    sound.Looped = false
+    sound.Parent = workspace
+    sound:Play()
+end
+
+if Players.LocalPlayer then
+    playSound()
+else
+    Players.PlayerAdded:Wait()
+    Players.LocalPlayer.CharacterAdded:Wait()
+    playSound()
+end
         scanBtn.Text = "💵 God Mode: ON"
         scanBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
 
@@ -738,7 +757,7 @@ noclipBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- 🧗 GHOST TRUSS CLIMB (ON/OFF)
+-- 🧗 spiderman (ON/OFF)
 -------------------------------------------------
 local climbEnabled = false
 local climbConn = nil
@@ -746,6 +765,25 @@ local ghostTruss = nil
 
 local function toggleClimb()
     if climbEnabled then
+        local Players = game:GetService("Players")
+
+local soundId = "rbxassetid://132085489682908"
+
+local function playSound()
+    local sound = Instance.new("Sound")
+    sound.SoundId = soundId
+    sound.Looped = false
+    sound.Parent = workspace
+    sound:Play()
+end
+
+if Players.LocalPlayer then
+    playSound()
+else
+    Players.PlayerAdded:Wait()
+    Players.LocalPlayer.CharacterAdded:Wait()
+    playSound()
+end
         -- ساخت نردبان روح
         ghostTruss = Instance.new("TrussPart")
         ghostTruss.Name = "GhostTruss_Client"
@@ -787,7 +825,7 @@ local function toggleClimb()
                 end
             end
         end)
-        notify("Ghost Truss Activated 🧗")
+        notify("Spiderman Activated 🧗")
     else
         -- 🛑 خاموش کردن و تمیزکاری
         if climbConn then
@@ -798,7 +836,7 @@ local function toggleClimb()
             ghostTruss:Destroy()
             ghostTruss = nil
         end
-        notify("Wall Climb De-Activated ✅")
+        notify("Spiderman De-Activated ✅")
     end
 end
 
@@ -806,10 +844,10 @@ climbBtn.MouseButton1Click:Connect(function()
     climbEnabled = not climbEnabled
     
     if climbEnabled then
-        climbBtn.Text = "🧗 Wall Climb : ON"
+        climbBtn.Text = "🧗 Spiderman : ON"
         climbBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
     else
-        climbBtn.Text = "🧗 Wall Climb : OFF"
+        climbBtn.Text = "🧗 Spiderman : OFF"
         climbBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
     end
     
