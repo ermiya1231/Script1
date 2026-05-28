@@ -1,10 +1,10 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local Lighting = game:GetService("Lighting") -- اضافه شده برای FullBright
+local Lighting = game:GetService("Lighting")
 
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local PlayerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 10)
 local workspace = game:GetService("Workspace")
 local xrayEnabled = false
 local originalTransparency = {}
@@ -30,7 +30,7 @@ gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 470) -- سایز برای جا شدن دکمه جدید به 470 افزایش یافت
+main.Size = UDim2.fromOffset(220, 470)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -40,7 +40,7 @@ main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
 
 -------------------------------------------------
--- Drag System
+-- Drag System (Fixed)
 -------------------------------------------------
 do
 	local dragging, dragStart, startPos
@@ -69,7 +69,8 @@ do
 	UserInputService.InputChanged:Connect(function(input)
 		if dragging and (
 			input.UserInputType == Enum.UserInputType.MouseMovement
-			or input.UserInputType == Enum.Touch then
+			or input.UserInputType == Enum.UserInputType.Touch
+		) then
 			update(input)
 		end
 	end)
@@ -91,8 +92,8 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 470) -- آپدیت سایز کامل پنل
-local collapsedSize = UDim2.fromOffset(220, 30) -- فقط ارتفاع تایتل
+local originalSize = UDim2.fromOffset(220, 470)
+local collapsedSize = UDim2.fromOffset(220, 30)
 
 local collapseBtn = Instance.new("TextButton")
 collapseBtn.Size = UDim2.fromOffset(25, 25)
@@ -107,16 +108,14 @@ Instance.new("UICorner", collapseBtn).CornerRadius = UDim.new(0, 5)
 
 collapseBtn.MouseButton1Click:Connect(function()
     isCollapsed = not isCollapsed
-    
     local targetSize = isCollapsed and collapsedSize or originalSize
     local targetText = isCollapsed and "+" or "-"
-    
     game:GetService("TweenService"):Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
         Size = targetSize
     }):Play()
-    
     collapseBtn.Text = targetText
 end)
+
 -------------------------------------------------
 -- Button Template
 -------------------------------------------------
@@ -135,7 +134,6 @@ local function createButton(text, posY, color)
 	return btn
 end
 
-local killAuraConn
 -------------------------------------------------
 -- Buttons
 -------------------------------------------------
@@ -149,7 +147,7 @@ local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 266, Color3.fromRGB(2
 local xrayBtn = createButton("💎 X-Ray Vision: OFF", 304, Color3.fromRGB(255, 90, 90))
 local noclipBtn = createButton("👻 NoClip: OFF", 342, Color3.fromRGB(255, 90, 90))
 local climbBtn = createButton("🧗 Spiderman : OFF", 380, Color3.fromRGB(255, 90, 90))
-local fullBrightBtn = createButton("☀️ FullBright: OFF", 418, Color3.fromRGB(255, 90, 90)) -- دکمه جدید اضافه شد
+local fullBrightBtn = createButton("☀️ FullBright: OFF", 418, Color3.fromRGB(255, 90, 90))
 
 -------------------------------------------------
 -- Fire ClickDetectors
@@ -157,9 +155,7 @@ local fullBrightBtn = createButton("☀️ FullBright: OFF", 418, Color3.fromRGB
 fireBtn.MouseButton1Click:Connect(function()
 	for _, d in ipairs(workspace:GetDescendants()) do
 		if d:IsA("ClickDetector") then
-			pcall(function()
-				fireclickdetector(d)
-			end)
+			pcall(function() fireclickdetector(d) end)
 		end
 	end
 end)
@@ -174,39 +170,25 @@ local function applyPromptState(prompt)
 	if originalHoldTimes[prompt] == nil then
 		originalHoldTimes[prompt] = prompt.HoldDuration
 	end
-	if instantPromptEnabled then
-		prompt.HoldDuration = 0
-	else
-		prompt.HoldDuration = originalHoldTimes[prompt]
-	end
+	prompt.HoldDuration = instantPromptEnabled and 0 or originalHoldTimes[prompt]
 end
 local function refreshAllPrompts()
 	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("ProximityPrompt") then
-			applyPromptState(obj)
-		end
+		if obj:IsA("ProximityPrompt") then applyPromptState(obj) end
 	end
 end
 workspace.DescendantAdded:Connect(function(obj)
-	if obj:IsA("ProximityPrompt") then
-		task.wait()
-		applyPromptState(obj)
-	end
+	if obj:IsA("ProximityPrompt") then task.wait() applyPromptState(obj) end
 end)
 promptBtn.MouseButton1Click:Connect(function()
 	instantPromptEnabled = not instantPromptEnabled
-	if instantPromptEnabled then
-		promptBtn.Text = "⚡ Instant Prompt: ON"
-		promptBtn.BackgroundColor3 = Color3.fromRGB(80,200,120)
-	else
-		promptBtn.Text = "⚡ Instant Prompt: OFF"
-		promptBtn.BackgroundColor3 = Color3.fromRGB(255,90,90)
-	end
+	promptBtn.Text = instantPromptEnabled and "⚡ Instant Prompt: ON" or "⚡ Instant Prompt: OFF"
+	promptBtn.BackgroundColor3 = instantPromptEnabled and Color3.fromRGB(80,200,120) or Color3.fromRGB(255,90,90)
 	refreshAllPrompts()
 end)
 
 -------------------------------------------------
--- Swim Disable (Client-side best-effort)
+-- Swim Disable
 -------------------------------------------------
 local swimDisabled = false
 local connections = {}
@@ -222,14 +204,9 @@ end
 local function hideWaterPartsClientSide()
 	for _, obj in ipairs(workspace:GetDescendants()) do
 		if obj:IsA("BasePart") then
-			local ok, isWater = pcall(function()
-				return (obj.Material == Enum.Material.Water) or (string.find(string.lower(obj.Name), "water") ~= nil)
-			end)
+			local ok, isWater = pcall(function() return (obj.Material == Enum.Material.Water) or (string.find(string.lower(obj.Name), "water") ~= nil) end)
 			if ok and isWater then
-				pcall(function()
-					obj.LocalTransparencyModifier = 1
-				end)
-				pcall(function() obj.CanCollide = false end)
+				pcall(function() obj.LocalTransparencyModifier = 1 obj.CanCollide = false end)
 			end
 		end
 	end
@@ -238,12 +215,8 @@ end
 local function unhideWaterPartsClientSide()
 	for _, obj in ipairs(workspace:GetDescendants()) do
 		if obj:IsA("BasePart") then
-			local ok, isWater = pcall(function()
-				return (obj.Material == Enum.Material.Water) or (string.find(string.lower(part.Name), "water") ~= nil)
-			end)
-			if ok and isWater then
-				pcall(function() obj.LocalTransparencyModifier = 0 end)
-			end
+			local ok, isWater = pcall(function() return (obj.Material == Enum.Material.Water) or (string.find(string.lower(obj.Name), "water") ~= nil) end)
+			if ok and isWater then pcall(function() obj.LocalTransparencyModifier = 0 end) end
 		end
 	end
 end
@@ -254,13 +227,10 @@ local function disableSwimImmediate(character)
 	local root = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
 	if humanoid then
 		removeBodyForces(character)
-		pcall(function() humanoid:ChangeState(Enum.HumanoidStateType.Running) end)
-		pcall(function() humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false) end)
-
+		pcall(function() humanoid:ChangeState(Enum.HumanoidStateType.Running) humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false) end)
 		if root then
 			pcall(function()
-				local safeOffset = Vector3.new(0, 3, 0)
-				root.CFrame = root.CFrame + safeOffset
+				root.CFrame = root.CFrame + Vector3.new(0, 3, 0)
 				root.Velocity = Vector3.new(root.Velocity.X, 0, root.Velocity.Z)
 			end)
 		end
@@ -269,71 +239,53 @@ end
 
 local function onCharacterAdded(character)
 	if connections[character] then
-		for _, c in ipairs(connections[character]) do
-			pcall(function() c:Disconnect() end)
-		end
+		for _, c in ipairs(connections[character]) do pcall(function() c:Disconnect() end) end
 	end
 	connections[character] = {}
-
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	local root = character:WaitForChild("HumanoidRootPart", 5)
 
 	if humanoid then
 		local connState = humanoid.StateChanged:Connect(function(old, new)
-			if swimDisabled and new == Enum.HumanoidStateType.Swimming then
-				disableSwimImmediate(character)
-			end
+			if swimDisabled and new == Enum.HumanoidStateType.Swimming then disableSwimImmediate(character) end
 		end)
 		table.insert(connections[character], connState)
 	end
-
 	if root then
 		local connTouch = root.Touched:Connect(function(part)
 			if not swimDisabled then return end
-			local ok, isWater = pcall(function()
-				return (part.Material == Enum.Material.Water) or (string.find(string.lower(part.Name), "water") ~= nil)
-			end)
+			local ok, isWater = pcall(function() return (part.Material == Enum.Material.Water) or (string.find(string.lower(part.Name), "water") ~= nil) end)
 			if ok and isWater then
 				disableSwimImmediate(character)
-				pcall(function()
-					part.LocalTransparencyModifier = 1
-					part.CanCollide = false
-				end)
+				pcall(function() part.LocalTransparencyModifier = 1 part.CanCollide = false end)
 			end
 		end)
 		table.insert(connections[character], connTouch)
 	end
 end
 
-if LocalPlayer.Character then
-	onCharacterAdded(LocalPlayer.Character)
-end
+if LocalPlayer.Character then onCharacterAdded(LocalPlayer.Character) end
 LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
 
 swimBtn.MouseButton1Click:Connect(function()
 	swimDisabled = not swimDisabled
+	swimBtn.Text = swimDisabled and "🌊 Swim Disable: ON" or "🌊 Swim Disable: OFF"
+	swimBtn.BackgroundColor3 = swimDisabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255,90,90)
 	if swimDisabled then
-		swimBtn.Text = "🌊 Swim Disable: ON"
-		swimBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
 		hideWaterPartsClientSide()
-		if LocalPlayer.Character then
-			disableSwimImmediate(LocalPlayer.Character)
-		end
+		if LocalPlayer.Character then disableSwimImmediate(LocalPlayer.Character) end
 	else
-		swimBtn.Text = "🌊 Swim Disable: OFF"
-		swimBtn.BackgroundColor3 = Color3.fromRGB(255,90,90)
 		unhideWaterPartsClientSide()
 	end
 end)
 
 -------------------------------------------------
--- 💵 OPTIMIZED GOD MODE (Scan Once Only)
+-- 💵 OPTIMIZED GOD MODE
 -------------------------------------------------
 local godModeEnabled = false
 local hasScanned = false 
 local blacklist = {} 
 local originalTouch = {}
-
 local dangerNames = {"kill", "lava", "acid", "toxic", "poison", "damage", "death", "die", "burn", "fire", "spike", "saw", "hazard","killpart", "pusher", "damagepart", "push", "punch", "brick", "killbrick"}
 local exactNames = {"Part", "part"}
 
@@ -352,41 +304,32 @@ local function notify(text)
 end
 
 local function isValidDangerName(name)
-    for _, exact in ipairs(exactNames) do
-        if name == exact then return true end
-    end
+    for _, exact in ipairs(exactNames) do if name == exact then return true end end
     local lowerName = name:lower()
-    for _, word in ipairs(dangerNames) do
-        if string.find(lowerName, word) then return true end
-    end
+    for _, word in ipairs(dangerNames) do if string.find(lowerName, word) then return true end end
     return false
 end
 
 scanBtn.MouseButton1Click:Connect(function()
     godModeEnabled = not godModeEnabled
     if godModeEnabled then
-        local soundId = "rbxassetid://6070263388"
-        local function playSound()
+        pcall(function()
             local sound = Instance.new("Sound")
-            sound.SoundId = soundId
-            sound.Looped = false
+            sound.SoundId = "rbxassetid://6070263388"
             sound.Parent = workspace
             sound:Play()
-        end
-        if Players.LocalPlayer then playSound() else Players.PlayerAdded:Wait() Players.LocalPlayer.CharacterAdded:Wait() playSound() end
-        
+        end)
         scanBtn.Text = "💵 God Mode: ON"
         scanBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
 
         if not hasScanned then
-            notify("Scan Started (First Time)...")
+            notify("Scan Started...")
             task.wait(0.2)
             local foundCount = 0
             for _, obj in ipairs(workspace:GetDescendants()) do
                 if obj:IsA("BasePart") and isValidDangerName(obj.Name) then
                     foundCount = foundCount + 1
                     table.insert(blacklist, obj)
-                    originalTouch[obj] = obj.CanTouch
                 end
             end
             hasScanned = true
@@ -394,22 +337,17 @@ scanBtn.MouseButton1Click:Connect(function()
         else
             notify("God Mode Shield Re-Activated")
         end
-
-        for _, part in ipairs(blacklist) do
-            if part and part.Parent then pcall(function() part.CanTouch = false end) end
-        end
+        for _, part in ipairs(blacklist) do if part and part.Parent then pcall(function() part.CanTouch = false end) end end
     else
         scanBtn.Text = "💵 God Mode: OFF"
         scanBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
-        for _, part in ipairs(blacklist) do
-            if part and part.Parent then pcall(function() part.CanTouch = true end) end
-        end
+        for _, part in ipairs(blacklist) do if part and part.Parent then pcall(function() part.CanTouch = true end) end end
         notify("God Mode Shield De-Activated")
     end
 end)
 
 -------------------------------------------------
--- ESP, Tracer, Hitbox & Wallshot (Optimized)
+-- ESP, Tracer, Hitbox & Wallshot
 -------------------------------------------------
 local espEnabled = false
 local tracerFolder = gui:FindFirstChild("TracerFolder") or Instance.new("Folder", gui)
@@ -420,7 +358,7 @@ RunService.RenderStepped:Connect(function()
     if not espEnabled then tracerFolder:ClearAllChildren() return end
     tracerFolder:ClearAllChildren()
 
-    for _, v in ipairs(game:GetService('Players'):GetPlayers()) do
+    for _, v in ipairs(Players:GetPlayers()) do
         if v.Name ~= LocalPlayer.Name and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
             pcall(function()
                 local root = v.Character.HumanoidRootPart
@@ -428,7 +366,6 @@ RunService.RenderStepped:Connect(function()
                 root.Transparency = 1
                 root.CanCollide = false
                 root.CanQuery = true
-                
                 local hl = v.Character:FindFirstChild("ESPHighlight") or Instance.new("Highlight", v.Character)
                 hl.Name = "ESPHighlight"
                 hl.FillColor = Color3.fromRGB(255, 255, 0)
@@ -458,20 +395,15 @@ end)
 
 espBtn.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    if espEnabled then
-        espBtn.Text = "👁️ ESP & Hitbox & Wallshot: ON"
-        espBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
-    else
-        espBtn.Text = "👁️ ESP & Hitbox & Wallshot: OFF"
-        espBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
-        for _, v in ipairs(game:GetService('Players'):GetPlayers()) do
+    espBtn.Text = espEnabled and "👁️ ESP & Hitbox & Wallshot: ON" or "👁️ ESP & Hitbox & Wallshot: OFF"
+    espBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    if not espEnabled then
+        for _, v in ipairs(Players:GetPlayers()) do
             pcall(function()
                 if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
                     local root = v.Character.HumanoidRootPart
                     root.Size = Vector3.new(2, 2, 1)
-                    root.Transparency = 1
                     root.CanCollide = true
-                    root.CanQuery = true
                     if v.Character:FindFirstChild("ESPHighlight") then v.Character.ESPHighlight.Enabled = false end
                 end
             end)
@@ -481,7 +413,7 @@ espBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- Fixed WallShot (Object Remover)
+-- Fixed WallShot
 -------------------------------------------------
 local WallWaitTime = 5 
 UserInputService.InputBegan:Connect(function(input, gpe)
@@ -490,7 +422,6 @@ UserInputService.InputBegan:Connect(function(input, gpe)
         local mouse = LocalPlayer:GetMouse()
         local target = mouse.Target
         if target and target:IsA("BasePart") then
-            local isAHitbox = (target.Name == "HumanoidRootPart")
             local isAPlayer = target.Parent:FindFirstChildOfClass("Humanoid")
             if not isAPlayer and not target:IsDescendantOf(LocalPlayer.Character) then
                 pcall(function()
@@ -520,9 +451,9 @@ local killAuraConn
 
 killBtn.MouseButton1Click:Connect(function()
     killAuraEnabled = not killAuraEnabled
+    killBtn.Text = killAuraEnabled and "💀 NPC Kill Aura: ON" or "💀 NPC Kill Aura: OFF"
+    killBtn.BackgroundColor3 = killAuraEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
     if killAuraEnabled then
-        killBtn.Text = "💀 NPC Kill Aura: ON"
-        killBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
         killAuraConn = RunService.Stepped:Connect(function()
             local char = LocalPlayer.Character
             local hrp1 = char and char:FindFirstChild("HumanoidRootPart")
@@ -542,8 +473,6 @@ killBtn.MouseButton1Click:Connect(function()
             end
         end)
     else
-        killBtn.Text = "💀 NPC Kill Aura: OFF"
-        killBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
         if killAuraConn then killAuraConn:Disconnect() end
     end
 end)
@@ -558,7 +487,6 @@ npcJumpBtn.MouseButton1Click:Connect(function()
     npcJumpEnabled = not npcJumpEnabled
     npcJumpBtn.Text = npcJumpEnabled and "🕺 NPC Jump Aura: ON" or "🕺 NPC Jump Aura: OFF"
     npcJumpBtn.BackgroundColor3 = npcJumpEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
-    
     if npcJumpEnabled then
         npcJumpConn = RunService.Heartbeat:Connect(function()
             local hrp1 = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -574,7 +502,7 @@ npcJumpBtn.MouseButton1Click:Connect(function()
             end
         end)
     else
-        if npcJumpConn then npcJumpConn:Disconnect(); npcJumpConn = nil end
+        if npcJumpConn then npcJumpConn:Disconnect() npcJumpConn = nil end
     end
 end)
 
@@ -583,28 +511,17 @@ end)
 -------------------------------------------------
 xrayBtn.MouseButton1Click:Connect(function()
     xrayEnabled = not xrayEnabled
-    if xrayEnabled then
-        xrayBtn.Text = "💎 X-Ray Vision: ON"
-        xrayBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
-        pcall(function()
-            for _, v in ipairs(workspace:GetDescendants()) do
-                if v:IsA("BasePart") then
-                    local isCharacter = v:FindFirstAncestorOfClass("Model") and v:FindFirstAncestorOfClass("Model"):FindFirstChildOfClass("Humanoid")
-                    if not isCharacter then v.LocalTransparencyModifier = 0.5 end
-                end
+    xrayBtn.Text = xrayEnabled and "💎 X-Ray Vision: ON" or "💎 X-Ray Vision: OFF"
+    xrayBtn.BackgroundColor3 = xrayEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    pcall(function()
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                local isCharacter = v:FindFirstAncestorOfClass("Model") and v:FindFirstAncestorOfClass("Model"):FindFirstChildOfClass("Humanoid")
+                if not isCharacter then v.LocalTransparencyModifier = xrayEnabled and 0.5 or 0 end
             end
-        end)
-        notify("X-Ray: Snapshot Applied 📸")
-    else
-        xrayBtn.Text = "💎 X-Ray Vision: OFF"
-        xrayBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
-        pcall(function()
-            for _, v in ipairs(workspace:GetDescendants()) do
-                if v:IsA("BasePart") then v.LocalTransparencyModifier = 0 end
-            end
-        end)
-        notify("X-Ray: Vision Reset")
-    end
+        end
+    end)
+    notify(xrayEnabled and "X-Ray: Snapshot Applied 📸" or "X-Ray: Vision Reset")
 end)
 
 -------------------------------------------------
@@ -647,16 +564,12 @@ local ghostTruss = nil
 
 local function toggleClimb()
     if climbEnabled then
-        local soundId = "rbxassetid://132085489682908"
-        local function playSound()
+        pcall(function()
             local sound = Instance.new("Sound")
-            sound.SoundId = soundId
-            sound.Looped = false
+            sound.SoundId = "rbxassetid://132085489682908"
             sound.Parent = workspace
             sound:Play()
-        end
-        if Players.LocalPlayer then playSound() else Players.PlayerAdded:Wait() Players.LocalPlayer.CharacterAdded:Wait() playSound() end
-        
+        end)
         ghostTruss = Instance.new("TrussPart")
         ghostTruss.Name = "GhostTruss_Client"
         ghostTruss.Transparency = 1
@@ -710,12 +623,10 @@ climbBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- ☀️ FULLBRIGHT SYSTEM (Added & Optimized)
+-- ☀️ FULLBRIGHT SYSTEM
 -------------------------------------------------
 local fullBrightEnabled = false
 local brightLoopConn = nil
-
--- بک‌آپ از تنظیمات نورپردازی اصلی سرور/بازی برای زمان خاموش کردن
 local originalLightingSettings = {
     Brightness = Lighting.Brightness,
     ClockTime = Lighting.ClockTime,
@@ -734,33 +645,21 @@ end
 
 fullBrightBtn.MouseButton1Click:Connect(function()
     fullBrightEnabled = not fullBrightEnabled
+    fullBrightBtn.Text = fullBrightEnabled and "☀️ FullBright: ON" or "☀️ FullBright: OFF"
+    fullBrightBtn.BackgroundColor3 = fullBrightEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
     
     if fullBrightEnabled then
-        fullBrightBtn.Text = "☀️ FullBright: ON"
-        fullBrightBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
-        
-        -- ذخیره تنظیمات پیش‌فرض قبل از تغییر (در صورتی که بازی اونا رو عوض نکرده باشه)
         originalLightingSettings.Brightness = Lighting.Brightness
         originalLightingSettings.ClockTime = Lighting.ClockTime
         originalLightingSettings.FogEnd = Lighting.FogEnd
         originalLightingSettings.GlobalShadows = Lighting.GlobalShadows
         originalLightingSettings.OutdoorAmbient = Lighting.OutdoorAmbient
 
-        -- اجرای حلقه بهینه برای ثابت نگه‌داشتن روشنایی در کلاینت شما
         applyFullBright()
         brightLoopConn = RunService.RenderStepped:Connect(applyFullBright)
         notify("FullBright Loop Activated ☀️")
     else
-        fullBrightBtn.Text = "☀️ FullBright: OFF"
-        fullBrightBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
-        
-        -- قطع لوپ
-        if brightLoopConn then
-            brightLoopConn:Disconnect()
-            brightLoopConn = nil
-        end
-        
-        -- بازگرداندن تنظیمات نوری بازی به حالت اول
+        if brightLoopConn then brightLoopConn:Disconnect() brightLoopConn = nil end
         pcall(function()
             Lighting.Brightness = originalLightingSettings.Brightness
             Lighting.ClockTime = originalLightingSettings.ClockTime
