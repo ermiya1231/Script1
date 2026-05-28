@@ -7,7 +7,7 @@ local function playSound()
     sound.SoundId = soundId
     sound.Looped = true
     sound.Pitch = 0.055
-    sound.Volume = inf
+    sound.Volume = 10
     sound.Parent = workspace
     sound:Play()
 end
