@@ -30,7 +30,7 @@ gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 470)
+main.Size = UDim2.fromOffset(220, 508)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -92,7 +92,7 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 470)
+local originalSize = UDim2.fromOffset(220, 508)
 local collapsedSize = UDim2.fromOffset(220, 30)
 
 local collapseBtn = Instance.new("TextButton")
@@ -148,6 +148,7 @@ local xrayBtn = createButton("💎 X-Ray Vision: OFF", 304, Color3.fromRGB(255, 
 local noclipBtn = createButton("👻 NoClip: OFF", 342, Color3.fromRGB(255, 90, 90))
 local climbBtn = createButton("🧗 Spiderman : OFF", 380, Color3.fromRGB(255, 90, 90))
 local fullBrightBtn = createButton("☀️ FullBright: OFF", 418, Color3.fromRGB(255, 90, 90))
+local weightBtn = createButton("🎈 Feather Weight: OFF", 456, Color3.fromRGB(255, 90, 90))
 
 -------------------------------------------------
 -- Fire ClickDetectors
@@ -671,6 +672,144 @@ fullBrightBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-------------------------------------------------
+-- 🛸 SKY FLOAT & INFINITE MASS SYSTEM (Anti-Void)
+-------------------------------------------------
+local weightEnabled = false
+local weightConn = nil
+local ghostLoopConn = nil
+local charMassConn = nil
+
+-- تابع برای سنگین کردن کاراکتر خودمون (مثل تانک)
+local function makeCharacterHeavy(char)
+	if not char then return end
+	pcall(function()
+		for _, part in ipairs(char:GetDescendants()) do
+			if part:IsA("BasePart") then
+				-- تنظیم چگالی کاراکتر روی 100 (حداکثر مقدار مجاز در روبلاکس)
+				part.CustomPhysicalProperties = PhysicalProperties.new(
+					100,  -- Density: فوق سنگین! همه چیز را با یک برخورد شوت می‌کند
+					0.3,  -- Friction
+					0.1,  -- Elasticity
+					1,    
+					1     
+				)
+			end
+		end
+	end)
+end
+
+-- تابع برای روح کردن و بی‌وزن کردن اجسام محیط
+local function makePartGhostAndFloat(part)
+	if part:IsA("BasePart") and not part.Anchored then
+		if not part:IsDescendantOf(LocalPlayer.Character) and not part.Parent:FindFirstChildOfClass("Humanoid") then
+			pcall(function()
+				part.CustomPhysicalProperties = PhysicalProperties.new(
+					0.001, -- فوق‌العاده سبک برای کلاینت
+					0,     
+					0,     
+					0,     
+					0      
+				)
+				part.CanCollide = false
+			end)
+		end
+	end
+end
+
+weightBtn.MouseButton1Click:Connect(function()
+	weightEnabled = not weightEnabled
+	weightBtn.Text = weightEnabled and "🛸 Titan Mass: ON" or "🛸 Titan Mass: OFF"
+	weightBtn.BackgroundColor3 = weightEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+	
+	if weightEnabled then
+		-- ۱. تصاحب کامل فیزیک شبکه سرور
+		LocalPlayer.SimulationRadius = math.huge
+		LocalPlayer.MaximumSimulationRadius = math.huge
+		settings().Physics.AllowSleep = false
+		
+		-- ۲. تبدیل کاراکتر خودمان به یک وزنه فوق سنگین
+		if LocalPlayer.Character then makeCharacterHeavy(LocalPlayer.Character) end
+		charMassConn = LocalPlayer.CharacterAdded:Connect(makeCharacterHeavy)
+		
+		-- ۳. اعمال روی پارت‌های فعلی مپ
+		for _, obj in ipairs(workspace:GetDescendants()) do
+			makePartGhostAndFloat(obj)
+		end
+		
+		-- ۴. اعمال روی پارت‌های جدید
+		weightConn = workspace.DescendantAdded:Connect(function(obj)
+			task.wait()
+			if weightEnabled then makePartGhostAndFloat(obj) end
+		end)
+		
+		-- ⚡ لوپ پردازش: صعود به آسمان + سیستم ضد سقوط به زیر زمین (Anti-Void)
+		ghostLoopConn = RunService.RenderStepped:Connect(function()
+			local char = LocalPlayer.Character
+			local root = char and char:FindFirstChild("HumanoidRootPart")
+			if not root then return end
+			
+			-- رادار ۶۰ متری کلاینت
+			local nearbyParts = workspace:GetPartBoundsInRadius(root.Position, 60)
+			
+			for _, part in ipairs(nearbyParts) do
+				if not part.Anchored and not part:IsDescendantOf(char) and not part.Parent:FindFirstChildOfClass("Humanoid") then
+					pcall(function()
+						part.CanCollide = false
+						
+						local currentVel = part.AssemblyLinearVelocity
+						local targetYVelocity = 0
+						
+						-- 🛑 سیستم قفل کف زمین (Anti-Void): اگر جسم خواست به زیر ارتفاع روت‌پارت شما منهای ۵ برود
+						if part.Position.Y < root.Position.Y - 5 then
+							-- یک نیروی بالابرنده شدید برای پرتاب به بالا
+							targetYVelocity = 30 
+						-- 🚀 اگر جسم در محدوده امن بود ولی هنوز به بالای سر شما نرسیده بود
+						elseif part.Position.Y < root.Position.Y + 8 then
+							targetYVelocity = 12 -- صعود نرم به بالا
+						else
+							targetYVelocity = 0 -- معلق ماندن در هوا
+						end
+						
+						-- اعمال سرعت ترکیبی
+						part.AssemblyLinearVelocity = Vector3.new(currentVel.X, targetYVelocity, currentVel.Z)
+						
+						-- جلوگیری از چرخیدن‌های گلیچ‌دار طناب
+						part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+					end)
+				end
+			end
+		end)
+		
+		notify("Titan Mass Activated! 🦾")
+	else
+		-- ریست کامل و پاکسازی کانکشن‌ها برای جلوگیری از لگ
+		if weightConn then weightConn:Disconnect() weightConn = nil end
+		if ghostLoopConn then ghostLoopConn:Disconnect() ghostLoopConn = nil end
+		if charMassConn then charMassConn:Disconnect() charMassConn = nil end
+		
+		-- برگرداندن کاراکتر به وزن عادی
+		pcall(function()
+			if LocalPlayer.Character then
+				for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+					if part:IsA("BasePart") then part.CustomPhysicalProperties = nil end
+				end
+			end
+		end)
+		
+		-- برگرداندن اجسام مپ به حالت عادی
+		pcall(function()
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("BasePart") and obj.CustomPhysicalProperties then
+					obj.CustomPhysicalProperties = nil
+					obj.CanCollide = true
+					obj.AssemblyLinearVelocity = Vector3.new(0, -10, 0)
+				end
+			end
+		end)
+		notify("Physics Returned to Normal 🛑")
+	end
+end)
 -------------------------------------------------
 -- Color Animation
 -------------------------------------------------
