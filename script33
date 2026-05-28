@@ -148,7 +148,7 @@ local xrayBtn = createButton("💎 X-Ray Vision: OFF", 304, Color3.fromRGB(255, 
 local noclipBtn = createButton("👻 NoClip: OFF", 342, Color3.fromRGB(255, 90, 90))
 local climbBtn = createButton("🧗 Spiderman : OFF", 380, Color3.fromRGB(255, 90, 90))
 local fullBrightBtn = createButton("☀️ FullBright: OFF", 418, Color3.fromRGB(255, 90, 90))
-local weightBtn = createButton("🎈 Feather Weight: OFF", 456, Color3.fromRGB(255, 90, 90))
+local weightBtn = createButton("🛸 Titan Mass:: OFF", 456, Color3.fromRGB(255, 90, 90))
 
 -------------------------------------------------
 -- Fire ClickDetectors
