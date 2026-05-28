@@ -24,11 +24,13 @@ end
 -------------------------------------------------
 -- GUI Create
 -------------------------------------------------
-local CoreGui = game:GetService("CoreGui")
+-- تشخیص خودکار مسیر امن برای اگزکتور
+local targetParent = (typeof(gethui) == "function" and gethui()) or game:GetService("CoreGui")
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "ProClickGUI"
 gui.ResetOnSpawn = false
-gui.Parent = PlayerGui
+gui.Parent = targetParent -- تغییر یافت به مسیر جدید
 
 local main = Instance.new("Frame")
 main.Size = UDim2.fromOffset(220, 508)
