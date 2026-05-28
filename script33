@@ -33,7 +33,7 @@ gui.ResetOnSpawn = false
 gui.Parent = targetParent -- تغییر یافت به مسیر جدید
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 508)
+main.Size = UDim2.fromOffset(220, 530)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -95,7 +95,7 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 508)
+local originalSize = UDim2.fromOffset(220, 530)
 local collapsedSize = UDim2.fromOffset(220, 30)
 
 local collapseBtn = Instance.new("TextButton")
@@ -152,6 +152,7 @@ local noclipBtn = createButton("👻 NoClip: OFF", 342, Color3.fromRGB(255, 90, 
 local climbBtn = createButton("🧗 Spiderman : OFF", 380, Color3.fromRGB(255, 90, 90))
 local fullBrightBtn = createButton("☀️ FullBright: OFF", 418, Color3.fromRGB(255, 90, 90))
 local weightBtn = createButton("🛸 Titan Mass:: OFF", 456, Color3.fromRGB(255, 90, 90))
+local touchBtn = createButton("🚫 Disable TouchInterest: OFF", 494, Color3.fromRGB(255, 90, 90))
 
 -------------------------------------------------
 -- Fire ClickDetectors
@@ -812,6 +813,69 @@ weightBtn.MouseButton1Click:Connect(function()
 		end)
 		notify("Physics Returned to Normal 🛑")
 	end
+end)
+
+-------------------------------------------------
+-- 🚫 OPTIMIZED TOUCHINTEREST BYPASS (Your Logic Fixed)
+-------------------------------------------------
+local touchInterestEnabled = false
+local hasScannedTouch = false 
+local touchBlacklist = {} 
+
+touchBtn.MouseButton1Click:Connect(function()
+    touchInterestEnabled = not touchInterestEnabled
+    if touchInterestEnabled then
+        pcall(function()
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://6070263388"
+            sound.Parent = workspace
+            sound:Play()
+        end)
+        touchBtn.Text = "🚫 Disable TouchInterest: ON"
+        touchBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+
+        if not hasScannedTouch then
+            notify("Touch Scan Started...")
+            task.wait(0.2)
+            local foundCount = 0
+            
+            -- اسکن کل مپ برای پیدا کردن تمام پارت‌های فعال محیط
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") then
+                    -- فیلتر کردن کاراکتر خودمون و بقیه پلیرها/NPCها تا بازی گلیچ نشود
+                    if not obj:IsDescendantOf(LocalPlayer.Character) and not obj.Parent:FindFirstChildOfClass("Humanoid") then
+                        -- فیلتر کردن پارت‌های پس‌زمینه مثل Terrain یا محیط‌های غیرقابل لمس اولیه
+                        if obj.CanTouch == true and obj.Name ~= "Terrain" then
+                            foundCount = foundCount + 1
+                            table.insert(touchBlacklist, obj)
+                        end
+                    end
+                end
+            end
+            hasScannedTouch = true
+            notify("Scan Completed! " .. tostring(foundCount) .. " TouchParts Found")
+        else
+            notify("Touch Shield Re-Activated")
+        end
+        
+        -- خاموش کردن آنی ویژگی CanTouch برای تمام پارت‌های مپ
+        for _, part in ipairs(touchBlacklist) do 
+            if part and part.Parent then 
+                pcall(function() part.CanTouch = false end) 
+            end 
+        end
+    else
+        touchBtn.Text = "🚫 Disable TouchInterest: OFF"
+        touchBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+        
+        -- برگرداندن همه‌چیز به حالت عادی
+        for _, part in ipairs(touchBlacklist) do 
+            if part and part.Parent then 
+                pcall(function() part.CanTouch = true end) 
+            end 
+        end
+        notify("Touch Shield De-Activated")
+    end
 end)
 -------------------------------------------------
 -- Color Animation
