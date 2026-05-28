@@ -1,8 +1,11 @@
 -- Create ScreenGui
+-- تشخیص خودکار مسیر امن برای اگزکتور
+local targetParent = (typeof(gethui) == "function" and gethui()) or game:GetService("CoreGui")
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "LuxuryUI"
 gui.ResetOnSpawn = false
-gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+gui.Parent = targetParent -- تغییر یافت به مسیر جدید
 
 -- Main compact frame (glass style)
 local frame = Instance.new("Frame")
