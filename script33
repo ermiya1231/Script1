@@ -24,6 +24,7 @@ end
 -------------------------------------------------
 -- GUI Create
 -------------------------------------------------
+local CoreGui = game:GetService("CoreGui")
 local gui = Instance.new("ScreenGui")
 gui.Name = "ProClickGUI"
 gui.ResetOnSpawn = false
