@@ -118,7 +118,7 @@ layout.Parent = scroll
 
 local buttonHeight = 28
 local padding = 4
-local buttonCount = 7
+local buttonCount = 8
 scroll.CanvasSize = UDim2.new(0, 0, 0, (buttonHeight + padding) * buttonCount)
 
 -- Function to create buttons
@@ -173,11 +173,15 @@ createButton("Audio6", function()
 loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script60'))()
 end)
 
+createButton("Audio7", function()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script62'))()
+end)
+
 createButton("Stop", function()
 loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/stopsound'))()
 end)
 -- Buttons 8 to 18
-for i = 8, 1 do
+for i = 9, 1 do
     createButton("Button"..i, function()
         -- جای اسکریپت شما
     end)
