@@ -34,7 +34,7 @@ gui.ResetOnSpawn = false
 gui.Parent = targetParent -- تغییر یافت به مسیر جدید
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 530)
+main.Size = UDim2.fromOffset(220, 580)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -96,7 +96,7 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 530)
+local originalSize = UDim2.fromOffset(220, 580)
 local collapsedSize = UDim2.fromOffset(220, 30)
 
 local collapseBtn = Instance.new("TextButton")
@@ -154,6 +154,7 @@ local climbBtn = createButton("🧗 Spiderman : OFF", 380, Color3.fromRGB(255, 9
 local fullBrightBtn = createButton("☀️ FullBright: OFF", 418, Color3.fromRGB(255, 90, 90))
 local weightBtn = createButton("🛸 Titan Mass:: OFF", 456, Color3.fromRGB(255, 90, 90))
 local touchBtn = createButton("🚫 Disable TouchInterest: OFF", 494, Color3.fromRGB(255, 90, 90))
+local wallWalkBtn = createButton("🧗 Walk On Walls: OFF", 532, Color3.fromRGB(255, 90, 90))
 
 -------------------------------------------------
 -- Fire ClickDetectors
@@ -877,6 +878,94 @@ touchBtn.MouseButton1Click:Connect(function()
             end 
         end
         notify("Touch Shield De-Activated")
+    end
+end)
+
+-------------------------------------------------
+-- 🧗 WALK ON WALLS (100% Pure Load + Genius Respawn + ShiftLock Fix)
+-------------------------------------------------
+local wallWalkEnabled = false
+
+wallWalkBtn.MouseButton1Click:Connect(function()
+    wallWalkEnabled = not wallWalkEnabled
+    wallWalkBtn.Text = wallWalkEnabled and "🧗 Walk On Walls: ON" or "🧗 Walk On Walls: OFF"
+    wallWalkBtn.BackgroundColor3 = wallWalkEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    
+    if wallWalkEnabled then
+        pcall(function()
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://132085489682908"
+            sound.Parent = workspace
+            sound:Play()
+        end)
+        notify("Loading Wall Walker Script... 🧗")
+        
+        -- 📥 لود کاملاً خالص و بدون دستکاری سورس گیت‌هاب
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/WallWalk"))()
+        end)
+        
+    else
+        notify("Executing Genius Clean-up... ⚡")
+        
+        pcall(function()
+            -- فورس مکس قطع کردن متغیرهای سراسری وال‌واکر
+            _G.WallWalkerEnabled = false
+            if _G.WallWalk then _G.WallWalk:Disconnect() _G.WallWalk = nil end
+            workspace.Gravity = 196.2
+            
+            local char = LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+            
+            if char and root and humanoid and humanoid.Health > 0 then
+                -- ۱. ذخیره موقعیت دقیق تو (کمی بالاتر برای جلوگیری از باگ زمین)
+                local savedCFrame = root.CFrame * CFrame.new(0, 3, 0)
+                
+                -- ۲. کشتن بازیکن برای پاکسازی کامل کدهای دوربین سایت
+                humanoid.Health = 0
+                notify("Refreshing Character... ⏳")
+                
+                -- ۳. تلپورت و فیکس کردن شیفت‌لاک بلافاصله پس از ریسپاون شدن کاراکتر جدید
+                local characterAddedConn
+                characterAddedConn = LocalPlayer.CharacterAdded:Connect(function(newChar)
+                    local newRoot = newChar:WaitForChild("HumanoidRootPart", 5)
+                    local newHumanoid = newChar:WaitForChild("Humanoid", 5)
+                    
+                    if newRoot and newHumanoid then
+                        task.wait(0.15) -- صبر کوتاه برای پایداری کامل سیستم دوربین روبلاکس
+                        
+                        -- تلپورت به موقعیت قبلی
+                        newRoot.CFrame = savedCFrame
+                        
+                        -- 🔒 فیکس کردن قطعی باگ شیفت‌لاک (Mouse Lock)
+                        pcall(function()
+                            local playerScripts = LocalPlayer:WaitForChild("PlayerScripts", 5)
+                            if playerScripts then
+                                local playerModule = require(playerScripts:WaitForChild("PlayerModule"))
+                                if playerModule then
+                                    local cameraModule = playerModule:GetCameras()
+                                    if cameraModule and cameraModule.activeMouseLockController then
+                                        local mouseLock = cameraModule.activeMouseLockController
+                                        -- ریفرش کردن استیت شیفت‌لاک کلاینت برای همگام‌سازی مجدد با دوربین کاراکتر جدید
+                                        if mouseLock:GetIsMouseLocked() then
+                                            mouseLock:OnMouseLockToggled() -- خاموش کردن موقت
+                                            task.wait(0.05)
+                                            mouseLock:OnMouseLockToggled() -- روشن کردن مجدد برای قفل شدن روی مرکز صفحه
+                                        end
+                                    end
+                                end
+                            end
+                        end)
+                        
+                        notify("Physics & ShiftLock Restored! ✅")
+                    end
+                    characterAddedConn:Disconnect()
+                end)
+            else
+                notify("Error: Character not ready.")
+            end
+        end)
     end
 end)
 -------------------------------------------------
