@@ -829,7 +829,7 @@ touchBtn.MouseButton1Click:Connect(function()
     if touchInterestEnabled then
         pcall(function()
             local sound = Instance.new("Sound")
-            sound.SoundId = "rbxassetid://1847661821"
+            sound.SoundId = "rbxassetid://0"
             sound.Parent = workspace
             sound:Play()
         end)
