@@ -354,56 +354,102 @@ scanBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- ESP, Tracer, Hitbox & Wallshot
+-- ESP, Tracer, Hitbox & RGB Chams (Lag-Free Engine)
 -------------------------------------------------
 local espEnabled = false
 local tracerFolder = gui:FindFirstChild("TracerFolder") or Instance.new("Folder", gui)
 tracerFolder.Name = "TracerFolder"
 local HB_SIZE = 40
 
-RunService.RenderStepped:Connect(function()
-    if not espEnabled then tracerFolder:ClearAllChildren() return end
-    tracerFolder:ClearAllChildren()
+-- حافظه کش کلاینت برای مدیریت ردیاب‌ها
+local linesCache = {}
+-- متغیر هیو برای انیمیشن متحرک RGB 🌈
+local hueCounter = 0
 
-    for _, v in ipairs(Players:GetPlayers()) do
-        if v.Name ~= LocalPlayer.Name and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+RunService.RenderStepped:Connect(function()
+    if not espEnabled then 
+        tracerFolder:ClearAllChildren() 
+        linesCache = {}
+        return 
+    end
+
+    -- بروزرسانی گام انیمیشن رنگین‌کمانی (سرعت حرکت رنگ‌ها)
+    hueCounter = (hueCounter + 0.005) % 1
+    local rgbColor = Color3.fromHSV(hueCounter, 0.8, 1)
+
+    local currentPlayers = Players:GetPlayers()
+    local camera = workspace.CurrentCamera
+    local viewportSize = camera.ViewportSize
+    local startPos = Vector2.new(viewportSize.X / 2, viewportSize.Y)
+
+    for _, v in ipairs(currentPlayers) do
+        if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            local root = v.Character.HumanoidRootPart
+            
+            -- تنظیمات هیت باکس و RGB Chams لوکس 💎
             pcall(function()
-                local root = v.Character.HumanoidRootPart
                 root.Size = Vector3.new(HB_SIZE, HB_SIZE, HB_SIZE)
                 root.Transparency = 1
                 root.CanCollide = false
                 root.CanQuery = true
-                local hl = v.Character:FindFirstChild("ESPHighlight") or Instance.new("Highlight", v.Character)
-                hl.Name = "ESPHighlight"
-                hl.FillColor = Color3.fromRGB(255, 255, 0)
+                
+                local hl = v.Character:FindFirstChild("ESPHighlight")
+                if not hl then
+                    hl = Instance.new("Highlight")
+                    hl.Name = "ESPHighlight"
+                    hl.OutlineTransparency = 0
+                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    hl.Parent = v.Character
+                end
+                
+                -- اعمال لحظه‌ای رنگ RGB روی فیل و اوت‌لاین کاراکتر پلیرها
                 hl.Enabled = true
+                hl.FillColor = rgbColor
+                hl.FillTransparency = 0.5
+                hl.OutlineColor = rgbColor
             end)
 
+            -- محاسبه و بروزرسانی ردیاب‌های خطی با رنگ هماهنگ RGB
             pcall(function()
-                local root = v.Character.HumanoidRootPart
-                local pos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(root.Position)
+                local pos, onScreen = camera:WorldToViewportPoint(root.Position)
+                local line = linesCache[v.Name]
+
                 if onScreen then
-                    local line = Instance.new("Frame")
-                    line.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-                    line.BorderSizePixel = 0
-                    line.AnchorPoint = Vector2.new(0.5, 0.5)
-                    local startPos = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                    if not line then
+                        line = Instance.new("Frame")
+                        line.BorderSizePixel = 0
+                        line.AnchorPoint = Vector2.new(0.5, 0.5)
+                        line.Parent = tracerFolder
+                        linesCache[v.Name] = line
+                    end
+                    
                     local endPos = Vector2.new(pos.X, pos.Y)
                     local distance = (startPos - endPos).Magnitude
                     line.Size = UDim2.fromOffset(distance, 1.2)
                     line.Position = UDim2.fromOffset((startPos.X + endPos.X) / 2, (startPos.Y + endPos.Y) / 2)
                     line.Rotation = math.deg(math.atan2(endPos.Y - startPos.Y, endPos.X - startPos.X))
-                    line.Parent = tracerFolder
+                    
+                    -- خط ردیاب هم با رنگ چمس‌ها همگام (Sync) می‌شود
+                    line.BackgroundColor3 = rgbColor
+                    line.Visible = true
+                else
+                    if line then line.Visible = false end
                 end
             end)
+        else
+            if linesCache[v.Name] then
+                linesCache[v.Name]:Destroy()
+                linesCache[v.Name] = nil
+            end
         end
     end
 end)
 
 espBtn.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    espBtn.Text = espEnabled and "👁️ ESP & Hitbox & Wallshot: ON" or "👁️ ESP & Hitbox & Wallshot: OFF"
-    espBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    espBtn.Text = espEnabled and "👁️ ESP & RGB Chams: ON" or "👁️ ESP & RGB Chams: OFF"
+    espBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(60, 180, 100) or Color3.fromRGB(235, 70, 70)
+    
     if not espEnabled then
         for _, v in ipairs(Players:GetPlayers()) do
             pcall(function()
@@ -411,11 +457,14 @@ espBtn.MouseButton1Click:Connect(function()
                     local root = v.Character.HumanoidRootPart
                     root.Size = Vector3.new(2, 2, 1)
                     root.CanCollide = true
-                    if v.Character:FindFirstChild("ESPHighlight") then v.Character.ESPHighlight.Enabled = false end
+                    if v.Character:FindFirstChild("ESPHighlight") then 
+                        v.Character.ESPHighlight.Enabled = false 
+                    end
                 end
             end)
         end
         tracerFolder:ClearAllChildren()
+        linesCache = {}
     end
 end)
 
