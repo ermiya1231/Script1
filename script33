@@ -572,6 +572,7 @@ local function toggleClimb()
         pcall(function()
             local sound = Instance.new("Sound")
             sound.SoundId = "rbxassetid://132085489682908"
+			sound.Volume = 10
             sound.Parent = workspace
             sound:Play()
         end)
