@@ -1,4 +1,4 @@
--- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio & Red Lightning
+-- Luxury Reverse Flash GUI: Sky Flicker, Double WalkSpeed & Dynamic Movement Audio
 local player = game.Players.LocalPlayer
 local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
@@ -96,9 +96,10 @@ local function stopSoundLoop()
 end
 
 local function startSoundLoop()
-    stopSoundLoop() 
+    stopSoundLoop() -- پاکسازی قبلی‌ها
     soundThread = task.spawn(function()
         while isActive do
+            -- [صدای اول] همیشه در زمان روشن بودن پخش می‌شود
             local flashSound1 = Instance.new("Sound")
             flashSound1.Name = "ReverseFlashMusic"
             flashSound1.SoundId = "rbxassetid://89362634813966"
@@ -109,6 +110,7 @@ local function startSoundLoop()
             flashSound1:Play()
             flashSound1.Ended:Connect(function() flashSound1:Destroy() end)
             
+            -- [صدای دوم] فقط و فقط اگر کاراکتر در حال حرکت باشد پخش می‌شود
             if humanoid and humanoid.MoveDirection.Magnitude > 0 then
                 local flashSound2 = Instance.new("Sound")
                 flashSound2.Name = "ReverseFlashMusic2"
@@ -121,7 +123,7 @@ local function startSoundLoop()
                 flashSound2.Ended:Connect(function() flashSound2:Destroy() end)
             end
             
-            task.wait(0.5)
+            task.wait(0.5) -- تکرار چرخه ترکیب سر هر ۰.۵ ثانیه
         end
     end)
 end
@@ -172,6 +174,7 @@ toggleButton.MouseButton1Click:Connect(function()
         toggleButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
         toggleButton.TextColor3 = Color3.fromRGB(255, 255, 0)
         
+        -- فعال‌سازی لوپ هوشمند صوتی
         startSoundLoop()
         
         if humanoid then
@@ -189,6 +192,7 @@ toggleButton.MouseButton1Click:Connect(function()
         toggleButton.BackgroundColor3 = Color3.fromRGB(40, 5, 5)
         toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         
+        -- خاموش کردن تمام لایه‌های صوتی
         stopSoundLoop()
         
         if humanoid then
@@ -207,6 +211,12 @@ toggleButton.MouseButton1Click:Connect(function()
         camera.CameraSubject = humanoid
     end
 end)
+
+-- بازنشانی پارت‌ها در صورت ریسپاون یا مرگ
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    humanoid = character:WaitForChild("Humanoid")
     
     if isActive then
         stopSoundLoop()
