@@ -868,11 +868,35 @@ weightBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- 🚫 OPTIMIZED TOUCHINTEREST BYPASS (Your Logic Fixed)
+-- 🚫 OPTIMIZED TOUCHINTEREST BYPASS (Auto-Scan Loop Every 1s)
 -------------------------------------------------
 local touchInterestEnabled = false
-local hasScannedTouch = false 
 local touchBlacklist = {} 
+local touchLoopConn = nil -- متغیر برای کنترل لوپ تکرارشونده
+
+local function scanAndDisableTouch()
+    local foundNewCount = 0
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            -- فیلتر کردن کاراکتر خودمون و بقیه پلیرها/NPCها تا بازی گلیچ نشود
+            if not obj:IsDescendantOf(LocalPlayer.Character) and not obj.Parent:FindFirstChildOfClass("Humanoid") then
+                -- فیلتر کردن پارت‌های پس‌زمینه مثل Terrain
+                if obj.Name ~= "Terrain" and obj.CanTouch == true then
+                    -- بررسی اینکه پارت از قبل در بلک‌لیست نباشد
+                    if not table.find(touchBlacklist, obj) then
+                        table.insert(touchBlacklist, obj)
+                        pcall(function() obj.CanTouch = false end)
+                        foundNewCount = foundNewCount + 1
+                    end
+                end
+            end
+        end
+    end
+    -- اگر پارت جدیدی پیدا شد، در نوتیفیکیشن اعلام شود (اختیاری)
+    if foundNewCount > 0 then
+        notify("Touch Shield: " .. tostring(foundNewCount) .. " New Parts Secured!")
+    end
+end
 
 touchBtn.MouseButton1Click:Connect(function()
     touchInterestEnabled = not touchInterestEnabled
@@ -886,50 +910,34 @@ touchBtn.MouseButton1Click:Connect(function()
         touchBtn.Text = "🚫 Disable TouchInterest: ON"
         touchBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
 
-        if not hasScannedTouch then
-            notify("Touch Scan Started...")
-            task.wait(0.2)
-            local foundCount = 0
-            
-            -- اسکن کل مپ برای پیدا کردن تمام پارت‌های فعال محیط
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("BasePart") then
-                    -- فیلتر کردن کاراکتر خودمون و بقیه پلیرها/NPCها تا بازی گلیچ نشود
-                    if not obj:IsDescendantOf(LocalPlayer.Character) and not obj.Parent:FindFirstChildOfClass("Humanoid") then
-                        -- فیلتر کردن پارت‌های پس‌زمینه مثل Terrain یا محیط‌های غیرقابل لمس اولیه
-                        if obj.CanTouch == true and obj.Name ~= "Terrain" then
-                            foundCount = foundCount + 1
-                            table.insert(touchBlacklist, obj)
-                        end
-                    end
+        notify("Touch Auto-Scan Activated (Every 1s)")
+        
+        -- اجرای اولین اسکن بلافاصله پس از کلیک
+        scanAndDisableTouch()
+        
+        -- ایجاد لوپ مداوم هر ۱ ثانیه یک‌بار در یک ترد مجزا
+        task.spawn(function()
+            while touchInterestEnabled do
+                task.wait(1)
+                if touchInterestEnabled then
+                    scanAndDisableTouch()
                 end
             end
-            hasScannedTouch = true
-            notify("Scan Completed! " .. tostring(foundCount) .. " TouchParts Found")
-        else
-            notify("Touch Shield Re-Activated")
-        end
-        
-        -- خاموش کردن آنی ویژگی CanTouch برای تمام پارت‌های مپ
-        for _, part in ipairs(touchBlacklist) do 
-            if part and part.Parent then 
-                pcall(function() part.CanTouch = false end) 
-            end 
-        end
+        end)
     else
         touchBtn.Text = "🚫 Disable TouchInterest: OFF"
         touchBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
         
-        -- برگرداندن همه‌چیز به حالت عادی
+        -- برگرداندن همه‌چیز به حالت عادی و خالی کردن لیست
         for _, part in ipairs(touchBlacklist) do 
             if part and part.Parent then 
                 pcall(function() part.CanTouch = true end) 
             end 
         end
-        notify("Touch Shield De-Activated")
+        table.clear(touchBlacklist)
+        notify("Touch Shield & Auto-Scan De-Activated")
     end
 end)
-
 -------------------------------------------------
 -- 🧗 WALK ON WALLS (100% Pure Load + Genius Respawn + ShiftLock Fix)
 -------------------------------------------------
