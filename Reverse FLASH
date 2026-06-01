@@ -1,4 +1,4 @@
--- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio, Optimized Notifications, Advanced R-Hold Noclip, Dark Ambient & Deep Audio Scan
+-- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio, Instant R-Hold Noclip, Midnight Mode & 0.01 Ultimate Audio Slomo
 local player = game.Players.LocalPlayer
 local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
@@ -87,9 +87,11 @@ local cameraConnection = nil
 local noclipConnection = nil
 local lastStablePosition = Vector3.new()
 local originalCFrame = nil 
-local savedSpeedBeforeNoclip = 150 -- ذخیره سرعت قبلی بازیکن
+local savedSpeedBeforeNoclip = 150 
 
--- ذخیره وضعیت اصلی آسمان برای بازگردانی
+-- جدول نگهداری پیتچ اصلی صداهای متفرقه مپ برای بازگردانی دقیق
+local originalPitches = {}
+
 local originalClockTime = Lighting.ClockTime
 local originalOutdoorAmbient = Lighting.OutdoorAmbient
 
@@ -190,9 +192,9 @@ local function startSoundLoop()
     stopSoundLoop() 
     soundThread = task.spawn(function()
         while isActive do
-            -- چک کردن وضعیت کلید R برای اعمال تغییر سرعت موزیک (Pitch 0.2)
-            local currentSpeed1 = isNoclip and 0.2 or 1
-            local currentSpeed2 = isNoclip and 0.2 or 1.2
+            -- صداهای خود فلش معکوس هرگز نباید اسلو موشن یا 0.01 شوند
+            local currentSpeed1 = 1
+            local currentSpeed2 = 1.2
 
             local flashSound1 = Instance.new("Sound")
             flashSound1.Name = "ReverseFlashMusic"
@@ -258,12 +260,11 @@ local function syncVirtualTarget()
     end
 end
 
--- // سیستم ردیابی کلیدهای Q, E (سرعت) و کلید R (نوکلیپ، اتمسفر دارک و اسکن عمیق صوتی) //
+-- // سیستم ردیابی کلیدهای Q, E و کلید R (نوکلیپ آنی و اسکن فوق عمیق 0.01) //
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if not isActive or not humanoid then return end
 
-    -- تغییرات سرعت با Q و E
     if input.KeyCode == Enum.KeyCode.E then
         if not isNoclip then
             humanoid.WalkSpeed = humanoid.WalkSpeed + 10
@@ -285,31 +286,33 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             end
         end
     
-    -- فعالسازی کامل NOCLIP با نگه داشتن دکمه R
+    -- فعالسازی NOCLIP فوری و اسکن عمیق صوتی با دکمه R
     elseif input.KeyCode == Enum.KeyCode.R then
         isNoclip = true
         noclipScreenText.TextTransparency = 0.8
         
-        -- تغییر سرعت کاراکتر به ۲۰ تا زمان نگه داشتن کلید
         savedSpeedBeforeNoclip = humanoid.WalkSpeed
         humanoid.WalkSpeed = 20
         
-        -- دارک و تاریک کردن اتمسفر بازی (Midnight Mode)
-        Lighting.ClockTime = 0 -- نیمه‌شب کاملاً تاریک
-        Lighting.OutdoorAmbient = Color3.fromRGB(10, 10, 10) -- فضاسازی تیره سایه‌ها
+        Lighting.ClockTime = 0 
+        Lighting.OutdoorAmbient = Color3.fromRGB(10, 10, 10)
 
-        -- اسکن فوق عمیق کل ریشه‌ها و لایه‌های ورک‌اسپیس برای تمام موزیک‌ها
+        -- اسکن کل محیط بازی و اعمال تغییر Pitch روی 0.01 به جز صدای کاراکتر شما
+        table.clear(originalPitches)
         for _, obj in pairs(workspace:GetDescendants()) do
             if obj:IsA("Sound") then
-                obj.PlaybackSpeed = 0.2
+                if obj.Name ~= "ReverseFlashMusic" and obj.Name ~= "ReverseFlashMusic2" then
+                    originalPitches[obj] = obj.PlaybackSpeed -- ذخیره مقدار قبلی برای بازگردانی دقیق
+                    obj.PlaybackSpeed = 0.01
+                end
             end
         end
 
-        -- لوپ حذف دائم تصادم اجسام (Noclip)
+        -- لوپ فریم به فریم نوکلیپ آنی بدون باگ فیزیکی
         if noclipConnection then noclipConnection:Disconnect() end
         noclipConnection = RunService.Stepped:Connect(function()
             if character then
-                for _, part in pairs(character:GetChildren()) do
+                for _, part in pairs(character:GetDescendants()) do
                     if part:IsA("BasePart") then
                         part.CanCollide = false
                     end
@@ -322,37 +325,40 @@ end)
 UserInputService.InputEnded:Connect(function(input, gameProcessed)
     if not isActive then return end
     
-    -- غیرفعال کردن حالت NOCLIP و بازگردانی همه تغییرات محیطی و صوتی به محض ول کردن R
+    -- غیرفعال کردن آنی حالت NOCLIP و بازگشت ۱۰۰٪ سریع فیزیک دیوارها
     if input.KeyCode == Enum.KeyCode.R then
         isNoclip = false
         noclipScreenText.TextTransparency = 1 
         
-        -- برگرداندن سرعت کاراکتر به حالت قبلی تنظیم شده
         if humanoid then
             humanoid.WalkSpeed = savedSpeedBeforeNoclip
         end
         
-        -- برگرداندن اتمسفر و نور محیط به حالت عادی بازی
         Lighting.ClockTime = originalClockTime
         Lighting.OutdoorAmbient = originalOutdoorAmbient
 
+        -- قطع فوری لوپ و بازگردانی فیزیک تصادم کلیدها به حالت پیش‌فرض بصورت آنی
         if noclipConnection then
             noclipConnection:Disconnect()
             noclipConnection = nil
         end
         
-        -- اسکن مجدد ورک‌اسپیس برای بازگرداندن سرعت تمام موزیک‌ها به حالت پیش‌فرض (سرعت عادی 1)
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("Sound") then
-                if obj.Name == "ReverseFlashMusic" then
-                    obj.PlaybackSpeed = 1
-                elseif obj.Name == "ReverseFlashMusic2" then
-                    obj.PlaybackSpeed = 1.2
-                else
-                    obj.PlaybackSpeed = 1 -- بقیه موزیک‌های متفرقه بازی
+        -- اعمال اجباری و لحظه‌ای CanCollide به فیزیک بدنه پارت‌ها برای جلوگیری از سقوط یا تأخیر
+        if character then
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.CanCollide = true
                 end
             end
         end
+        
+        -- برگرداندن پیتچ تمام صداهای مپ به مقادیر کاملاً اصلی‌شان قبل از اسلو موشن
+        for obj, originalPitch in pairs(originalPitches) do
+            if obj and obj.Parent then
+                obj.PlaybackSpeed = originalPitch
+            end
+        end
+        table.clear(originalPitches)
     end
 end)
 
@@ -365,7 +371,6 @@ toggleButton.MouseButton1Click:Connect(function()
         toggleButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
         toggleButton.TextColor3 = Color3.fromRGB(255, 255, 0)
         
-        -- ثبت تایم اصلی لایتینگ بازی هنگام روشن شدن
         originalClockTime = Lighting.ClockTime
         originalOutdoorAmbient = Lighting.OutdoorAmbient
         
@@ -390,11 +395,18 @@ toggleButton.MouseButton1Click:Connect(function()
         isNoclip = false
         noclipScreenText.TextTransparency = 1
         
-        -- ریست کردن لایتینگ در صورت خاموش کردن ناگهانی چیت
         Lighting.ClockTime = originalClockTime
         Lighting.OutdoorAmbient = originalOutdoorAmbient
         
         if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
+        
+        if character then
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.CanCollide = true
+                end
+            end
+        end
         
         if humanoid then
             humanoid.WalkSpeed = 16
