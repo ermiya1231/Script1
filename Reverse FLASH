@@ -1,4 +1,4 @@
--- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio & Custom Speed Hotkeys (Q/E)
+-- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio, Optimized Notifications & R-Hold Noclip with Audio Pitch
 local player = game.Players.LocalPlayer
 local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
@@ -66,14 +66,28 @@ local btnCorner = Instance.new("UICorner")
 btnCorner.CornerRadius = UDim.new(0, 8)
 btnCorner.Parent = toggleButton
 
--- // تنظیمات افکت و دوربین مجازی //
+-- متن وسط صفحه برای حالت Noclip
+local noclipScreenText = Instance.new("TextLabel")
+noclipScreenText.Size = UDim2.new(0, 300, 0, 50)
+noclipScreenText.Position = UDim2.new(0.5, -150, 0.45, -25)
+noclipScreenText.BackgroundTransparency = 1
+noclipScreenText.Text = "NOCLIP"
+noclipScreenText.TextColor3 = Color3.fromRGB(255, 0, 0)
+noclipScreenText.TextSize = 45
+noclipScreenText.Font = Enum.Font.GothamBold
+noclipScreenText.TextTransparency = 1 -- شروع به صورت مخفی
+noclipScreenText.Parent = screenGui
+
+-- // تنظیمات افکت و وضعیت‌ها //
 local isActive = false
+local isNoclip = false
 local SKY_HEIGHT = 2000 
 local cameraConnection = nil
+local noclipConnection = nil
 local lastStablePosition = Vector3.new()
 local originalCFrame = nil 
 
--- ساخت پارت مجازی روی زمین (مخصوص قفل کردن دوربین روی آن)
+-- ساخت پارت مجازی دوربین
 local virtualTarget = Instance.new("Part")
 virtualTarget.Name = "StableCameraTarget"
 virtualTarget.Size = Vector3.new(1, 1, 1)
@@ -82,50 +96,73 @@ virtualTarget.CanCollide = false
 virtualTarget.Anchored = true
 virtualTarget.Parent = workspace
 
--- // سیستم نوتیفیکیشن خفن و لوکس //
+-- // سیستم نوتیفیکیشن هوشمند ضد اسپم (بدون کول‌داون) //
+local currentNotifFrame = nil
+local currentNotifText = nil
+local notifThread = nil
+
 local function showNotification(message)
-    -- ساخت فریم نوتیفیکیشن
-    local notifFrame = Instance.new("Frame")
-    notifFrame.Size = UDim2.new(0, 200, 0, 50)
-    -- شروع موقعیت از بیرون صفحه برای افکت انیمیشن ورود
-    notifFrame.Position = UDim2.new(1, 10, 0.85, 0)
-    notifFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    notifFrame.BorderSizePixel = 0
-    notifFrame.Parent = screenGui
+    -- اگر از قبل باکسی هست، فقط متنش رو عوض کن و زمان رو تمدید کن
+    if currentNotifFrame and currentNotifText then
+        currentNotifText.Text = message
+        if notifThread then task.cancel(notifThread) end
+        
+        notifThread = task.spawn(function()
+            task.wait(2)
+            local tweenOut = TweenService:Create(currentNotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                Position = UDim2.new(1, 10, 0.85, 0)
+            })
+            tweenOut:Play()
+            tweenOut.Completed:Connect(function()
+                if currentNotifFrame then currentNotifFrame:Destroy() end
+                currentNotifFrame = nil
+                currentNotifText = nil
+            end)
+        end)
+        return
+    end
+
+    -- ساخت باکس جدید در صورتی که باکسی روی صفحه نباشد
+    currentNotifFrame = Instance.new("Frame")
+    currentNotifFrame.Size = UDim2.new(0, 200, 0, 50)
+    currentNotifFrame.Position = UDim2.new(1, 10, 0.85, 0)
+    currentNotifFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    currentNotifFrame.BorderSizePixel = 0
+    currentNotifFrame.Parent = screenGui
 
     local notifCorner = Instance.new("UICorner")
     notifCorner.CornerRadius = UDim.new(0, 8)
-    notifCorner.Parent = notifFrame
+    notifCorner.Parent = currentNotifFrame
 
     local notifStroke = Instance.new("UIStroke")
     notifStroke.Color = Color3.fromRGB(255, 230, 0)
     notifStroke.Thickness = 1.5
-    notifStroke.Parent = notifFrame
+    notifStroke.Parent = currentNotifFrame
 
-    local notifText = Instance.new("TextLabel")
-    notifText.Size = UDim2.new(1, 0, 1, 0)
-    notifText.BackgroundTransparency = 1
-    notifText.Text = message
-    notifText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    notifText.TextSize = 13
-    notifText.Font = Enum.Font.GothamBold
-    notifText.Parent = notifFrame
+    currentNotifText = Instance.new("TextLabel")
+    currentNotifText.Size = UDim2.new(1, 0, 1, 0)
+    currentNotifText.BackgroundTransparency = 1
+    currentNotifText.Text = message
+    currentNotifText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    currentNotifText.TextSize = 13
+    currentNotifText.Font = Enum.Font.GothamBold
+    currentNotifText.Parent = currentNotifFrame
 
-    -- انیمیشن ورود از سمت راست به داخل صفحه
-    local tweenIn = TweenService:Create(notifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    local tweenIn = TweenService:Create(currentNotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         Position = UDim2.new(0.82, 0, 0.85, 0)
     })
     tweenIn:Play()
 
-    -- حذف خودکار و انیمیشن خروج بعد از ۲ ثانیه
-    task.spawn(function()
+    notifThread = task.spawn(function()
         task.wait(2)
-        local tweenOut = TweenService:Create(notifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        local tweenOut = TweenService:Create(currentNotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
             Position = UDim2.new(1, 10, 0.85, 0)
         })
         tweenOut:Play()
         tweenOut.Completed:Connect(function()
-            notifFrame:Destroy()
+            if currentNotifFrame then currentNotifFrame:Destroy() end
+            currentNotifFrame = nil
+            currentNotifText = nil
         end)
     end)
 end
@@ -149,11 +186,15 @@ local function startSoundLoop()
     stopSoundLoop() 
     soundThread = task.spawn(function()
         while isActive do
+            -- چک کردن وضعیت کلید R برای اعمال تغییر سرعت موزیک (Pitch 0.4)
+            local currentSpeed1 = isNoclip and 0.4 or 1
+            local currentSpeed2 = isNoclip and 0.4 or 1.2
+
             local flashSound1 = Instance.new("Sound")
             flashSound1.Name = "ReverseFlashMusic"
             flashSound1.SoundId = "rbxassetid://89362634813966"
             flashSound1.Volume = 4
-            flashSound1.PlaybackSpeed = 1
+            flashSound1.PlaybackSpeed = currentSpeed1
             flashSound1.Looped = false
             flashSound1.Parent = workspace
             flashSound1:Play()
@@ -164,7 +205,7 @@ local function startSoundLoop()
                 flashSound2.Name = "ReverseFlashMusic2"
                 flashSound2.SoundId = "rbxassetid://128695660714222"
                 flashSound2.Volume = 1.7
-                flashSound2.PlaybackSpeed = 1.2
+                flashSound2.PlaybackSpeed = currentSpeed2
                 flashSound2.Looped = false
                 flashSound2.Parent = workspace
                 flashSound2:Play()
@@ -213,21 +254,67 @@ local function syncVirtualTarget()
     end
 end
 
--- // سیستم ردیابی دکمه‌های Q و E کیبورد برای سرعت //
+-- // سیستم ردیابی کلیدهای Q, E (سرعت) و کلید R (نوکلیپ و کاهش سرعت موزیک) //
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    -- اگر بازیکن در حال چت کردن در بازی نباشد اسکریپت کلیدها را کار می‌اندازد
     if gameProcessed then return end
     if not isActive or not humanoid then return end
 
+    -- تغییرات سرعت با Q و E
     if input.KeyCode == Enum.KeyCode.E then
-        -- افزایش سرعت به اندازه ۱۰ واحد
         humanoid.WalkSpeed = humanoid.WalkSpeed + 10
-        showNotification("⚡ SPEED INCREASED: " .. tostring(humanoid.WalkSpeed))
+        showNotification("⚡ SPEED: " .. tostring(humanoid.WalkSpeed))
     elseif input.KeyCode == Enum.KeyCode.Q then
-        -- کاهش سرعت به اندازه ۱۰ واحد (حداقل سرعت روی ۱۶ قفل می‌ماند تا چیت خراب نشود)
         if humanoid.WalkSpeed > 16 then
             humanoid.WalkSpeed = math.max(16, humanoid.WalkSpeed - 10)
-            showNotification("⚠️ SPEED DECREASED: " .. tostring(humanoid.WalkSpeed))
+            showNotification("⚠️ SPEED: " .. tostring(humanoid.WalkSpeed))
+        end
+    
+    -- فعالسازی NOCLIP با نگه داشتن دکمه R
+    elseif input.KeyCode == Enum.KeyCode.R then
+        isNoclip = true
+        noclipScreenText.TextTransparency = 0.8 -- تنظیم شفافیت روی 0.8 طبق خواسته شما
+        
+        -- تغییر فوری سرعت موزیک‌های فعلی موجود در ارث‌بری ورک‌اسپیس
+        for _, obj in pairs(workspace:GetChildren()) do
+            if obj.Name == "ReverseFlashMusic" or obj.Name == "ReverseFlashMusic2" then
+                obj.PlaybackSpeed = 0.4
+            end
+        end
+
+        -- اجرای لوپ حذف دائم تصادم اجسام تا زمانی که R فشرده شده
+        if noclipConnection then noclipConnection:Disconnect() end
+        noclipConnection = RunService.Stepped:Connect(function()
+            if character then
+                for _, part in pairs(character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    if not isActive then return end
+    
+    -- غیرفعال کردن NOCLIP به محض ول کردن دکمه R
+    if input.KeyCode == Enum.KeyCode.R then
+        isNoclip = false
+        noclipScreenText.TextTransparency = 1 -- مخفی کردن متن صفحه
+        
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        
+        -- برگرداندن سرعت موزیک‌های ورک‌اسپیس به حالت عادی
+        for _, obj in pairs(workspace:GetChildren()) do
+            if obj.Name == "ReverseFlashMusic" then
+                obj.PlaybackSpeed = 1
+            elseif obj.Name == "ReverseFlashMusic2" then
+                obj.PlaybackSpeed = 1.2
+            end
         end
     end
 end)
@@ -259,6 +346,9 @@ toggleButton.MouseButton1Click:Connect(function()
         toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         
         stopSoundLoop()
+        isNoclip = false
+        noclipScreenText.TextTransparency = 1
+        if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
         
         if humanoid then
             humanoid.WalkSpeed = 16
@@ -277,7 +367,7 @@ toggleButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- بازنشانی پارت‌ها در صورت ریسپاون یا مرگ
+-- بازنشانی در صورت مرگ
 player.CharacterAdded:Connect(function(newChar)
     character = newChar
     humanoidRootPart = character:WaitForChild("HumanoidRootPart")
@@ -285,6 +375,9 @@ player.CharacterAdded:Connect(function(newChar)
     
     if isActive then
         stopSoundLoop()
+        isNoclip = false
+        noclipScreenText.TextTransparency = 1
+        if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
         if cameraConnection then
             cameraConnection:Disconnect()
             cameraConnection = nil
