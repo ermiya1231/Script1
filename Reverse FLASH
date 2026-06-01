@@ -190,7 +190,6 @@ toggleButton.MouseButton1Click:Connect(function()
         toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         
         stopSoundLoop()
-        clearLightning() -- حذف و خاموش شدن رعدوبرق‌ها
         
         if humanoid then
             humanoid.WalkSpeed = 16
@@ -208,16 +207,9 @@ toggleButton.MouseButton1Click:Connect(function()
         camera.CameraSubject = humanoid
     end
 end)
-
--- بازنشانی پارت‌ها در صورت ریسپاون یا مرگ
-player.CharacterAdded:Connect(function(newChar)
-    character = newChar
-    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    humanoid = character:WaitForChild("Humanoid")
     
     if isActive then
         stopSoundLoop()
-        clearLightning()
         if cameraConnection then
             cameraConnection:Disconnect()
             cameraConnection = nil
