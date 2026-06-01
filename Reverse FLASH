@@ -126,53 +126,6 @@ local function startSoundLoop()
     end)
 end
 
--- // سیستم ساخت رعد وبرق قرمز الکتریکی //
-local lightningEffects = {}
-
-local function clearLightning()
-    for _, obj in pairs(lightningEffects) do
-        if obj then obj:Destroy() end
-    end
-    lightningEffects = {}
-end
-
-local function createLightning()
-    clearLightning()
-    if not character or not character:FindFirstChild("LowerTorso") or not character:FindFirstChild("Head") then return end
-    
-    -- ساخت نقطه‌های اتصال بالا و پایین بدن برای کشیده شدن رعدوبرق
-    local attTop = Instance.new("Attachment")
-    attTop.Position = Vector3.new(0, 2.5, 0)
-    attTop.Parent = character.Head
-    
-    local attBottom = Instance.new("Attachment")
-    attBottom.Position = Vector3.new(0, -1.5, 0)
-    attBottom.Parent = character.LowerTorso
-    
-    -- ساخت افکت لیزری/رعدوبرقی دایمی دور بدن
-    for i = 1, 3 do
-        local beam = Instance.new("Beam")
-        beam.Name = "FlashLightning"
-        beam.Attachment0 = attTop
-        beam.Attachment1 = attBottom
-        beam.Color = ColorSequence.new(Color3.fromRGB(255, 0, 0)) -- رنگ قرمز خالص
-        beam.Width0 = 0.4
-        beam.Width1 = 0.4
-        beam.Texture = "rbxassetid://1084991219" -- تکسچر رعدوبرق پیش‌فرض رابلاکس
-        beam.TextureSpeed = 4 -- سرعت لرزش رعد
-        beam.LightEmission = 1
-        beam.LightInfluence = 0
-        -- ایجاد پیچ‌وتاب در ساختار رعدوبرق برای طبیعی‌تر شدن
-        beam.CurveSize0 = math.random(-2, 2)
-        beam.CurveSize1 = math.random(-2, 2)
-        beam.Parent = character
-        
-        table.insert(lightningEffects, beam)
-    end
-    table.insert(lightningEffects, attTop)
-    table.insert(lightningEffects, attBottom)
-end
-
 -- // منطق رگباری اتوماتیک تله‌پورت //
 task.spawn(function()
     while true do
@@ -220,10 +173,9 @@ toggleButton.MouseButton1Click:Connect(function()
         toggleButton.TextColor3 = Color3.fromRGB(255, 255, 0)
         
         startSoundLoop()
-        createLightning() -- روشن شدن رعدوبرق‌های قرمز
         
         if humanoid then
-            humanoid.WalkSpeed = 150
+            humanoid.WalkSpeed = 230
         end
         
         lastStablePosition = humanoidRootPart.Position
