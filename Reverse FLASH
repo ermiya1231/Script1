@@ -175,7 +175,7 @@ toggleButton.MouseButton1Click:Connect(function()
         startSoundLoop()
         
         if humanoid then
-            humanoid.WalkSpeed = 150
+            humanoid.WalkSpeed = 230
         end
         
         lastStablePosition = humanoidRootPart.Position
