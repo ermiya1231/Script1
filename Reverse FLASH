@@ -1,4 +1,4 @@
--- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio, Instant R-Hold Noclip, Midnight Mode & 0.01 Ultimate Audio Slomo
+-- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio, Instant R-Hold Noclip, Midnight Mode & 0.01 Ultimate Audio Slomo (Workspace + SoundService)
 local player = game.Players.LocalPlayer
 local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
+local SoundService = game:GetService("SoundService")
 
 -- حذف نسخه‌های قبلی برای جلوگیری از تداخل
 if playerGui:FindFirstChild("ReverseFlashGui") then 
@@ -89,7 +90,7 @@ local lastStablePosition = Vector3.new()
 local originalCFrame = nil 
 local savedSpeedBeforeNoclip = 150 
 
--- جدول نگهداری پیتچ اصلی صداهای متفرقه مپ برای بازگردانی دقیق
+-- جدول نگهداری پیتچ اصلی صداهای مپ (Workspace + SoundService) برای بازگردانی دقیق
 local originalPitches = {}
 
 local originalClockTime = Lighting.ClockTime
@@ -192,7 +193,6 @@ local function startSoundLoop()
     stopSoundLoop() 
     soundThread = task.spawn(function()
         while isActive do
-            -- صداهای خود فلش معکوس هرگز نباید اسلو موشن یا 0.01 شوند
             local currentSpeed1 = 1
             local currentSpeed2 = 1.2
 
@@ -260,7 +260,7 @@ local function syncVirtualTarget()
     end
 end
 
--- // سیستم ردیابی کلیدهای Q, E و کلید R (نوکلیپ آنی و اسکن فوق عمیق 0.01) //
+-- // سیستم ردیابی کلیدها (Q, E, R) همراه با اسکن فوق عمیق Workspace و SoundService //
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if not isActive or not humanoid then return end
@@ -297,16 +297,25 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         Lighting.ClockTime = 0 
         Lighting.OutdoorAmbient = Color3.fromRGB(10, 10, 10)
 
-        -- اسکن کل محیط بازی و اعمال تغییر Pitch روی 0.01 به جز صدای کاراکتر شما
+        -- پاکسازی لیست پیتچ‌های قدیمی
         table.clear(originalPitches)
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("Sound") then
-                if obj.Name ~= "ReverseFlashMusic" and obj.Name ~= "ReverseFlashMusic2" then
-                    originalPitches[obj] = obj.PlaybackSpeed -- ذخیره مقدار قبلی برای بازگردانی دقیق
-                    obj.PlaybackSpeed = 0.01
+
+        -- تابع محلی برای اسکن صداها در یک کانتینر مشخص
+        local function scanContainer(container)
+            for _, obj in pairs(container:GetDescendants()) do
+                if obj:IsA("Sound") then
+                    -- مستثنی کردن صداهای خود چیت معکوس
+                    if obj.Name ~= "ReverseFlashMusic" and obj.Name ~= "ReverseFlashMusic2" then
+                        originalPitches[obj] = obj.PlaybackSpeed
+                        obj.PlaybackSpeed = 0.01
+                    end
                 end
             end
         end
+
+        -- اسکن همزمان کل مپ و سرویس صداها
+        scanContainer(workspace)
+        scanContainer(SoundService)
 
         -- لوپ فریم به فریم نوکلیپ آنی بدون باگ فیزیکی
         if noclipConnection then noclipConnection:Disconnect() end
@@ -337,13 +346,13 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
         Lighting.ClockTime = originalClockTime
         Lighting.OutdoorAmbient = originalOutdoorAmbient
 
-        -- قطع فوری لوپ و بازگردانی فیزیک تصادم کلیدها به حالت پیش‌فرض بصورت آنی
+        -- قطع فوری لوپ نوکلیپ
         if noclipConnection then
             noclipConnection:Disconnect()
             noclipConnection = nil
         end
         
-        -- اعمال اجباری و لحظه‌ای CanCollide به فیزیک بدنه پارت‌ها برای جلوگیری از سقوط یا تأخیر
+        -- فعال‌سازی آنی CanCollide برای سفت شدن آنی دیوارها
         if character then
             for _, part in pairs(character:GetDescendants()) do
                 if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
@@ -352,7 +361,7 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
             end
         end
         
-        -- برگرداندن پیتچ تمام صداهای مپ به مقادیر کاملاً اصلی‌شان قبل از اسلو موشن
+        -- برگرداندن پیتچ تمام صداها (Workspace + SoundService) به حالت اولیه خودشان
         for obj, originalPitch in pairs(originalPitches) do
             if obj and obj.Parent then
                 obj.PlaybackSpeed = originalPitch
