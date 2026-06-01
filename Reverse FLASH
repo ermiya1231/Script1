@@ -1,4 +1,4 @@
--- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed & Dynamic Audio Only
+-- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio & Custom Speed Hotkeys (Q/E)
 local player = game.Players.LocalPlayer
 local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
@@ -6,6 +6,8 @@ local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local humanoid = character:WaitForChild("Humanoid")
 local camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 -- حذف نسخه‌های قبلی برای جلوگیری از تداخل
 if playerGui:FindFirstChild("ReverseFlashGui") then 
@@ -79,6 +81,54 @@ virtualTarget.Transparency = 1
 virtualTarget.CanCollide = false
 virtualTarget.Anchored = true
 virtualTarget.Parent = workspace
+
+-- // سیستم نوتیفیکیشن خفن و لوکس //
+local function showNotification(message)
+    -- ساخت فریم نوتیفیکیشن
+    local notifFrame = Instance.new("Frame")
+    notifFrame.Size = UDim2.new(0, 200, 0, 50)
+    -- شروع موقعیت از بیرون صفحه برای افکت انیمیشن ورود
+    notifFrame.Position = UDim2.new(1, 10, 0.85, 0)
+    notifFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    notifFrame.BorderSizePixel = 0
+    notifFrame.Parent = screenGui
+
+    local notifCorner = Instance.new("UICorner")
+    notifCorner.CornerRadius = UDim.new(0, 8)
+    notifCorner.Parent = notifFrame
+
+    local notifStroke = Instance.new("UIStroke")
+    notifStroke.Color = Color3.fromRGB(255, 230, 0)
+    notifStroke.Thickness = 1.5
+    notifStroke.Parent = notifFrame
+
+    local notifText = Instance.new("TextLabel")
+    notifText.Size = UDim2.new(1, 0, 1, 0)
+    notifText.BackgroundTransparency = 1
+    notifText.Text = message
+    notifText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notifText.TextSize = 13
+    notifText.Font = Enum.Font.GothamBold
+    notifText.Parent = notifFrame
+
+    -- انیمیشن ورود از سمت راست به داخل صفحه
+    local tweenIn = TweenService:Create(notifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.82, 0, 0.85, 0)
+    })
+    tweenIn:Play()
+
+    -- حذف خودکار و انیمیشن خروج بعد از ۲ ثانیه
+    task.spawn(function()
+        task.wait(2)
+        local tweenOut = TweenService:Create(notifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Position = UDim2.new(1, 10, 0.85, 0)
+        })
+        tweenOut:Play()
+        tweenOut.Completed:Connect(function()
+            notifFrame:Destroy()
+        end)
+    end)
+end
 
 -- // مدیریت لایه‌های صوتی ترکیبی دوتایی با شرط حرکت //
 local soundThread = nil
@@ -163,6 +213,25 @@ local function syncVirtualTarget()
     end
 end
 
+-- // سیستم ردیابی دکمه‌های Q و E کیبورد برای سرعت //
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    -- اگر بازیکن در حال چت کردن در بازی نباشد اسکریپت کلیدها را کار می‌اندازد
+    if gameProcessed then return end
+    if not isActive or not humanoid then return end
+
+    if input.KeyCode == Enum.KeyCode.E then
+        -- افزایش سرعت به اندازه ۱۰ واحد
+        humanoid.WalkSpeed = humanoid.WalkSpeed + 10
+        showNotification("⚡ SPEED INCREASED: " .. tostring(humanoid.WalkSpeed))
+    elseif input.KeyCode == Enum.KeyCode.Q then
+        -- کاهش سرعت به اندازه ۱۰ واحد (حداقل سرعت روی ۱۶ قفل می‌ماند تا چیت خراب نشود)
+        if humanoid.WalkSpeed > 16 then
+            humanoid.WalkSpeed = math.max(16, humanoid.WalkSpeed - 10)
+            showNotification("⚠️ SPEED DECREASED: " .. tostring(humanoid.WalkSpeed))
+        end
+    end
+end)
+
 -- // مدیریت دکمه و وضعیت همراه با فرود امن روی زمین //
 toggleButton.MouseButton1Click:Connect(function()
     isActive = not isActive
@@ -175,7 +244,7 @@ toggleButton.MouseButton1Click:Connect(function()
         startSoundLoop()
         
         if humanoid then
-            humanoid.WalkSpeed = 230
+            humanoid.WalkSpeed = 150
         end
         
         lastStablePosition = humanoidRootPart.Position
