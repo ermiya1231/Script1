@@ -1,0 +1,279 @@
+-- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio & Red Lightning
+local player = game.Players.LocalPlayer
+local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+local camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+
+-- حذف نسخه‌های قبلی برای جلوگیری از تداخل
+if playerGui:FindFirstChild("ReverseFlashGui") then 
+    playerGui.ReverseFlashGui:Destroy() 
+end
+for _, obj in pairs(workspace:GetChildren()) do
+    if obj.Name == "ReverseFlashMusic" or obj.Name == "ReverseFlashMusic2" then
+        obj:Destroy()
+    end
+end
+
+-- // ساخت رابط کاربری حرفه‌ای (Luxury UI) //
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ReverseFlashGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 220, 0, 130)
+mainFrame.Position = UDim2.new(0.15, 0, 0.4, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true 
+mainFrame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(255, 20, 20)
+uiStroke.Thickness = 2
+uiStroke.Parent = mainFrame
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0.3, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "REVERSE FLASH"
+titleLabel.TextColor3 = Color3.fromRGB(255, 230, 0)
+titleLabel.TextSize = 18
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = mainFrame
+
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0.8, 0, 0.4, 0)
+toggleButton.Position = UDim2.new(0.1, 0, 0.45, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(40, 5, 5)
+toggleButton.Text = "STATUS: OFF"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.TextSize = 14
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.Parent = mainFrame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = toggleButton
+
+-- // تنظیمات افکت و دوربین مجازی //
+local isActive = false
+local SKY_HEIGHT = 2000 
+local cameraConnection = nil
+local lastStablePosition = Vector3.new()
+local originalCFrame = nil 
+
+-- ساخت پارت مجازی روی زمین (مخصوص قفل کردن دوربین روی آن)
+local virtualTarget = Instance.new("Part")
+virtualTarget.Name = "StableCameraTarget"
+virtualTarget.Size = Vector3.new(1, 1, 1)
+virtualTarget.Transparency = 1
+virtualTarget.CanCollide = false
+virtualTarget.Anchored = true
+virtualTarget.Parent = workspace
+
+-- // مدیریت لایه‌های صوتی ترکیبی دوتایی با شرط حرکت //
+local soundThread = nil
+
+local function stopSoundLoop()
+    if soundThread then
+        task.cancel(soundThread)
+        soundThread = nil
+    end
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj.Name == "ReverseFlashMusic" or obj.Name == "ReverseFlashMusic2" then
+            obj:Destroy()
+        end
+    end
+end
+
+local function startSoundLoop()
+    stopSoundLoop() 
+    soundThread = task.spawn(function()
+        while isActive do
+            local flashSound1 = Instance.new("Sound")
+            flashSound1.Name = "ReverseFlashMusic"
+            flashSound1.SoundId = "rbxassetid://89362634813966"
+            flashSound1.Volume = 4
+            flashSound1.PlaybackSpeed = 1
+            flashSound1.Looped = false
+            flashSound1.Parent = workspace
+            flashSound1:Play()
+            flashSound1.Ended:Connect(function() flashSound1:Destroy() end)
+            
+            if humanoid and humanoid.MoveDirection.Magnitude > 0 then
+                local flashSound2 = Instance.new("Sound")
+                flashSound2.Name = "ReverseFlashMusic2"
+                flashSound2.SoundId = "rbxassetid://128695660714222"
+                flashSound2.Volume = 1.7
+                flashSound2.PlaybackSpeed = 1.2
+                flashSound2.Looped = false
+                flashSound2.Parent = workspace
+                flashSound2:Play()
+                flashSound2.Ended:Connect(function() flashSound2:Destroy() end)
+            end
+            
+            task.wait(0.5)
+        end
+    end)
+end
+
+-- // سیستم ساخت رعد وبرق قرمز الکتریکی //
+local lightningEffects = {}
+
+local function clearLightning()
+    for _, obj in pairs(lightningEffects) do
+        if obj then obj:Destroy() end
+    end
+    lightningEffects = {}
+end
+
+local function createLightning()
+    clearLightning()
+    if not character or not character:FindFirstChild("LowerTorso") or not character:FindFirstChild("Head") then return end
+    
+    -- ساخت نقطه‌های اتصال بالا و پایین بدن برای کشیده شدن رعدوبرق
+    local attTop = Instance.new("Attachment")
+    attTop.Position = Vector3.new(0, 2.5, 0)
+    attTop.Parent = character.Head
+    
+    local attBottom = Instance.new("Attachment")
+    attBottom.Position = Vector3.new(0, -1.5, 0)
+    attBottom.Parent = character.LowerTorso
+    
+    -- ساخت افکت لیزری/رعدوبرقی دایمی دور بدن
+    for i = 1, 3 do
+        local beam = Instance.new("Beam")
+        beam.Name = "FlashLightning"
+        beam.Attachment0 = attTop
+        beam.Attachment1 = attBottom
+        beam.Color = ColorSequence.new(Color3.fromRGB(255, 0, 0)) -- رنگ قرمز خالص
+        beam.Width0 = 0.4
+        beam.Width1 = 0.4
+        beam.Texture = "rbxassetid://1084991219" -- تکسچر رعدوبرق پیش‌فرض رابلاکس
+        beam.TextureSpeed = 4 -- سرعت لرزش رعد
+        beam.LightEmission = 1
+        beam.LightInfluence = 0
+        -- ایجاد پیچ‌وتاب در ساختار رعدوبرق برای طبیعی‌تر شدن
+        beam.CurveSize0 = math.random(-2, 2)
+        beam.CurveSize1 = math.random(-2, 2)
+        beam.Parent = character
+        
+        table.insert(lightningEffects, beam)
+    end
+    table.insert(lightningEffects, attTop)
+    table.insert(lightningEffects, attBottom)
+end
+
+-- // منطق رگباری اتوماتیک تله‌پورت //
+task.spawn(function()
+    while true do
+        task.wait(0.01) 
+        
+        if isActive and character and humanoidRootPart and humanoid then
+            local currentCFrame = humanoidRootPart.CFrame
+            
+            if currentCFrame.Y < (SKY_HEIGHT - 300) then
+                lastStablePosition = currentCFrame.Position
+                originalCFrame = currentCFrame
+            end
+            
+            local savedAssemblyVelocity = humanoidRootPart.AssemblyLinearVelocity
+            local savedAssemblyAngularVelocity = humanoidRootPart.AssemblyAngularVelocity
+            
+            local skyCFrame = originalCFrame + Vector3.new(0, SKY_HEIGHT, 0)
+            
+            humanoidRootPart.CFrame = skyCFrame
+            task.wait(0.001) 
+            
+            if isActive and humanoidRootPart and originalCFrame then
+                humanoidRootPart.CFrame = originalCFrame
+                humanoidRootPart.AssemblyLinearVelocity = savedAssemblyVelocity
+                humanoidRootPart.AssemblyAngularVelocity = savedAssemblyAngularVelocity
+            end
+        end
+    end
+end)
+
+-- // مدیریت پارت مجازی دوربین //
+local function syncVirtualTarget()
+    if isActive and humanoidRootPart then
+        virtualTarget.Position = virtualTarget.Position:Lerp(lastStablePosition, 0.25)
+    end
+end
+
+-- // مدیریت دکمه و وضعیت همراه با فرود امن روی زمین //
+toggleButton.MouseButton1Click:Connect(function()
+    isActive = not isActive
+    
+    if isActive then
+        toggleButton.Text = "STATUS: ON"
+        toggleButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+        toggleButton.TextColor3 = Color3.fromRGB(255, 255, 0)
+        
+        startSoundLoop()
+        createLightning() -- روشن شدن رعدوبرق‌های قرمز
+        
+        if humanoid then
+            humanoid.WalkSpeed = 150
+        end
+        
+        lastStablePosition = humanoidRootPart.Position
+        originalCFrame = humanoidRootPart.CFrame
+        virtualTarget.Position = lastStablePosition
+        
+        camera.CameraSubject = virtualTarget
+        cameraConnection = RunService.RenderStepped:Connect(syncVirtualTarget)
+    else
+        toggleButton.Text = "STATUS: OFF"
+        toggleButton.BackgroundColor3 = Color3.fromRGB(40, 5, 5)
+        toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        
+        stopSoundLoop()
+        clearLightning() -- حذف و خاموش شدن رعدوبرق‌ها
+        
+        if humanoid then
+            humanoid.WalkSpeed = 16
+        end
+        
+        if humanoidRootPart and originalCFrame then
+            humanoidRootPart.CFrame = originalCFrame
+            humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        end
+        
+        if cameraConnection then
+            cameraConnection:Disconnect()
+            cameraConnection = nil
+        end
+        camera.CameraSubject = humanoid
+    end
+end)
+
+-- بازنشانی پارت‌ها در صورت ریسپاون یا مرگ
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    humanoid = character:WaitForChild("Humanoid")
+    
+    if isActive then
+        stopSoundLoop()
+        clearLightning()
+        if cameraConnection then
+            cameraConnection:Disconnect()
+            cameraConnection = nil
+        end
+        camera.CameraSubject = humanoid
+        isActive = false
+        toggleButton.Text = "STATUS: OFF"
+        toggleButton.BackgroundColor3 = Color3.fromRGB(40, 5, 5)
+        toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+end)
