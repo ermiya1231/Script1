@@ -1,4 +1,4 @@
--- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio, Optimized Notifications & R-Hold Noclip with Audio Pitch
+-- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio, Optimized Notifications, Advanced R-Hold Noclip, Dark Ambient & Deep Audio Scan
 local player = game.Players.LocalPlayer
 local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
@@ -8,6 +8,7 @@ local camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
 
 -- حذف نسخه‌های قبلی برای جلوگیری از تداخل
 if playerGui:FindFirstChild("ReverseFlashGui") then 
@@ -75,7 +76,7 @@ noclipScreenText.Text = "NOCLIP"
 noclipScreenText.TextColor3 = Color3.fromRGB(255, 0, 0)
 noclipScreenText.TextSize = 45
 noclipScreenText.Font = Enum.Font.GothamBold
-noclipScreenText.TextTransparency = 1 -- شروع به صورت مخفی
+noclipScreenText.TextTransparency = 1 
 noclipScreenText.Parent = screenGui
 
 -- // تنظیمات افکت و وضعیت‌ها //
@@ -86,6 +87,11 @@ local cameraConnection = nil
 local noclipConnection = nil
 local lastStablePosition = Vector3.new()
 local originalCFrame = nil 
+local savedSpeedBeforeNoclip = 150 -- ذخیره سرعت قبلی بازیکن
+
+-- ذخیره وضعیت اصلی آسمان برای بازگردانی
+local originalClockTime = Lighting.ClockTime
+local originalOutdoorAmbient = Lighting.OutdoorAmbient
 
 -- ساخت پارت مجازی دوربین
 local virtualTarget = Instance.new("Part")
@@ -96,13 +102,12 @@ virtualTarget.CanCollide = false
 virtualTarget.Anchored = true
 virtualTarget.Parent = workspace
 
--- // سیستم نوتیفیکیشن هوشمند ضد اسپم (بدون کول‌داون) //
+-- // سیستم نوتیفیکیشن هوشمند ضد اسپم //
 local currentNotifFrame = nil
 local currentNotifText = nil
 local notifThread = nil
 
 local function showNotification(message)
-    -- اگر از قبل باکسی هست، فقط متنش رو عوض کن و زمان رو تمدید کن
     if currentNotifFrame and currentNotifText then
         currentNotifText.Text = message
         if notifThread then task.cancel(notifThread) end
@@ -122,7 +127,6 @@ local function showNotification(message)
         return
     end
 
-    -- ساخت باکس جدید در صورتی که باکسی روی صفحه نباشد
     currentNotifFrame = Instance.new("Frame")
     currentNotifFrame.Size = UDim2.new(0, 200, 0, 50)
     currentNotifFrame.Position = UDim2.new(1, 10, 0.85, 0)
@@ -186,9 +190,9 @@ local function startSoundLoop()
     stopSoundLoop() 
     soundThread = task.spawn(function()
         while isActive do
-            -- چک کردن وضعیت کلید R برای اعمال تغییر سرعت موزیک (Pitch 0.4)
-            local currentSpeed1 = isNoclip and 0.4 or 1
-            local currentSpeed2 = isNoclip and 0.4 or 1.2
+            -- چک کردن وضعیت کلید R برای اعمال تغییر سرعت موزیک (Pitch 0.2)
+            local currentSpeed1 = isNoclip and 0.2 or 1
+            local currentSpeed2 = isNoclip and 0.2 or 1.2
 
             local flashSound1 = Instance.new("Sound")
             flashSound1.Name = "ReverseFlashMusic"
@@ -254,34 +258,54 @@ local function syncVirtualTarget()
     end
 end
 
--- // سیستم ردیابی کلیدهای Q, E (سرعت) و کلید R (نوکلیپ و کاهش سرعت موزیک) //
+-- // سیستم ردیابی کلیدهای Q, E (سرعت) و کلید R (نوکلیپ، اتمسفر دارک و اسکن عمیق صوتی) //
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if not isActive or not humanoid then return end
 
     -- تغییرات سرعت با Q و E
     if input.KeyCode == Enum.KeyCode.E then
-        humanoid.WalkSpeed = humanoid.WalkSpeed + 10
-        showNotification("⚡ SPEED: " .. tostring(humanoid.WalkSpeed))
+        if not isNoclip then
+            humanoid.WalkSpeed = humanoid.WalkSpeed + 10
+            showNotification("⚡ SPEED: " .. tostring(humanoid.WalkSpeed))
+        else
+            savedSpeedBeforeNoclip = savedSpeedBeforeNoclip + 10
+            showNotification("⚡ SPEED (QUEUED): " .. tostring(savedSpeedBeforeNoclip))
+        end
     elseif input.KeyCode == Enum.KeyCode.Q then
-        if humanoid.WalkSpeed > 16 then
-            humanoid.WalkSpeed = math.max(16, humanoid.WalkSpeed - 10)
-            showNotification("⚠️ SPEED: " .. tostring(humanoid.WalkSpeed))
+        if not isNoclip then
+            if humanoid.WalkSpeed > 16 then
+                humanoid.WalkSpeed = math.max(16, humanoid.WalkSpeed - 10)
+                showNotification("⚠️ SPEED: " .. tostring(humanoid.WalkSpeed))
+            end
+        else
+            if savedSpeedBeforeNoclip > 16 then
+                savedSpeedBeforeNoclip = math.max(16, savedSpeedBeforeNoclip - 10)
+                showNotification("⚠️ SPEED (QUEUED): " .. tostring(savedSpeedBeforeNoclip))
+            end
         end
     
-    -- فعالسازی NOCLIP با نگه داشتن دکمه R
+    -- فعالسازی کامل NOCLIP با نگه داشتن دکمه R
     elseif input.KeyCode == Enum.KeyCode.R then
         isNoclip = true
-        noclipScreenText.TextTransparency = 0.8 -- تنظیم شفافیت روی 0.8 طبق خواسته شما
+        noclipScreenText.TextTransparency = 0.8
         
-        -- تغییر فوری سرعت موزیک‌های فعلی موجود در ارث‌بری ورک‌اسپیس
-        for _, obj in pairs(workspace:GetChildren()) do
-            if obj.Name == "ReverseFlashMusic" or obj.Name == "ReverseFlashMusic2" then
-                obj.PlaybackSpeed = 0.4
+        -- تغییر سرعت کاراکتر به ۲۰ تا زمان نگه داشتن کلید
+        savedSpeedBeforeNoclip = humanoid.WalkSpeed
+        humanoid.WalkSpeed = 20
+        
+        -- دارک و تاریک کردن اتمسفر بازی (Midnight Mode)
+        Lighting.ClockTime = 0 -- نیمه‌شب کاملاً تاریک
+        Lighting.OutdoorAmbient = Color3.fromRGB(10, 10, 10) -- فضاسازی تیره سایه‌ها
+
+        -- اسکن فوق عمیق کل ریشه‌ها و لایه‌های ورک‌اسپیس برای تمام موزیک‌ها
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("Sound") then
+                obj.PlaybackSpeed = 0.2
             end
         end
 
-        -- اجرای لوپ حذف دائم تصادم اجسام تا زمانی که R فشرده شده
+        -- لوپ حذف دائم تصادم اجسام (Noclip)
         if noclipConnection then noclipConnection:Disconnect() end
         noclipConnection = RunService.Stepped:Connect(function()
             if character then
@@ -298,22 +322,35 @@ end)
 UserInputService.InputEnded:Connect(function(input, gameProcessed)
     if not isActive then return end
     
-    -- غیرفعال کردن NOCLIP به محض ول کردن دکمه R
+    -- غیرفعال کردن حالت NOCLIP و بازگردانی همه تغییرات محیطی و صوتی به محض ول کردن R
     if input.KeyCode == Enum.KeyCode.R then
         isNoclip = false
-        noclipScreenText.TextTransparency = 1 -- مخفی کردن متن صفحه
+        noclipScreenText.TextTransparency = 1 
         
+        -- برگرداندن سرعت کاراکتر به حالت قبلی تنظیم شده
+        if humanoid then
+            humanoid.WalkSpeed = savedSpeedBeforeNoclip
+        end
+        
+        -- برگرداندن اتمسفر و نور محیط به حالت عادی بازی
+        Lighting.ClockTime = originalClockTime
+        Lighting.OutdoorAmbient = originalOutdoorAmbient
+
         if noclipConnection then
             noclipConnection:Disconnect()
             noclipConnection = nil
         end
         
-        -- برگرداندن سرعت موزیک‌های ورک‌اسپیس به حالت عادی
-        for _, obj in pairs(workspace:GetChildren()) do
-            if obj.Name == "ReverseFlashMusic" then
-                obj.PlaybackSpeed = 1
-            elseif obj.Name == "ReverseFlashMusic2" then
-                obj.PlaybackSpeed = 1.2
+        -- اسکن مجدد ورک‌اسپیس برای بازگرداندن سرعت تمام موزیک‌ها به حالت پیش‌فرض (سرعت عادی 1)
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("Sound") then
+                if obj.Name == "ReverseFlashMusic" then
+                    obj.PlaybackSpeed = 1
+                elseif obj.Name == "ReverseFlashMusic2" then
+                    obj.PlaybackSpeed = 1.2
+                else
+                    obj.PlaybackSpeed = 1 -- بقیه موزیک‌های متفرقه بازی
+                end
             end
         end
     end
@@ -327,6 +364,10 @@ toggleButton.MouseButton1Click:Connect(function()
         toggleButton.Text = "STATUS: ON"
         toggleButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
         toggleButton.TextColor3 = Color3.fromRGB(255, 255, 0)
+        
+        -- ثبت تایم اصلی لایتینگ بازی هنگام روشن شدن
+        originalClockTime = Lighting.ClockTime
+        originalOutdoorAmbient = Lighting.OutdoorAmbient
         
         startSoundLoop()
         
@@ -348,6 +389,11 @@ toggleButton.MouseButton1Click:Connect(function()
         stopSoundLoop()
         isNoclip = false
         noclipScreenText.TextTransparency = 1
+        
+        -- ریست کردن لایتینگ در صورت خاموش کردن ناگهانی چیت
+        Lighting.ClockTime = originalClockTime
+        Lighting.OutdoorAmbient = originalOutdoorAmbient
+        
         if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
         
         if humanoid then
@@ -377,6 +423,8 @@ player.CharacterAdded:Connect(function(newChar)
         stopSoundLoop()
         isNoclip = false
         noclipScreenText.TextTransparency = 1
+        Lighting.ClockTime = originalClockTime
+        Lighting.OutdoorAmbient = originalOutdoorAmbient
         if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
         if cameraConnection then
             cameraConnection:Disconnect()
