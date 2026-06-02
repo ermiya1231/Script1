@@ -58,7 +58,7 @@ game:GetService("Workspace").DescendantAdded:Connect(function(v)
     ForcePart(v)
 end)
 UserInputService.InputBegan:Connect(function(Key, Chat)
-    if Key.KeyCode == Enum.KeyCode.E and not Chat then
+    if Key.KeyCode == Enum.KeyCode.T and not Chat then
        Updated = Mouse.Hit + Vector3.new(0, 5, 0)
     end
 end)
