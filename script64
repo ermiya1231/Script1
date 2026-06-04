@@ -1,0 +1,80 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+local player = game.Players.LocalPlayer
+while not player do
+    wait()
+    player = game.Players.LocalPlayer
+end
+
+
+local function StopAnimations(character)
+    local animateScript = character:WaitForChild("Animate")
+    local humanoid = character:WaitForChild("Humanoid")
+    local animator = humanoid:WaitForChild("Animator")
+
+    animateScript.Disabled = false
+    for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+        track:Stop()
+    end
+end
+
+
+local function ApplyCustomAnimations(character)
+    local humanoid = character:WaitForChild("Humanoid")
+
+
+    if humanoid.RigType ~= Enum.HumanoidRigType.R15 then
+        warn("❌ R6 detected - R15 only bro?")
+        return
+    end
+
+    local animateScript = character:WaitForChild("Animate")
+
+    StopAnimations(character)
+
+    -- Idle animations
+    animateScript.idle.Animation1.AnimationId = "rbxassetid://122257458498464"
+    animateScript.idle.Animation2.AnimationId = "rbxassetid://98173568987992"
+
+    -- Pose animation
+    if animateScript.idle:FindFirstChild("Animation3") then
+        animateScript.idle.Animation3.AnimationId = "rbxassetid://89262795687364"
+    else
+        local pose = Instance.new("Animation")
+        pose.Name = "Animation3"
+        pose.AnimationId = "rbxassetid://89262795687364"
+        pose.Parent = animateScript.idle
+    end
+
+    -- Walk animation
+    animateScript.walk.WalkAnim.AnimationId = "rbxassetid://122150855457006"
+    -- Run animation
+    animateScript.run.RunAnim.AnimationId = "rbxassetid://82598234841035"
+    -- Jump animation
+    animateScript.jump.JumpAnim.AnimationId = "rbxassetid://75290611992385"
+    -- Climb animation
+    animateScript.climb.ClimbAnim.AnimationId = "rbxassetid://88763136693023"
+    -- Fall animation
+    animateScript.fall.FallAnim.AnimationId = "rbxassetid://18537367238"
+
+    -- Swim animations
+    animateScript.swim.Swim.AnimationId = "rbxassetid://133308483266208"
+    animateScript.swimidle.SwimIdle.AnimationId = "rbxassetid://109346520324160"
+
+
+    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+    animateScript.Disabled = false
+
+    print("✅ Animations applied successfully")
+end
+
+
+if player.Character then
+    ApplyCustomAnimations(player.Character)
+end
+
+
+player.CharacterAdded:Connect(function(character)
+    ApplyCustomAnimations(character)
+end) 
