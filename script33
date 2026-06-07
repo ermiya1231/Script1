@@ -146,7 +146,7 @@ end
 -------------------------------------------------
 local fireBtn = createButton("🔥 Fire ClickDetectors", 38, Color3.fromRGB(70,140,255))
 -- دکمه جدید تو که اسم‌های خاص رو فایر می‌کنه و به عنوان دکمه دوم اضافه شده
-local fireSpecificBtn = createButton("🔑 Fire Target Detector", 76, Color3.fromRGB(255, 150, 50))
+local fireSpecificBtn = createButton("🔑 Open Keypad Doors", 76, Color3.fromRGB(255, 150, 50))
 
 -- بقیه دکمه‌ها هرکدام ۳۸ واحد رفتن پایین‌تر تا فضا کاملاً باز بشه
 local promptBtn = createButton("⚡ Instant Prompt: OFF", 114, Color3.fromRGB(255,90,90))
