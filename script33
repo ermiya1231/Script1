@@ -34,7 +34,7 @@ gui.ResetOnSpawn = false
 gui.Parent = targetParent -- تغییر یافت به مسیر جدید
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 580)
+main.Size = UDim2.fromOffset(220, 615)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -96,7 +96,7 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 580)
+local originalSize = UDim2.fromOffset(220, 615)
 local collapsedSize = UDim2.fromOffset(220, 30)
 
 local collapseBtn = Instance.new("TextButton")
@@ -141,22 +141,27 @@ end
 -------------------------------------------------
 -- Buttons
 -------------------------------------------------
+-------------------------------------------------
+-- Buttons (مرتب شده بدون تداخل مابقی دکمه‌ها)
+-------------------------------------------------
 local fireBtn = createButton("🔥 Fire ClickDetectors", 38, Color3.fromRGB(70,140,255))
-local promptBtn = createButton("⚡ Instant Prompt: OFF", 76, Color3.fromRGB(255,90,90))
-local swimBtn = createButton("🌊 Swim Disable: OFF", 114, Color3.fromRGB(255,90,90))
-local scanBtn = createButton("💵 God Mode(KillBrick): OFF", 152, Color3.fromRGB(255,90,90))
-local espBtn = createButton("👁️ ESP & Hitbox & Wallshot: OFF", 190, Color3.fromRGB(255,90,90))
-local killBtn   = createButton("💀 NPC Kill Aura: OFF", 228, Color3.fromRGB(255,90,90))
-local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 266, Color3.fromRGB(255,90,90))
-local xrayBtn = createButton("💎 X-Ray Vision: OFF", 304, Color3.fromRGB(255, 90, 90))
-local noclipBtn = createButton("👻 NoClip: OFF", 342, Color3.fromRGB(255, 90, 90))
-local climbBtn = createButton("🧗 Spiderman : OFF", 380, Color3.fromRGB(255, 90, 90))
-local fullBrightBtn = createButton("☀️ FullBright: OFF", 418, Color3.fromRGB(255, 90, 90))
-local weightBtn = createButton("🛸 Titan Mass:: OFF", 456, Color3.fromRGB(255, 90, 90))
-local touchBtn = createButton("🚫 Disable TouchInterest: OFF", 494, Color3.fromRGB(255, 90, 90))
-local wallWalkBtn = createButton("🧗 Walk On Walls: OFF", 532, Color3.fromRGB(255, 90, 90))
-local fireSpecificBtn = createButton("🔑 Open Keypad Door", 38 + 38, Color3.fromRGB(255, 150, 50))
+-- دکمه جدید تو که اسم‌های خاص رو فایر می‌کنه و به عنوان دکمه دوم اضافه شده
+local fireSpecificBtn = createButton("🔑 Fire Target Detector", 76, Color3.fromRGB(255, 150, 50))
 
+-- بقیه دکمه‌ها هرکدام ۳۸ واحد رفتن پایین‌تر تا فضا کاملاً باز بشه
+local promptBtn = createButton("⚡ Instant Prompt: OFF", 114, Color3.fromRGB(255,90,90))
+local swimBtn = createButton("🌊 Swim Disable: OFF", 152, Color3.fromRGB(255,90,90))
+local scanBtn = createButton("💵 God Mode(KillBrick): OFF", 190, Color3.fromRGB(255,90,90))
+local espBtn = createButton("👁️ ESP & Hitbox & Wallshot: OFF", 228, Color3.fromRGB(255,90,90))
+local killBtn   = createButton("💀 NPC Kill Aura: OFF", 266, Color3.fromRGB(255,90,90))
+local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 304, Color3.fromRGB(255, 90, 90))
+local xrayBtn = createButton("💎 X-Ray Vision: OFF", 342, Color3.fromRGB(255, 90, 90))
+local noclipBtn = createButton("👻 NoClip: OFF", 380, Color3.fromRGB(255, 90, 90))
+local climbBtn = createButton("🧗 Spiderman : OFF", 418, Color3.fromRGB(255, 90, 90))
+local fullBrightBtn = createButton("☀️ FullBright: OFF", 456, Color3.fromRGB(255, 90, 90))
+local weightBtn = createButton("🛸 Titan Mass:: OFF", 494, Color3.fromRGB(255, 90, 90))
+local touchBtn = createButton("🚫 Disable TouchInterest: OFF", 532, Color3.fromRGB(255, 90, 90))
+local wallWalkBtn = createButton("🧗 Walk On Walls: OFF", 570, Color3.fromRGB(255, 90, 90))
 -------------------------------------------------
 -- Fire ClickDetectors
 -------------------------------------------------
