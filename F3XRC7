@@ -1,0 +1,150 @@
+--[[
+    BABYOUTMOON2O22 GUI V5 - LEGACY BLACK & WHITE EDITION
+    UPDATED: NIGHT & DISCO COMMANDS ADDED
+--]]
+
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+
+-- Limpieza de versiones anteriores
+if CoreGui:FindFirstChild("BabyOutMoonV5_Dark") then
+    CoreGui.BabyOutMoonV5_Dark:Destroy()
+end
+
+local Screen = Instance.new("ScreenGui")
+Screen.Name = "BabyOutMoonV5_Dark"
+Screen.Parent = CoreGui
+
+-- Marco Principal (Negro con Borde Blanco)
+local Main = Instance.new("Frame")
+Main.Name = "MainFrame"
+Main.Size = UDim2.new(0, 450, 0, 400)
+Main.Position = UDim2.new(0.5, -225, 0.4, -200)
+Main.BackgroundColor3 = Color3.new(0, 0, 0)
+Main.BorderSizePixel = 2
+Main.BorderColor3 = Color3.new(1, 1, 1)
+Main.Active = true
+Main.Draggable = true
+Main.Parent = Screen
+
+-- TÃ­tulos
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "BABYOUTMOON2O22 GUI V5 F3X"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+Title.Parent = Main
+
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(1, 0, 0, 20)
+SubTitle.Position = UDim2.new(0, 0, 0, 25)
+SubTitle.Text = "BY BABYOUTMOON2O22_RC7"
+SubTitle.TextColor3 = Color3.new(1, 1, 1)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Font = Enum.Font.SourceSansItalic
+SubTitle.TextSize = 14
+SubTitle.Parent = Main
+
+-- FunciÃ³n de Chat (Legacy & New Support)
+local function Chat(msg)
+    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        local channel = TextChatService.TextChannels.RBXGeneral
+        if channel then channel:SendAsync(msg) end
+    else
+        local event = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") and ReplicatedStorage.DefaultChatSystemChatEvents:FindFirstChild("SayMessageRequest")
+        if event then event:FireServer(msg, "All") end
+    end
+end
+
+-- Botones R6 y R15 (Arriba Izquierda)
+local function CreateMiniBtn(txt, pos)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0, 40, 0, 20)
+    b.Position = pos
+    b.Text = txt:upper()
+    b.BackgroundColor3 = Color3.new(0, 0, 0)
+    b.TextColor3 = Color3.new(1, 1, 1)
+    b.BorderColor3 = Color3.new(1, 1, 1)
+    b.BorderSizePixel = 1
+    b.TextSize = 12
+    b.Parent = Main
+    return b
+end
+
+CreateMiniBtn("R6", UDim2.new(0, 5, 0, 5)).MouseButton1Click:Connect(function() Chat(";r6 all") end)
+CreateMiniBtn("R15", UDim2.new(0, 50, 0, 5)).MouseButton1Click:Connect(function() Chat(";r15 all") end)
+
+-- Contenedor con Scroll
+local Grid = Instance.new("ScrollingFrame")
+Grid.Size = UDim2.new(0.95, 0, 0.75, 0)
+Grid.Position = UDim2.new(0.025, 0, 0.22, 0)
+Grid.BackgroundTransparency = 1
+Grid.CanvasSize = UDim2.new(0, 0, 4, 0) -- MÃ¡s espacio para los nuevos botones
+Grid.ScrollBarImageColor3 = Color3.new(1, 1, 1)
+Grid.Parent = Main
+
+local Layout = Instance.new("UIGridLayout")
+Layout.CellSize = UDim2.new(0, 130, 0, 35)
+Layout.Parent = Grid
+
+-- FunciÃ³n para aÃ±adir botones (MAYÃšSCULAS)
+local function AddBtn(name, cmd, isScript)
+    local btn = Instance.new("TextButton")
+    btn.Text = name:upper()
+    btn.BackgroundColor3 = Color3.new(0, 0, 0)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.BorderColor3 = Color3.new(1, 1, 1)
+    btn.BorderSizePixel = 1
+    btn.Font = Enum.Font.SourceSans
+    btn.TextSize = 14
+    btn.Parent = Grid
+    btn.MouseButton1Click:Connect(function()
+        if isScript then
+            loadstring(game:HttpGet(cmd))()
+        else
+            Chat(cmd)
+        end
+    end)
+end
+
+-- LISTA DE COMANDOS ACTUALIZADA
+AddBtn("RE", ";re")
+AddBtn("NIGHT", ";night") -- NUEVO
+AddBtn("DISCO", ";disco") -- NUEVO
+AddBtn("Char All", ";char all babyoutmoon2o22_rc7")
+AddBtn("TP All", ";tp all me")
+AddBtn("LoadMap", ";loadmap")
+AddBtn("BuildingTools", ";buildingtools")
+AddBtn("Kill All", ";kill all")
+AddBtn("Loopkill Others", ";loopkill others")
+AddBtn("Fly", ";fly")
+AddBtn("Unfly", ";unfly")
+AddBtn("Ban Others", ";ban others")
+AddBtn("Kick Others", ";kick others")
+AddBtn("Shutdown", ";shutdown")
+AddBtn("Theme 2", ";music 1847661821")
+AddBtn("Hint All", ";hint team babyoutmoon2o22_rc7")
+AddBtn("Message All", ";m team babyoutmoon2o22_rc7")
+AddBtn("Title All", ";title all team babyoutmoon2o22_rc7")
+AddBtn("Bigify All", ";bigify all")
+AddBtn("Size 10 Me", ";size me 10")
+
+-- Scripts Externos
+AddBtn("Tubers93 Dance", "https://rawscripts.net/raw/Universal-Script-tubers-dance-hd-admin-128300", true)
+AddBtn("Baldi Map", "https://rawscripts.net/raw/Universal-Script-BALDI-MAP-F3X-BY-WXA-x-X9D-135857", true)
+AddBtn("Polaria", "https://rawscripts.net/raw/Universal-Script-polaria-f3x-v14-leaked-reupload-205730", true)
+AddBtn("K00PGUI V8", "https://rawscripts.net/raw/Universal-Script-k00pgui-v8-F3X-EDITON-52670", true)
+
+-- BotÃ³n Cerrar
+local Close = Instance.new("TextButton")
+Close.Size = UDim2.new(0, 25, 0, 25)
+Close.Position = UDim2.new(1, -30, 0, 5)
+Close.Text = "X"
+Close.BackgroundColor3 = Color3.new(0, 0, 0)
+Close.TextColor3 = Color3.new(1, 1, 1)
+Close.BorderColor3 = Color3.new(1, 1, 1)
+Close.Parent = Main
+Close.MouseButton1Click:Connect(function() Screen:Destroy() end)
