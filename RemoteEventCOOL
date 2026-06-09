@@ -1,0 +1,187 @@
+-- [[ COOL Remote Manager - Premium Edition ]] --
+
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+-- حذف نسخه قدیمی اگر وجود داشته باشد
+if CoreGui:FindFirstChild("COOL_RemoteManager") then
+    CoreGui["COOL_RemoteManager"]:Destroy()
+end
+
+-- ۱. ساختار اصلی UI
+local COOL_Ui = Instance.new("ScreenGui")
+COOL_Ui.Name = "COOL_RemoteManager"
+COOL_Ui.Parent = CoreGui
+COOL_Ui.IgnoreGuiInset = true
+
+-- پخش صدای کلاسیک روبلاکس هنگام باز شدن
+local sound = Instance.new("Sound", game.Workspace)
+sound.SoundId = "rbxassetid://12222242" -- Classic Oof
+sound.Volume = 0.8
+sound:Play()
+
+-- ۲. پنل اصلی (Luxury Deep Black)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 420, 0, 340)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -170)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12) -- مشکی لوکس OLED
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Parent = COOL_Ui
+
+local uiCorner = Instance.new("UICorner", MainFrame)
+uiCorner.CornerRadius = UDim.new(0, 12)
+
+-- ۳. حاشیه نئون متحرک (Dynamic RGB Border)
+local uiStroke = Instance.new("UIStroke", MainFrame)
+uiStroke.Thickness = 2
+uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+task.spawn(function()
+    while MainFrame.Parent do
+        for i = 0, 1, 0.005 do
+            uiStroke.Color = Color3.fromHSV(i, 0.85, 1)
+            task.wait(0.02)
+        end
+    end
+end)
+
+-- ۴. سیستم درگ کردن و جابه‌جایی منو (Smooth Dragging)
+local dragging, dragInput, dragStart, startPos
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- ۵. تیتر منو (Header)
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.BackgroundTransparency = 1
+Title.Text = "COOL REMOTE MANAGER"
+Title.TextColor3 = Color3.fromRGB(240, 240, 245)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Center
+
+-- دکمه بستن منو (X)
+local CloseBtn = Instance.new("TextButton", MainFrame)
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 8)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
+CloseBtn.TextSize = 24
+
+CloseBtn.MouseButton1Click:Connect(function()
+    COOL_Ui:Destroy()
+end)
+
+-- ۶. کادرهای ورودی (The Triple Kaders)
+local function createLuxuryKader(placeholder, posY)
+    local box = Instance.new("TextBox", MainFrame)
+    box.Size = UDim2.new(1, -50, 0, 42)
+    box.Position = UDim2.new(0, 25, 0, posY)
+    box.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.PlaceholderText = placeholder
+    box.PlaceholderColor3 = Color3.fromRGB(90, 90, 100)
+    box.Font = Enum.Font.Code
+    box.TextSize = 14
+    box.Text = ""
+    box.ClearTextOnFocus = false
+    
+    local kCorner = Instance.new("UICorner", box)
+    kCorner.CornerRadius = UDim.new(0, 6)
+    
+    local kStroke = Instance.new("UIStroke", box)
+    kStroke.Thickness = 1
+    kStroke.Color = Color3.fromRGB(40, 40, 45)
+    
+    -- افکت تغییر رنگ حاشیه هنگام کلیک روی کادر
+    box.Focused:Connect(function() kStroke.Color = Color3.fromRGB(255, 255, 255) end)
+    box.FocusLost:Connect(function() kStroke.Color = Color3.fromRGB(40, 40, 45) end)
+    
+    return box
+end
+
+local Kader1 = createLuxuryKader("Main Remote (e.g. game.RS.Remotes.Buy)", 65)
+local Kader2 = createLuxuryKader("Secondary Remote (Optional)", 125)
+local Kader3 = createLuxuryKader("Payload / Argument (e.g. Gold)", 185)
+
+-- ۷. دکمه اصلی اجرای ریموت (Execute Button)
+local ExecBtn = Instance.new("TextButton", MainFrame)
+ExecBtn.Size = UDim2.new(1, -50, 0, 45)
+ExecBtn.Position = UDim2.new(0, 25, 0, 255)
+ExecBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
+ExecBtn.Text = "EXECUTE PAYLOAD"
+ExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecBtn.Font = Enum.Font.GothamBold
+ExecBtn.TextSize = 14
+
+local btnCorner = Instance.new("UICorner", ExecBtn)
+btnCorner.CornerRadius = UDim.new(0, 8)
+
+local btnStroke = Instance.new("UIStroke", ExecBtn)
+btnStroke.Thickness = 1
+btnStroke.Color = Color3.fromRGB(60, 60, 65)
+
+-- منطق کلیک دکمه و فایر کردن ریموت
+ExecBtn.MouseButton1Click:Connect(function()
+    if Kader1.Text ~= "" then
+        -- ساخت افکت فلش زدن دکمه هنگام کلیک موفق
+        ExecBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+        task.delay(0.1, function() ExecBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 28) end)
+        
+        -- اجرای کد تزریق ریموت به صورت محافظت شده (pcall)
+        local success, err = pcall(function()
+            -- پیدا کردن مسیر ریموت اصلی بر اساس متنی که توی کادر ۱ نوشتی
+            local targetRemote = loadstring("return " .. Kader1.Text)()
+            
+            if targetRemote and targetRemote:IsA("RemoteEvent") then
+                -- فرستادن پیلود کادر ۳ به سرور
+                targetRemote:FireServer(Kader3.Text)
+                print("[COOL RM] Successfully fired primary remote with payload: " .. Kader3.Text)
+            end
+            
+            -- اگر کادر دوم هم پر شده بود، آن را هم فایر کن
+            if Kader2.Text ~= "" then
+                local secondaryRemote = loadstring("return " .. Kader2.Text)()
+                if secondaryRemote and secondaryRemote:IsA("RemoteEvent") then
+                    secondaryRemote:FireServer(Kader3.Text)
+                    print("[COOL RM] Successfully fired secondary remote.")
+                end
+            end
+        end)
+        
+        if not success then
+            warn("[COOL RM] Error executing remotes: " .. tostring(err))
+        end
+    else
+        print("[COOL RM] Please enter a valid Main Remote path.")
+    end
+end)
