@@ -193,7 +193,7 @@ end)
 local scriptsData = {
 	{name = "F3X5", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3X5"},
 	{name = "X9D", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/X9D"},
-	{name = "F3X%Ultimate%Bro", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3X%Ultimate%Bro"},
+	{name = "F3X%Ultimate%Bro", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3X%20Ultimate%20Bro"},
 	{name = "2F3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/2F3X"},
 	{name = "F3XRC7", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3XRC7"},
 	{name = "F3Xidk", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3Xidk"},
