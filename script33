@@ -34,7 +34,7 @@ gui.ResetOnSpawn = false
 gui.Parent = targetParent -- تغییر یافت به مسیر جدید
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 615)
+main.Size = UDim2.fromOffset(220, 655)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -96,7 +96,7 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 615)
+local originalSize = UDim2.fromOffset(220, 655)
 local collapsedSize = UDim2.fromOffset(220, 30)
 
 local collapseBtn = Instance.new("TextButton")
@@ -162,6 +162,7 @@ local fullBrightBtn = createButton("☀️ FullBright: OFF", 456, Color3.fromRGB
 local weightBtn = createButton("🛸 Titan Mass:: OFF", 494, Color3.fromRGB(255, 90, 90))
 local touchBtn = createButton("🚫 Disable TouchInterest: OFF", 532, Color3.fromRGB(255, 90, 90))
 local wallWalkBtn = createButton("🧗 Walk On Walls: OFF", 570, Color3.fromRGB(255, 90, 90))
+local grabtoolsBtn = createButton("🎒 Grabtools: OFF", 608, Color3.fromRGB(255, 90, 90))
 -------------------------------------------------
 -- Fire ClickDetectors
 -------------------------------------------------
@@ -1065,6 +1066,48 @@ wallWalkBtn.MouseButton1Click:Connect(function()
             end
         end)
     end
+end)
+
+-------------------------------------------------
+-- 🎒 GRABTOOLS LOGIC (New Addition)
+-------------------------------------------------
+grabtoolsBtn.MouseButton1Click:Connect(function()
+	grabtoolsEnabled = not grabtoolsEnabled
+	grabtoolsBtn.Text = grabtoolsEnabled and "🎒 Grabtools: ON" or "🎒 Grabtools: OFF"
+	grabtoolsBtn.BackgroundColor3 = grabtoolsEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+
+	if grabtoolsEnabled then
+		local char = LocalPlayer.Character
+		local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+		
+		if humanoid then
+			-- ۱. اسکن و جمع‌آوری ابزارهای فعلی مپ در اولین کلیک
+			for _, child in ipairs(workspace:GetChildren()) do
+				if LocalPlayer.Character and child:IsA("BackpackItem") and child:FindFirstChild("Handle") then
+					pcall(function() humanoid:EquipTool(child) end)
+				end
+			end
+
+			-- ۲. متصل کردن لوپ برای ابزارهایی که بعداً روی زمین می‌افتند
+			if grabtoolsFunc then grabtoolsFunc:Disconnect() end
+			grabtoolsFunc = workspace.ChildAdded:Connect(function(child)
+				if LocalPlayer.Character and child:IsA("BackpackItem") and child:FindFirstChild("Handle") then
+					local currentHum = LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+					if currentHum then
+						pcall(function() currentHum:EquipTool(child) end)
+					end
+				end
+			end)
+		end
+		notify("Grabtools Activated", "Picking up any dropped tools")
+	else
+		-- قطع ارتباط لوپ در صورت غیرفعال شدن دکمه
+		if grabtoolsFunc then 
+			grabtoolsFunc:Disconnect() 
+			grabtoolsFunc = nil
+		end
+		notify("Grabtools De-Activated", "Auto pick-up disabled")
+	end
 end)
 -------------------------------------------------
 -- Color Animation
