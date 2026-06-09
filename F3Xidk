@@ -1,0 +1,720 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+--[[
+    Ultimate cZergui v5 Reborn
+--]]
+
+local Player = game.Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Centralized Asset Configuration
+local IDs = {
+    MainBG = "rbxassetid://135898705296921",
+    Watermark = "rbxassetid://98026978407009", 
+    DecalSpam = "99029040030660",
+    TextureSpam = "99029040030660",
+    Skybox1 = "99029040030660",
+    Skybox2 = "90510946956792",
+    Skybox3 = "135135073511612",
+    TrippySkybox = "98026978407009",
+    BaseplateTex = "95863886941408",
+    RainCzerMesh = "74556656271771",
+    RainCzerDecal = "96242443415724",
+    StatueMesh = "74556656271771",
+    StatueDecal = "96242443415724",
+    C00lify = "128447068910845",
+    K00pify = "138110506150502",
+    RainToadMesh = "1009824073",
+    RainToadDecal = "1009824086",
+    RainBowserMesh = "430331583",
+    RainBowserDecal = "430331587",
+    ThemeSong = "117928446811749",
+    Hardtekk = "99751635087978",
+    CzerkiddReturns = "134165618646156",
+    CoolCzerkidd = "89005954950090"
+}
+
+-- Precise F3X Connection Routing Handler
+local tool
+for _, v in pairs(Player:GetDescendants()) do
+    if v.Name == "SyncAPI" then tool = v.Parent end
+end
+for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+    if v.Name == "SyncAPI" then tool = v.Parent end
+end
+
+local remote = tool and tool:FindFirstChild("SyncAPI") and tool.SyncAPI:FindFirstChild("ServerEndpoint")
+local function _(args)
+    if remote then
+        remote:InvokeServer(unpack(args))
+    end
+end
+
+---------------------------------------------------------
+-- WRAPPER CORE FUNCTIONS (FIXED ARG PAYLOADS) ----------
+---------------------------------------------------------
+
+local function SetCollision(part, boolean)
+    _({"SyncCollision", {{Part = part, CanCollide = boolean}}})
+end
+
+local function SetAnchor(boolean, part)
+    _({"SyncAnchor", {{Part = part, Anchored = boolean}}})
+end
+
+local function CreatePart(cf, parent)
+    _({"CreatePart", "Normal", cf, parent})
+end
+
+local function DestroyPart(part)
+    _({"Remove", {part}})
+end
+
+local function MovePart(part, cf)
+    _({"SyncMove", {{Part = part, CFrame = cf}}})
+end
+
+local function Resize(part, size, cf)
+    _({"SyncResize", {{Part = part, CFrame = cf, Size = size}}})
+end
+
+local function AddMesh(part)
+    _({"CreateMeshes", {{Part = part}}})
+end
+
+local function SetMesh(part, meshid)
+    _({"SyncMesh", {{Part = part, MeshId = "rbxassetid://" .. meshid}}})
+end
+
+local function SetTexture(part, texid)
+    _({"SyncMesh", {{Part = part, TextureId = "rbxassetid://" .. texid}}})
+end
+
+local function SetName(part, stringg)
+    _({"SetName", {part}, stringg})
+end
+
+local function MeshResize(part, size)
+    _({"SyncMesh", {{Part = part, Scale = size}}})
+end
+
+local function SetLocked(part, boolean)
+    _({"SetLocked", {part}, boolean})
+end
+
+local function SetTrans(part, int)
+    _({"SyncMaterial", {{Part = part, Transparency = int}}})
+end
+
+local function SpawnDecal(part, side)
+    _({"CreateTextures", {{Part = part, Face = side, TextureType = "Decal"}}})
+end
+
+local function AddDecal(part, asset, side)
+    _({"SyncTexture", {{Part = part, Face = side, TextureType = "Decal", Texture = "rbxassetid://" .. asset}}})
+end
+
+local function SpawnTexture(part, side)
+    _({"CreateTextures", {{Part = part, Face = side, TextureType = "Texture"}}})
+end
+
+local function AddTexture(part, asset, side)
+    _({"SyncTexture", {{Part = part, Face = side, TextureType = "Texture", Texture = "rbxassetid://" .. asset, StudsPerTileU = 2, StudsPerTileV = 2}}})
+end
+
+local function FireHDCommand(cmdString)
+    local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient") and ReplicatedStorage.HDAdminHDClient:FindFirstChild("Signals")
+    if hd then
+        if hd:FindFirstChild("RequestCommandSilent") then
+            hd.RequestCommandSilent:InvokeServer(cmdString)
+        elseif hd:FindFirstChild("RequestCommand") then
+            hd.RequestCommand:InvokeServer(cmdString)
+        end
+    end
+end
+
+-- INSTANT SKYBOX LOAD ENGINE
+local function ApplySkybox(id)
+    local char = Player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local pos = char.HumanoidRootPart.Position
+        local targetCF = CFrame.new(math.floor(pos.X), math.floor(pos.Y), math.floor(pos.Z)) + Vector3.new(0, 6, 0)
+        
+        CreatePart(targetCF, workspace)
+        
+        local skyPart
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:IsA("BasePart") and math.floor(v.Position.X) == math.floor(pos.X) and v.Name ~= "d00m_Floor" then
+                skyPart = v
+                break
+            end
+        end
+        
+        if skyPart then
+            SetName(skyPart, "CustomSkybox")
+            AddMesh(skyPart)
+            SetMesh(skyPart, "111891702759441")
+            SetTexture(skyPart, id)
+            MeshResize(skyPart, Vector3.new(8500, 8500, 8500))
+            SetLocked(skyPart, true)
+            SetCollision(skyPart, false)
+            SetAnchor(true, skyPart)
+        end
+    end
+end
+
+-- INSTANT DECAL SPAM ENGINE
+local function RunDecalSpam(id)
+    local descendants = workspace:GetDescendants()
+    local faces = Enum.NormalId:GetEnumItems()
+    
+    task.spawn(function()
+        for i = 1, #descendants do
+            local v = descendants[i]
+            if v:IsA("BasePart") then
+                SetLocked(v, false)
+                for j = 1, #faces do
+                    local face = faces[j]
+                    SpawnDecal(v, face)
+                    AddDecal(v, id, face)
+                end
+            end
+        end
+    end)
+end
+
+-- INSTANT TEXTURE SPAM ENGINE
+local function RunTextureSpam(id)
+    local descendants = workspace:GetDescendants()
+    local faces = Enum.NormalId:GetEnumItems()
+    
+    task.spawn(function()
+        for i = 1, #descendants do
+            local v = descendants[i]
+            if v:IsA("BasePart") then
+                SetLocked(v, false)
+                for j = 1, #faces do
+                    local face = faces[j]
+                    SpawnTexture(v, face)
+                    AddTexture(v, id, face)
+                end
+            end
+        end
+    end)
+end
+
+local function ConstructTitanRealm()
+    for _, v in pairs(workspace:GetChildren()) do
+        if v ~= workspace.CurrentCamera and not game.Players:GetPlayerFromCharacter(v) then
+            DestroyPart(v)
+        end
+    end
+    task.wait(0.1) 
+
+    FireHDCommand(";btools me")
+    FireHDCommand(";fogcolor black")
+    FireHDCommand(";punish all")
+    FireHDCommand(";servermessage I am best F3x hacker")
+    FireHDCommand(";music " .. IDs.ThemeSong)
+    FireHDCommand(";pitch 1")
+    FireHDCommand(";volume inf")
+    task.wait(0.1)
+
+    if not remote then return end
+
+    local baseCF = CFrame.new(0, 5, 0)
+    _({"CreatePart", "Normal", baseCF, workspace})
+    task.wait(0.05)
+    local basePart
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("BasePart") and (v.Position - baseCF.Position).Magnitude < 1 then basePart = v break end
+    end
+    if basePart then
+        SetName(basePart, "d00m_Floor")
+        _({"SyncResize", {{Part = basePart, CFrame = baseCF, Size = Vector3.new(512, 2, 512)}}})
+        SetAnchor(true, basePart)
+        _({"SyncMaterial", {{Part = basePart, Material = Enum.Material.Neon}}})
+        _({"SyncColor", {{Part = basePart, Color = Color3.new(0,0,0), UnionColoring = false}}})
+    end
+
+    local spawnCF = CFrame.new(34.5, 8, -26)
+    _({"CreatePart", "Spawn", spawnCF, workspace})
+    task.wait(0.05)
+    local spawnPart
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("SpawnLocation") and (v.Position - spawnCF.Position).Magnitude < 1 then spawnPart = v break end
+    end
+    if spawnPart then
+        SetName(spawnPart, "SpawnLocation")
+        _({"SyncResize", {{Part = spawnPart, CFrame = spawnCF, Size = Vector3.new(20, 2, 20)}}})
+        SetAnchor(true, spawnPart)
+        SpawnDecal(spawnPart, Enum.NormalId.Top)
+        AddDecal(spawnPart, "112148625571026", Enum.NormalId.Top)
+    end
+
+    local rulesCF = CFrame.new(74, 24, -25)
+    _({"CreatePart", "Normal", rulesCF, workspace})
+    task.wait(0.05)
+    local rulesPart
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("BasePart") and (v.Position - rulesCF.Position).Magnitude < 1 and v.Name ~= "d00m_Floor" then rulesPart = v break end
+    end
+    if rulesPart then
+        SetName(rulesPart, "RulesWall")
+        _({"SyncResize", {{Part = rulesPart, CFrame = rulesCF, Size = Vector3.new(1, 23, 37)}}})
+        SetAnchor(true, rulesPart)
+        SpawnDecal(rulesPart, Enum.NormalId.Left)
+        AddDecal(rulesPart, "125215122493765", Enum.NormalId.Left)
+        SetCollision(rulesPart, false)
+    end
+
+    local badCF = CFrame.new(1, 24, -25)
+    _({"CreatePart", "Normal", badCF, workspace})
+    task.wait(0.05)
+    local badPart
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("BasePart") and (v.Position - badCF.Position).Magnitude < 1 and v.Name ~= "d00m_Floor" and v.Name ~= "RulesWall" then badPart = v break end
+    end
+    if badPart then
+        SetName(badPart, "EffectWall")
+        _({"SyncResize", {{Part = badPart, CFrame = badCF, Size = Vector3.new(1, 23, 37)}}})
+        SetAnchor(true, badPart)
+        SpawnDecal(badPart, Enum.NormalId.Right)
+        AddDecal(badPart, "119027287197449", Enum.NormalId.Right)
+        SetCollision(badPart, false)
+        SetTrans(badPart, 1)
+    end
+
+    local titanCF = spawnCF * CFrame.new(0, 15, -5)
+    _({"CreatePart", "Normal", titanCF, workspace})
+    task.wait(0.05)
+    local titanPart
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("BasePart") and (v.Position - titanCF.Position).Magnitude < 2 and v.Name ~= "d00m_Floor" and v.Name ~= "RulesWall" and v.Name ~= "EffectWall" then titanPart = v break end
+    end
+    if titanPart then
+        SetName(titanPart, "TitanGuardian")
+        _({"SyncResize", {{Part = titanPart, CFrame = titanCF, Size = Vector3.new(24, 30, 6)}}})
+        SetAnchor(true, titanPart)
+        AddMesh(titanPart)
+        _({"SyncMesh", {{
+            Part = titanPart,
+            MeshId = "rbxassetid://74556656271771",
+            TextureId = "rbxassetid://96242443415724",
+            Scale = Vector3.new(6.0, 6.0, 6.0)
+        }}})
+        SetCollision(titanPart, false)
+
+        task.spawn(function()
+            local rot = 0
+            while titanPart and titanPart.Parent do
+                rot = rot + 0.3
+                MovePart(titanPart, titanCF * CFrame.Angles(0, math.rad(rot), 0))
+                task.wait(0.06)
+            end
+        end)
+    end
+
+    _({"CreatePart", "Normal", baseCF, workspace})
+    task.wait(0.05)
+    local skyPart
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("BasePart") and v.Name == "Part" and (v.Position - baseCF.Position).Magnitude < 1 then skyPart = v break end
+    end
+    if skyPart then
+        SetName(skyPart, "hacked_sky")
+        AddMesh(skyPart)
+        _({"SyncMesh", {{
+            Part = skyPart,
+            MeshId = "rbxassetid://111891702759441",
+            TextureId = "rbxassetid://78448768052804",
+            Scale = Vector3.new(9000, 9000, 9000)
+        }}})
+        SetCollision(skyPart, false)
+        SetAnchor(true, skyPart)
+    end
+
+    FireHDCommand(";res all")
+    FireHDCommand(";time 0")
+    FireHDCommand(";r6 all")
+end
+
+local function ApplyTrippySkybox(id)
+    local char = Player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local pos = char.HumanoidRootPart.Position
+        local targetCF = CFrame.new(math.floor(pos.X), math.floor(pos.Y), math.floor(pos.Z)) + Vector3.new(0, 6, 0)
+        
+        CreatePart(targetCF, workspace)
+        
+        local skyPart
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:IsA("BasePart") and math.floor(v.Position.X) == math.floor(pos.X) and v.Name ~= "d00m_Floor" then
+                skyPart = v
+                break
+            end
+        end
+        
+        if skyPart then
+            SetName(skyPart, "CustomSkybox")
+            AddMesh(skyPart)
+            SetMesh(skyPart, "111891702759441")
+            SetTexture(skyPart, id)
+            MeshResize(skyPart, Vector3.new(8500, 8500, 8500))
+            SetLocked(skyPart, true)
+            SetCollision(skyPart, false)
+            SetAnchor(true, skyPart)
+            
+            task.spawn(function()
+                local rotX, rotY, rotZ = 0, 0, 0
+                while skyPart and skyPart.Parent do
+                    rotX = rotX + 1.2  
+                    rotY = rotY + 1.8
+                    rotZ = rotZ + 0.9
+                    MovePart(skyPart, targetCF * CFrame.Angles(math.rad(rotX), math.rad(rotY), math.rad(rotZ)))
+                    task.wait(0.02)
+                end
+            end)
+        end
+    end
+end
+
+---------------------------------------------------------
+-- MONOCHROME HIGH-CONTRAST MOBILE INTERFACE -----------
+---------------------------------------------------------
+
+if PlayerGui:FindFirstChild("czerkidd_v5") then
+    PlayerGui.czerkidd_v5:Destroy()
+end
+
+local UI = Instance.new("ScreenGui")
+UI.Name = "czerkidd_v5"
+UI.ResetOnSpawn = false
+UI.Parent = PlayerGui
+
+-- STANDALONE HUD WATERMARK ELEMENT
+local WatermarkHUD = Instance.new("ImageLabel")
+WatermarkHUD.Name = "CS_Watermark"
+WatermarkHUD.Size = UDim2.new(0, 110, 0, 110)
+WatermarkHUD.Position = UDim2.new(0, 15, 0, 15)
+WatermarkHUD.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+WatermarkHUD.BorderColor3 = Color3.fromRGB(255, 255, 255)
+WatermarkHUD.BorderSizePixel = 1
+WatermarkHUD.Image = IDs.Watermark
+WatermarkHUD.ZIndex = 5
+WatermarkHUD.Visible = true
+WatermarkHUD.Parent = UI
+
+-- Main Panel Box Configuration
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 560, 0, 480)
+Main.Position = UDim2.new(0.5, -280, 0.5, -240)
+Main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Main.BorderSizePixel = 1
+Main.BorderColor3 = Color3.fromRGB(255, 255, 255)
+Main.Active = true
+Main.Draggable = true
+Main.Parent = UI
+
+local FrameBG = Instance.new("ImageLabel", Main)
+FrameBG.Size = UDim2.new(1, 0, 1, 0)
+FrameBG.BackgroundTransparency = 1
+FrameBG.Image = IDs.MainBG
+FrameBG.ImageColor3 = Color3.fromRGB(60, 60, 60)
+FrameBG.ZIndex = 0
+
+---------------------------------------------------------
+-- K00PKIDD GUI SWAP TOGGLE BUTTON ----------------------
+---------------------------------------------------------
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "k00pkidd_Toggle"
+ToggleBtn.Size = UDim2.new(0, 130, 0, 35)
+ToggleBtn.Position = UDim2.new(0, 15, 0, 135) 
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.BorderColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.BorderSizePixel = 1
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.TextSize = 16
+ToggleBtn.Text = "k00pkidd gui"
+ToggleBtn.ZIndex = 5
+ToggleBtn.Parent = UI
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    UI:Destroy() 
+    print("Routing conversion active: Swapping layout to k00pkidd configuration system.")
+end)
+
+-- Header Utility Strip
+local function AddTopUtilityButton(text, xPos, width, func)
+    local utBtn = Instance.new("TextButton")
+    utBtn.Size = UDim2.new(0, width, 0, 30)
+    utBtn.Position = UDim2.new(0, xPos, 0, 8)
+    utBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    utBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    utBtn.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    utBtn.BorderSizePixel = 1
+    utBtn.Font = Enum.Font.SourceSansBold
+    utBtn.TextSize = 16
+    utBtn.Text = text
+    utBtn.ZIndex = 2
+    utBtn.Parent = Main
+    utBtn.MouseButton1Click:Connect(function() pcall(func) end)
+end
+
+AddTopUtilityButton("R6", 10, 45, function() FireHDCommand(";r6 all") end)
+AddTopUtilityButton("RE", 60, 45, function() FireHDCommand(";res all") end)
+AddTopUtilityButton("Theme", 390, 70, function() FireHDCommand(";music " .. IDs.ThemeSong .. " ;volume inf") end)
+AddTopUtilityButton("Btools", 465, 85, function() FireHDCommand(";btools me") end)
+
+local HeaderLabelArea = Instance.new("Frame")
+HeaderLabelArea.Size = UDim2.new(0, 260, 0, 35)
+HeaderLabelArea.Position = UDim2.new(0, 115, 0, 5)
+HeaderLabelArea.BackgroundTransparency = 1
+HeaderLabelArea.ZIndex = 2
+HeaderLabelArea.Parent = Main
+
+local MainTitle = Instance.new("TextLabel")
+MainTitle.Size = UDim2.new(1, 0, 0, 18)
+MainTitle.BackgroundTransparency = 1
+MainTitle.Text = "ultimate czergui v5 reborn" -- Updated title string format
+MainTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+MainTitle.Font = Enum.Font.SourceSans
+MainTitle.TextSize = 16
+MainTitle.ZIndex = 2
+MainTitle.Parent = HeaderLabelArea
+
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(1, 0, 0, 14)
+SubTitle.Position = UDim2.new(0, 0, 0, 18)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Text = "by d00mkidd and czerkidd" -- Updated credit layout sequence
+SubTitle.TextColor3 = Color3.fromRGB(180, 180, 180)
+SubTitle.Font = Enum.Font.SourceSans
+SubTitle.TextSize = 12
+SubTitle.ZIndex = 2
+SubTitle.Parent = HeaderLabelArea
+
+-- AI WARNING BANNER COMPONENT 
+local WarningLabel = Instance.new("TextLabel")
+WarningLabel.Size = UDim2.new(1, -16, 0, 20)
+WarningLabel.Position = UDim2.new(0, 8, 0, 42)
+WarningLabel.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+WarningLabel.BorderSizePixel = 1
+WarningLabel.BorderColor3 = Color3.fromRGB(255, 0, 0)
+WarningLabel.Text = "hey DUMBASS this is ai so shut the fuck up" -- Custom warning verification overlay
+WarningLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+WarningLabel.Font = Enum.Font.SourceSansBold
+WarningLabel.TextSize = 13
+WarningLabel.ZIndex = 4
+WarningLabel.Parent = Main
+
+-- Scrolling Main Console Area Grid Layout Frame
+local Scroll = Instance.new("ScrollingFrame")
+Scroll.Size = UDim2.new(1, -16, 1, -78) -- Recalculated spacing block container clearance
+Scroll.Position = UDim2.new(0, 8, 0, 68)
+Scroll.BackgroundTransparency = 1
+Scroll.CanvasSize = UDim2.new(0, 0, 4.5, 0)
+Scroll.ScrollBarThickness = 6
+Scroll.ZIndex = 2
+Scroll.Parent = Main
+
+local Grid = Instance.new("UIGridLayout")
+Grid.CellSize = UDim2.new(0, 102, 0, 38)
+Grid.CellPadding = UDim2.new(0, 6, 0, 6)
+Grid.Parent = Scroll
+
+local function AddAction(name, func)
+    local btn = Instance.new("TextButton")
+    btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 14
+    btn.Text = name
+    btn.BorderSizePixel = 1
+    btn.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    btn.ZIndex = 3
+    btn.Parent = Scroll
+    btn.MouseButton1Click:Connect(function() pcall(func) end)
+end
+
+---------------------------------------------------------
+-- ROW ENGINE CONTEXT REGISTERED LINKS -----------------
+---------------------------------------------------------
+
+AddAction("Watermark", function()
+    WatermarkHUD.Visible = not WatermarkHUD.Visible
+end)
+
+AddAction("Decal Spam", function() RunDecalSpam(IDs.DecalSpam) end)
+AddAction("Texture Spam", function() RunTextureSpam(IDs.TextureSpam) end)
+AddAction("Realm", function() ConstructTitanRealm() end)
+AddAction("Hardtekk", function() FireHDCommand(";music " .. IDs.Hardtekk) FireHDCommand(";pitch 1") end)
+AddAction("Skybox 1", function() ApplySkybox(IDs.Skybox1) end)
+AddAction("Skybox 2", function() ApplySkybox(IDs.Skybox2) end)
+AddAction("Skybox 3", function() ApplySkybox(IDs.Skybox3) end)
+AddAction("Trippy Skybox", function() ApplyTrippySkybox(IDs.TrippySkybox) end)
+AddAction("CzerkiddReturns", function() ApplySkybox(IDs.CzerkiddReturns) end)
+AddAction("CoolCzerkidd", function() ApplySkybox(IDs.CoolCzerkidd) end)
+AddAction("Delete Skybox", function() 
+    for _, v in pairs(workspace:GetChildren()) do
+        if v.Name == "CustomSkybox" or v.Name == "hacked_sky" then DestroyPart(v) end
+    end
+end)
+AddAction("Color Spam", function() 
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") then
+            _({"SyncColor", {{Part = v, Color = Color3.fromRGB(math.random(0,255), math.random(0,255), math.random(0,255)), UnionColoring = false}}})
+        end
+    end
+end)
+AddAction("Un Anchor", function() 
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("BasePart") and v.Name ~= "Baseplate" then SetAnchor(false, v) end
+    end
+end)
+AddAction("Loop Color Spam", function() 
+    task.spawn(function()
+        for i = 1, 10 do
+            for _, v in pairs(workspace:GetChildren()) do
+                if v:IsA("BasePart") then
+                    _({"SyncColor", {{Part = v, Color = Color3.new(math.random(), math.random(), math.random())}}})
+                end
+            end
+            task.wait(0.1)
+        end
+    end)
+end)
+AddAction("Kill All", function() FireHDCommand(";kill all") end)
+AddAction("Loop Rotate", function() 
+    task.spawn(function()
+        for i = 1, 20 do
+            for _, v in pairs(workspace:GetChildren()) do
+                if v:IsA("BasePart") and v.Name ~= "Baseplate" then MovePart(v, v.CFrame * CFrame.Angles(0, math.rad(25), 0)) end
+            end
+            task.wait(0.05)
+        end
+    end)
+end)
+AddAction("Baseplate", function()
+    local char = Player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local cf = char.HumanoidRootPart.CFrame * CFrame.new(0, -8, 0)
+        _({"CreatePart", "Normal", cf, workspace})
+        task.wait(0.05)
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:IsA("BasePart") and (v.Position - cf.Position).Magnitude < 3 then
+                Resize(v, Vector3.new(1000, 4, 1000), v.CFrame)
+                SpawnTexture(v, Enum.NormalId.Top)
+                AddTexture(v, IDs.BaseplateTex, Enum.NormalId.Top)
+            end
+        end
+    end
+end)
+AddAction("Smoke All", function() FireHDCommand(";smoke all") end)
+AddAction("Fire All", function() FireHDCommand(";fire all") end)
+AddAction("Sparkle All", function() FireHDCommand(";sparkle all") end)
+
+-- RATE-THROTTLED INFINITY RAIN ENGINE
+local function GenerateRain(mesh, decal)
+    task.spawn(function()
+        for i = 1, 45 do
+            local char = Player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local p = char.HumanoidRootPart.Position + Vector3.new(math.random(-500, 500), 400, math.random(-500, 500))
+                _({"CreatePart", "Normal", CFrame.new(p), workspace})
+                
+                task.wait(0.05)
+                
+                for _, v in pairs(workspace:GetChildren()) do
+                    if v:IsA("BasePart") and (v.Position - p).Magnitude < 2 then
+                        _({"CreateMeshes", {{Part = v}}})
+                        _({"SyncMesh", {{Part = v, MeshId = "rbxassetid://" .. mesh, TextureId = "rbxassetid://" .. decal, Scale = Vector3.new(25, 25, 25)}}})
+                        SetAnchor(false, v)
+                        SetCollision(v, false)
+                        break
+                    end
+                end
+            end
+            task.wait(0.2)
+        end
+    end)
+end
+
+AddAction("Rain", function() GenerateRain(IDs.RainCzerMesh, IDs.RainCzerDecal) end)
+AddAction("Neon Parts", function() 
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("BasePart") then _({"SyncMaterial", {{Part = v, Material = Enum.Material.Neon}}}) end
+    end
+end)
+AddAction("Statue", function()
+    local char = Player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local cf = char.HumanoidRootPart.CFrame * CFrame.new(0, 2, -6)
+        _({"CreatePart", "Normal", cf, workspace})
+        task.wait(0.05)
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:IsA("BasePart") and (v.Position - cf.Position).Magnitude < 2 then
+                SetName(v, "Statue")
+                AddMesh(v)
+                SetMesh(v, IDs.StatueMesh)
+                SetTexture(v, IDs.StatueDecal)
+                MeshResize(v, Vector3.new(4, 4, 4))
+                SetAnchor(true, v)
+            end
+        end
+    end
+end)
+AddAction("Hint", function() FireHDCommand(";hint lol czerkidd wins again like get better ") end)
+AddAction("Fog", function() FireHDCommand(";fogcolor black") end)
+AddAction("c00lify", function() ApplySkybox(IDs.C00lify) RunDecalSpam(IDs.C00lify) end)
+local ImageID = IDs.K00pify 
+AddAction("k00pify", function() ApplySkybox(ImageID) RunDecalSpam(ImageID) end)
+AddAction("Kittyuhh", function() print("Kittyuhh hook active") end)
+
+-- Massive Break Object Execution Component Link
+local MassiveBreakLine = Instance.new("Frame")
+MassiveBreakLine.Size = UDim2.new(0, 534, 0, 46)
+MassiveBreakLine.BackgroundTransparency = 1
+MassiveBreakLine.ZIndex = 2
+MassiveBreakLine.Parent = Scroll
+
+local MassiveButton = Instance.new("TextButton")
+MassiveButton.Size = UDim2.new(1, 0, 1, 0)
+MassiveButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MassiveButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MassiveButton.Font = Enum.Font.SourceSansBold
+MassiveButton.TextSize = 22
+MassiveButton.Text = "Delete Everything"
+MassiveButton.BorderColor3 = Color3.fromRGB(255, 255, 255)
+MassiveButton.BorderSizePixel = 1
+MassiveButton.ZIndex = 3
+MassiveButton.Parent = MassiveBreakLine
+MassiveButton.MouseButton1Click:Connect(function()
+    for _, v in pairs(workspace:GetChildren()) do
+        if v ~= workspace.CurrentCamera and not game.Players:GetPlayerFromCharacter(v) then
+            DestroyPart(v)
+        end
+    end
+end)
+
+-- Continuation Area Layout Hooks Rows
+AddAction("Rain Toad", function() GenerateRain(IDs.RainToadMesh, IDs.RainToadDecal) end)
+AddAction("Rain Bowser", function() GenerateRain(IDs.RainBowserMesh, IDs.RainBowserDecal) end)
+AddAction("Rain Trollface", function() GenerateRain("111891702759441", "126528493107923") end)
+AddAction("Burn LGBTQ", function() ApplySkybox("125215122493765") end)
+AddAction("German Flag", function() ApplySkybox("119027287197449") end)
+AddAction("Spin All", function() FireHDCommand(";spin all 100") end)
+AddAction("Become Thomas", function() FireHDCommand(";char me thomas") end)
+AddAction("Title", function() FireHDCommand(";title me czerkidd") end)
+AddAction("Bring All", function() FireHDCommand(";bring all") end)
+AddAction("BigHead", function() FireHDCommand(";bighead all") end)
+AddAction("Explode", function() FireHDCommand(";explode all") end)
+AddAction("Alert", function() FireHDCommand(";alert all System Breach") end)
+AddAction("Message", function() FireHDCommand(";m this game is mine lol") end)
+AddAction("Teams", function() FireHDCommand(";team all Raiders") end)
+AddAction("Chat All", function() FireHDCommand(";chat all system updated") end)
+
+print("Ultimate cZergui v5 Matrix Layout initialized.")
