@@ -1,0 +1,170 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+-- [[ ussr gui fuck you skids ]] --
+
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+if PlayerGui:FindFirstChild("USSR") then PlayerGui.USSR:Destroy() end
+
+-- ================= f3x / admin =================
+local HDClient
+pcall(function() HDClient = ReplicatedStorage:FindFirstChild("HDAdminHDClient") end)
+
+local function Cmd(cmd)
+    if HDClient and HDClient:FindFirstChild("Signals") then
+        pcall(function() HDClient.Signals.RequestCommandSilent:InvokeServer(cmd) end)
+    end
+end
+
+local tool, remote
+local function FindF3X()
+    for _,v in ipairs(player.Character:GetDescendants()) do if v.Name == "SyncAPI" then return v.Parent end end
+    if player:FindFirstChild("Backpack") then
+        for _,v in ipairs(player.Backpack:GetDescendants()) do if v.Name == "SyncAPI" then return v.Parent end end
+    end
+    return nil
+end
+
+task.spawn(function()
+    while not tool do tool = FindF3X() task.wait(1) end
+    remote = tool:WaitForChild("SyncAPI"):WaitForChild("ServerEndpoint")
+end)
+
+local function f3x(args) if remote then pcall(function() remote:InvokeServer(unpack(args)) end) end end
+
+-- ================= gui idfk =================
+local gui = Instance.new("ScreenGui", PlayerGui); gui.Name = "USSR"; gui.ResetOnSpawn = false
+local main = Instance.new("Frame", gui); main.Size = UDim2.new(0,820,0,520); main.Position = UDim2.new(0.5,-410,0.5,-260); main.BackgroundColor3 = Color3.fromRGB(90,0,0); main.Active = true; main.Draggable = true; main.BorderSizePixel = 0
+
+-- BG
+local bg = Instance.new("ImageLabel", main); bg.Size = UDim2.new(1,0,1,0); bg.BackgroundTransparency = 1; bg.Image = "rbxassetid://130746998554741"
+
+local title = Instance.new("TextLabel", main); title.Size = UDim2.new(1,0,0,60); title.BackgroundColor3 = Color3.fromRGB(0,0,0); title.BackgroundTransparency = 0.7; 
+title.Text = "USSR Ultimate f3x gui by d00mkidd and ussr i did not use AI FUCK YOU"; title.Font = Enum.Font.GothamBlack; title.TextSize = 30; title.TextColor3 = Color3.fromRGB(255,0,0)
+
+local scroll = Instance.new("ScrollingFrame", main); scroll.Size = UDim2.new(1,-20,1,-80); scroll.Position = UDim2.new(0,10,0,70); scroll.BackgroundTransparency = 1; scroll.ScrollBarThickness = 6; scroll.CanvasSize = UDim2.new(0,0,0,0)
+local UIGrid = Instance.new("UIGridLayout", scroll); UIGrid.CellSize = UDim2.new(0,160,0,36); UIGrid.CellPadding = UDim2.new(0,4,0,4)
+UIGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() scroll.CanvasSize = UDim2.new(0,0,0,UIGrid.AbsoluteContentSize.Y) end)
+
+local function Button(txt, callback)
+    local outer = Instance.new("Frame", scroll); outer.BackgroundColor3 = Color3.fromRGB(255, 0, 0); outer.BorderSizePixel = 0
+    local b = Instance.new("TextButton", outer); b.Size = UDim2.new(1, -4, 1, -4); b.Position = UDim2.new(0, 2, 0, 2); b.BackgroundColor3 = Color3.fromRGB(0, 0, 0); b.Font = Enum.Font.GothamBold; b.TextSize = 10; b.TextColor3 = Color3.fromRGB(255, 0, 0); b.Text = "🤑"..txt.."🤑"
+    b.MouseButton1Click:Connect(callback)
+end
+
+-- ================= new dumbass toggles =================
+
+-- 1. DESTRUCTION SPECIALS
+Button("NDS MAP", function()
+    f3x({"CreatePart", "Normal", CFrame.new(0, 100, 0), workspace})
+    Cmd(";sm BY TEAM USSR")
+    for i = 1, 15 do task.spawn(function()
+        local pPos = CFrame.new(math.random(-150,150), 60, math.random(-150,150))
+        f3x({"CreatePart", "Normal", pPos, workspace})
+    end) end
+end)
+
+Button("statue", function()
+    local pos = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 15, -20)
+    f3x({"CreatePart", "Normal", pos, workspace})
+    task.wait(0.3)
+    for _,v in ipairs(workspace:GetChildren()) do
+        if v:IsA("BasePart") and (v.Position - pos.Position).Magnitude < 3 then
+            f3x({"CreateMeshes", {{Part=v}}}); f3x({"SyncMesh", {{Part=v, MeshId="rbxassetid://111891702759441", TextureId="rbxassetid://130746998554741", Scale=Vector3.new(50,50,50)}}})
+            f3x({"SyncAnchor", {{Part=v, Anchored=true}}}); break
+        end
+    end
+end)
+
+Button("big fire IDK FUCK YOU SKIDS", function()
+    for _,v in pairs(workspace:GetDescendants()) do if v:IsA("BasePart") then 
+        f3x({"CreateDecorations",{{Part=v,DecorationType="Fire"}}})
+        f3x({"SyncDecorate",{{Part=v,DecorationType="Fire",Size=50,Color=Color3.new(1,0,0)}}})
+        task.spawn(function() f3x({"CreateMeshes",{{Part=v}}}); f3x({"SyncMesh",{{Part=v, MeshId="rbxassetid://90452359485552", TextureId="rbxassetid://93807826530620", Scale=Vector3.new(10,10,10)}}}) end)
+    end end
+end)
+
+Button("RISING idk", function()
+    task.spawn(function() while true do
+        local rPos = player.Character.HumanoidRootPart.Position + Vector3.new(math.random(-12,12), -6, math.random(-12,12))
+        f3x({"CreatePart", "Normal", CFrame.new(rPos), workspace})
+        task.spawn(function() task.wait(0.1)
+            for _,p in pairs(workspace:GetChildren()) do if p:IsA("BasePart") and (p.Position-rPos).Magnitude < 2 then
+                f3x({"SyncResize",{{Part=p, Size=Vector3.new(4,4,0.1)}}}); f3x({"SyncMaterial",{{Part=p, Transparency=1}}})
+                for _,f in pairs({Enum.NormalId.Front, Enum.NormalId.Back}) do f3x({"CreateTextures",{{Part=p, Face=f, TextureType="Decal"}}}); f3x({"SyncTexture",{{Part=p, Face=f, TextureType="Decal", Texture="rbxassetid://96322029057658"}}}) end
+                for i=1,30 do f3x({"SyncMove",{{Part=p, CFrame=p.CFrame*CFrame.new(0,0.7,0)}}}); task.wait(0.05) end
+                f3x({"Remove", {p}})
+            end end
+        end)
+        task.wait(0.4)
+    end end)
+end)
+
+-- 2. rind idk
+local function Rain(m, t)
+    task.spawn(function() while task.wait(0.1) do
+        local p = player.Character.HumanoidRootPart.Position + Vector3.new(math.random(-500,500), 400, math.random(-500,500))
+        f3x({"CreatePart","Normal",CFrame.new(p),workspace}) task.wait(0.05)
+        for _,v in pairs(workspace:GetChildren()) do if v:IsA("BasePart") and (v.Position-p).Magnitude<2 then
+            f3x({"CreateMeshes",{{Part=v}}}); f3x({"SyncMesh",{{Part=v,MeshId="rbxassetid://"..m,TextureId="rbxassetid://"..t,Scale=Vector3.new(25,25,25)}}})
+            f3x({"SyncAnchor",{{Part=v,Anchored=false}}}); f3x({"SyncCollision",{{Part=v,CanCollide=false}}}); break
+        end end
+    end end)
+end
+Button("d00mkidd RAIN", function() Rain("99713694716622", "77142979171006") end)
+Button("USSR RAIN", function() Rain("120480029055944", "124628822157269") end)
+Button("DJDJD8471 RAIN", function() Rain("126019417840510", "101796984010737") end)
+
+-- 3. ADMIN (NEW shit)
+Button("KILL ALL", function() Cmd(";kill all") end)
+Button("EXPLODE ALL", function() Cmd(";explode all") end)
+Button("LAG SERVER", function() Cmd(";lag all") end)
+Button("DISCO FOG", function() Cmd(";disco ;fogcolor 255 0 0 ;fogend 100") end)
+Button("FREEZE ALL", function() Cmd(";freeze all") end)
+Button("WORMIFY", function() Cmd(";wormify all") end)
+Button("SPIN ALL", function() Cmd(";spin all 100") end)
+Button("BTOOLS ALL", function() Cmd(";btools all") end)
+
+-- 4. chaar or idk MORPHS
+local Morphs = {{"LORDMA", "lordmaUSSR"}, {"YOBRO", "yobroUSSR"}, {"COOLKIDD", "redinfoxy"}, {"SHED", "shedletsky"}}
+for _,m in pairs(Morphs) do Button("CHAR "..m[1], function() Cmd(";char all "..m[2]) end) end
+
+-- 5. gear
+Button("SCYTHE", function() Cmd(";gear me 95951330") end)
+Button("BOMB", function() Cmd(";gear me 11469030") end)
+Button("LASER", function() Cmd(";gear me 130113141") end)
+
+-- 6. songs
+Button("USSR ANTHEM", function() Cmd(";music 109261572535017 ;volume inf") end)
+Button("STOP MUSIC", function() Cmd(";music off") end)
+
+-- 7. decals and skyboxs idk man i am new to codeing
+local AllItems = {
+    {"IDK LOLO", 85497996093875}, {"SO SIGMA", 131359903004439}, {"JOIN USSR", 138179610705012},
+    {"FSB TEAM", 12169457017}, {"BLACK USSR", 121098105118633}, {"BLACK/RED", 9509080295},
+    {"Allah", 104343944421649}, {"yobroUSSR", 122932811015678}, {"c00lkidd", 78829839839537}
+}
+for _,d in pairs(AllItems) do
+    Button("DECAL "..d[1], function() 
+        for _,v in pairs(workspace:GetDescendants()) do if v:IsA("BasePart") then task.spawn(function()
+            for _,f in pairs(Enum.NormalId:GetEnumItems()) do f3x({"CreateTextures",{{Part=v,Face=f,TextureType="Decal"}}}); f3x({"SyncTexture",{{Part=v,Face=f,TextureType="Decal",Texture="rbxassetid://"..d[2]}}}) end
+        end) end end
+    end)
+    Button("SKY "..d[1], function()
+        local p = player.Character.HumanoidRootPart.CFrame + Vector3.new(0,10,0)
+        f3x({"CreatePart","Normal",p,workspace}); task.wait(0.1)
+        for _,v in pairs(workspace:GetChildren()) do if v:IsA("BasePart") and (v.Position-p.Position).Magnitude<2 then
+            f3x({"CreateMeshes",{{Part=v}}}); f3x({"SyncMesh",{{Part=v,MeshId="rbxassetid://111891702759441",TextureId="rbxassetid://"..d[2],Scale=Vector3.new(5000,5000,5000)}}})
+            f3x({"SyncAnchor",{{Part=v,Anchored=true}}}); f3x({"SyncCollision",{{Part=v,CanCollide=false}}}); break
+        end end
+    end)
+end
+
+print("USSR f3x is better than d3x shit")
