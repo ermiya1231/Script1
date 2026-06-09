@@ -1,0 +1,361 @@
+-- COOL F3X MENU - Premium Edition v1.6 (Official GitHub Rejoin Link Integrated)
+print("================ [COOL F3X MENU LOAD] ================")
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+local TeleportService = game:GetService("TeleportService")
+
+local player = Players.LocalPlayer
+
+if CoreGui:FindFirstChild("CoolF3XMenuExecutor") then
+	CoreGui:FindFirstChild("CoolF3XMenuExecutor"):Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CoolF3XMenuExecutor"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = CoreGui
+
+------------------------------------------------------------------------
+-- [سیستم صوتی کلاسیک]
+------------------------------------------------------------------------
+local function playClassicSound(soundId, volume)
+	local sound = Instance.new("Sound")
+	sound.SoundId = "rbxassetid://" .. tostring(soundId)
+	sound.Volume = volume or 1
+	sound.PlayOnRemove = true
+	sound.Parent = workspace
+	sound:Destroy()
+end
+
+------------------------------------------------------------------------
+-- [اینترو لودینگ پیشرفته]
+------------------------------------------------------------------------
+local blurEffect = Instance.new("BlurEffect")
+blurEffect.Size = 0
+blurEffect.Parent = Lighting
+
+local introFrame = Instance.new("Frame")
+introFrame.Size = UDim2.new(0, 0, 0, 0)
+introFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+introFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+introFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+introFrame.BorderSizePixel = 0
+introFrame.ClipsDescendants = true
+introFrame.Parent = screenGui
+
+Instance.new("UICorner", introFrame).CornerRadius = UDim.new(0, 14)
+local introStroke = Instance.new("UIStroke", introFrame)
+introStroke.Thickness = 2
+introStroke.Color = Color3.fromRGB(0, 150, 255)
+
+local introTitle = Instance.new("TextLabel", introFrame)
+introTitle.Size = UDim2.new(1, 0, 0, 40)
+introTitle.Position = UDim2.new(0, 0, 0.2, 0)
+introTitle.BackgroundTransparency = 1
+introTitle.Text = "COOL Interest MASTER"
+introTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+introTitle.Font = Enum.Font.GothamBlack
+introTitle.TextSize = 18
+introTitle.TextTransparency = 1
+
+local introSub = Instance.new("TextLabel", introFrame)
+introSub.Size = UDim2.new(1, 0, 0, 20)
+introSub.Position = UDim2.new(0, 0, 0.4, 0)
+introSub.BackgroundTransparency = 1
+introSub.Text = "Loading F3X Modules..."
+introSub.TextColor3 = Color3.fromRGB(140, 140, 140)
+introSub.Font = Enum.Font.GothamMedium
+introSub.TextSize = 12
+introSub.TextTransparency = 1
+
+local progressBarBg = Instance.new("Frame", introFrame)
+progressBarBg.Size = UDim2.new(0.8, 0, 0, 6)
+progressBarBg.Position = UDim2.new(0.1, 0, 0.65, 0)
+progressBarBg.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+progressBarBg.BorderSizePixel = 0
+progressBarBg.BackgroundTransparency = 1
+Instance.new("UICorner", progressBarBg).CornerRadius = UDim.new(0, 3)
+
+local progressBarActive = Instance.new("Frame", progressBarBg)
+progressBarActive.Size = UDim2.new(0, 0, 1, 0)
+progressBarActive.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+progressBarActive.BorderSizePixel = 0
+Instance.new("UICorner", progressBarActive).CornerRadius = UDim.new(0, 3)
+
+local introVersion = Instance.new("TextLabel", introFrame)
+introVersion.Size = UDim2.new(1, -20, 0, 20)
+introVersion.Position = UDim2.new(0, 10, 1, -25)
+introVersion.BackgroundTransparency = 1
+introVersion.Text = "F3X Hub v1.6"
+introVersion.TextColor3 = Color3.fromRGB(60, 60, 60)
+introVersion.Font = Enum.Font.Code
+introVersion.TextSize = 10
+introVersion.TextXAlignment = Enum.TextXAlignment.Right
+introVersion.TextTransparency = 1
+
+------------------------------------------------------------------------
+-- [ساخت بدنه اصلی منوی جدید - COOL F3X MENU]
+------------------------------------------------------------------------
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 340, 0, 440)
+mainFrame.Position = UDim2.new(0.5, -170, 0.5, -220)
+mainFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.ClipsDescendants = true
+mainFrame.Visible = false
+mainFrame.Parent = screenGui
+
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 12)
+local mainStroke = Instance.new("UIStroke", mainFrame)
+mainStroke.Thickness = 1.5
+mainStroke.Color = Color3.fromRGB(55, 60, 70)
+
+local headerTitle = Instance.new("TextLabel", mainFrame)
+headerTitle.Size = UDim2.new(1, 0, 0, 50)
+headerTitle.BackgroundTransparency = 1
+headerTitle.Text = "⚡ COOL F3X MENU ⚡"
+headerTitle.TextColor3 = Color3.fromRGB(240, 240, 255)
+headerTitle.Font = Enum.Font.GothamBold
+headerTitle.TextSize = 15
+
+local separator = Instance.new("Frame", mainFrame)
+separator.Size = UDim2.new(0.92, 0, 0, 1)
+separator.Position = UDim2.new(0.04, 0, 0, 50)
+separator.BackgroundColor3 = Color3.fromRGB(35, 38, 45)
+separator.BorderSizePixel = 0
+
+local buttonScroll = Instance.new("ScrollingFrame", mainFrame)
+buttonScroll.Size = UDim2.new(0.92, 0, 0.72, 0)
+buttonScroll.Position = UDim2.new(0.04, 0, 0.14, 0)
+buttonScroll.BackgroundTransparency = 1
+buttonScroll.ScrollBarThickness = 4
+buttonScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 85, 95)
+
+local listLayout = Instance.new("UIListLayout", buttonScroll)
+listLayout.Padding = UDim.new(0, 8)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+------------------------------------------------------------------------
+-- [سیستم هوشمند ریجوین متصل به لینک گیت‌هاب شما]
+------------------------------------------------------------------------
+local rejoinBtn = Instance.new("TextButton", mainFrame)
+rejoinBtn.Size = UDim2.new(0, 100, 0, 32)
+rejoinBtn.Position = UDim2.new(1, -114, 1, -42)
+rejoinBtn.BackgroundColor3 = Color3.fromRGB(75, 20, 25)
+rejoinBtn.Text = "🔄 Rejoin"
+rejoinBtn.TextColor3 = Color3.fromRGB(255, 150, 150)
+rejoinBtn.Font = Enum.Font.GothamBold
+rejoinBtn.TextSize = 12
+
+Instance.new("UICorner", rejoinBtn).CornerRadius = UDim.new(0, 6)
+local rejoinStroke = Instance.new("UIStroke", rejoinBtn)
+rejoinStroke.Color = Color3.fromRGB(110, 35, 40)
+rejoinStroke.Thickness = 1
+
+rejoinBtn.MouseEnter:Connect(function()
+	TweenService:Create(rejoinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100, 25, 32)}):Play()
+end)
+rejoinBtn.MouseLeave:Connect(function()
+	TweenService:Create(rejoinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(75, 20, 25)}):Play()
+end)
+
+rejoinBtn.MouseButton1Click:Connect(function()
+	playClassicSound(12221972, 1)
+	
+	local queueOnTeleport = queue_to_teleport or queue_on_teleport or (syn and syn.queue_on_teleport)
+	if queueOnTeleport then
+		-- ارسال دستور لود خودکار کل این هاب از روی لینک اختصاصی گیت‌هاب شما به سرور بعدی
+		queueOnTeleport([[
+			repeat task.wait() until game:IsLoaded()
+			task.wait(1)
+			pcall(function()
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/COOLF3XMASTERGUI"))()
+			end)
+		]])
+	end
+	
+	task.wait(0.25)
+	if #Players:GetPlayers() <= 1 then
+		TeleportService:Teleport(game.PlaceId, player)
+	else
+		TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+	end
+end)
+
+------------------------------------------------------------------------
+-- [قالب‌سازی دکمه‌های لوداسکریپت]
+------------------------------------------------------------------------
+local scriptsData = {
+	{name = "F3X5", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3X5"},
+	{name = "X9D", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/X9D"},
+	{name = "F3X%Ultimate%Bro", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3X%Ultimate%Bro"},
+	{name = "2F3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/2F3X"},
+	{name = "F3XRC7", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3XRC7"},
+	{name = "F3Xidk", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3Xidk"},
+	{name = "PolarisF3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/PolarisF3X"},
+	{name = "VirusF3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/VirusF3X"}
+}
+
+for i, data in ipairs(scriptsData) do
+	local execBtn = Instance.new("TextButton", buttonScroll)
+	execBtn.Size = UDim2.new(1, -6, 0, 42)
+	execBtn.BackgroundColor3 = Color3.fromRGB(24, 25, 28)
+	local cleanName = data.name:gsub("%%", " ")
+	execBtn.Text = "Execute " .. cleanName
+	execBtn.TextColor3 = Color3.fromRGB(215, 220, 235)
+	execBtn.Font = Enum.Font.GothamMedium
+	execBtn.TextSize = 13
+	
+	Instance.new("UICorner", execBtn).CornerRadius = UDim.new(0, 6)
+	local btnStroke = Instance.new("UIStroke", execBtn)
+	btnStroke.Color = Color3.fromRGB(42, 45, 52)
+	btnStroke.Thickness = 1
+	
+	execBtn.MouseEnter:Connect(function()
+		TweenService:Create(execBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(32, 35, 42)}):Play()
+		TweenService:Create(btnStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 150, 255)}):Play()
+	end)
+	execBtn.MouseLeave:Connect(function()
+		TweenService:Create(execBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(24, 25, 28)}):Play()
+		TweenService:Create(btnStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(42, 45, 52)}):Play()
+	end)
+	
+	execBtn.MouseButton1Click:Connect(function()
+		playClassicSound(12221972, 0.9)
+		local success, err = pcall(function()
+			loadstring(game:HttpGet(data.url))()
+		end)
+		if success then
+			print("[SUCCESS] Executed: " .. cleanName)
+		else
+			warn("[ERROR] Failed to execute " .. cleanName .. ": " .. tostring(err))
+		end
+	end)
+end
+
+buttonScroll.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 10)
+
+------------------------------------------------------------------------
+-- [منطق هوشمند Expand / Collapse با دکمه J]
+------------------------------------------------------------------------
+local isCollapsed = false
+local originalSize = UDim2.new(0, 340, 0, 440)
+local collapsedSize = UDim2.new(0, 340, 0, 50)
+local isTweening = false
+
+local function toggleMenu()
+	if isTweening then return end
+	isTweening = true
+	isCollapsed = not isCollapsed
+	local targetSize = isCollapsed and collapsedSize or originalSize
+	
+	playClassicSound(12221990, 0.8)
+	
+	local menuTween = TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = targetSize
+	})
+	menuTween:Play()
+	menuTween.Completed:Wait()
+	isTweening = false
+end
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+	if gpe then return end
+	if input.KeyCode == Enum.KeyCode.J then
+		toggleMenu()
+	end
+end)
+
+------------------------------------------------------------------------
+-- قابلیت Drag کردن منو
+------------------------------------------------------------------------
+local dragging, dragInput, dragStart, startPos
+mainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true; dragStart = input.Position; startPos = mainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
+end)
+mainFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+------------------------------------------------------------------------
+-- [اجرای انیمیشن لودینگ و رونمایی]
+------------------------------------------------------------------------
+task.spawn(function()
+	TweenService:Create(blurEffect, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = 14}):Play()
+	playClassicSound(12221990, 1.2) 
+	
+	local frameOpenTween = TweenService:Create(introFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 340, 0, 180)
+	})
+	frameOpenTween:Play()
+	frameOpenTween.Completed:Wait()
+	
+	local textTweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	TweenService:Create(introTitle, textTweenInfo, {TextTransparency = 0}):Play()
+	TweenService:Create(introSub, textTweenInfo, {TextTransparency = 0}):Play()
+	TweenService:Create(progressBarBg, textTweenInfo, {BackgroundTransparency = 0}):Play()
+	TweenService:Create(introVersion, textTweenInfo, {TextTransparency = 0}):Play()
+	task.wait(0.4)
+	
+	local phases = {
+		{text = "Fetching F3X Repositories...", time = 0.6, progress = 0.30, sound = 12222000},
+		{text = "Parsing Loadstring Packets...", time = 0.8, progress = 0.65, sound = 12222000},
+		{text = "Compiling Luxury UI Grid...", time = 0.5, progress = 0.90, sound = 12222000},
+		{text = "Welcome to COOL F3X HUB!", time = 0.4, progress = 1.0, sound = 12221972}
+	}
+	
+	for _, phase in ipairs(phases) do
+		introSub.Text = phase.text
+		playClassicSound(phase.sound, 0.8) 
+		
+		local barTween = TweenService:Create(progressBarActive, TweenInfo.new(phase.time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(phase.progress, 0, 1, 0)
+		})
+		barTween:Play()
+		barTween.Completed:Wait()
+		task.wait(0.1)
+	end
+	
+	TweenService:Create(introTitle, textTweenInfo, {TextTransparency = 1}):Play()
+	TweenService:Create(introSub, textTweenInfo, {TextTransparency = 1}):Play()
+	TweenService:Create(progressBarBg, textTweenInfo, {BackgroundTransparency = 1}):Play()
+	TweenService:Create(progressBarActive, textTweenInfo, {BackgroundTransparency = 1}):Play()
+	TweenService:Create(introVersion, textTweenInfo, {TextTransparency = 1}):Play()
+	task.wait(0.3)
+
+	TweenService:Create(blurEffect, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = 0}):Play()
+	local closeTween = TweenService:Create(introFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+		Size = UDim2.new(0, 340, 0, 0)
+	})
+	closeTween:Play()
+	closeTween.Completed:Wait()
+	
+	introFrame:Destroy()
+	blurEffect:Destroy()
+	
+	mainFrame.Visible = true
+	mainFrame.Size = UDim2.new(0, 340, 0, 0)
+	local menuOpenTween = TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size = originalSize
+	})
+	menuOpenTween:Play()
+	playClassicSound(12221964, 1) 
+end)
+
+print("================ [COOL F3X MENU SUCCESS] ================")
