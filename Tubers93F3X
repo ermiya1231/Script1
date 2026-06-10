@@ -1,0 +1,223 @@
+local MyTargetID = "4895077852"
+local MusicID = "125995364970231"
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Player = Players.LocalPlayer
+
+-- پیدا کردن هوشمند ابزار F3X
+local tool
+for _, v in ipairs(Player:GetDescendants()) do
+    if v.Name == "SyncAPI" then tool = v.Parent break end
+end
+if not tool then
+    for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+        if v.Name == "SyncAPI" then tool = v.Parent break end
+    end
+end
+
+if not tool or not tool:FindFirstChild("SyncAPI") then
+    warn("ابزار F3X پیدا نشد!")
+    return
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+local function _(args)
+    return remote:InvokeServer(unpack(args))
+end
+
+---------------------------------------------------------
+-- DEFINED FULL 6-SIDE DECAL SPAM ENGINE ----------------
+---------------------------------------------------------
+local function RunDecalSpam(id)
+    local descendants = workspace:GetDescendants()
+    
+    local allFaces = {
+        Enum.NormalId.Front,
+        Enum.NormalId.Back,
+        Enum.NormalId.Top,
+        Enum.NormalId.Bottom,
+        Enum.NormalId.Left,
+        Enum.NormalId.Right
+    }
+    
+    for i = 1, #descendants do
+        local v = descendants[i]
+        if v:IsA("BasePart") and v.Name ~= "CustomSkybox" then
+            _({"SetLocked", {v}, false})
+            
+            task.spawn(function()
+                for j = 1, #allFaces do
+                    local currentFace = allFaces[j]
+                    _({"CreateTextures", {{Part = v, Face = currentFace, TextureType = "Decal"}}})
+                    _({"SyncTexture", {{Part = v, Face = currentFace, TextureType = "Decal", Texture = "rbxassetid://" .. id}}})
+                end
+            end)
+        end
+    end
+end
+
+---------------------------------------------------------
+-- SAFE ANTI-VOID FLOW ----------------------------------
+---------------------------------------------------------
+task.spawn(function()
+    local char = Player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    
+    -- ۱. فریز کردن کاراکتر روی هوا
+    if root then
+        _({"SyncAnchor", {{Part = root, Anchored = true}}})
+    end
+    
+    -- ۲. پاکسازی کامل محیط ورک‌پیس
+    local items = workspace:GetDescendants()
+    for i = 1, #items do
+        local v = items[i]
+        if v:IsA("BasePart") or v:IsA("UnionOperation") then
+            if v ~= root and not v:IsDescendantOf(char) then
+                task.spawn(function()
+                    _({"Remove", {v}})
+                end)
+            end
+        end
+    end
+    
+    task.wait(0.2)
+    
+    -- ۳. محاسبات دقیق موقعیت ستاپ مپ
+    local spawnPos = root and root.Position or Vector3.new(0, 0, 0)
+    
+    local baseCF = CFrame.new(spawnPos.X, spawnPos.Y - 20, spawnPos.Z)
+    local skyCF = CFrame.new(math.floor(spawnPos.X), math.floor(spawnPos.Y), math.floor(spawnPos.Z)) + Vector3.new(0, 1400, 0)
+    
+    local wallFrontCF = baseCF * CFrame.new(0, 20, -35)
+    local wallBackCF = baseCF * CFrame.new(0, 20, 35)
+    
+    -- پخش آنلاین آهنگ و سیاه کردن مه سرور
+    local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient") and ReplicatedStorage.HDAdminHDClient:FindFirstChild("Signals")
+    local fireCmd = hd and (hd:FindFirstChild("RequestCommandSilent") or hd:FindFirstChild("RequestCommand"))
+    if fireCmd then
+        fireCmd:InvokeServer(";music " .. MusicID .. " ;pitch 0.06 ;volume 999999999 ;fogcolor black")
+    end
+
+    -- ساخت قطعات اصلی مپ
+    _({"CreatePart", "Normal", baseCF, workspace})
+    _({"CreatePart", "Normal", skyCF, workspace})
+    
+    local w1 = _({"CreatePart", "Normal", wallFrontCF, workspace})
+    local w2 = _({"CreatePart", "Normal", wallBackCF, workspace})
+    
+    ---------------------------------------------------------
+    -- تغییر اصلی ۱: تعداد حلقه‌های لوپ به ۲۰ عدد افزایش یافت
+    ---------------------------------------------------------
+    local castleWalls = {}
+    local r = math.random
+    for i = 1, 20 do
+        local offsetX = r(-220, 220)
+        local offsetZ = r(-220, 220)
+        
+        -- فضای خالی امن دور کاراکتر
+        if math.abs(offsetX) < 45 and math.abs(offsetZ) < 45 then
+            offsetX = offsetX + 65
+        end
+        
+        local castleCF = baseCF * CFrame.new(offsetX, 90, offsetZ)
+        local cWall = _({"CreatePart", "Normal", castleCF, workspace})
+        if cWall then
+            table.insert(castleWalls, {Part = cWall, CF = castleCF})
+        end
+    end
+    
+    task.wait(0.05)
+    
+    local cleanBase, skyPart
+    local children = workspace:GetChildren()
+    
+    for i = 1, #children do
+        local v = children[i]
+        if v:IsA("BasePart") then
+            if math.floor(v.Position.X) == math.floor(spawnPos.X) and v.Name ~= "d00m_Floor" and v ~= root then
+                if math.abs(v.Position.Y - (spawnPos.Y - 20)) < 0.5 then
+                    cleanBase = v
+                elseif math.abs(v.Position.Y - (spawnPos.Y + 1400)) < 5 then
+                    skyPart = v
+                end
+            end
+        end
+    end
+    
+    -- ۴. کانفیگ سریع بیس‌پلیت
+    if cleanBase then
+        task.spawn(function()
+            _({"SetName", {cleanBase}, "CleanBaseplate"})
+            _({"SyncResize", {{Part = cleanBase, CFrame = baseCF, Size = Vector3.new(512, 16, 512)}}})
+            _({"SyncMaterial", {{Part = cleanBase, Material = Enum.Material.Concrete}}})
+            _({"SyncColor", {{Part = cleanBase, Color = Color3.new(0.2, 0.2, 0.2), UnionColoring = false}}})
+            _({"SetLocked", {cleanBase}, false})
+            _({"SyncAnchor", {{Part = cleanBase, Anchored = true}}})
+        end)
+    end
+    
+    -- تنظیمات ابعاد دیوارهای جلو و عقب (نصف شده با ضخامت ۳)
+    local walls = {w1, w2}
+    local wallCFs = {wallFrontCF, wallBackCF}
+    for i = 1, #walls do
+        local wall = walls[i]
+        if wall then
+            task.spawn(function()
+                _({"SetName", {wall}, "NearWall_" .. i})
+                _({"SyncResize", {{Part = wall, CFrame = wallCFs[i], Size = Vector3.new(40, 40, 3)}}})
+                _({"SyncMaterial", {{Part = wall, Material = Enum.Material.Concrete}}})
+                _({"SyncColor", {{Part = wall, Color = Color3.new(0.2, 0.2, 0.2), UnionColoring = false}}})
+                _({"SyncAnchor", {{Part = wall, Anchored = true}}})
+            end)
+        end
+    end
+    
+    ---------------------------------------------------------
+    -- تغییر اصلی ۲: ضخامت دیوارهای قلعه ۲ برابر شد و به ۱۲ رسید
+    ---------------------------------------------------------
+    for i = 1, #castleWalls do
+        local wallData = castleWalls[i]
+        if wallData.Part then
+            task.spawn(function()
+                _({"SetName", {wallData.Part}, "CastlePillar_" .. i})
+                -- ضخامت محور Z به 12 واحد ارتقا یافت تا کاملاً غول‌آسا شوند
+                _({"SyncResize", {{Part = wallData.Part, CFrame = wallData.CF, Size = Vector3.new(r(15, 35), 180, 12)}}})
+                _({"SyncMaterial", {{Part = wallData.Part, Material = Enum.Material.Concrete}}})
+                _({"SyncColor", {{Part = wallData.Part, Color = Color3.new(0.15, 0.15, 0.15), UnionColoring = false}}})
+                _({"SyncAnchor", {{Part = wallData.Part, Anchored = true}}})
+            end)
+        end
+    end
+    
+    if skyPart then
+        task.spawn(function()
+            _({"SetName", {skyPart}, "CustomSkybox"})
+            _({"CreateMeshes", {{Part = skyPart}}})
+            _({"SyncMesh", {{Part = skyPart, MeshId = "rbxassetid://111891702759441", TextureId = "rbxassetid://" .. MyTargetID, Scale = Vector3.new(8500, 8500, 8500)}}})
+            _({"SetLocked", {skyPart}, true})
+            _({"SyncCollision", {{Part = skyPart, CanCollide = false}}})
+            _({"SyncAnchor", {{Part = skyPart, Anchored = true}}})
+        end)
+    end
+    
+    -- ۵. پایداری و آن‌فریز شدن کاراکتر روی مپ جدید
+    repeat task.wait(0.05) until workspace:FindFirstChild("CleanBaseplate")
+    task.wait(0.1)
+    
+    if root then
+        _({"SyncAnchor", {{Part = root, Anchored = false}}})
+    end
+    
+    -- ۶. تاخیر بسیار کوتاه
+    task.wait(0.001)
+    
+    -- ۷. اجرای دکال اسپم ۱۰۰ درصدی روی هر ۶ جهت تمام پارت‌های جدید و دیوارهای قلعه
+    RunDecalSpam(MyTargetID)
+    
+    -- قفل کردن نهایی آبجکت‌ها
+    if cleanBase then _({"SetLocked", {cleanBase}, true}) end
+    for i = 1, #walls do if walls[i] then _({"SetLocked", {walls[i]}, true}) end end
+    for i = 1, #castleWalls do if castleWalls[i].Part then _({"SetLocked", {castleWalls[i].Part}, true}) end end
+end)
