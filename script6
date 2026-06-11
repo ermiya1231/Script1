@@ -185,7 +185,7 @@ local buttonConfigs = {
     {Name="شناور", AnimId="rbxassetid://313762630", Speed=1},
     {Name="بدون نام", AnimId="rbxassetid://148840371", Speed=14},
     {Name="راه رفتن", AnimId="rbxassetid://180426354", Speed=1},
-    {Name="Slap", AnimId="rbxassetid://243827693", Speed=30},
+    {Name="Slap", AnimId="rbxassetid://243827693", Speed=10},
     {Name="خنده", AnimId="rbxassetid://129423131", Speed=1.25},
 }
 
