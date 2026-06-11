@@ -197,7 +197,7 @@ local scriptsData = {
 	{name = "2F3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/2F3X"},
 	{name = "F3XRC7", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3XRC7"},
 	{name = "F3Xidk", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/F3Xidk"},
-	{name = "F3Xidk", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/Tubers93F3X"},
+	{name = "F3XTubers93", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/Tubers93F3X"},
 	{name = "PolarisF3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/PolarisF3X"},
 	{name = "VirusF3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/VirusF3X"}
 }
