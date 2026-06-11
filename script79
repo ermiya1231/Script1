@@ -1,0 +1,380 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+local CORRECT_PASSWORD = "ermiya12399"
+
+-------------------------------------------------
+-- تابع کمکی برای درگ کردن (Drag Function)
+-------------------------------------------------
+local function makeDraggable(frame, dragHandle)
+    local dragging, dragInput, dragStart, startPos
+    dragHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+-------------------------------------------------
+-- اسکریپت اصلی (LuxuryUI)
+-------------------------------------------------
+local function startMainScript()
+	-- بررسی اینکه آیا اگزکتور از gethui پشتیبانی میکنه یا نه
+	local targetParent = (typeof(gethui) == "function" and gethui()) or game:GetService("CoreGui")
+
+	-- ساختن اسکرین جی‌یو‌آی مستقیماً در مسیر تعیین شده
+	local gui = Instance.new("ScreenGui", targetParent)
+	gui.Name = "LuxuryUI"
+	gui.ResetOnSpawn = false
+	gui.DisplayOrder = 99999 -- اولویت رندر بالا برای ماندن روی تمامی GUIها
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+	local frame = Instance.new("Frame", gui)
+	frame.Size = UDim2.new(0, 220, 0, 300)
+	frame.Position = UDim2.new(0.5, -110, 0.5, -150)
+	frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+	frame.BorderSizePixel = 0
+	frame.ClipsDescendants = true
+	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 14)
+
+    local dragBar = Instance.new("Frame", frame)
+    dragBar.Size = UDim2.new(1, 0, 0, 35)
+    dragBar.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    dragBar.BorderSizePixel = 0
+    Instance.new("UICorner", dragBar).CornerRadius = UDim.new(0, 14)
+    
+    local titleText = Instance.new("TextLabel", dragBar)
+    titleText.Size = UDim2.new(1, -40, 1, 0)
+    titleText.Position = UDim2.new(0, 10, 0, 0)
+    titleText.BackgroundTransparency = 1
+    titleText.Text = "ساخته شده توسط 666"
+    titleText.TextColor3 = Color3.new(1,1,1)
+    titleText.Font = Enum.Font.GothamBold
+    titleText.TextSize = 14
+    titleText.TextXAlignment = Enum.TextXAlignment.Left
+
+    local toggleBtn = Instance.new("TextButton", dragBar)
+    toggleBtn.Size = UDim2.new(0, 25, 0, 25)
+    toggleBtn.Position = UDim2.new(1, -30, 0, 5)
+    toggleBtn.Text = "▲"
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    toggleBtn.TextColor3 = Color3.new(1,1,1)
+    toggleBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", toggleBtn)
+
+    local scroll = Instance.new("ScrollingFrame", frame)
+    scroll.Size = UDim2.new(1, -10, 1, -45)
+    scroll.Position = UDim2.new(0, 5, 0, 40)
+    scroll.BackgroundTransparency = 1
+    scroll.ScrollBarThickness = 2
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y -- فیکس اسکرول
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    local layout = Instance.new("UIListLayout", scroll)
+    layout.Padding = UDim.new(0, 5)
+
+-------------------------------------------------
+    -- بخش WALK SPEED (Anti-AntiCheat Version)
+    -------------------------------------------------
+    local HumanModCons = {} -- برای مدیریت اتصال‌ها و جلوگیری از لگ
+    
+    local wsFrame = Instance.new("Frame", scroll)
+    wsFrame.Size = UDim2.new(1, -5, 0, 35)
+    wsFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    Instance.new("UICorner", wsFrame)
+
+    local wsInput = Instance.new("TextBox", wsFrame)
+    wsInput.Size = UDim2.new(0.6, 0, 1, 0)
+    wsInput.BackgroundTransparency = 1
+    wsInput.Text = "16"
+    wsInput.PlaceholderText = "Speed..."
+    wsInput.TextColor3 = Color3.new(1,1,1)
+    wsInput.Font = Enum.Font.GothamBold
+    wsInput.TextSize = 14
+
+    local wsBtn = Instance.new("TextButton", wsFrame)
+    wsBtn.Size = UDim2.new(0.4, 0, 1, 0)
+    wsBtn.Position = UDim2.new(0.6, 0, 0, 0)
+    wsBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 255)
+    wsBtn.Text = "Apply Speed"
+    wsBtn.TextColor3 = Color3.new(1,1,1)
+    wsBtn.Font = Enum.Font.GothamBold
+    wsBtn.TextSize = 10
+    Instance.new("UICorner", wsBtn)
+
+    wsBtn.MouseButton1Click:Connect(function()
+        local targetSpeed = tonumber(wsInput.Text) or 16
+        local char = Player.Character or Player.CharacterAdded:Wait()
+        local hum = char:FindFirstChildOfClass("Humanoid")
+
+        local function applySpeed()
+            if hum then hum.WalkSpeed = targetSpeed end
+        end
+
+        -- تمیزکاری اتصال‌های قبلی (برای جلوگیری از تداخل)
+        if HumanModCons.wsLoop then HumanModCons.wsLoop:Disconnect() end
+        if HumanModCons.wsCA then HumanModCons.wsCA:Disconnect() end
+
+        -- اجرای اولیه
+        applySpeed()
+
+        -- حلقه هوشمند: اگر آنتی‌چیت سرعت را تغییر داد، دوباره ستش کن
+        HumanModCons.wsLoop = hum:GetPropertyChangedSignal("WalkSpeed"):Connect(applySpeed)
+        
+        -- اگر کاراکتر مُرد و دوباره زنده شد، سرعت را حفظ کن
+        HumanModCons.wsCA = Player.CharacterAdded:Connect(function(newChar)
+            char = newChar
+            hum = newChar:WaitForChild("Humanoid")
+            applySpeed()
+            if HumanModCons.wsLoop then HumanModCons.wsLoop:Disconnect() end
+            HumanModCons.wsLoop = hum:GetPropertyChangedSignal("WalkSpeed"):Connect(applySpeed)
+        end)
+        
+    end)
+
+    -------------------------------------------------
+    -- بخش INFINITE JUMP (ON/OFF)
+    -------------------------------------------------
+    local infJumpEnabled = false
+    local infJumpConnection -- برای مدیریت اتصال
+
+    local ijFrame = Instance.new("Frame", scroll)
+    ijFrame.Size = UDim2.new(1, -5, 0, 35)
+    ijFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    Instance.new("UICorner", ijFrame)
+
+    local ijTitle = Instance.new("TextLabel", ijFrame)
+    ijTitle.Size = UDim2.new(0.6, 0, 1, 0)
+    ijTitle.BackgroundTransparency = 1
+    ijTitle.Text = "Infinite Jump"
+    ijTitle.TextColor3 = Color3.new(1,1,1)
+    ijTitle.Font = Enum.Font.GothamBold
+    ijTitle.TextSize = 14
+    ijTitle.TextXAlignment = Enum.TextXAlignment.Center
+
+    local ijBtn = Instance.new("TextButton", ijFrame)
+    ijBtn.Size = UDim2.new(0.35, 0, 0.8, 0)
+    ijBtn.Position = UDim2.new(0.6, 0, 0.1, 0)
+    ijBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50) -- قرمز یعنی خاموش
+    ijBtn.Text = "OFF"
+    ijBtn.TextColor3 = Color3.new(1,1,1)
+    ijBtn.Font = Enum.Font.GothamBold
+    ijBtn.TextSize = 12
+    Instance.new("UICorner", ijBtn)
+
+    ijBtn.MouseButton1Click:Connect(function()
+        infJumpEnabled = not infJumpEnabled
+        
+        if infJumpEnabled then
+            ijBtn.Text = "ON"
+            ijBtn.BackgroundColor3 = Color3.fromRGB(80, 255, 120) -- سبز یعنی روشن
+            
+            -- فعال سازی منطق پرش
+            infJumpConnection = UserInputService.JumpRequest:Connect(function()
+                if infJumpEnabled then
+                    local char = Player.Character
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
+                    if hum then
+                        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end)
+        else
+            ijBtn.Text = "OFF"
+            ijBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+            
+            -- غیرفعال سازی اتصال
+            if infJumpConnection then
+                infJumpConnection:Disconnect()
+                infJumpConnection = nil
+            end
+        end
+    end)
+    -------------------------------------------------
+    -- ایجاد دکمه‌ها
+    -------------------------------------------------
+    local function createButton(name, callback)
+        local btn = Instance.new("TextButton", scroll)
+        btn.Size = UDim2.new(1, -5, 0, 30)
+        btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+        btn.Text = name
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 12
+        Instance.new("UICorner", btn)
+        btn.MouseButton1Click:Connect(callback)
+    end
+
+    -- دکمه‌های اسکریپت
+    createButton("Infinite Yield", function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end)
+    createButton("Jerkoff", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script17"))() end)
+    createButton("Droptools", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script15"))() end)
+    createButton("Sword And Slap Reach", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script14"))() end)
+    createButton("َAnti Slap", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script12"))() end)
+    createButton("Super Ring", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script13"))() end)
+    createButton("Tp Tool", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script11"))() end)
+    createButton("Blackhole", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))() end)
+    createButton("Mod Menu", function() loadstring(game:HttpGet(('https://raw.githubusercontent.com/sypcerr/FECollection/refs/heads/main/script.lua'),true))() end)
+    createButton("Sword Kill All", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/InstantKillig/refs/heads/main/Coolkillguithingy"))() end)
+    createButton("Fly", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script10"))() end)
+    createButton("FE Trolling Gui", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub/main/FE%20Trolling%20GUI.luau"))() end)
+    createButton("FE Part Controller", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/randomstring0/Qwerty/refs/heads/main/qwerty1.lua"))() end)
+    createButton("FPS Booster", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script9"))() end)
+    createButton("Invisible (G)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script8"))() end)
+    createButton("Touch Fling", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script7"))() end)
+    createButton("Animation Gui (R6)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script6"))() end)
+    createButton("NPC Controller", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/randomstring0/fe-source/refs/heads/main/NPC/source/main.Luau"))() end)
+    createButton("Adidas Animation", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script64"))() end)
+    createButton("DOORS", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/Script5", true))() end)
+    createButton("99 Nights Forest", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VW-Add/main/nightsintheforest.lua", true))() end)
+    createButton("Aimbot/Esp", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script36"))() end)
+    createButton("Caducus", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script1"))() end)
+    createButton("C00LGUI", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/Script3"))() end)
+    createButton("C00LCLAN", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/C00LCLAN"))() end)
+    createButton("i0rb", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script4"))() end)
+    createButton("RemoteSpy", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script18"))() end)
+    createButton("FlingGui", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/K1LAS1K/Ultimate-Fling-GUI/main/flingscript.lua"))() end)
+    createButton("FE ToolAnimator", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script19"))() end)
+    createButton("BackDoor", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script20"))() end)
+    createButton("LagSwitch (X)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script21"))() end)
+    createButton("SuperPower Chakra", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script22"))() end)
+    createButton("R15 Emote Hack", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script23"))() end)
+    createButton("FreeCam", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script24"))() end)
+    createButton("Anti Fling", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script32"))() end)
+    createButton("Pro Click Panel", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script33"))() end)
+    createButton("Vereus (Client)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script34"))() end)
+    createButton("Wall Hop", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script39"))() end)
+    createButton("Strongest Battle", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script38"))() end)
+    createButton("Marcus Tower", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script43"))() end)
+    createButton("Musics", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script61"))() end)
+    createButton("F3X (Client)", function() loadstring(game:GetObjects("rbxassetid://6695644299")[1].Source)() end)
+    createButton("NPC ESP", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script45"))() end)
+    createButton("FE Fighter", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script48"))() end)
+    createButton("Impossible Slap Tower", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script54"))() end)
+    createButton("Nuclear Bunker", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script56"))() end)
+    createButton("F3X Panel", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script52"))() end)
+    createButton("Control Unanchored", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script57"))() end)
+    createButton("Reverse Flash", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/Reverse%20FLASH"))() end)
+    createButton("Numero Ware MOD", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/NumeroMOD"))() end)
+    createButton("Numero Ware Orginal", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/NumeroORG"))() end)
+    createButton("Speed Mirage", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script63"))() end)
+    createButton("Touch Interest Farm OP", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/MASTERProject"))() end)
+    createButton("F3X OP HACK", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/COOLF3XMASTERGUI"))() end)
+    createButton("Gamepass HACK OP", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/Gamepass"))() end)
+    createButton("Remote Event HACK OP", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/RemoteEventCOOL"))() end)
+    createButton("Control Part(Strong)", function() pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/PartController/refs/heads/main/PartController.lua", true))()
+end) end)
+    -- ... بقیه دکمه‌ها (کدهای قبلی را اینجا کپی کن)
+
+    -- منطق Collapse
+    local collapsed = false
+    toggleBtn.MouseButton1Click:Connect(function()
+        collapsed = not collapsed
+        local targetSize = collapsed and UDim2.new(0, 220, 0, 35) or UDim2.new(0, 220, 0, 300)
+        TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = targetSize}):Play()
+        toggleBtn.Text = collapsed and "▼" or "▲"
+        scroll.Visible = not collapsed
+    end)
+
+    makeDraggable(frame, dragBar)
+    local hue = 0
+    RunService.RenderStepped:Connect(function(dt)
+        hue = (hue + dt * 0.2) % 1
+        local rainbow = Color3.fromHSV(hue, 0.7, 1)
+        titleText.TextColor3 = rainbow
+        toggleBtn.BackgroundColor3 = rainbow
+        wsBtn.BackgroundColor3 = rainbow -- ست کردن دکمه سرعت با رنگین‌کمان
+    end)
+end
+-------------------------------------------------
+-- صفحه لاگین خفن (Login UI V2)
+-------------------------------------------------
+-- تشخیص خودکار بهترین مسیر (gethui یا CoreGui)
+local targetParent = (typeof(gethui) == "function" and gethui()) or game:GetService("CoreGui")
+
+local loginGui = Instance.new("ScreenGui", targetParent)
+loginGui.Name = "LuxuryLogin"
+loginGui.ResetOnSpawn = false -- اضافه شد تا با ریسپاون شدن منو غیب نشه
+loginGui.DisplayOrder = 99999 -- اولویت رندر بالا برای ماندن روی تمامی GUIها
+loginGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local loginMain = Instance.new("Frame", loginGui)
+loginMain.Size = UDim2.fromOffset(280, 200)
+loginMain.Position = UDim2.fromScale(0.5, 0.5)
+loginMain.AnchorPoint = Vector2.new(0.5, 0.5)
+loginMain.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+loginMain.BorderSizePixel = 0
+Instance.new("UICorner", loginMain).CornerRadius = UDim.new(0, 20)
+
+-- نوار درگ برای لاگین
+local loginDrag = Instance.new("Frame", loginMain)
+loginDrag.Size = UDim2.new(1, 0, 0, 40)
+loginDrag.BackgroundTransparency = 1 -- شفاف چون کل فریم رو میخوایم بگیریم
+
+local loginTitle = Instance.new("TextLabel", loginMain)
+loginTitle.Size = UDim2.new(1, 0, 0, 50)
+loginTitle.Text = "Enter Password"
+loginTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+loginTitle.Font = Enum.Font.GothamBold
+loginTitle.TextSize = 20
+loginTitle.BackgroundTransparency = 1
+
+local passField = Instance.new("TextBox", loginMain)
+passField.Size = UDim2.new(0.85, 0, 0, 40)
+passField.Position = UDim2.new(0.075, 0, 0.35, 0)
+passField.TextScaled = true
+passField.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+passField.PlaceholderText = "Enter Password..."
+passField.Text = ""
+passField.TextColor3 = Color3.new(1,1,1)
+passField.Font = Enum.Font.Gotham
+Instance.new("UICorner", passField)
+
+local enterBtn = Instance.new("TextButton", loginMain)
+enterBtn.Size = UDim2.new(0.85, 0, 0, 45)
+enterBtn.Position = UDim2.new(0.075, 0, 0.65, 0)
+enterBtn.BackgroundColor3 = Color3.fromRGB(100, 80, 255)
+enterBtn.Text = "AUTHENTICATE"
+enterBtn.TextSize = 15
+enterBtn.TextColor3 = Color3.new(1,1,1)
+enterBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", enterBtn)
+
+-- فعال‌سازی درگ لاگین
+makeDraggable(loginMain, loginDrag)
+
+-- منطق لاگین
+enterBtn.MouseButton1Click:Connect(function()
+    if passField.Text == CORRECT_PASSWORD then
+        enterBtn.Text = "SUCCESS!"
+        enterBtn.BackgroundColor3 = Color3.fromRGB(80, 255, 120)
+        task.wait(0.5)
+        loginGui:Destroy()
+        startMainScript()
+    else
+        passField.Text = ""
+        passField.PlaceholderText = "ACCESS DENIED!"
+        -- افکت لرزش
+        for i = 1, 10 do
+            loginMain.Position = UDim2.new(0.5, math.random(-5,5), 0.5, math.random(-5,5))
+            task.wait(0.02)
+        end
+        loginMain.Position = UDim2.fromScale(0.5, 0.5)
+    end
+end)
