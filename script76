@@ -1,0 +1,169 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local player = game.Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "MoonsecDumper"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 400, 0, 300)
+frame.Position = UDim2.new(0.5, -200, 0.5, -150)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.Active = true
+
+local input = Instance.new("TextBox", frame)
+input.Size = UDim2.new(1, -20, 0, 40)
+input.Position = UDim2.new(0, 10, 0, 10)
+input.PlaceholderText = "paste loadstring..."
+input.TextColor3 = Color3.new(1,1,1)
+input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+local execute = Instance.new("TextButton", frame)
+execute.Size = UDim2.new(0.5, -15, 0, 40)
+execute.Position = UDim2.new(0, 10, 0, 60)
+execute.Text = "EXECUTE"
+
+local copy = Instance.new("TextButton", frame)
+copy.Size = UDim2.new(0.5, -15, 0, 40)
+copy.Position = UDim2.new(0.5, 5, 0, 60)
+copy.Text = "COPY"
+
+local outputBox = Instance.new("TextBox", frame)
+outputBox.Size = UDim2.new(1, -20, 1, -120)
+outputBox.Position = UDim2.new(0, 10, 0, 110)
+outputBox.MultiLine = true
+outputBox.TextWrapped = true
+outputBox.TextYAlignment = Enum.TextYAlignment.Top
+outputBox.TextColor3 = Color3.new(1,1,1)
+outputBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
+
+local toggleBtn = Instance.new("TextButton", frame)
+toggleBtn.Size = UDim2.new(0, 30, 0, 30)
+toggleBtn.Position = UDim2.new(1, -35, 0, 5)
+toggleBtn.Text = "-"
+
+local mobileToggle = Instance.new("TextButton", gui)
+mobileToggle.Size = UDim2.new(0, 100, 0, 40)
+mobileToggle.Position = UDim2.new(0, 10, 0.8, 0)
+mobileToggle.Text = "OPEN"
+
+local resize = Instance.new("Frame", frame)
+resize.Size = UDim2.new(0, 20, 0, 20)
+resize.Position = UDim2.new(1, -20, 1, -20)
+resize.BackgroundColor3 = Color3.fromRGB(80,80,80)
+
+local minimized = false
+local dragging = false
+local dragStart, startPos
+local resizing = false
+local resizeStart, startSize
+local collected = ""
+
+local function addOutput(t)
+	collected = collected .. t .. "\n"
+	outputBox.Text = collected
+end
+
+frame.InputBegan:Connect(function(inputObj)
+	if inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = inputObj.Position
+		startPos = frame.Position
+	end
+end)
+
+frame.InputEnded:Connect(function(inputObj)
+	if inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+resize.InputBegan:Connect(function(inputObj)
+	if inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch then
+		resizing = true
+		resizeStart = inputObj.Position
+		startSize = frame.Size
+	end
+end)
+
+resize.InputEnded:Connect(function()
+	resizing = false
+end)
+
+UIS.InputChanged:Connect(function(inputObj)
+	if dragging and (inputObj.UserInputType == Enum.UserInputType.MouseMovement or inputObj.UserInputType == Enum.UserInputType.Touch) then
+		local delta = inputObj.Position - dragStart
+		local goal = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		TweenService:Create(frame, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {Position = goal}):Play()
+	end
+
+	if resizing then
+		local delta = inputObj.Position - resizeStart
+		frame.Size = UDim2.new(0, startSize.X.Offset + delta.X, 0, startSize.Y.Offset + delta.Y)
+	end
+end)
+
+toggleBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	local size = minimized and UDim2.new(0, 400, 0, 40) or UDim2.new(0, 400, 0, 300)
+	frame:TweenSize(size, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.25, true)
+	input.Visible = not minimized
+	execute.Visible = not minimized
+	copy.Visible = not minimized
+	outputBox.Visible = not minimized
+	toggleBtn.Text = minimized and "+" or "-"
+end)
+
+UIS.InputBegan:Connect(function(key, gp)
+	if gp then return end
+	if key.KeyCode == Enum.KeyCode.K then
+		gui.Enabled = not gui.Enabled
+	end
+end)
+
+mobileToggle.MouseButton1Click:Connect(function()
+	gui.Enabled = not gui.Enabled
+end)
+
+local function deep_unpack(tbl)
+	for _, v in pairs(tbl) do
+		if type(v) == "table" then
+			deep_unpack(v)
+		elseif type(v) == "string" then
+			addOutput(v)
+		end
+	end
+end
+
+local old_unpack = unpack or table.unpack
+
+function unpack(...)
+	for _, v in ipairs({...}) do
+		if type(v) == "table" then
+			deep_unpack(v)
+		end
+	end
+	return old_unpack(...)
+end
+
+_G.unpack = unpack
+
+execute.MouseButton1Click:Connect(function()
+	collected = ""
+	outputBox.Text = ""
+	local success, err = pcall(function()
+		loadstring(input.Text)()
+	end)
+	if not success then
+		addOutput("ERROR: "..err)
+	end
+end)
+
+copy.MouseButton1Click:Connect(function()
+	if setclipboard then
+		setclipboard(collected)
+	end
+end)
