@@ -529,3 +529,23 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 end)
 
 loadWeapons()
+
+-- رفرش کاملا لحظه‌ای و بلادرنگ صفحه اول بدون تغییر در توابع و کدهای اصلی بالا
+local function handleLiveRefresh(child)
+	if child:IsA("Tool") and Title.Text == "SELECT WEAPON" then
+		loadWeapons()
+	end
+end
+
+LocalPlayer:WaitForChild("Backpack").ChildAdded:Connect(handleLiveRefresh)
+LocalPlayer:WaitForChild("Backpack").ChildRemoved:Connect(handleLiveRefresh)
+
+if LocalPlayer.Character then
+	LocalPlayer.Character.ChildAdded:Connect(handleLiveRefresh)
+	LocalPlayer.Character.ChildRemoved:Connect(handleLiveRefresh)
+end
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+	char.ChildAdded:Connect(handleLiveRefresh)
+	char.ChildRemoved:Connect(handleLiveRefresh)
+end)
