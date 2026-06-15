@@ -1,0 +1,531 @@
+-- Luxury Weapon Dex - Exact Original Restore Logic with Panel Blur & State Persistence
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+local function getGuiParent()
+	local success, _ = pcall(function()
+		local test = Instance.new("Folder")
+		test.Parent = CoreGui
+		test:Destroy()
+	end)
+	if success then return CoreGui else return LocalPlayer:WaitForChild("PlayerGui") end
+end
+
+-- ۱. ساخت منوی اصلی
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DexWeaponExplorerUltra"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = getGuiParent()
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 500, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 2.5
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
+Title.Text = "SELECT WEAPON"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = Title
+
+local ScrollList = Instance.new("ScrollingFrame")
+ScrollList.Size = UDim2.new(1, -24, 1, -125)
+ScrollList.Position = UDim2.new(0, 12, 0, 55)
+ScrollList.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+ScrollList.BackgroundTransparency = 0.95
+ScrollList.BorderSizePixel = 0
+ScrollList.ScrollBarThickness = 4
+ScrollList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+ScrollList.Parent = MainFrame
+
+local ScrollCorner = Instance.new("UICorner")
+ScrollCorner.CornerRadius = UDim.new(0, 8)
+ScrollCorner.Parent = ScrollList
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = ScrollList
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 4)
+
+-- دکمه تایید اول منو
+local ConfirmBtn = Instance.new("TextButton")
+ConfirmBtn.Size = UDim2.new(0, 180, 0, 40)
+ConfirmBtn.Position = UDim2.new(0.5, -90, 1, -55)
+ConfirmBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+ConfirmBtn.Text = "CONFIRM"
+ConfirmBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ConfirmBtn.TextSize = 14
+ConfirmBtn.Font = Enum.Font.GothamBold
+ConfirmBtn.Parent = MainFrame
+
+local ConfirmCorner = Instance.new("UICorner")
+ConfirmCorner.CornerRadius = UDim.new(0, 8)
+ConfirmCorner.Parent = ConfirmBtn
+
+-- دکمه Save مخصوص بخش اکسپلورر اسلحه
+local SaveBtn = Instance.new("TextButton")
+SaveBtn.Size = UDim2.new(0, 180, 0, 40)
+SaveBtn.Position = UDim2.new(0.5, -90, 1, -55)
+SaveBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 60)
+SaveBtn.Text = "💾 SAVE VALUES"
+SaveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SaveBtn.TextSize = 14
+SaveBtn.Font = Enum.Font.GothamBold
+SaveBtn.Visible = false
+SaveBtn.Parent = MainFrame
+
+local SaveCorner = Instance.new("UICorner")
+SaveCorner.CornerRadius = UDim.new(0, 8)
+SaveCorner.Parent = SaveBtn
+
+-- کادر لوکس بلور اختصاصی روی خودِ GUI (تار کردن پنل بدون اثرگذاری روی کل صفحه بازی)
+local LoadingOverlay = Instance.new("Frame")
+LoadingOverlay.Size = UDim2.new(1, 0, 1, 0)
+LoadingOverlay.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
+LoadingOverlay.BackgroundTransparency = 0.15 -- افکت شیشه‌ای تیره و مات دکس
+LoadingOverlay.BorderSizePixel = 0
+LoadingOverlay.ZIndex = 100 -- پوشش کامل روی تمام اجزای داخلی منو
+LoadingOverlay.Visible = false
+LoadingOverlay.Parent = MainFrame
+
+local OverlayCorner = Instance.new("UICorner")
+OverlayCorner.CornerRadius = UDim.new(0, 12)
+OverlayCorner.Parent = LoadingOverlay
+
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Size = UDim2.new(1, 0, 0, 50)
+LoadingText.Position = UDim2.new(0, 0, 0.5, -25)
+LoadingText.BackgroundTransparency = 1
+LoadingText.Text = "Loading Backup Values..."
+LoadingText.TextColor3 = Color3.fromRGB(255, 200, 50)
+LoadingText.TextSize = 20
+LoadingText.Font = Enum.Font.GothamBold
+LoadingText.ZIndex = 101 -- متن بدون تاری کاملاً بالا قرار دارد
+LoadingText.Parent = LoadingOverlay
+
+-- افکت روان RGB دور قاب منو
+RunService.RenderStepped:Connect(function()
+	local hue = (tick() % 5) / 5
+	local rgbColor = Color3.fromHSV(hue, 0.8, 1)
+	UIStroke.Color = rgbColor
+	Title.TextColor3 = rgbColor
+end)
+
+-- دیتابیس‌های محلی برای حفظ اطلاعات مستقل از ساختار فیزیکی بازی
+local spammingThreads = {}
+local expandedStates = {}
+local savedValuesBackup = {} -- [WeaponName] = { [RelativePath] = Value }
+local savedSpamBackup = {}   -- [WeaponName] = { [RelativePath] = InputText }
+local lastInspectedWeaponName = nil -- ثبت وضعیت منو برای عدم ریست شدن بعد مرگ
+local selectedWeapon = nil
+
+-- پیدا کردن مسیر متنی نسبی یک شیء درون اسلحه
+local function getRelativePath(obj, root)
+	local path = {}
+	local current = obj
+	while current and current ~= root do
+		table.insert(path, 1, current.Name)
+		current = current.Parent
+	end
+	return table.concat(path, "/")
+end
+
+-- پیدا کردن شیء بر اساس مسیر نسبی
+local function findObjByPath(root, pathStr)
+	local parts = string.split(pathStr, "/")
+	local current = root
+	for _, part in ipairs(parts) do
+		if current then
+			current = current:FindFirstChild(part)
+		else
+			return nil
+		end
+	end
+	return current
+end
+
+local function clearList()
+	for _, child in pairs(ScrollList:GetChildren()) do
+		if child:IsA("GuiObject") then child:Destroy() end
+	end
+end
+
+local function getDepth(obj, root)
+	local depth = 0
+	local current = obj.Parent
+	while current and current ~= root do
+		depth = depth + 1
+		current = current.Parent
+	end
+	return depth
+end
+
+local function isVisible(obj, root)
+	local current = obj.Parent
+	while current and current ~= root do
+		if expandedStates[current] == false then return false end
+		current = current.Parent
+	end
+	return true
+end
+
+-- تابع رندر اکسپلورر درختی اسلحه
+local function renderTree(weapon)
+	clearList()
+	ConfirmBtn.Visible = false
+	SaveBtn.Visible = true -- نمایش دکمه Save اختصاصی تفنگ جاری
+	Title.Text = "EXPLORING: " .. weapon.Name:upper()
+	
+	local BackBtn = Instance.new("TextButton")
+	BackBtn.Size = UDim2.new(1, 0, 0, 32)
+	BackBtn.BackgroundColor3 = Color3.fromRGB(50, 20, 20)
+	BackBtn.Text = "<- BACK TO WEAPONS"
+	BackBtn.TextColor3 = Color3.fromRGB(255, 120, 120)
+	BackBtn.Font = Enum.Font.GothamBold
+	BackBtn.TextSize = 11
+	BackBtn.Parent = ScrollList
+	
+	local BackCorner = Instance.new("UICorner") BackCorner.CornerRadius = UDim.new(0, 6) BackCorner.Parent = BackBtn
+	
+	BackBtn.MouseButton1Click:Connect(function()
+		SaveBtn.Visible = false
+		lastInspectedWeaponName = nil
+		loadWeapons()
+	end)
+
+	for _, obj in pairs(weapon:GetDescendants()) do
+		if isVisible(obj, weapon) then
+			local depth = getDepth(obj, weapon)
+			local hasChildren = #obj:GetChildren() > 0
+			
+			if expandedStates[obj] == nil and hasChildren then
+				expandedStates[obj] = false
+			end
+
+			local Row = Instance.new("Frame")
+			Row.Size = UDim2.new(1, 0, 0, 36)
+			Row.BackgroundColor3 = Color3.fromRGB(30, 30, 33)
+			Row.BorderSizePixel = 0
+			Row.Parent = ScrollList
+			
+			local RowCorner = Instance.new("UICorner") RowCorner.CornerRadius = UDim.new(0, 6) RowCorner.Parent = Row
+
+			local indentOffset = depth * 18
+			
+			if hasChildren then
+				local ExpandBtn = Instance.new("TextButton")
+				ExpandBtn.Size = UDim2.new(0, 20, 0, 20)
+				ExpandBtn.Position = UDim2.new(0, 5 + indentOffset, 0.5, -10)
+				ExpandBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+				ExpandBtn.Text = expandedStates[obj] and "[-]" or "[+]"
+				ExpandBtn.TextColor3 = expandedStates[obj] and Color3.fromRGB(255, 100, 100) or Color3.fromRGB(100, 255, 100)
+				ExpandBtn.Font = Enum.Font.Code
+				ExpandBtn.TextSize = 12
+				ExpandBtn.Parent = Row
+				
+				local ExpCorner = Instance.new("UICorner") ExpCorner.CornerRadius = UDim.new(0, 4) ExpCorner.Parent = ExpandBtn
+				
+				ExpandBtn.MouseButton1Click:Connect(function()
+					expandedStates[obj] = not expandedStates[obj]
+					renderTree(weapon)
+				end)
+			end
+
+			local ObjName = Instance.new("TextLabel")
+			local textPos = 8 + indentOffset + (hasChildren and 24 or 0)
+			ObjName.Size = UDim2.new(0.4, -textPos, 1, 0)
+			ObjName.Position = UDim2.new(0, textPos, 0, 0)
+			ObjName.Text = obj.Name
+			ObjName.TextColor3 = hasChildren and Color3.fromRGB(240, 200, 100) or Color3.fromRGB(200, 200, 200)
+			ObjName.TextXAlignment = Enum.TextXAlignment.Left
+			ObjName.BackgroundTransparency = 1
+			ObjName.Font = Enum.Font.Gotham
+			ObjName.TextSize = 11
+			ObjName.Parent = Row
+
+			if obj:IsA("ValueBase") then
+				local ValueInput = Instance.new("TextBox")
+				ValueInput.Size = UDim2.new(0.26, -5, 0.7, 0)
+				ValueInput.Position = UDim2.new(0.44, 5, 0.15, 0)
+				ValueInput.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
+				ValueInput.Text = tostring(obj.Value)
+				ValueInput.TextColor3 = Color3.fromRGB(0, 255, 150)
+				ValueInput.Font = Enum.Font.Code
+				ValueInput.TextSize = 11
+				ValueInput.Name = "InputContainer"
+				ValueInput.Parent = Row
+				
+				local InpCorner = Instance.new("UICorner") InpCorner.CornerRadius = UDim.new(0, 4) InpCorner.Parent = ValueInput
+				
+				local function applyLiveValue(text)
+					if obj:IsA("BoolValue") then
+						obj.Value = (text:lower() == "true")
+					elseif tonumber(text) then
+						obj.Value = tonumber(text)
+					else
+						obj.Value = text
+					end
+				end
+
+				-- تغییر کلیدی: به محض تایپ شدن متن و بدون نیاز به زدن Enter مقدار اعمال می‌شود
+				ValueInput:GetPropertyChangedSignal("Text"):Connect(function()
+					applyLiveValue(ValueInput.Text)
+				end)
+				
+				local SpamBtn = Instance.new("TextButton")
+				SpamBtn.Size = UDim2.new(0.26, -5, 0.7, 0)
+				SpamBtn.Position = UDim2.new(0.72, 5, 0.15, 0)
+				SpamBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 30)
+				SpamBtn.Text = "SPAM"
+				SpamBtn.TextColor3 = Color3.fromRGB(200, 200, 150)
+				SpamBtn.Font = Enum.Font.GothamBold
+				SpamBtn.TextSize = 10
+				SpamBtn.Name = "SpamToggle"
+				SpamBtn.Parent = Row
+				
+				local SpmCorner = Instance.new("UICorner") SpmCorner.CornerRadius = UDim.new(0, 4) SpmCorner.Parent = SpamBtn
+				
+				if spammingThreads[obj] then
+					SpamBtn.Text = "RUNNING"
+					SpamBtn.BackgroundColor3 = Color3.fromRGB(20, 80, 20)
+					SpamBtn.TextColor3 = Color3.fromRGB(150, 255, 150)
+				end
+
+				SpamBtn.MouseButton1Click:Connect(function()
+					if spammingThreads[obj] then
+						task.cancel(spammingThreads[obj])
+						spammingThreads[obj] = nil
+						SpamBtn.Text = "SPAM"
+						SpamBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 30)
+						SpamBtn.TextColor3 = Color3.fromRGB(200, 200, 150)
+					else
+						SpamBtn.Text = "RUNNING"
+						SpamBtn.BackgroundColor3 = Color3.fromRGB(20, 80, 20)
+						SpamBtn.TextColor3 = Color3.fromRGB(150, 255, 150)
+						
+						spammingThreads[obj] = task.spawn(function()
+							while true do
+								applyLiveValue(ValueInput.Text)
+								task.wait(0.01)
+							end
+						end)
+					end
+				end)
+				
+			elseif obj:IsA("LocalScript") or obj:IsA("ModuleScript") then
+				local EditBtn = Instance.new("TextButton")
+				EditBtn.Size = UDim2.new(0.52, -5, 0.7, 0)
+				EditBtn.Position = UDim2.new(0.44, 5, 0.15, 0)
+				EditBtn.BackgroundColor3 = Color3.fromRGB(20, 45, 55)
+				EditBtn.Text = "VIEW SCRIPT PATH (F12)"
+				EditBtn.TextColor3 = Color3.fromRGB(100, 200, 255)
+				EditBtn.Font = Enum.Font.GothamBold
+				EditBtn.TextSize = 9
+				EditBtn.Parent = Row
+				
+				local EdCorner = Instance.new("UICorner") EdCorner.CornerRadius = UDim.new(0, 4) EdCorner.Parent = EditBtn
+				EditBtn.MouseButton1Click:Connect(function()
+					print("[DEX] Script Path: " .. obj:GetFullName())
+				end)
+			end
+		end
+	end
+	ScrollList.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
+end
+
+-- دقیقا همان منطق کلیک دکمه SAVE ارسالی شما (بدون تغییر کلمه‌ای)
+SaveBtn.MouseButton1Click:Connect(function()
+	if not selectedWeapon then return end
+	
+	local wName = selectedWeapon.Name
+	savedValuesBackup[wName] = {}
+	savedSpamBackup[wName] = {}
+	lastInspectedWeaponName = wName -- ذخیره نام جهت جلوگیری از خروج منو بعد مرگ
+	
+	for _, obj in pairs(selectedWeapon:GetDescendants()) do
+		if obj:IsA("ValueBase") then
+			local path = getRelativePath(obj, selectedWeapon)
+			
+			-- پیدا کردن فیلد متنی UI متناظر برای خواندن اطلاعات نوشته شده
+			local currentText = tostring(obj.Value)
+			for _, row in pairs(ScrollList:GetChildren()) do
+				local txtBox = row:FindFirstChild("InputContainer")
+				if txtBox and row:FindFirstChildOfClass("TextLabel") and row:FindFirstChildOfClass("TextLabel").Text == obj.Name then
+					currentText = txtBox.Text
+					break
+				end
+			end
+			
+			-- سیو کردن ارزش فیلد متنی
+			savedValuesBackup[wName][path] = currentText
+			
+			-- سیو کردن وضعیت رگبار (Spam)
+			if spammingThreads[obj] then
+				savedSpamBackup[wName][path] = currentText
+			end
+		end
+	end
+	
+	SaveBtn.Text = "✔ SAVED SUCCESSFULLY"
+	SaveBtn.BackgroundColor3 = Color3.fromRGB(20, 150, 20)
+	task.wait(1)
+	SaveBtn.Text = "💾 SAVE VALUES"
+	SaveBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 60)
+end)
+
+function loadWeapons()
+	Title.Text = "SELECT WEAPON"
+	ConfirmBtn.Visible = true
+	SaveBtn.Visible = false
+	clearList()
+	selectedWeapon = nil
+	
+	local backpack = LocalPlayer:WaitForChild("Backpack")
+	local weapons = backpack:GetChildren()
+	
+	if LocalPlayer.Character then
+		for _, v in pairs(LocalPlayer.Character:GetChildren()) do
+			if v:IsA("Tool") then table.insert(weapons, v) end
+		end
+	end
+
+	for _, tool in pairs(weapons) do
+		if tool:IsA("Tool") then
+			local ToolBtn = Instance.new("TextButton")
+			ToolBtn.Size = UDim2.new(1, 0, 0, 40)
+			ToolBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 38)
+			ToolBtn.Text = "  🔩  " .. tool.Name
+			ToolBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			ToolBtn.Font = Enum.Font.Gotham
+			ToolBtn.TextSize = 13
+			ToolBtn.TextXAlignment = Enum.TextXAlignment.Left
+			ToolBtn.Parent = ScrollList
+			
+			local ToolCorner = Instance.new("UICorner") ToolCorner.CornerRadius = UDim.new(0, 6) ToolCorner.Parent = ToolBtn
+			
+			ToolBtn.MouseButton1Click:Connect(function()
+				for _, child in pairs(ScrollList:GetChildren()) do
+					if child:IsA("TextButton") then child.BackgroundColor3 = Color3.fromRGB(35, 35, 38) end
+				end
+				ToolBtn.BackgroundColor3 = Color3.fromRGB(30, 50, 40)
+				selectedWeapon = tool
+			end)
+		end
+	end
+	ScrollList.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
+end
+
+ConfirmBtn.MouseButton1Click:Connect(function()
+	if selectedWeapon then
+		lastInspectedWeaponName = selectedWeapon.Name
+		renderTree(selectedWeapon)
+	else
+		Title.Text = "CHOOSE A WEAPON FIRST!"
+		task.wait(1)
+		Title.Text = "SELECT WEAPON"
+	end
+end)
+
+-- ۳. مغز متفکر سیستم لودینگ - منطق دقیقاً منطق نسخه کپی ارسالی شماست
+LocalPlayer.CharacterAdded:Connect(function(character)
+	-- پنل بلور اختصاصی GUI روشن می‌شود (کل صفحه بازی دیگر تار نمیشود)
+	LoadingOverlay.Visible = true
+	LoadingText.Text = "Loading Backup Values..."
+	LoadingText.TextColor3 = Color3.fromRGB(255, 200, 50)
+	
+	-- کیل کردن تردهای اسپم قدیمی تفنگ‌های دیستروی شده
+	for obj, thread in pairs(spammingThreads) do
+		task.cancel(thread)
+	end
+	spammingThreads = {}
+
+	local backpack = LocalPlayer:WaitForChild("Backpack")
+	task.wait(1.8) -- صبر برای لود و کپی شدن کامل تفنگ‌های نو درون کوله‌پشتی جدید
+
+	-- شروع دقیق منطق ریستور نسخه ارسالی شما به صورت ۱۰۰٪ عینی
+	for weaponName, pathsTable in pairs(savedValuesBackup) do
+		local freshWeapon = backpack:WaitForChild(weaponName, 4)
+		if freshWeapon then
+			-- بازگردانی مقادیر عادی فیلدها
+			for relPath, textVal in pairs(pathsTable) do
+				local targetValueObj = findObjByPath(freshWeapon, relPath)
+				if targetValueObj and targetValueObj:IsA("ValueBase") then
+					if targetValueObj:IsA("BoolValue") then
+						targetValueObj.Value = (textVal:lower() == "true")
+					elseif tonumber(textVal) then
+						targetValueObj.Value = tonumber(textVal)
+					else
+						targetValueObj.Value = textVal
+					end
+				end
+			end
+			
+			-- بازگردانی تردها به‌طوری که بعد از لود کامل صفحه فعال بمانند
+			local spamPaths = savedSpamBackup[weaponName]
+			if spamPaths then
+				for relPath, textVal in pairs(spamPaths) do
+					local targetValueObj = findObjByPath(freshWeapon, relPath)
+					if targetValueObj and targetValueObj:IsA("ValueBase") then
+						local newThread
+						newThread = task.spawn(function()
+							while true do
+								if targetValueObj:IsA("BoolValue") then
+									targetValueObj.Value = (textVal:lower() == "true")
+								elseif tonumber(textVal) then
+									targetValueObj.Value = tonumber(textVal)
+								else
+									targetValueObj.Value = textVal
+								end
+								task.wait(0.01)
+							end
+						end)
+						spammingThreads[targetValueObj] = newThread
+					end
+				end
+			end
+		end
+	end
+
+	LoadingText.Text = "Successfully Loaded ✔"
+	LoadingText.TextColor3 = Color3.fromRGB(100, 255, 100)
+	task.wait(0.8)
+	
+	LoadingOverlay.Visible = false
+	
+	-- حفظ موقعیت و جلوگیری از برگشت به منوی اول: 
+	-- اگر قبل از مرگ در حال بررسی یک اسلحه بودید، منو از همانجا رندر مجدد می‌شود.
+	if lastInspectedWeaponName then
+		local restoredWeapon = backpack:FindFirstChild(lastInspectedWeaponName) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(lastInspectedWeaponName))
+		if restoredWeapon then
+			selectedWeapon = restoredWeapon
+			renderTree(restoredWeapon)
+			return
+		end
+	end
+
+	loadWeapons() -- فقط اگر در منوی انتخاب اسلحه مرده بودید منوی اول باز می‌شود
+end)
+
+loadWeapons()
