@@ -125,6 +125,22 @@ LoadingText.Font = Enum.Font.GothamBold
 LoadingText.ZIndex = 101 -- متن بدون تاری کاملاً بالا قرار دارد
 LoadingText.Parent = LoadingOverlay
 
+-- دکمه بازگشت به صفحه انتخاب لوکیشن اصلی (اضافه شده به بدنه اصلی GUI بدون تداخل با بقیه دکمه‌ها)
+local LocationSwitchBtn = Instance.new("TextButton")
+LocationSwitchBtn.Size = UDim2.new(0, 130, 0, 30)
+LocationSwitchBtn.Position = UDim2.new(1, -142, 1, -45)
+LocationSwitchBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+LocationSwitchBtn.Text = "🔄 SWITCH LOCATION"
+LocationSwitchBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+LocationSwitchBtn.TextSize = 10
+LocationSwitchBtn.Font = Enum.Font.GothamBold
+LocationSwitchBtn.Visible = false
+LocationSwitchBtn.Parent = MainFrame
+
+local SwitchCorner = Instance.new("UICorner")
+SwitchCorner.CornerRadius = UDim.new(0, 6)
+SwitchCorner.Parent = LocationSwitchBtn
+
 -- افکت روان RGB دور قاب منو
 RunService.RenderStepped:Connect(function()
 	local hue = (tick() % 5) / 5
@@ -140,6 +156,9 @@ local savedValuesBackup = {} -- [WeaponName] = { [RelativePath] = Value }
 local savedSpamBackup = {}   -- [WeaponName] = { [RelativePath] = InputText }
 local lastInspectedWeaponName = nil -- ثبت وضعیت منو برای عدم ریست شدن بعد مرگ
 local selectedWeapon = nil
+
+-- متغیر جدید انتخابی مکان جستجو (پیش‌فرض روی هر دو حالت سازگار است)
+local currentSearchLocation = "BOTH" 
 
 -- پیدا کردن مسیر متنی نسبی یک شیء درون اسلحه
 local function getRelativePath(obj, root)
@@ -191,18 +210,30 @@ local function isVisible(obj, root)
 	return true
 end
 
+-- تابع ایجاد کننده منوی انتخاب لوکیشن اولیه (تعریف زودهنگام برای استفاده در ساختار بازگشت درختی)
+local createLocationSelector
+
 -- تابع رندر اکسپلورر درختی اسلحه
 local function renderTree(weapon)
 	clearList()
 	ConfirmBtn.Visible = false
 	SaveBtn.Visible = true -- نمایش دکمه Save اختصاصی تفنگ جاری
+	LocationSwitchBtn.Visible = false
 	Title.Text = "EXPLORING: " .. weapon.Name:upper()
 	
 	local BackBtn = Instance.new("TextButton")
 	BackBtn.Size = UDim2.new(1, 0, 0, 32)
 	BackBtn.BackgroundColor3 = Color3.fromRGB(50, 20, 20)
-	BackBtn.Text = "<- BACK TO WEAPONS"
-	BackBtn.TextColor3 = Color3.fromRGB(255, 120, 120)
+	
+	-- بررسی شرط نوع لوکیشن انتخابی برای تغییر متن و رفتار دکمه بازگشت
+	if currentSearchLocation == "PLAYER" then
+		BackBtn.Text = "<- BACK TO MAIN MENU"
+		BackBtn.TextColor3 = Color3.fromRGB(200, 150, 255)
+	else
+		BackBtn.Text = "<- BACK TO WEAPONS"
+		BackBtn.TextColor3 = Color3.fromRGB(255, 120, 120)
+	end
+	
 	BackBtn.Font = Enum.Font.GothamBold
 	BackBtn.TextSize = 11
 	BackBtn.Parent = ScrollList
@@ -212,7 +243,11 @@ local function renderTree(weapon)
 	BackBtn.MouseButton1Click:Connect(function()
 		SaveBtn.Visible = false
 		lastInspectedWeaponName = nil
-		loadWeapons()
+		if currentSearchLocation == "PLAYER" then
+			createLocationSelector() -- هدایت مستقیم به منوی اول انتخاب لوکیشن‌ها
+		else
+			loadWeapons() -- بازگشت به لیست اسلحه‌های کوله‌پشتی
+		end
 	end)
 
 	for _, obj in pairs(weapon:GetDescendants()) do
@@ -399,15 +434,25 @@ function loadWeapons()
 	Title.Text = "SELECT WEAPON"
 	ConfirmBtn.Visible = true
 	SaveBtn.Visible = false
+	LocationSwitchBtn.Visible = true -- دکمه سوییچ لوکیشن فعال می‌شود
+	ConfirmBtn.Position = UDim2.new(0.5, -170, 1, -55) -- جابجایی تراز دکمه برای قرارگیری دکمه سوییچ
 	clearList()
 	selectedWeapon = nil
 	
-	local backpack = LocalPlayer:WaitForChild("Backpack")
-	local weapons = backpack:GetChildren()
+	-- حالت بررسی مستقیم کل ساختار LocalPlayer بدون نیاز به سلکتور اسلحه جداگانه
+	if currentSearchLocation == "PLAYER" then
+		selectedWeapon = LocalPlayer
+		renderTree(LocalPlayer)
+		return
+	end
 	
-	if LocalPlayer.Character then
-		for _, v in pairs(LocalPlayer.Character:GetChildren()) do
-			if v:IsA("Tool") then table.insert(weapons, v) end
+	local weapons = {}
+	
+	-- منطق فیلتر بر اساس دکمه انتخابی کاربر در شروع اجرا (دست نخورده برای Backpack)
+	if currentSearchLocation == "BACKPACK" or currentSearchLocation == "BOTH" then
+		local backpack = LocalPlayer:WaitForChild("Backpack")
+		for _, v in pairs(backpack:GetChildren()) do
+			table.insert(weapons, v)
 		end
 	end
 
@@ -528,8 +573,6 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 	loadWeapons() -- فقط اگر در منوی انتخاب اسلحه مرده بودید منوی اول باز می‌شود
 end)
 
-loadWeapons()
-
 -- رفرش کاملا لحظه‌ای و بلادرنگ صفحه اول بدون تغییر در توابع و کدهای اصلی بالا
 local function handleLiveRefresh(child)
 	if child:IsA("Tool") and Title.Text == "SELECT WEAPON" then
@@ -549,3 +592,53 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 	char.ChildAdded:Connect(handleLiveRefresh)
 	char.ChildRemoved:Connect(handleLiveRefresh)
 end)
+
+-- ۴. لایه پاپ‌آپِ انتخاب مکان (Location Selector) در ابتدای اجرای اسکریپت
+createLocationSelector = function()
+	Title.Text = "SELECT TARGET LOCATION"
+	ConfirmBtn.Visible = false
+	SaveBtn.Visible = false
+	LocationSwitchBtn.Visible = false
+	clearList()
+
+	local BackpackModeBtn = Instance.new("TextButton")
+	BackpackModeBtn.Size = UDim2.new(1, 0, 0, 45)
+	BackpackModeBtn.BackgroundColor3 = Color3.fromRGB(35, 45, 60)
+	BackpackModeBtn.Text = "🎒 EXPLORE BACKPACK"
+	BackpackModeBtn.TextColor3 = Color3.fromRGB(100, 200, 255)
+	BackpackModeBtn.Font = Enum.Font.GothamBold
+	BackpackModeBtn.TextSize = 13
+	BackpackModeBtn.Parent = ScrollList
+	
+	local BpCorner = Instance.new("UICorner") BpCorner.CornerRadius = UDim.new(0, 6) BpCorner.Parent = BackpackModeBtn
+
+	local PlayerModeBtn = Instance.new("TextButton")
+	PlayerModeBtn.Size = UDim2.new(1, 0, 0, 45)
+	PlayerModeBtn.Position = UDim2.new(0, 0, 0, 55)
+	PlayerModeBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 60)
+	PlayerModeBtn.Text = "👤 EXPLORE LOCALPLAYER"
+	PlayerModeBtn.TextColor3 = Color3.fromRGB(200, 150, 255)
+	PlayerModeBtn.Font = Enum.Font.GothamBold
+	PlayerModeBtn.TextSize = 13
+	PlayerModeBtn.Parent = ScrollList
+	
+	local PlCorner = Instance.new("UICorner") PlCorner.CornerRadius = UDim.new(0, 6) PlCorner.Parent = PlayerModeBtn
+
+	BackpackModeBtn.MouseButton1Click:Connect(function()
+		currentSearchLocation = "BACKPACK"
+		loadWeapons()
+	end)
+
+	PlayerModeBtn.MouseButton1Click:Connect(function()
+		currentSearchLocation = "PLAYER"
+		loadWeapons()
+	end)
+end
+
+-- متصل کردن کلیک دکمه سوییچ به بازگشت صفحه اصلی لوکیشن‌ها
+LocationSwitchBtn.MouseButton1Click:Connect(function()
+	createLocationSelector()
+end)
+
+-- شروع اجرای اولیه با منوی انتخاب مکان
+createLocationSelector()
