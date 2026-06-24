@@ -1,0 +1,5535 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+--[=[
+ d888b  db    db d888888b      .d888b.      db      db    db  .d8b.  
+88' Y8b 88    88   `88'        VP  `8D      88      88    88 d8' `8b 
+88      88    88    88            odD'      88      88    88 88ooo88 
+88  ooo 88    88    88          .88'        88      88    88 88~~~88 
+88. ~8~ 88b  d88   .88.        j88.         88booo. 88b  d88 88   88    @uniquadev
+ Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
+]=]
+
+-- Instances: 163 | Scripts: 76 | Modules: 0 | Tags: 0
+local G2L = {};
+
+-- StarterGui.ScreenGui
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+G2L["1"]["ResetOnSpawn"] = false;
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO
+G2L["2"] = Instance.new("Frame", G2L["1"]);
+G2L["2"]["BorderSizePixel"] = 2;
+G2L["2"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2"]["Size"] = UDim2.new(0, 480, 0, 29);
+G2L["2"]["Position"] = UDim2.new(0.12351, 0, 0.21063, 0);
+G2L["2"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["2"]["Name"] = [[IMPORTANT WOOHOO]];
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.LocalScript
+G2L["3"] = Instance.new("LocalScript", G2L["2"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home
+G2L["4"] = Instance.new("Frame", G2L["2"]);
+G2L["4"]["Visible"] = false;
+G2L["4"]["BorderSizePixel"] = 2;
+G2L["4"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4"]["Size"] = UDim2.new(0, 480, 0, 298);
+G2L["4"]["Position"] = UDim2.new(-0, 0, 1, 0);
+G2L["4"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["4"]["Name"] = [[home]];
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.ImageLabel
+G2L["5"] = Instance.new("ImageLabel", G2L["4"]);
+G2L["5"]["BorderSizePixel"] = 2;
+G2L["5"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5"]["Image"] = [[rbxasset://textures/ui/GuiImagePlaceholder.png]];
+G2L["5"]["Size"] = UDim2.new(0, 100, 0, 100);
+G2L["5"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["5"]["Position"] = UDim2.new(0.03958, 0, 0.04027, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.ImageLabel.LocalScript
+G2L["6"] = Instance.new("LocalScript", G2L["5"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel
+G2L["7"] = Instance.new("TextLabel", G2L["4"]);
+G2L["7"]["TextWrapped"] = true;
+G2L["7"]["TextStrokeTransparency"] = 0;
+G2L["7"]["BorderSizePixel"] = 0;
+G2L["7"]["TextSize"] = 14;
+G2L["7"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["7"]["TextScaled"] = true;
+G2L["7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["7"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["7"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["7"]["BackgroundTransparency"] = 1;
+G2L["7"]["Size"] = UDim2.new(0, 314, 0, 50);
+G2L["7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["7"]["Text"] = [[yolo]];
+G2L["7"]["Position"] = UDim2.new(0.29167, 0, 0.06376, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel.LocalScript
+G2L["8"] = Instance.new("LocalScript", G2L["7"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel
+G2L["9"] = Instance.new("TextLabel", G2L["4"]);
+G2L["9"]["TextWrapped"] = true;
+G2L["9"]["TextStrokeTransparency"] = 0;
+G2L["9"]["BorderSizePixel"] = 0;
+G2L["9"]["TextSize"] = 14;
+G2L["9"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["9"]["TextScaled"] = true;
+G2L["9"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["9"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["9"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["9"]["BackgroundTransparency"] = 1;
+G2L["9"]["Size"] = UDim2.new(0, 314, 0, 50);
+G2L["9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9"]["Text"] = [[yolo]];
+G2L["9"]["Position"] = UDim2.new(0.29167, 0, 0.23154, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel.LocalScript
+G2L["a"] = Instance.new("LocalScript", G2L["9"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel
+G2L["b"] = Instance.new("TextLabel", G2L["4"]);
+G2L["b"]["TextWrapped"] = true;
+G2L["b"]["TextStrokeTransparency"] = 0;
+G2L["b"]["BorderSizePixel"] = 0;
+G2L["b"]["TextSize"] = 14;
+G2L["b"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["b"]["TextScaled"] = true;
+G2L["b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["b"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["b"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["b"]["BackgroundTransparency"] = 1;
+G2L["b"]["Size"] = UDim2.new(0, 314, 0, 50);
+G2L["b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["b"]["Text"] = [[yolo]];
+G2L["b"]["Position"] = UDim2.new(0.29167, 0, 0.39933, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel.LocalScript
+G2L["c"] = Instance.new("LocalScript", G2L["b"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel
+G2L["d"] = Instance.new("TextLabel", G2L["4"]);
+G2L["d"]["TextWrapped"] = true;
+G2L["d"]["TextStrokeTransparency"] = 0;
+G2L["d"]["BorderSizePixel"] = 0;
+G2L["d"]["TextSize"] = 14;
+G2L["d"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["d"]["TextScaled"] = true;
+G2L["d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["d"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["d"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["d"]["BackgroundTransparency"] = 1;
+G2L["d"]["Size"] = UDim2.new(0, 435, 0, 95);
+G2L["d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["d"]["Text"] = [[hi you worthless piece of meat, this is my gui but deleted almost all of the cool scripts, i just left some for ya!, join this server to complain about all dis https://discord.gg/A4aU5bfV98]];
+G2L["d"]["Position"] = UDim2.new(0.04583, 0, 0.63087, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextLabel
+G2L["e"] = Instance.new("TextLabel", G2L["2"]);
+G2L["e"]["TextWrapped"] = true;
+G2L["e"]["TextStrokeTransparency"] = 0;
+G2L["e"]["BorderSizePixel"] = 0;
+G2L["e"]["TextSize"] = 14;
+G2L["e"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["e"]["TextScaled"] = true;
+G2L["e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["e"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["e"]["BackgroundTransparency"] = 1;
+G2L["e"]["Size"] = UDim2.new(0, 174, 0, 29);
+G2L["e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["e"]["Text"] = [[roadblocks f3x things]];
+G2L["e"]["Position"] = UDim2.new(0.02009, 0, -0.03075, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton
+G2L["f"] = Instance.new("TextButton", G2L["2"]);
+G2L["f"]["TextWrapped"] = true;
+G2L["f"]["TextStrokeTransparency"] = 0;
+G2L["f"]["BorderSizePixel"] = 2;
+G2L["f"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["f"]["TextSize"] = 14;
+G2L["f"]["TextScaled"] = true;
+G2L["f"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["f"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["f"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["f"]["Size"] = UDim2.new(0, 59, 0, 29);
+G2L["f"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["f"]["Text"] = [[Close/Open]];
+G2L["f"]["Position"] = UDim2.new(0.87617, 0, -0.03242, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+G2L["10"] = Instance.new("LocalScript", G2L["f"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x
+G2L["11"] = Instance.new("Frame", G2L["2"]);
+G2L["11"]["Visible"] = false;
+G2L["11"]["BorderSizePixel"] = 2;
+G2L["11"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["11"]["Size"] = UDim2.new(0, 480, 0, 298);
+G2L["11"]["Position"] = UDim2.new(-0, 0, 1, 0);
+G2L["11"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["11"]["Name"] = [[f3x]];
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["12"] = Instance.new("TextButton", G2L["11"]);
+G2L["12"]["TextWrapped"] = true;
+G2L["12"]["TextStrokeTransparency"] = 0;
+G2L["12"]["BorderSizePixel"] = 2;
+G2L["12"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["12"]["TextSize"] = 14;
+G2L["12"]["TextScaled"] = true;
+G2L["12"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["12"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["12"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["12"]["Size"] = UDim2.new(0, 109, 0, 39);
+G2L["12"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["12"]["Text"] = [[Decal Spam]];
+G2L["12"]["Position"] = UDim2.new(0.01875, 0, 0.0302, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["13"] = Instance.new("LocalScript", G2L["12"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["14"] = Instance.new("TextButton", G2L["11"]);
+G2L["14"]["TextWrapped"] = true;
+G2L["14"]["TextStrokeTransparency"] = 0;
+G2L["14"]["BorderSizePixel"] = 2;
+G2L["14"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["14"]["TextSize"] = 14;
+G2L["14"]["TextScaled"] = true;
+G2L["14"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["14"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["14"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["14"]["Size"] = UDim2.new(0, 109, 0, 39);
+G2L["14"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["14"]["Text"] = [[Skybox]];
+G2L["14"]["Position"] = UDim2.new(0.01875, 0, 0.18121, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["15"] = Instance.new("LocalScript", G2L["14"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["16"] = Instance.new("TextButton", G2L["11"]);
+G2L["16"]["TextWrapped"] = true;
+G2L["16"]["TextStrokeTransparency"] = 0;
+G2L["16"]["BorderSizePixel"] = 2;
+G2L["16"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["16"]["TextSize"] = 14;
+G2L["16"]["TextScaled"] = true;
+G2L["16"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["16"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["16"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["16"]["Size"] = UDim2.new(0, 109, 0, 39);
+G2L["16"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["16"]["Text"] = [[Trippy Skybox]];
+G2L["16"]["Position"] = UDim2.new(0.01875, 0, 0.34228, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["17"] = Instance.new("LocalScript", G2L["16"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["18"] = Instance.new("TextButton", G2L["11"]);
+G2L["18"]["TextWrapped"] = true;
+G2L["18"]["TextStrokeTransparency"] = 0;
+G2L["18"]["BorderSizePixel"] = 2;
+G2L["18"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["18"]["TextSize"] = 14;
+G2L["18"]["TextScaled"] = true;
+G2L["18"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["18"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["18"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["18"]["Size"] = UDim2.new(0, 109, 0, 39);
+G2L["18"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["18"]["Text"] = [[HD Skybox]];
+G2L["18"]["Position"] = UDim2.new(0.01875, 0, 0.49664, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["19"] = Instance.new("LocalScript", G2L["18"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["1a"] = Instance.new("TextButton", G2L["11"]);
+G2L["1a"]["TextWrapped"] = true;
+G2L["1a"]["TextStrokeTransparency"] = 0;
+G2L["1a"]["BorderSizePixel"] = 2;
+G2L["1a"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["1a"]["TextSize"] = 14;
+G2L["1a"]["TextScaled"] = true;
+G2L["1a"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1a"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1a"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["1a"]["Size"] = UDim2.new(0, 109, 0, 39);
+G2L["1a"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["1a"]["Text"] = [[HD Trippy Skybox]];
+G2L["1a"]["Position"] = UDim2.new(0.01875, 0, 0.65101, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["1b"] = Instance.new("LocalScript", G2L["1a"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["1c"] = Instance.new("TextButton", G2L["11"]);
+G2L["1c"]["TextWrapped"] = true;
+G2L["1c"]["TextStrokeTransparency"] = 0;
+G2L["1c"]["BorderSizePixel"] = 2;
+G2L["1c"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["1c"]["TextSize"] = 14;
+G2L["1c"]["TextScaled"] = true;
+G2L["1c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1c"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1c"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["1c"]["Size"] = UDim2.new(0, 109, 0, 39);
+G2L["1c"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["1c"]["Text"] = [[Particles]];
+G2L["1c"]["Position"] = UDim2.new(0.01875, 0, 0.81544, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["1d"] = Instance.new("LocalScript", G2L["1c"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.ImageLabel
+G2L["1e"] = Instance.new("ImageLabel", G2L["11"]);
+G2L["1e"]["BorderSizePixel"] = 0;
+G2L["1e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1e"]["Image"] = [[rbxassetid://109172666525942]];
+G2L["1e"]["Size"] = UDim2.new(0, 100, 0, 100);
+G2L["1e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1e"]["BackgroundTransparency"] = 1;
+G2L["1e"]["Position"] = UDim2.new(0.27292, 0, 0.0302, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.ImageLabel.LocalScript
+G2L["1f"] = Instance.new("LocalScript", G2L["1e"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.nugget
+G2L["20"] = Instance.new("TextBox", G2L["11"]);
+G2L["20"]["TextStrokeTransparency"] = 0;
+G2L["20"]["Name"] = [[nugget]];
+G2L["20"]["BorderSizePixel"] = 2;
+G2L["20"]["TextWrapped"] = true;
+G2L["20"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["20"]["TextSize"] = 14;
+G2L["20"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["20"]["TextScaled"] = true;
+G2L["20"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["20"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["20"]["PlaceholderText"] = [[Insert Decal ID]];
+G2L["20"]["Size"] = UDim2.new(0, 100, 0, 24);
+G2L["20"]["Position"] = UDim2.new(0.27292, 0, 0.41611, 0);
+G2L["20"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["20"]["Text"] = [[109172666525942]];
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["21"] = Instance.new("TextButton", G2L["11"]);
+G2L["21"]["TextWrapped"] = true;
+G2L["21"]["TextStrokeTransparency"] = 0;
+G2L["21"]["BorderSizePixel"] = 2;
+G2L["21"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["21"]["TextSize"] = 14;
+G2L["21"]["TextScaled"] = true;
+G2L["21"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["21"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["21"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["21"]["Size"] = UDim2.new(0, 75, 0, 39);
+G2L["21"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["21"]["Text"] = [[HeadShake]];
+G2L["21"]["Position"] = UDim2.new(0.50833, 0, 0.0302, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["22"] = Instance.new("LocalScript", G2L["21"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["23"] = Instance.new("TextButton", G2L["11"]);
+G2L["23"]["TextWrapped"] = true;
+G2L["23"]["TextStrokeTransparency"] = 0;
+G2L["23"]["BorderSizePixel"] = 2;
+G2L["23"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["23"]["TextSize"] = 14;
+G2L["23"]["TextScaled"] = true;
+G2L["23"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["23"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["23"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["23"]["Size"] = UDim2.new(0, 75, 0, 39);
+G2L["23"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["23"]["Text"] = [[Chicken Arms]];
+G2L["23"]["Position"] = UDim2.new(0.50833, 0, 0.21141, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["24"] = Instance.new("LocalScript", G2L["23"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["25"] = Instance.new("TextButton", G2L["11"]);
+G2L["25"]["TextWrapped"] = true;
+G2L["25"]["TextStrokeTransparency"] = 0;
+G2L["25"]["BorderSizePixel"] = 2;
+G2L["25"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["25"]["TextSize"] = 14;
+G2L["25"]["TextScaled"] = true;
+G2L["25"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["25"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["25"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["25"]["Size"] = UDim2.new(0, 75, 0, 39);
+G2L["25"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["25"]["Text"] = [[I'0rb]];
+G2L["25"]["Position"] = UDim2.new(0.50833, 0, 0.38926, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["26"] = Instance.new("LocalScript", G2L["25"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["27"] = Instance.new("TextButton", G2L["11"]);
+G2L["27"]["TextWrapped"] = true;
+G2L["27"]["TextStrokeTransparency"] = 0;
+G2L["27"]["BorderSizePixel"] = 2;
+G2L["27"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["27"]["TextSize"] = 14;
+G2L["27"]["TextScaled"] = true;
+G2L["27"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["27"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["27"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["27"]["Size"] = UDim2.new(0, 75, 0, 39);
+G2L["27"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["27"]["Text"] = [[Floating Pad]];
+G2L["27"]["Position"] = UDim2.new(0.50833, 0, 0.57383, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["28"] = Instance.new("LocalScript", G2L["27"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["29"] = Instance.new("TextButton", G2L["11"]);
+G2L["29"]["TextWrapped"] = true;
+G2L["29"]["TextStrokeTransparency"] = 0;
+G2L["29"]["BorderSizePixel"] = 2;
+G2L["29"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["29"]["TextSize"] = 14;
+G2L["29"]["TextScaled"] = true;
+G2L["29"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["29"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["29"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["29"]["Size"] = UDim2.new(0, 75, 0, 39);
+G2L["29"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["29"]["Text"] = [[Dominus Ghost]];
+G2L["29"]["Position"] = UDim2.new(0.50833, 0, 0.75168, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["2a"] = Instance.new("LocalScript", G2L["29"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["2b"] = Instance.new("TextButton", G2L["11"]);
+G2L["2b"]["TextWrapped"] = true;
+G2L["2b"]["TextStrokeTransparency"] = 0;
+G2L["2b"]["BorderSizePixel"] = 2;
+G2L["2b"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["2b"]["TextSize"] = 14;
+G2L["2b"]["TextScaled"] = true;
+G2L["2b"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["2b"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2b"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["2b"]["Size"] = UDim2.new(0, 134, 0, 39);
+G2L["2b"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["2b"]["Text"] = [[Walkspeed = 50]];
+G2L["2b"]["Position"] = UDim2.new(0.69375, 0, 0.0302, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["2c"] = Instance.new("LocalScript", G2L["2b"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["2d"] = Instance.new("TextButton", G2L["11"]);
+G2L["2d"]["TextWrapped"] = true;
+G2L["2d"]["TextStrokeTransparency"] = 0;
+G2L["2d"]["BorderSizePixel"] = 2;
+G2L["2d"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["2d"]["TextSize"] = 14;
+G2L["2d"]["TextScaled"] = true;
+G2L["2d"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["2d"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2d"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["2d"]["Size"] = UDim2.new(0, 134, 0, 39);
+G2L["2d"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["2d"]["Text"] = [[Disco Character]];
+G2L["2d"]["Position"] = UDim2.new(0.69375, 0, 0.21141, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["2e"] = Instance.new("LocalScript", G2L["2d"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["2f"] = Instance.new("TextButton", G2L["11"]);
+G2L["2f"]["TextWrapped"] = true;
+G2L["2f"]["TextStrokeTransparency"] = 0;
+G2L["2f"]["BorderSizePixel"] = 2;
+G2L["2f"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["2f"]["TextSize"] = 14;
+G2L["2f"]["TextScaled"] = true;
+G2L["2f"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["2f"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2f"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["2f"]["Size"] = UDim2.new(0, 134, 0, 39);
+G2L["2f"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["2f"]["Text"] = [[MeshCrash (dont)]];
+G2L["2f"]["Position"] = UDim2.new(0.69375, 0, 0.38926, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["30"] = Instance.new("LocalScript", G2L["2f"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["31"] = Instance.new("TextButton", G2L["11"]);
+G2L["31"]["TextWrapped"] = true;
+G2L["31"]["TextStrokeTransparency"] = 0;
+G2L["31"]["BorderSizePixel"] = 2;
+G2L["31"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["31"]["TextSize"] = 14;
+G2L["31"]["TextScaled"] = true;
+G2L["31"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["31"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["31"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["31"]["Size"] = UDim2.new(0, 134, 0, 39);
+G2L["31"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["31"]["Text"] = [[Fencing Restore]];
+G2L["31"]["Position"] = UDim2.new(0.69375, 0, 0.57383, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["32"] = Instance.new("LocalScript", G2L["31"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["33"] = Instance.new("TextButton", G2L["11"]);
+G2L["33"]["TextWrapped"] = true;
+G2L["33"]["TextStrokeTransparency"] = 0;
+G2L["33"]["BorderSizePixel"] = 2;
+G2L["33"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["33"]["TextSize"] = 14;
+G2L["33"]["TextScaled"] = true;
+G2L["33"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["33"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["33"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["33"]["Size"] = UDim2.new(0, 134, 0, 39);
+G2L["33"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["33"]["Text"] = [[Delete All]];
+G2L["33"]["Position"] = UDim2.new(0.69375, 0, 0.75168, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["34"] = Instance.new("LocalScript", G2L["33"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["35"] = Instance.new("TextButton", G2L["11"]);
+G2L["35"]["TextWrapped"] = true;
+G2L["35"]["TextStrokeTransparency"] = 0;
+G2L["35"]["BorderSizePixel"] = 2;
+G2L["35"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["35"]["TextSize"] = 14;
+G2L["35"]["TextScaled"] = true;
+G2L["35"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["35"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["35"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["35"]["Size"] = UDim2.new(0, 223, 0, 13);
+G2L["35"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["35"]["Text"] = [[Unanchor All]];
+G2L["35"]["Position"] = UDim2.new(0.50833, 0, 0.92617, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["36"] = Instance.new("LocalScript", G2L["35"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["37"] = Instance.new("TextButton", G2L["11"]);
+G2L["37"]["TextWrapped"] = true;
+G2L["37"]["TextStrokeTransparency"] = 0;
+G2L["37"]["BorderSizePixel"] = 2;
+G2L["37"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["37"]["TextSize"] = 14;
+G2L["37"]["TextScaled"] = true;
+G2L["37"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["37"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["37"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["37"]["Size"] = UDim2.new(0, 100, 0, 39);
+G2L["37"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["37"]["Text"] = [[Remove Skybox]];
+G2L["37"]["Position"] = UDim2.new(0.27292, 0, 0.57383, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["38"] = Instance.new("LocalScript", G2L["37"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton
+G2L["39"] = Instance.new("TextButton", G2L["11"]);
+G2L["39"]["TextWrapped"] = true;
+G2L["39"]["TextStrokeTransparency"] = 0;
+G2L["39"]["BorderSizePixel"] = 2;
+G2L["39"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["39"]["TextSize"] = 14;
+G2L["39"]["TextScaled"] = true;
+G2L["39"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["39"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["39"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["39"]["Size"] = UDim2.new(0, 100, 0, 58);
+G2L["39"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["39"]["Text"] = [[Anti-Skid (Delete HD Admin Folder)]];
+G2L["39"]["Position"] = UDim2.new(0.27292, 0, 0.75168, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+G2L["3a"] = Instance.new("LocalScript", G2L["39"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton
+G2L["3b"] = Instance.new("TextButton", G2L["2"]);
+G2L["3b"]["TextWrapped"] = true;
+G2L["3b"]["TextStrokeTransparency"] = 0;
+G2L["3b"]["BorderSizePixel"] = 2;
+G2L["3b"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["3b"]["TextSize"] = 14;
+G2L["3b"]["TextScaled"] = true;
+G2L["3b"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["3b"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3b"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["3b"]["Size"] = UDim2.new(0, 80, 0, 29);
+G2L["3b"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["3b"]["Text"] = [[Home]];
+G2L["3b"]["Position"] = UDim2.new(0.83242, 0, -1.03242, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+G2L["3c"] = Instance.new("LocalScript", G2L["3b"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton
+G2L["3d"] = Instance.new("TextButton", G2L["2"]);
+G2L["3d"]["TextWrapped"] = true;
+G2L["3d"]["TextStrokeTransparency"] = 0;
+G2L["3d"]["BorderSizePixel"] = 2;
+G2L["3d"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["3d"]["TextSize"] = 14;
+G2L["3d"]["TextScaled"] = true;
+G2L["3d"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["3d"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3d"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["3d"]["Size"] = UDim2.new(0, 80, 0, 29);
+G2L["3d"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["3d"]["Text"] = [[ F3X Page]];
+G2L["3d"]["Position"] = UDim2.new(0.64701, 0, -1.03242, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+G2L["3e"] = Instance.new("LocalScript", G2L["3d"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo
+G2L["3f"] = Instance.new("Frame", G2L["2"]);
+G2L["3f"]["Visible"] = false;
+G2L["3f"]["BorderSizePixel"] = 2;
+G2L["3f"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3f"]["Size"] = UDim2.new(0, 480, 0, 298);
+G2L["3f"]["Position"] = UDim2.new(-0, 0, 1, 0);
+G2L["3f"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["3f"]["Name"] = [[hd edmin woohoo]];
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["40"] = Instance.new("TextButton", G2L["3f"]);
+G2L["40"]["TextWrapped"] = true;
+G2L["40"]["TextStrokeTransparency"] = 0;
+G2L["40"]["BorderSizePixel"] = 2;
+G2L["40"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["40"]["TextSize"] = 14;
+G2L["40"]["TextScaled"] = true;
+G2L["40"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["40"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["40"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["40"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["40"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["40"]["Text"] = [[Theme]];
+G2L["40"]["Position"] = UDim2.new(0.01875, 0, 0.0302, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["41"] = Instance.new("LocalScript", G2L["40"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["42"] = Instance.new("TextButton", G2L["3f"]);
+G2L["42"]["TextWrapped"] = true;
+G2L["42"]["TextStrokeTransparency"] = 0;
+G2L["42"]["BorderSizePixel"] = 2;
+G2L["42"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["42"]["TextSize"] = 14;
+G2L["42"]["TextScaled"] = true;
+G2L["42"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["42"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["42"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["42"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["42"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["42"]["Text"] = [[NUMBER]];
+G2L["42"]["Position"] = UDim2.new(0.01875, 0, 0.14765, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["43"] = Instance.new("LocalScript", G2L["42"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["44"] = Instance.new("TextButton", G2L["3f"]);
+G2L["44"]["TextWrapped"] = true;
+G2L["44"]["TextStrokeTransparency"] = 0;
+G2L["44"]["BorderSizePixel"] = 2;
+G2L["44"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["44"]["TextSize"] = 14;
+G2L["44"]["TextScaled"] = true;
+G2L["44"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["44"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["44"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["44"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["44"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["44"]["Text"] = [[Gangsta Paradise]];
+G2L["44"]["Position"] = UDim2.new(0.01875, 0, 0.27181, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["45"] = Instance.new("LocalScript", G2L["44"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["46"] = Instance.new("TextButton", G2L["3f"]);
+G2L["46"]["TextWrapped"] = true;
+G2L["46"]["TextStrokeTransparency"] = 0;
+G2L["46"]["BorderSizePixel"] = 2;
+G2L["46"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["46"]["TextSize"] = 14;
+G2L["46"]["TextScaled"] = true;
+G2L["46"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["46"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["46"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["46"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["46"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["46"]["Text"] = [[Electro Sp00k]];
+G2L["46"]["Position"] = UDim2.new(0.01875, 0, 0.39597, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["47"] = Instance.new("LocalScript", G2L["46"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["48"] = Instance.new("TextButton", G2L["3f"]);
+G2L["48"]["TextWrapped"] = true;
+G2L["48"]["TextStrokeTransparency"] = 0;
+G2L["48"]["BorderSizePixel"] = 2;
+G2L["48"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["48"]["TextSize"] = 14;
+G2L["48"]["TextScaled"] = true;
+G2L["48"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["48"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["48"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["48"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["48"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["48"]["Text"] = [[Baby Laugh ]];
+G2L["48"]["Position"] = UDim2.new(0.01875, 0, 0.52013, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["49"] = Instance.new("LocalScript", G2L["48"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["4a"] = Instance.new("TextButton", G2L["3f"]);
+G2L["4a"]["TextWrapped"] = true;
+G2L["4a"]["TextStrokeTransparency"] = 0;
+G2L["4a"]["BorderSizePixel"] = 2;
+G2L["4a"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["4a"]["TextSize"] = 14;
+G2L["4a"]["TextScaled"] = true;
+G2L["4a"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4a"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4a"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["4a"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["4a"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["4a"]["Text"] = [[Gothic]];
+G2L["4a"]["Position"] = UDim2.new(0.01875, 0, 0.63758, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["4b"] = Instance.new("LocalScript", G2L["4a"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["4c"] = Instance.new("TextButton", G2L["3f"]);
+G2L["4c"]["TextWrapped"] = true;
+G2L["4c"]["TextStrokeTransparency"] = 0;
+G2L["4c"]["BorderSizePixel"] = 2;
+G2L["4c"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["4c"]["TextSize"] = 14;
+G2L["4c"]["TextScaled"] = true;
+G2L["4c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4c"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4c"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["4c"]["Size"] = UDim2.new(0, 88, 0, 64);
+G2L["4c"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["4c"]["Text"] = [[Custom Song]];
+G2L["4c"]["Position"] = UDim2.new(0.01875, 0, 0.75839, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["4d"] = Instance.new("LocalScript", G2L["4c"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.musec id
+G2L["4e"] = Instance.new("TextBox", G2L["3f"]);
+G2L["4e"]["Name"] = [[musec id]];
+G2L["4e"]["BorderSizePixel"] = 2;
+G2L["4e"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["4e"]["TextSize"] = 14;
+G2L["4e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4e"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4e"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["4e"]["PlaceholderText"] = [[Music ID here]];
+G2L["4e"]["Size"] = UDim2.new(0, 153, 0, 58);
+G2L["4e"]["Position"] = UDim2.new(0.24167, 0, 0.0302, 0);
+G2L["4e"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["4e"]["Text"] = [[]];
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.petch 
+G2L["4f"] = Instance.new("TextBox", G2L["3f"]);
+G2L["4f"]["Name"] = [[petch ]];
+G2L["4f"]["BorderSizePixel"] = 2;
+G2L["4f"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["4f"]["TextSize"] = 14;
+G2L["4f"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4f"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4f"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["4f"]["PlaceholderText"] = [[Pitch here]];
+G2L["4f"]["Size"] = UDim2.new(0, 153, 0, 58);
+G2L["4f"]["Position"] = UDim2.new(0.24167, 0, 0.27852, 0);
+G2L["4f"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["4f"]["Text"] = [[]];
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["50"] = Instance.new("TextButton", G2L["3f"]);
+G2L["50"]["TextWrapped"] = true;
+G2L["50"]["TextStrokeTransparency"] = 0;
+G2L["50"]["BorderSizePixel"] = 2;
+G2L["50"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["50"]["TextSize"] = 14;
+G2L["50"]["TextScaled"] = true;
+G2L["50"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["50"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["50"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["50"]["Size"] = UDim2.new(0, 153, 0, 64);
+G2L["50"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["50"]["Text"] = [[Forceplace]];
+G2L["50"]["Position"] = UDim2.new(0.24167, 0, 0.54362, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["51"] = Instance.new("LocalScript", G2L["50"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["52"] = Instance.new("TextButton", G2L["3f"]);
+G2L["52"]["TextWrapped"] = true;
+G2L["52"]["TextStrokeTransparency"] = 0;
+G2L["52"]["BorderSizePixel"] = 2;
+G2L["52"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["52"]["TextSize"] = 14;
+G2L["52"]["TextScaled"] = true;
+G2L["52"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["52"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["52"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["52"]["Size"] = UDim2.new(0, 182, 0, 64);
+G2L["52"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["52"]["Text"] = [[F3X]];
+G2L["52"]["Position"] = UDim2.new(0.59583, 0, 0.02013, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["53"] = Instance.new("LocalScript", G2L["52"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["54"] = Instance.new("TextButton", G2L["3f"]);
+G2L["54"]["TextWrapped"] = true;
+G2L["54"]["TextStrokeTransparency"] = 0;
+G2L["54"]["BorderSizePixel"] = 2;
+G2L["54"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["54"]["TextSize"] = 14;
+G2L["54"]["TextScaled"] = true;
+G2L["54"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["54"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["54"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["54"]["Size"] = UDim2.new(0, 182, 0, 24);
+G2L["54"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["54"]["Text"] = [[R6]];
+G2L["54"]["Position"] = UDim2.new(0.59583, 0, 0.26846, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["55"] = Instance.new("LocalScript", G2L["54"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["56"] = Instance.new("TextButton", G2L["3f"]);
+G2L["56"]["TextWrapped"] = true;
+G2L["56"]["TextStrokeTransparency"] = 0;
+G2L["56"]["BorderSizePixel"] = 2;
+G2L["56"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["56"]["TextSize"] = 14;
+G2L["56"]["TextScaled"] = true;
+G2L["56"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["56"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["56"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["56"]["Size"] = UDim2.new(0, 182, 0, 24);
+G2L["56"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["56"]["Text"] = [[System-Message Spam]];
+G2L["56"]["Position"] = UDim2.new(0.59583, 0, 0.39262, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["57"] = Instance.new("LocalScript", G2L["56"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["58"] = Instance.new("TextButton", G2L["3f"]);
+G2L["58"]["TextWrapped"] = true;
+G2L["58"]["TextStrokeTransparency"] = 0;
+G2L["58"]["BorderSizePixel"] = 2;
+G2L["58"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["58"]["TextSize"] = 14;
+G2L["58"]["TextScaled"] = true;
+G2L["58"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["58"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["58"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["58"]["Size"] = UDim2.new(0, 182, 0, 24);
+G2L["58"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["58"]["Text"] = [[Anti-Skid]];
+G2L["58"]["Position"] = UDim2.new(0.59583, 0, 0.54362, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["59"] = Instance.new("LocalScript", G2L["58"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["5a"] = Instance.new("TextButton", G2L["3f"]);
+G2L["5a"]["TextWrapped"] = true;
+G2L["5a"]["TextStrokeTransparency"] = 0;
+G2L["5a"]["BorderSizePixel"] = 2;
+G2L["5a"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["5a"]["TextSize"] = 14;
+G2L["5a"]["TextScaled"] = true;
+G2L["5a"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["5a"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5a"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["5a"]["Size"] = UDim2.new(0, 182, 0, 24);
+G2L["5a"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["5a"]["Text"] = [[ServerMessage]];
+G2L["5a"]["Position"] = UDim2.new(0.59583, 0, 0.67785, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["5b"] = Instance.new("LocalScript", G2L["5a"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["5c"] = Instance.new("TextButton", G2L["3f"]);
+G2L["5c"]["TextWrapped"] = true;
+G2L["5c"]["TextStrokeTransparency"] = 0;
+G2L["5c"]["BorderSizePixel"] = 2;
+G2L["5c"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["5c"]["TextSize"] = 14;
+G2L["5c"]["TextScaled"] = true;
+G2L["5c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["5c"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5c"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["5c"]["Size"] = UDim2.new(0, 182, 0, 44);
+G2L["5c"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["5c"]["Text"] = [[Hint]];
+G2L["5c"]["Position"] = UDim2.new(0.59583, 0, 0.8255, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["5d"] = Instance.new("LocalScript", G2L["5c"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["5e"] = Instance.new("TextButton", G2L["3f"]);
+G2L["5e"]["TextWrapped"] = true;
+G2L["5e"]["TextStrokeTransparency"] = 0;
+G2L["5e"]["BorderSizePixel"] = 2;
+G2L["5e"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["5e"]["TextSize"] = 14;
+G2L["5e"]["TextScaled"] = true;
+G2L["5e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["5e"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5e"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["5e"]["Size"] = UDim2.new(0, 67, 0, 44);
+G2L["5e"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["5e"]["Text"] = [[Shutdown]];
+G2L["5e"]["Position"] = UDim2.new(0.24167, 0, 0.8255, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["5f"] = Instance.new("LocalScript", G2L["5e"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton
+G2L["60"] = Instance.new("TextButton", G2L["3f"]);
+G2L["60"]["TextWrapped"] = true;
+G2L["60"]["TextStrokeTransparency"] = 0;
+G2L["60"]["BorderSizePixel"] = 2;
+G2L["60"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["60"]["TextSize"] = 14;
+G2L["60"]["TextScaled"] = true;
+G2L["60"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["60"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["60"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["60"]["Size"] = UDim2.new(0, 67, 0, 44);
+G2L["60"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["60"]["Text"] = [[Billboard]];
+G2L["60"]["Position"] = UDim2.new(0.42083, 0, 0.8255, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+G2L["61"] = Instance.new("LocalScript", G2L["60"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton
+G2L["62"] = Instance.new("TextButton", G2L["2"]);
+G2L["62"]["TextWrapped"] = true;
+G2L["62"]["TextStrokeTransparency"] = 0;
+G2L["62"]["BorderSizePixel"] = 2;
+G2L["62"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["62"]["TextSize"] = 14;
+G2L["62"]["TextScaled"] = true;
+G2L["62"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["62"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["62"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["62"]["Size"] = UDim2.new(0, 80, 0, 29);
+G2L["62"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["62"]["Text"] = [[HD Admin Page]];
+G2L["62"]["Position"] = UDim2.new(0.46367, 0, -1.03242, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+G2L["63"] = Instance.new("LocalScript", G2L["62"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb
+G2L["64"] = Instance.new("Frame", G2L["2"]);
+G2L["64"]["Visible"] = false;
+G2L["64"]["BorderSizePixel"] = 2;
+G2L["64"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["64"]["Size"] = UDim2.new(0, 480, 0, 298);
+G2L["64"]["Position"] = UDim2.new(-0, 0, 1, 0);
+G2L["64"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["64"]["Name"] = [[scrept heb]];
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["65"] = Instance.new("TextButton", G2L["64"]);
+G2L["65"]["TextWrapped"] = true;
+G2L["65"]["TextStrokeTransparency"] = 0;
+G2L["65"]["BorderSizePixel"] = 2;
+G2L["65"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["65"]["TextSize"] = 14;
+G2L["65"]["TextScaled"] = true;
+G2L["65"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["65"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["65"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["65"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["65"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["65"]["Text"] = [[Grab Knife]];
+G2L["65"]["Position"] = UDim2.new(0.01875, 0, 0.0302, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["66"] = Instance.new("LocalScript", G2L["65"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["67"] = Instance.new("TextButton", G2L["64"]);
+G2L["67"]["TextWrapped"] = true;
+G2L["67"]["TextStrokeTransparency"] = 0;
+G2L["67"]["BorderSizePixel"] = 2;
+G2L["67"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["67"]["TextSize"] = 14;
+G2L["67"]["TextScaled"] = true;
+G2L["67"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["67"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["67"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["67"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["67"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["67"]["Text"] = [[Gun]];
+G2L["67"]["Position"] = UDim2.new(0.27083, 0, 0.0302, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["68"] = Instance.new("LocalScript", G2L["67"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["69"] = Instance.new("TextButton", G2L["64"]);
+G2L["69"]["TextWrapped"] = true;
+G2L["69"]["TextStrokeTransparency"] = 0;
+G2L["69"]["BorderSizePixel"] = 2;
+G2L["69"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["69"]["TextSize"] = 14;
+G2L["69"]["TextScaled"] = true;
+G2L["69"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["69"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["69"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["69"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["69"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["69"]["Text"] = [[John Doe]];
+G2L["69"]["Position"] = UDim2.new(0.52708, 0, 0.0302, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["6a"] = Instance.new("LocalScript", G2L["69"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["6b"] = Instance.new("TextButton", G2L["64"]);
+G2L["6b"]["TextWrapped"] = true;
+G2L["6b"]["TextStrokeTransparency"] = 0;
+G2L["6b"]["BorderSizePixel"] = 2;
+G2L["6b"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["6b"]["TextSize"] = 14;
+G2L["6b"]["TextScaled"] = true;
+G2L["6b"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["6b"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["6b"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["6b"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["6b"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["6b"]["Text"] = [[Shedletsky ]];
+G2L["6b"]["Position"] = UDim2.new(0.7875, 0, 0.0302, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["6c"] = Instance.new("LocalScript", G2L["6b"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["6d"] = Instance.new("TextButton", G2L["64"]);
+G2L["6d"]["TextWrapped"] = true;
+G2L["6d"]["TextStrokeTransparency"] = 0;
+G2L["6d"]["BorderSizePixel"] = 2;
+G2L["6d"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["6d"]["TextSize"] = 14;
+G2L["6d"]["TextScaled"] = true;
+G2L["6d"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["6d"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["6d"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["6d"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["6d"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["6d"]["Text"] = [[Roadblocks Spinning]];
+G2L["6d"]["Position"] = UDim2.new(0.7875, 0, 0.15772, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["6e"] = Instance.new("LocalScript", G2L["6d"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["6f"] = Instance.new("TextButton", G2L["64"]);
+G2L["6f"]["TextWrapped"] = true;
+G2L["6f"]["TextStrokeTransparency"] = 0;
+G2L["6f"]["BorderSizePixel"] = 2;
+G2L["6f"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["6f"]["TextSize"] = 14;
+G2L["6f"]["TextScaled"] = true;
+G2L["6f"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["6f"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["6f"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["6f"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["6f"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["6f"]["Text"] = [[Obunga]];
+G2L["6f"]["Position"] = UDim2.new(0.52708, 0, 0.15772, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["70"] = Instance.new("LocalScript", G2L["6f"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["71"] = Instance.new("TextButton", G2L["64"]);
+G2L["71"]["TextWrapped"] = true;
+G2L["71"]["TextStrokeTransparency"] = 0;
+G2L["71"]["BorderSizePixel"] = 2;
+G2L["71"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["71"]["TextSize"] = 14;
+G2L["71"]["TextScaled"] = true;
+G2L["71"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["71"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["71"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["71"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["71"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["71"]["Text"] = [[Toadroast]];
+G2L["71"]["Position"] = UDim2.new(0.27083, 0, 0.15772, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["72"] = Instance.new("LocalScript", G2L["71"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["73"] = Instance.new("TextButton", G2L["64"]);
+G2L["73"]["TextWrapped"] = true;
+G2L["73"]["TextStrokeTransparency"] = 0;
+G2L["73"]["BorderSizePixel"] = 2;
+G2L["73"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["73"]["TextSize"] = 14;
+G2L["73"]["TextScaled"] = true;
+G2L["73"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["73"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["73"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["73"]["Size"] = UDim2.new(0, 88, 0, 23);
+G2L["73"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["73"]["Text"] = [[Spookeh Skeleton]];
+G2L["73"]["Position"] = UDim2.new(0.01875, 0, 0.15772, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["74"] = Instance.new("LocalScript", G2L["73"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["75"] = Instance.new("TextButton", G2L["64"]);
+G2L["75"]["TextWrapped"] = true;
+G2L["75"]["TextStrokeTransparency"] = 0;
+G2L["75"]["BorderSizePixel"] = 2;
+G2L["75"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["75"]["TextSize"] = 14;
+G2L["75"]["TextScaled"] = true;
+G2L["75"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["75"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["75"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["75"]["Size"] = UDim2.new(0, 209, 0, 132);
+G2L["75"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["75"]["Text"] = [[Realm]];
+G2L["75"]["Position"] = UDim2.new(0.01875, 0, 0.27517, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["76"] = Instance.new("LocalScript", G2L["75"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton
+G2L["77"] = Instance.new("TextButton", G2L["64"]);
+G2L["77"]["TextWrapped"] = true;
+G2L["77"]["TextStrokeTransparency"] = 0;
+G2L["77"]["BorderSizePixel"] = 2;
+G2L["77"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["77"]["TextSize"] = 14;
+G2L["77"]["TextScaled"] = true;
+G2L["77"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["77"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["77"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["77"]["Size"] = UDim2.new(0, 209, 0, 132);
+G2L["77"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["77"]["Text"] = [[Retroslopers Fav Map]];
+G2L["77"]["Position"] = UDim2.new(0.53542, 0, 0.27852, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+G2L["78"] = Instance.new("LocalScript", G2L["77"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton
+G2L["79"] = Instance.new("TextButton", G2L["2"]);
+G2L["79"]["TextWrapped"] = true;
+G2L["79"]["TextStrokeTransparency"] = 0;
+G2L["79"]["BorderSizePixel"] = 2;
+G2L["79"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["79"]["TextSize"] = 14;
+G2L["79"]["TextScaled"] = true;
+G2L["79"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["79"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["79"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["79"]["Size"] = UDim2.new(0, 80, 0, 29);
+G2L["79"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["79"]["Text"] = [[Script Hub]];
+G2L["79"]["Position"] = UDim2.new(0.27617, 0, -1.03242, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+G2L["7a"] = Instance.new("LocalScript", G2L["79"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton
+G2L["7b"] = Instance.new("TextButton", G2L["2"]);
+G2L["7b"]["TextWrapped"] = true;
+G2L["7b"]["TextStrokeTransparency"] = 0;
+G2L["7b"]["BorderSizePixel"] = 2;
+G2L["7b"]["TextStrokeColor3"] = Color3.fromRGB(103, 103, 103);
+G2L["7b"]["TextSize"] = 14;
+G2L["7b"]["TextScaled"] = true;
+G2L["7b"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["7b"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["7b"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["7b"]["Size"] = UDim2.new(0, 80, 0, 29);
+G2L["7b"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["7b"]["Text"] = [[Decals Tab]];
+G2L["7b"]["Position"] = UDim2.new(0.09492, 0, -1.03242, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+G2L["7c"] = Instance.new("LocalScript", G2L["7b"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab
+G2L["7d"] = Instance.new("Frame", G2L["2"]);
+G2L["7d"]["BorderSizePixel"] = 2;
+G2L["7d"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["7d"]["Size"] = UDim2.new(0, 480, 0, 298);
+G2L["7d"]["Position"] = UDim2.new(-0, 0, 1, 0);
+G2L["7d"]["BorderColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["7d"]["Name"] = [[decal tab]];
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["7e"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["7e"]["BorderSizePixel"] = 0;
+G2L["7e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["7e"]["Image"] = [[rbxassetid://138177692150198]];
+G2L["7e"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["7e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["7e"]["Position"] = UDim2.new(0.03542, 0, 0.02349, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["7f"] = Instance.new("LocalScript", G2L["7e"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["80"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["80"]["BorderSizePixel"] = 0;
+G2L["80"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["80"]["Image"] = [[rbxassetid://125940566001256]];
+G2L["80"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["80"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["80"]["Position"] = UDim2.new(0.18542, 0, 0.02349, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["81"] = Instance.new("LocalScript", G2L["80"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["82"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["82"]["BorderSizePixel"] = 0;
+G2L["82"]["BackgroundTransparency"] = 1;
+G2L["82"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["82"]["Image"] = [[rbxassetid://158118263]];
+G2L["82"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["82"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["82"]["Position"] = UDim2.new(0.33125, 0, 0.02349, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["83"] = Instance.new("LocalScript", G2L["82"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["84"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["84"]["BorderSizePixel"] = 0;
+G2L["84"]["BackgroundTransparency"] = 1;
+G2L["84"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["84"]["Image"] = [[rbxassetid://109172666525942]];
+G2L["84"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["84"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["84"]["Position"] = UDim2.new(0.48125, 0, 0.02349, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["85"] = Instance.new("LocalScript", G2L["84"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["86"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["86"]["BorderSizePixel"] = 0;
+G2L["86"]["BackgroundTransparency"] = 1;
+G2L["86"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["86"]["Image"] = [[rbxassetid://96464893839346]];
+G2L["86"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["86"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["86"]["Position"] = UDim2.new(0.66458, 0, 0.02349, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["87"] = Instance.new("LocalScript", G2L["86"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["88"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["88"]["BorderSizePixel"] = 0;
+G2L["88"]["BackgroundTransparency"] = 1;
+G2L["88"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["88"]["Image"] = [[rbxassetid://108026156503677]];
+G2L["88"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["88"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["88"]["Position"] = UDim2.new(0.83125, 0, 0.02349, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["89"] = Instance.new("LocalScript", G2L["88"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["8a"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["8a"]["BorderSizePixel"] = 0;
+G2L["8a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["8a"]["Image"] = [[rbxassetid://103019090820445]];
+G2L["8a"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["8a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["8a"]["Position"] = UDim2.new(0.03958, 0, 0.25503, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["8b"] = Instance.new("LocalScript", G2L["8a"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["8c"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["8c"]["BorderSizePixel"] = 0;
+G2L["8c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["8c"]["Image"] = [[rbxassetid://138193061357271]];
+G2L["8c"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["8c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["8c"]["Position"] = UDim2.new(0.18958, 0, 0.25503, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["8d"] = Instance.new("LocalScript", G2L["8c"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["8e"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["8e"]["BorderSizePixel"] = 0;
+G2L["8e"]["BackgroundTransparency"] = 1;
+G2L["8e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["8e"]["Image"] = [[rbxassetid://127419442544941]];
+G2L["8e"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["8e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["8e"]["Position"] = UDim2.new(0.33542, 0, 0.25503, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["8f"] = Instance.new("LocalScript", G2L["8e"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["90"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["90"]["BorderSizePixel"] = 0;
+G2L["90"]["BackgroundTransparency"] = 1;
+G2L["90"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["90"]["Image"] = [[rbxassetid://110240864101518]];
+G2L["90"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["90"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["90"]["Position"] = UDim2.new(0.48542, 0, 0.25503, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["91"] = Instance.new("LocalScript", G2L["90"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["92"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["92"]["BorderSizePixel"] = 0;
+G2L["92"]["BackgroundTransparency"] = 1;
+G2L["92"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["92"]["Image"] = [[rbxassetid://12851404448]];
+G2L["92"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["92"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["92"]["Position"] = UDim2.new(0.66875, 0, 0.25503, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["93"] = Instance.new("LocalScript", G2L["92"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["94"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["94"]["BorderSizePixel"] = 0;
+G2L["94"]["BackgroundTransparency"] = 1;
+G2L["94"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["94"]["Image"] = [[rbxassetid://358313209]];
+G2L["94"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["94"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["94"]["Position"] = UDim2.new(0.83542, 0, 0.25503, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["95"] = Instance.new("LocalScript", G2L["94"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["96"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["96"]["BorderSizePixel"] = 0;
+G2L["96"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["96"]["Image"] = [[rbxassetid://382332426]];
+G2L["96"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["96"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["96"]["Position"] = UDim2.new(0.03958, 0, 0.5, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["97"] = Instance.new("LocalScript", G2L["96"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["98"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["98"]["BorderSizePixel"] = 0;
+G2L["98"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["98"]["Image"] = [[rbxassetid://7108680822]];
+G2L["98"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["98"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["98"]["Position"] = UDim2.new(0.18958, 0, 0.5, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["99"] = Instance.new("LocalScript", G2L["98"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["9a"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["9a"]["BorderSizePixel"] = 0;
+G2L["9a"]["BackgroundTransparency"] = 1;
+G2L["9a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["9a"]["Image"] = [[rbxassetid://172423468]];
+G2L["9a"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["9a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9a"]["Position"] = UDim2.new(0.33542, 0, 0.5, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["9b"] = Instance.new("LocalScript", G2L["9a"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["9c"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["9c"]["BorderSizePixel"] = 0;
+G2L["9c"]["BackgroundTransparency"] = 1;
+G2L["9c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["9c"]["Image"] = [[rbxassetid://12025340162]];
+G2L["9c"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["9c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9c"]["Position"] = UDim2.new(0.48542, 0, 0.5, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["9d"] = Instance.new("LocalScript", G2L["9c"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["9e"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["9e"]["BorderSizePixel"] = 0;
+G2L["9e"]["BackgroundTransparency"] = 1;
+G2L["9e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["9e"]["Image"] = [[rbxassetid://157755295]];
+G2L["9e"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["9e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9e"]["Position"] = UDim2.new(0.66875, 0, 0.5, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["9f"] = Instance.new("LocalScript", G2L["9e"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["a0"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["a0"]["BorderSizePixel"] = 0;
+G2L["a0"]["BackgroundTransparency"] = 1;
+G2L["a0"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["a0"]["Image"] = [[rbxassetid://132408240384029]];
+G2L["a0"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["a0"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["a0"]["Position"] = UDim2.new(0.83542, 0, 0.5, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["a1"] = Instance.new("LocalScript", G2L["a0"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton
+G2L["a2"] = Instance.new("ImageButton", G2L["7d"]);
+G2L["a2"]["BorderSizePixel"] = 0;
+G2L["a2"]["BackgroundTransparency"] = 1;
+G2L["a2"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["a2"]["Image"] = [[rbxassetid://160456772]];
+G2L["a2"]["Size"] = UDim2.new(0, 60, 0, 60);
+G2L["a2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["a2"]["Position"] = UDim2.new(0.03958, 0, 0.74832, 0);
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+G2L["a3"] = Instance.new("LocalScript", G2L["a2"]);
+
+
+
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.LocalScript
+local function C_3()
+local script = G2L["3"];
+	local UserInputService = game:GetService("UserInputService")
+	local RunService = game:GetService("RunService")
+	
+	local gui = script.Parent
+	local DRAG_SPEED = 8
+	
+	local dragging = false
+	local startPos
+	local lastMousePos
+	local lastGoalPos
+	
+	local function Lerp(a, b, m)
+		return a + (b - a) * m
+	end
+	
+	local function Update(dt)
+		if not startPos then return end
+	
+		if not dragging and lastGoalPos then
+			gui.Position = UDim2.new(
+				startPos.X.Scale,
+				Lerp(gui.Position.X.Offset, lastGoalPos.X.Offset, dt * DRAG_SPEED),
+				startPos.Y.Scale,
+				Lerp(gui.Position.Y.Offset, lastGoalPos.Y.Offset, dt * DRAG_SPEED)
+			)
+			return
+		end
+	
+		if dragging then
+			local delta = lastMousePos - UserInputService:GetMouseLocation()
+			local xGoal = startPos.X.Offset - delta.X
+			local yGoal = startPos.Y.Offset - delta.Y
+	
+			lastGoalPos = UDim2.new(startPos.X.Scale, xGoal, startPos.Y.Scale, yGoal)
+	
+			gui.Position = UDim2.new(
+				startPos.X.Scale,
+				Lerp(gui.Position.X.Offset, xGoal, dt * DRAG_SPEED),
+				startPos.Y.Scale,
+				Lerp(gui.Position.Y.Offset, yGoal, dt * DRAG_SPEED)
+			)
+		end
+	end
+	
+	gui.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 
+			or input.UserInputType == Enum.UserInputType.Touch then
+	
+			dragging = true
+			startPos = gui.Position
+			lastMousePos = UserInputService:GetMouseLocation()
+	
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+	
+	RunService.Heartbeat:Connect(Update)
+	
+end;
+task.spawn(C_3);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.ImageLabel.LocalScript
+local function C_6()
+local script = G2L["6"];
+	local Players = game:GetService("Players")
+	local player = Players.LocalPlayer
+	local imageLabel = script.Parent
+	
+	local function setProfileImage()
+		local userId = player.UserId
+		local thumbType = Enum.ThumbnailType.HeadShot
+		local thumbSize = Enum.ThumbnailSize.Size420x420
+	
+		local content, isReady = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+		imageLabel.Image = content
+	end
+	
+	setProfileImage()
+	
+end;
+task.spawn(C_6);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel.LocalScript
+local function C_8()
+local script = G2L["8"];
+	local Players = game:GetService("Players")
+	local player = Players.LocalPlayer
+	local textLabel = script.Parent
+	
+	textLabel.Text = "Welcome " .. player.Name .. " to roadblocks F3X hub, have fun with the scripts i guess"
+	
+end;
+task.spawn(C_8);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel.LocalScript
+local function C_a()
+local script = G2L["a"];
+	local textLabel = script.Parent
+	local workspace = game:GetService("Workspace")
+	
+	local function updateText()
+		local folder = workspace:FindFirstChild("HDAdminWorkspaceFolder")
+	
+		if folder and folder:IsA("Folder") then
+			textLabel.Text = "HD ADMIN = yuh uh"
+		else
+			textLabel.Text = "HD ADMIN = nuh uh"
+		end
+	end
+	
+	updateText()
+	
+	workspace.ChildAdded:Connect(updateText)
+	
+	workspace.ChildRemoved:Connect(updateText)
+	
+end;
+task.spawn(C_a);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.home.TextLabel.LocalScript
+local function C_c()
+local script = G2L["c"];
+	local textLabel = script.Parent
+	local Players = game:GetService("Players")
+	local player = Players.LocalPlayer
+	
+	local function hasF3X()
+		local backpack = player:FindFirstChild("Backpack")
+		local character = player.Character
+	
+		if backpack and (backpack:FindFirstChild("Building Tools") or backpack:FindFirstChild("F3X")) then
+			return true
+		end
+	
+		if character and (character:FindFirstChild("Building Tools") or character:FindFirstChild("F3X")) then
+			return true
+		end
+	
+		return false
+	end
+	
+	local function updateText()
+		if hasF3X() then
+			textLabel.Text = "F3X = yuh uh"
+		else
+			textLabel.Text = "F3X = nuh uh"
+		end
+	end
+	
+	while true do
+		updateText()
+		task.wait(0.1)
+	end
+	
+end;
+task.spawn(C_c);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+local function C_10()
+local script = G2L["10"];
+	local button = script.Parent
+	local main = button.Parent
+	
+	local savedState = {}
+	local toggled = false
+	
+	button.MouseButton1Click:Connect(function()
+	
+		if not toggled then
+			
+			savedState = {}
+	
+			for _, obj in ipairs(main:GetDescendants()) do
+				if obj:IsA("Frame") and obj.Name ~= "IMPORTANT WOOHOO" then
+					savedState[obj] = obj.Visible
+					obj.Visible = false
+				end
+			end
+	
+			toggled = true
+	
+		else
+			
+			for frame, wasVisible in pairs(savedState) do
+				if frame then
+					frame.Visible = wasVisible
+				end
+			end
+	
+			toggled = false
+		end
+	
+	end)
+	
+end;
+task.spawn(C_10);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_13()
+local script = G2L["13"];
+	local button = script.Parent
+	local textbox = script.Parent.Parent:WaitForChild("nugget")
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local assetId = textbox.Text
+		if assetId == "" then return end
+	
+		local Players = game:GetService("Players")
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local player = Players.LocalPlayer
+	
+		local tool
+	
+		local function findSyncAPITool()
+			for _, v in pairs(player:GetDescendants()) do
+				if v.Name == "SyncAPI" then
+					return v.Parent
+				end
+			end
+			for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+				if v.Name == "SyncAPI" then
+					return v.Parent
+				end
+			end
+		end
+	
+		tool = findSyncAPITool()
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+		local function invoke(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		local function SetLocked(part, boolean)
+			invoke({ "SetLocked", { part }, boolean })
+		end
+	
+		local function SpawnDecal(part, face)
+			invoke({ "CreateTextures", { { Part = part, Face = face, TextureType = "Decal" } } })
+		end
+	
+		local function AddDecal(part, assetId, face)
+			invoke({ "SyncTexture", { { Part = part, Face = face, TextureType = "Decal", Texture = "rbxassetid://" .. assetId } } })
+		end
+	
+		local function hasBlockedMesh(part)
+			for _, child in ipairs(part:GetChildren()) do
+				if child:IsA("SpecialMesh") or child:IsA("Mesh") then
+					if tostring(child.MeshId):find("111891702759441") then
+						return true
+					end
+				end
+			end
+			return false
+		end
+	
+		local function SpamDecal(assetId)
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") and not hasBlockedMesh(v) then
+					task.spawn(function()
+						SetLocked(v, false)
+						for _, face in pairs(Enum.NormalId:GetEnumItems()) do
+							SpawnDecal(v, face)
+							AddDecal(v, assetId, face)
+						end
+					end)
+				end
+			end
+		end
+	
+		SpamDecal(assetId)
+	
+	end)
+	
+end;
+task.spawn(C_13);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_15()
+local script = G2L["15"];
+	local button = script.Parent
+	local textbox = script.Parent.Parent:WaitForChild("nugget")
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local assetId = textbox.Text
+		if assetId == "" then return end
+	
+		local player = game.Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+		local tool
+	
+		for i,v in player:GetDescendants() do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+	
+		for i,v in game.ReplicatedStorage:GetDescendants() do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+	
+		function _(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		function CreatePart(cf,parent)
+			local args = {
+				[1] = "CreatePart",
+				[2] = "Normal",
+				[3] = cf,
+				[4] = parent
+			}
+			_(args)
+		end
+	
+		function SetName(part, stringg)
+			local args = {
+				[1] = "SetName",
+				[2] = { part },
+				[3] = stringg
+			}
+			_(args)
+		end
+	
+		function AddMesh(part)
+			local args = {
+				[1] = "CreateMeshes",
+				[2] = {
+					{
+						Part = part
+					}
+				}
+			}
+			_(args)
+		end
+	
+		function SetMesh(part,meshid)
+			local args = {
+				[1] = "SyncMesh",
+				[2] = {
+					{
+						Part = part,
+						MeshId = "rbxassetid://"..meshid
+					}
+				}
+			}
+			_(args)
+		end
+	
+		function SetTexture(part, texid)
+			local args = {
+				[1] = "SyncMesh",
+				[2] = {
+					{
+						Part = part,
+						TextureId = "rbxassetid://"..texid
+					}
+				}
+			}
+			_(args)
+		end
+	
+		function MeshResize(part,size)
+			local args = {
+				[1] = "SyncMesh",
+				[2] = {
+					{
+						Part = part,
+						Scale = size
+					}
+				}
+			}
+			_(args)
+		end
+	
+		function SetLocked(part,boolean)
+			local args = {
+				[1] = "SetLocked",
+				[2] = { part },
+				[3] = boolean
+			}
+			_(args)
+		end
+	
+		function Sky(id)
+			local e = char.HumanoidRootPart.CFrame.x
+			local f = char.HumanoidRootPart.CFrame.y
+			local g = char.HumanoidRootPart.CFrame.z
+	
+			CreatePart(
+				CFrame.new(math.floor(e),math.floor(f),math.floor(g)) + Vector3.new(0,6,0),
+				workspace
+			)
+	
+			for i,v in game.Workspace:GetDescendants() do
+				if v:IsA("BasePart") and v.CFrame.x == math.floor(e) and v.CFrame.z == math.floor(g) then
+	
+					SetName(v,"Sky")
+					AddMesh(v)
+	
+					SetMesh(v,"111891702759441")
+					SetTexture(v,assetId)
+	
+					MeshResize(v,Vector3.new(9000,9000,9000))
+	
+					SetLocked(v,true)
+				end
+			end
+		end
+	
+		Sky(assetId)
+	
+	end)
+	
+end;
+task.spawn(C_15);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_17()
+local script = G2L["17"];
+	local button = script.Parent
+	local textbox = script.Parent.Parent:WaitForChild("nugget")
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local decalId = textbox.Text
+		if decalId == "" then return end
+	
+		local Players = game:GetService("Players")
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RunService = game:GetService("RunService")
+	
+		local player = Players.LocalPlayer
+		local tool
+	
+		for _, obj in ipairs(player:GetDescendants()) do
+			if obj.Name == "SyncAPI" then
+				tool = obj.Parent
+				break
+			end
+		end
+	
+		if not tool then
+			for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
+				if obj.Name == "SyncAPI" then
+					tool = obj.Parent
+					break
+				end
+			end
+		end
+	
+		if not tool then return end
+		local SyncAPI = tool:WaitForChild("SyncAPI")
+	
+		local part
+		local baseCF
+		local rotX, rotY, rotZ = 0, 0, 0
+		local connection
+	
+		local function call(args)
+			SyncAPI:Invoke(unpack(args))
+		end
+	
+		local function CreatePart(cf, parent)
+			call({ "CreatePart", "Normal", cf, parent })
+		end
+	
+		local function SetAnchor(p, anchored)
+			call({ "SyncAnchor", {{ Part = p, Anchored = anchored }} })
+		end
+	
+		local function AddMesh(p)
+			call({ "CreateMeshes", {{ Part = p }} })
+		end
+	
+		local function SetMesh(p, meshId, textureId)
+			call({
+				"SyncMesh",
+				{{
+					Part = p,
+					MeshId = "rbxassetid://" .. meshId,
+					TextureId = "rbxassetid://" .. textureId
+				}}
+			})
+		end
+	
+		local function ResizeMesh(p, size)
+			call({ "SyncMesh", {{ Part = p, Scale = size }} })
+		end
+	
+		local function SetTransparency(p, value)
+			call({ "SyncTransparency", {{ Part = p, Transparency = value }} })
+		end
+	
+		local function SyncRotate(cf)
+			if not part or not part.Parent then return end
+			call({ "SyncRotate", {{ Part = part, CFrame = cf }} })
+		end
+	
+		local function Sky()
+			local startCF = CFrame.new(0, 100, 0)
+			CreatePart(startCF, workspace)
+	
+			task.wait()
+	
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("BasePart") and (obj.Position - startCF.Position).Magnitude < 0.1 then
+					part = obj
+					baseCF = part.CFrame
+	
+					SetAnchor(part, true)
+					AddMesh(part)
+					SetMesh(part, "111891702759441", decalId)
+					ResizeMesh(part, Vector3.new(9000, 9000, 9000))
+					SetTransparency(part, 0)
+	
+					local speedX = math.rad(50)
+					local speedY = math.rad(50)
+					local speedZ = math.rad(50)
+	
+					connection = RunService.Heartbeat:Connect(function(dt)
+						if not part or not part.Parent then
+							if connection then
+								connection:Disconnect()
+								connection = nil
+							end
+							return
+						end
+	
+						rotX = (rotX + speedX * dt) % (math.pi * 2)
+						rotY = (rotY + speedY * dt) % (math.pi * 2)
+						rotZ = (rotZ + speedZ * dt) % (math.pi * 2)
+	
+						local cf = baseCF * CFrame.Angles(rotX, rotY, rotZ)
+						SyncRotate(cf)
+						part.CFrame = cf
+					end)
+	
+					break
+				end
+			end
+		end
+	
+		Sky()
+	
+	end)
+	
+end;
+task.spawn(C_17);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_19()
+local script = G2L["19"];
+	local button = script.Parent
+	local textbox = script.Parent.Parent:WaitForChild("nugget")
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local texId = textbox.Text
+		if texId == "" then return end
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+		RequestCommand:InvokeServer(";fogcolor black ;unfog ;time")
+	
+		task.wait(0.2)
+	
+		local player = game.Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+		local tool
+	
+		for _,v in ipairs(player:GetDescendants()) do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+				break
+			end
+		end
+	
+		if not tool then
+			for _,v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+				if v.Name == "SyncAPI" then
+					tool = v.Parent
+					break
+				end
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+	
+		local function _(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		local function CreatePart(cf,parent)
+			_({"CreatePart","Normal",cf,parent})
+		end
+	
+		local function SetName(part,name)
+			_({"SetName",{part},name})
+		end
+	
+		local function AddMesh(part)
+			_({"CreateMeshes",{{Part=part}}})
+		end
+	
+		local function SetMesh(part,id)
+			_({"SyncMesh",{{Part=part,MeshId="rbxassetid://"..id}}})
+		end
+	
+		local function SetTexture(part,id)
+			_({"SyncMesh",{{Part=part,TextureId="rbxassetid://"..id}}})
+		end
+	
+		local function MeshResize(part,size)
+			_({"SyncMesh",{{Part=part,Scale=size}}})
+		end
+	
+		local function SetVertexColor(part,vec)
+			_({"SyncMesh",{{Part=part,VertexColor=vec}}})
+		end
+	
+		local function SetLocked(part,bool)
+			_({"SetLocked",{part},bool})
+		end
+	
+		local function SetMaterial(part,mat)
+			_({"SyncMaterial",{{Part=part,Material=mat}}})
+		end
+	
+		local function SetCollision(part,bool)
+			_({"SyncCollision",{{Part=part,CanCollide=bool}}})
+		end
+	
+		local function CreatePointLight(part)
+			_({"CreateLights",{{Part=part,LightType="PointLight"}}})
+		end
+	
+		local function SyncPointLight(part,brightness,range)
+			_({"SyncLighting",{{Part=part,LightType="PointLight",Brightness=brightness,Range=range}}})
+		end
+	
+		local function Sky(texId)
+			local pos = Vector3.new(0,100,0)
+	
+			CreatePart(CFrame.new(pos),workspace)
+	
+			for _,v in ipairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart")
+					and not v:IsDescendantOf(char)
+					and math.floor(v.Position.X) == 0
+					and math.floor(v.Position.Y) == 100
+					and math.floor(v.Position.Z) == 0 then
+	
+					SetName(v,"Sky")
+					AddMesh(v)
+					SetMesh(v,"111891702759441")
+					SetTexture(v,texId)
+					MeshResize(v,Vector3.new(99999,99999,99999))
+					SetVertexColor(v,Vector3.new(4,4,4))
+					SetMaterial(v,"Neon")
+					SetCollision(v,false)
+					CreatePointLight(v)
+					SyncPointLight(v,5,8)
+					SetLocked(v,true)
+				end
+			end
+		end
+	
+		Sky(texId)
+	
+	end)
+	
+end;
+task.spawn(C_19);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_1b()
+local script = G2L["1b"];
+	local button = script.Parent
+	local textbox = script.Parent.Parent:WaitForChild("nugget")
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local textureId = textbox.Text
+		if textureId == "" then return end
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+		RequestCommand:InvokeServer(";fogcolor black ;unfog ;time")
+	
+		task.wait(0.2)
+	
+		local Players = game:GetService("Players")
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RunService = game:GetService("RunService")
+	
+		local player = Players.LocalPlayer
+		local tool
+	
+		for _, obj in ipairs(player:GetDescendants()) do
+			if obj.Name == "SyncAPI" then
+				tool = obj.Parent
+				break
+			end
+		end
+	
+		if not tool then
+			for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
+				if obj.Name == "SyncAPI" then
+					tool = obj.Parent
+					break
+				end
+			end
+		end
+	
+		if not tool then return end
+		local SyncAPI = tool:WaitForChild("SyncAPI")
+	
+		local part
+		local baseCF
+		local rotX, rotY, rotZ = 0, 0, 0
+		local connection
+	
+		local function call(args)
+			SyncAPI:Invoke(unpack(args))
+		end
+	
+		local function CreatePart(cf, parent)
+			call({ "CreatePart", "Normal", cf, parent })
+		end
+	
+		local function SetAnchor(p, anchored)
+			call({ "SyncAnchor", {{ Part = p, Anchored = anchored }} })
+		end
+	
+		local function AddMesh(p)
+			call({ "CreateMeshes", {{ Part = p }} })
+		end
+	
+		local function SetMesh(p, meshId, textureId)
+			call({
+				"SyncMesh",
+				{{
+					Part = p,
+					MeshId = "rbxassetid://" .. meshId,
+					TextureId = "rbxassetid://" .. textureId
+				}}
+			})
+		end
+	
+		local function ResizeMesh(p, size)
+			call({ "SyncMesh", {{ Part = p, Scale = size }} })
+		end
+	
+		local function SetTransparency(p, value)
+			call({ "SyncTransparency", {{ Part = p, Transparency = value }} })
+		end
+	
+		local function SetMaterial(p, mat)
+			call({ "SyncMaterial", {{ Part = p, Material = mat }} })
+		end
+	
+		local function SetVertexColor(p, vec)
+			call({ "SyncMesh", {{ Part = p, VertexColor = vec }} })
+		end
+	
+		local function CreatePointLight(p)
+			call({ "CreateLights", {{ Part = p, LightType = "PointLight" }} })
+		end
+	
+		local function SyncPointLight(p, brightness, range)
+			call({
+				"SyncLighting",
+				{{
+					Part = p,
+					LightType = "PointLight",
+					Brightness = brightness,
+					Range = range
+				}}
+			})
+		end
+	
+		local function SyncRotate(cf)
+			if not part or not part.Parent then return end
+			call({ "SyncRotate", {{ Part = part, CFrame = cf }} })
+		end
+	
+		local function Sky()
+			local startCF = CFrame.new(0, 100, 0)
+			CreatePart(startCF, workspace)
+	
+			task.wait()
+	
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("BasePart") and (obj.Position - startCF.Position).Magnitude < 0.1 then
+					part = obj
+					baseCF = part.CFrame
+	
+					SetAnchor(part, true)
+					AddMesh(part)
+					SetMesh(part, "111891702759441", textureId)
+					ResizeMesh(part, Vector3.new(99999, 99999, 99999))
+					SetVertexColor(part, Vector3.new(4, 4, 4))
+					SetMaterial(part, "Neon")
+					SetTransparency(part, 0)
+	
+					CreatePointLight(part)
+					SyncPointLight(part, 5, 8)
+	
+					local speedX = math.rad(50)
+					local speedY = math.rad(50)
+					local speedZ = math.rad(50)
+	
+					connection = RunService.Heartbeat:Connect(function(dt)
+						if not part or not part.Parent then
+							if connection then
+								connection:Disconnect()
+								connection = nil
+							end
+							return
+						end
+	
+						rotX = (rotX + speedX * dt) % (math.pi * 2)
+						rotY = (rotY + speedY * dt) % (math.pi * 2)
+						rotZ = (rotZ + speedZ * dt) % (math.pi * 2)
+	
+						local cf = baseCF * CFrame.Angles(rotX, rotY, rotZ)
+						SyncRotate(cf)
+						part.CFrame = cf
+					end)
+	
+					break
+				end
+			end
+		end
+	
+		Sky()
+	
+	end)
+	
+end;
+task.spawn(C_1b);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_1d()
+local script = G2L["1d"];
+	local button = script.Parent
+	local textbox = script.Parent.Parent:WaitForChild("nugget")
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local decalId = textbox.Text
+		if decalId == "" then return end
+	
+		local player = game.Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+		local tool
+	
+		for i,v in player:GetDescendants() do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+	
+		for i,v in game.ReplicatedStorage:GetDescendants() do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+	
+		function _(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		function CreatePart(cf,parent)
+			_({"CreatePart","Normal",cf,parent})
+		end
+	
+		function SetName(part,name)
+			_({"SetName",{part},name})
+		end
+	
+		function Resize(part,size,cf)
+			_({"SyncResize",{{Part=part,CFrame=cf,Size=size}}})
+		end
+	
+		function MovePart(part,cf)
+			_({"SyncMove",{{Part=part,CFrame=cf}}})
+		end
+	
+		function SetLocked(part,boolean)
+			_({"SetLocked",{part},boolean})
+		end
+	
+		function SetTrans(part,int)
+			_({"SyncMaterial",{{Part=part,Transparency=int}}})
+		end
+	
+		function SpawnDecal(part,side)
+			_({"CreateTextures",{{Part=part,Face=side,TextureType="Decal"}}})
+		end
+	
+		function AddDecal(part,asset,side)
+			_({"SyncTexture",{{Part=part,Face=side,TextureType="Decal",Texture="rbxassetid://"..asset}}})
+		end
+	
+		while wait(0.1) do
+			spawn(function()
+	
+				local e = char.HumanoidRootPart.CFrame.x + math.random(-100, 100)
+				local f = char.HumanoidRootPart.CFrame.y
+				local g = char.HumanoidRootPart.CFrame.z + math.random(-100, 100)
+	
+				CreatePart(CFrame.new(math.floor(e), math.floor(f), math.floor(g)) + Vector3.new(0,6,0), workspace)
+	
+				for i,v in game.Workspace:GetDescendants() do
+					if v:IsA("BasePart") and v.CFrame.x == math.floor(e) and v.CFrame.z == math.floor(g) then
+	
+						SetName(v,"particle")
+	
+						SpawnDecal(v,Enum.NormalId.Front)
+						AddDecal(v,decalId,Enum.NormalId.Front)
+	
+						SpawnDecal(v,Enum.NormalId.Back)
+						AddDecal(v,decalId,Enum.NormalId.Back)
+	
+						SetTrans(v,1)
+						Resize(v,Vector3.new(7,7,0.1),v.CFrame)
+						SetLocked(v,true)
+	
+						while wait(0.01) do
+							MovePart(v,CFrame.new(v.CFrame.x,v.CFrame.y + 3,v.CFrame.z))
+						end
+	
+					end
+				end
+	
+			end)
+		end
+	
+	end)
+	
+end;
+task.spawn(C_1d);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.ImageLabel.LocalScript
+local function C_1f()
+local script = G2L["1f"];
+	local imageLabel = script.Parent
+	local textbox = imageLabel.Parent:WaitForChild("nugget")
+	
+	local function updateImage()
+		local id = textbox.Text
+	
+		if id ~= "" then
+	
+			if not string.find(id, "rbxassetid://") then
+				id = "rbxassetid://" .. id
+			end
+	
+			imageLabel.Image = id
+		end
+	end
+	
+	
+	textbox:GetPropertyChangedSignal("Text"):Connect(updateImage)
+	
+	
+	updateImage()
+	
+end;
+task.spawn(C_1f);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_22()
+local script = G2L["22"];
+	--made by myself, NO ONE ELSE!!!!
+	
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+	
+		local player = Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+	
+		local tool
+		for _, v in ipairs(player:GetDescendants()) do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+				break
+			end
+		end
+	
+		if not tool then
+			for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+				if v.Name == "SyncAPI" then
+					tool = v.Parent
+					break
+				end
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+	
+		local head = char:WaitForChild("Head")
+		local headMesh = head:FindFirstChildWhichIsA("SpecialMesh")
+		if not headMesh then return end
+	
+		local hats = {}
+		for _, acc in ipairs(char:GetChildren()) do
+			if acc:IsA("Accessory") and acc:FindFirstChild("Handle") then
+				local mesh = acc.Handle:FindFirstChildWhichIsA("SpecialMesh")
+				if mesh then
+					table.insert(hats, {Part = acc.Handle, MeshId = mesh.MeshId})
+				end
+			end
+		end
+	
+		local t = 0
+	
+		RunService.RenderStepped:Connect(function(dt)
+			t += dt * 6
+			local offset = math.sin(t) * 0.7
+	
+			local partsToSync = {
+				{Part = head, MeshId = headMesh.MeshId, Offset = Vector3.new(offset, 0, 0)}
+			}
+	
+			for _, h in ipairs(hats) do
+				table.insert(partsToSync, {Part = h.Part, MeshId = h.MeshId, Offset = Vector3.new(offset, 0, 0)})
+			end
+	
+			remote:InvokeServer("SyncMesh", partsToSync)
+		end)
+	
+	end)
+	
+end;
+task.spawn(C_22);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_24()
+local script = G2L["24"];
+	--elv4r0x did this, credits to him!!
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local button = script.Parent
+	local player = Players.LocalPlayer
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local char = player.Character or player.CharacterAdded:Wait()
+		local hum = char:WaitForChild("Humanoid")
+	
+		local torso = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+		if not torso then return end
+	
+		local larm = char:FindFirstChild("Left Arm") or char:FindFirstChild("LeftUpperArm")
+		local rarm = char:FindFirstChild("Right Arm") or char:FindFirstChild("RightUpperArm")
+		if not larm or not rarm then return end
+	
+		local tool = char:FindFirstChildOfClass("Tool")
+		if not tool then
+			for _, v in ipairs(player.Backpack:GetChildren()) do
+				if v:IsA("Tool") then
+					tool = v
+					break
+				end
+			end
+		end
+	
+		if tool then
+			hum:EquipTool(tool)
+			task.wait()
+			hum:UnequipTools()
+		end
+	
+		local server = tool
+			and tool:FindFirstChild("SyncAPI")
+			and tool.SyncAPI:FindFirstChild("ServerEndpoint")
+	
+		local idleAngles = Vector3.new(0,0,math.rad(-90))
+		local flapAmplitude = Vector3.new(0, 0, math.rad(40))
+		local flapSpeed = 14
+	
+		RunService.RenderStepped:Connect(function()
+	
+			local time = tick()
+			local flapX = math.sin(time * flapSpeed) * flapAmplitude.X
+			local flapY = math.sin(time * flapSpeed * 0.8) * flapAmplitude.Y
+			local flapZ = math.sin(time * flapSpeed * 0.6) * flapAmplitude.Z
+	
+			local targetL
+			local targetR
+	
+			if hum.MoveDirection.Magnitude == 0 then  
+				targetL = torso.CFrame * CFrame.new(-1.9,0.5,0) * CFrame.Angles(idleAngles.X, idleAngles.Y, idleAngles.Z)  
+				targetR = torso.CFrame * CFrame.new(1.9,0.5,0) * CFrame.Angles(-idleAngles.X, -idleAngles.Y, -idleAngles.Z)  
+			else  
+				targetL = torso.CFrame * CFrame.new(-1.9,0.5,0) * CFrame.Angles(flapX, flapY, idleAngles.Z + flapZ)  
+				targetR = torso.CFrame * CFrame.new(1.9,0.5,0) * CFrame.Angles(-flapX, -flapY, -idleAngles.Z - flapZ)  
+			end  
+	
+			larm.CFrame = targetL
+			rarm.CFrame = targetR
+	
+			if server then
+				server:InvokeServer("SyncMove", {{Part = larm, CFrame = larm.CFrame}})
+				server:InvokeServer("SyncMove", {{Part = rarm, CFrame = rarm.CFrame}})
+			end
+	
+		end)
+	
+	end)
+	
+end;
+task.spawn(C_24);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_26()
+local script = G2L["26"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	
+		local player = Players.LocalPlayer
+	
+		local function getChar()
+			local char = player.Character or player.CharacterAdded:Wait()
+			return char, char:WaitForChild("HumanoidRootPart")
+		end
+	
+		local tool
+		for _,v in ipairs(player:GetDescendants()) do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+				break
+			end
+		end
+	
+		if not tool then
+			for _,v in ipairs(ReplicatedStorage:GetDescendants()) do
+				if v.Name == "SyncAPI" then
+					tool = v.Parent
+					break
+				end
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+	
+		local function invoke(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		local function CreatePart(cf,parent)
+			invoke({"CreatePart","Ball",cf,parent})
+		end
+	
+		local function MovePart(part,cf)
+			invoke({"SyncMove",{{Part=part,CFrame=cf}}})
+		end
+	
+		local function Resize(part,size,cf)
+			invoke({"SyncResize",{{Part=part,Size=size,CFrame=cf}}})
+		end
+	
+		local function SetAnchor(bool,part)
+			invoke({"SyncAnchor",{{Part=part,Anchored=bool}}})
+		end
+	
+		local function SetCollision(part,bool)
+			invoke({"SyncCollision",{{Part=part,CanCollide=bool}}})
+		end
+	
+		local function SetName(part,name)
+			invoke({"SetName",{part},name})
+		end
+	
+		local function Color(part,color)
+			invoke({"SyncColor",{{Part=part,Color=color,UnionColoring=false}}})
+		end
+	
+		local function AddFire(part,size,color,color2,heat)
+			invoke({
+				"CreateDecorations",
+				{
+					{
+						Part = part,
+						DecorationType = "Fire"
+					}
+				}
+			})
+	
+			invoke({
+				"SyncDecorate",
+				{
+					{
+						Part = part,
+						DecorationType = "Fire",
+						Size = size,
+						Heat = heat,
+						Color = color,
+						SecondaryColor = color2
+					}
+				}
+			})
+		end
+	
+		local orbitConnection
+	
+		local function createOrbitBall()
+	
+			local char, hrp = getChar()
+	
+			local radius = 5
+			local verticalAmplitude = 3
+			local speed = math.rad(100)
+			local angle = 0
+	
+			local initialCF = hrp.CFrame * CFrame.new(radius, -0.1, 0)
+	
+			CreatePart(initialCF, workspace)
+	
+			local ball
+	
+			repeat task.wait()
+				for _,v in ipairs(workspace:GetDescendants()) do
+					if v:IsA("BasePart") and (v.Position - initialCF.Position).Magnitude < 0.1 then
+						ball = v
+						break
+					end
+				end
+			until ball
+	
+			SetName(ball,"Hello everyone my name is welcome")
+			Resize(ball,Vector3.new(0.9,0.9,0.9),initialCF)
+			Color(ball,Color3.new(0,0,0))
+			SetAnchor(true,ball)
+			SetCollision(ball,false)
+	
+			AddFire(ball,0.5,Color3.new(0,0,0),Color3.new(0,0,0),15)
+	
+			if orbitConnection then
+				orbitConnection:Disconnect()
+			end
+	
+			orbitConnection = RunService.Heartbeat:Connect(function(dt)
+	
+				if not hrp.Parent then return end
+	
+				angle += dt * speed
+	
+				local x = math.cos(angle) * radius
+				local z = math.sin(angle) * radius
+				local y = 2 + math.sin(angle*2) * verticalAmplitude
+	
+				local pos = hrp.Position + Vector3.new(x,y,z)
+	
+				local lookDir = Vector3.new(
+					-math.sin(angle),
+					math.cos(angle*2)*0.1,
+					math.cos(angle)
+				)
+	
+				local newCF = CFrame.new(pos,pos + lookDir)
+	
+				MovePart(ball,newCF)
+	
+			end)
+	
+		end
+	
+		createOrbitBall()
+	
+		player.CharacterAdded:Connect(function()
+			task.wait(1)
+			createOrbitBall()
+		end)
+	
+	end)
+	
+end;
+task.spawn(C_26);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_28()
+local script = G2L["28"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game.Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+	
+		local tool
+	
+		for _, v in ipairs(player:GetDescendants()) do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+				break
+			end
+		end
+	
+		if not tool then
+			for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+				if v.Name == "SyncAPI" then
+					tool = v.Parent
+					break
+				end
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+	
+		local function invoke(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		local function CreatePart(cf, parent, types)
+			invoke({
+				"CreatePart",
+				types or "Normal",
+				cf,
+				parent
+			})
+		end
+	
+		local function Resize(part, size, cf)
+			invoke({
+				"SyncResize",
+				{
+					{
+						Part = part,
+						CFrame = cf,
+						Size = size
+					}
+				}
+			})
+		end
+	
+		local function MovePart(part, cf)
+			invoke({
+				"SyncMove",
+				{
+					{
+						Part = part,
+						CFrame = cf
+					}
+				}
+			})
+		end
+	
+		local function Color(part, color)
+			invoke({
+				"SyncColor",
+				{
+					{
+						Part = part,
+						Color = color,
+						UnionColoring = false
+					}
+				}
+			})
+		end
+	
+		local function SetCollision(part, boolean)
+			invoke({
+				"SyncCollision",
+				{
+					{
+						Part = part,
+						CanCollide = boolean
+					}
+				}
+			})
+		end
+	
+		local function SetLocked(part, boolean)
+			invoke({
+				"SetLocked",
+				{part},
+				boolean
+			})
+		end
+	
+		local hrp = char:WaitForChild("HumanoidRootPart")
+	
+		local padPos = hrp.CFrame * CFrame.new(0, -3.5, 0)
+		CreatePart(padPos, workspace, "Cylinder")
+	
+		task.wait(0.2)
+	
+		local floatingPad
+	
+		for _, v in ipairs(workspace:GetDescendants()) do
+			if v:IsA("BasePart")
+				and (v.Position - padPos.Position).Magnitude < 3 then
+	
+				floatingPad = v
+	
+				Resize(floatingPad, Vector3.new(0.5, 8, 8), padPos * CFrame.Angles(0, 0, math.rad(90)))
+				Color(floatingPad, Color3.fromRGB(107, 50, 124))
+				SetCollision(floatingPad, true)
+				SetLocked(floatingPad, true)
+	
+				break
+			end
+		end
+	
+		if floatingPad then
+	
+			local RunService = game:GetService("RunService")
+	
+			RunService.Heartbeat:Connect(function()
+	
+				if not hrp.Parent then return end
+	
+				local targetPos = hrp.CFrame * CFrame.new(0, -3.5, 0)
+	
+				MovePart(
+					floatingPad,
+					targetPos * CFrame.Angles(0, 0, math.rad(90))
+				)
+	
+			end)
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_28);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_2a()
+local script = G2L["2a"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		function nob(who,tra,hat)
+			c=who.Character
+			pcall(function()u=c["Body Colors"]
+				u.HeadColor=BrickColor.new("Black")
+				u.LeftLegColor=BrickColor.new("Black")
+				u.RightLegolor=BrickColor.new("Black")
+				u.LeftArmColor=BrickColor.new("Black")
+				u.TorsoColor=BrickColor.new("Black")
+				u.RightArmColor=BrickColor.new("Black")
+			end)
+			pcall(function()c.Shirt:Destroy() c.Pants:Destroy() end)
+			for i,v in pairs(c:GetChildren()) do
+				if v:IsA("BasePart") then
+					v.Transparency=tra
+					if v.Name=="HumanoidRootPart" or v.Name=="Head" then
+						v.Transparency=1
+					end
+					wait()
+					v.BrickColor=BrickColor.new("Black")
+				elseif v:IsA("Hat") then
+					v:Destroy()
+				end
+			end
+			xx=game:service("InsertService"):LoadAsset(hat)
+			xy=game:service("InsertService"):LoadAsset(47433)["LinkedSword"]
+			xy.Parent=who.Backpack
+			for a,hat in pairs(xx:children()) do
+				hat.Parent=c
+			end
+			xx:Destroy()
+			h=who.Character.Humanoid
+			h.MaxHealth=50000
+			wait(1.5)
+			h.Health=50000
+			h.WalkSpeed=32
+		end
+		nob(game.Players.LocalPlayer,0.6,21070012)
+	
+	end)
+	
+end;
+task.spawn(C_2a);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_2c()
+local script = G2L["2c"];
+	local button = script.Parent
+	local player = game.Players.LocalPlayer
+	
+	button.MouseButton1Click:Connect(function()
+		local char = player.Character or player.CharacterAdded:Wait()
+		local humanoid = char:WaitForChild("Humanoid")
+	
+		humanoid.WalkSpeed = 50
+	end)
+	
+end;
+task.spawn(C_2c);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_2e()
+local script = G2L["2e"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local Players = game:GetService("Players")
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	
+		local player = Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+	
+		local tool
+		for _, v in ipairs(player:GetDescendants()) do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+				break
+			end
+		end
+	
+		if not tool then
+			for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
+				if v.Name == "SyncAPI" then
+					tool = v.Parent
+					break
+				end
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+	
+		local function invoke(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		local presets = {
+			"Bright red",
+			"Bright yellow",
+			"Bright orange",
+			"Bright violet",
+			"Bright blue",
+			"Bright bluish green",
+			"Bright green"
+		}
+	
+		local running = true
+	
+		task.spawn(function()
+			while running and player.Parent do
+				task.wait(0.5)
+	
+				char = player.Character
+				if not char then continue end
+	
+				local function randomColor()
+					return BrickColor.new(presets[math.random(1,#presets)]).Color
+				end
+	
+				invoke({
+					"SyncColor",
+					{
+						{Color=randomColor(), Part=char:FindFirstChild("Head"), UnionColoring=true},
+						{Color=randomColor(), Part=char:FindFirstChild("HumanoidRootPart"), UnionColoring=true},
+						{Color=randomColor(), Part=char:FindFirstChild("Left Arm") or char:FindFirstChild("LeftUpperArm"), UnionColoring=true},
+						{Color=randomColor(), Part=char:FindFirstChild("Right Leg") or char:FindFirstChild("RightUpperLeg"), UnionColoring=true},
+						{Color=randomColor(), Part=char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso"), UnionColoring=true},
+						{Color=randomColor(), Part=char:FindFirstChild("Right Arm") or char:FindFirstChild("RightUpperArm"), UnionColoring=true},
+						{Color=randomColor(), Part=char:FindFirstChild("Left Leg") or char:FindFirstChild("LeftUpperLeg"), UnionColoring=true}
+					}
+				})
+	
+			end
+		end)
+	
+	end)
+	
+end;
+task.spawn(C_2e);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_30()
+local script = G2L["30"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+		print("a")
+	end)
+end;
+task.spawn(C_30);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_32()
+local script = G2L["32"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommandSilent = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommandSilent:InvokeServer(";time 14")
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+		local player = game.Players.LocalPlayer
+		local char = player.Character
+		local backpack = player.Backpack
+	
+		local Players = game:GetService("Players")
+		local player = Players.LocalPlayer
+	
+		local character = player.Character or player.CharacterAdded:Wait()
+	
+		local storedCharacter = character
+		local originalParent = storedCharacter.Parent
+	
+		storedCharacter.Parent = nil
+	
+		local player = game.Players.LocalPlayer
+		local char = player.Character
+		local backpack = player.Backpack
+	
+		local function getf3x()
+			for _, v in ipairs(backpack:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+			for _, v in ipairs(char:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+	
+			return nil
+		end
+	
+		-- get all info
+	
+		local f3x = getf3x()
+		if not f3x then
+			warn("you dont have f3x skid")
+		end
+		local syncapi = f3x.SyncAPI
+		local serverendpoint = syncapi.ServerEndpoint
+	
+		local function delete(part)
+			local args = {
+				[1] = "Remove",
+				[2] = {
+					[1] = part
+				}
+			}
+			serverendpoint:InvokeServer(unpack(args))
+		end
+	
+		local function deleteall()
+			for _, v in ipairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") or v:IsA("UnionOperation") then
+					spawn(function()
+						delete(v)
+					end)
+				end
+			end
+		end
+	
+		deleteall()
+	
+		local function getf3x()
+			for _, v in ipairs(backpack:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+			for _, v in ipairs(char:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+			return nil
+		end
+	
+		local f3x = getf3x()
+		if not f3x then
+			warn("you dont have f3x skid")
+		end
+		local syncapi = f3x.SyncAPI
+		local serverendpoint = syncapi.ServerEndpoint
+	
+		function _(args)
+			serverendpoint:InvokeServer(unpack(args))
+		end
+	
+		local function addlight(part, brightness)
+			local args = {
+				[1] = "CreateLights",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["LightType"] = "PointLight"
+					}
+				}
+			}
+			serverendpoint:InvokeServer(unpack(args))
+		end
+	
+		local function synclight(part, brightness)
+			local args = {
+				[1] = "SyncLighting",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["LightType"] = "PointLight",
+						["Range"] = 60,
+						["Color"] = Color3.new(1, 0, 0)
+					}
+				}
+			}
+			serverendpoint:InvokeServer(unpack(args))
+		end
+	
+		local function fire(part) 
+	
+			local argsCreate = {
+				[1] = "CreateDecorations",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["DecorationType"] = "Fire"
+					}
+				}
+			}
+	
+	
+			local argsSync = {
+				[1] = "SyncDecorate",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["DecorationType"] = "Fire",
+						["Size"] = 30,
+						["Heat"] = 9,
+						["Color"] = Color3.fromRGB(255, 0, 0), 
+						["SecondaryColor"] = Color3.fromRGB(255, 0, 0) 
+					} 
+				} 
+			}
+	
+	
+			_(argsCreate)
+			_(argsSync)
+		end
+		function MovePart(part, cf)
+			local args = {
+				"SyncMove",
+				{
+					{
+						Part = part,
+						CFrame = cf
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function resize(part, size, cf)
+			local args = {
+				"SyncResize",
+				{
+					{
+						Part = part,
+						CFrame = cf,
+						Size = size
+					}
+				}
+			}
+			_(args)
+		end
+	
+		function SetTrans(part,int)
+			local args = {
+				[1] = "SyncMaterial",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["Transparency"] = int
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function mat(part, mate)
+			local args = {
+				"SyncMaterial",
+				{
+					{
+						Part = part,
+						Material = mate
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function transparency(part, trans)
+			local args = {
+				"SyncMaterial",
+				{
+					{
+						Part = part,
+						Transparency = trans
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function color(part, color)
+			local args = {
+				"SyncColor",
+				{
+					{
+						Part = part,
+						Color = color,
+						UnionColoring = false
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function syncmeshid(part, id)
+			local args = {
+				"SyncMesh",
+				{
+					{
+						Part = part,
+						MeshId = "rbxassetid://" .. id
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function makemesh(part)
+			local args = {
+				"CreateMeshes",
+				{
+					{
+						Part = part
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function syncmeshsize(part, vectora)
+			local args = {
+				"SyncMesh",
+				{
+					{
+						Part = part,
+						Scale = vectora
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function syncmeshtexture(part, id)
+			local args = {
+				"SyncMesh",
+				{
+					{
+						Part = part,
+						TextureId = "rbxassetid://" .. id
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function name(part, stringa)
+			local args = {
+				"SetName",
+				{ part },
+				stringa
+			}
+			_(args)
+		end
+	
+		local function lock(part, boolean)
+			local args = {
+				"SetLocked",
+				{ part },
+				boolean
+			}
+			_(args)
+		end
+	
+	
+	
+		local function setcollision(part, booleana)
+			local args = {
+				"SyncCollision",
+				{
+					{
+						Part = part,
+						CanCollide = booleana
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function setanchor(part, boolean)
+			local args = {
+				"SyncAnchor",
+				{
+					{
+						Part = part,
+						Anchored = boolean
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function createdecal(part, side)
+			local args = {
+				"CreateTextures",
+				{
+					{
+						Part = part,
+						Face = side,
+						TextureType = "Decal"
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function setdecal(part, asset, side)
+			local args = {
+				"SyncTexture",
+				{
+					{
+						Part = part,
+						Face = side,
+						TextureType = "Decal",
+						Texture = "rbxassetid://" .. asset
+					}
+				}
+			}
+			_(args)
+		end
+	
+		function toptexturecreate(part)
+			local args = {
+				[1] = "CreateTextures",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["Face"] = Enum.NormalId.Top,
+						["TextureType"] = "Texture"
+					}
+				}
+			}
+	
+			_(args)
+		end
+		function toptextureadd(part)
+			local args = {
+				[1] = "SyncTexture",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["Face"] = Enum.NormalId.Top,
+						["TextureType"] = "Texture",
+						["Texture"] = "rbxassetid://13199422086",
+						["StudsPerTileV"] = 2,
+						["StudsPerTileU"] = 2
+					}
+				}
+			}
+			_(args)
+		end
+	
+		local function RealmV2()
+			local position = CFrame.new(0, 0, 0)
+			local base = serverendpoint:InvokeServer("CreatePart", "Normal", position, workspace)
+			resize(base, Vector3.new(1000, 1, 1000), position)
+			toptexturecreate(base)
+			toptextureadd(base)
+			color(base, Color3.fromRGB(39, 70, 45))
+	
+		end
+		local function unanchorall()
+			for _, v in ipairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") or v:IsA("UnionOperation") then
+					spawn(function()
+						lock(v, false)
+						setanchor(false, v)
+					end)
+				end
+			end
+		end
+	
+		local function realm()
+			unanchorall()
+			RealmV2()
+		end
+		realm()
+		wait(1)
+		storedCharacter.Parent = game.workspace
+	
+	end)
+	
+end;
+task.spawn(C_32);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_34()
+local script = G2L["34"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local Players = game:GetService("Players")
+		local player = Players.LocalPlayer
+	
+		local character = player.Character 
+	
+		local player = game.Players.LocalPlayer
+		local char = player.Character
+	
+		local backpack = player.Backpack
+	
+		local function getf3x()
+			for _, v in ipairs(backpack:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+			for _, v in ipairs(char:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+	
+			return nil
+		end
+	
+		-- get all info
+	
+		local f3x = getf3x()
+		if not f3x then
+			warn("you dont have f3x skid")
+		end
+		local syncapi = f3x.SyncAPI
+		local serverendpoint = syncapi.ServerEndpoint
+	
+		local function delete(part)
+			local args = {
+				[1] = "Remove",
+				[2] = {
+					[1] = part
+				}
+			}
+			serverendpoint:InvokeServer(unpack(args))
+		end
+	
+		local function deleteall()
+			for _, v in ipairs(workspace:GetDescendants()) do
+				if (v:IsA("BasePart") or v:IsA("UnionOperation")) and v.Name ~= "Sky" then
+					spawn(function()
+						delete(v)
+					end)
+				end
+			end
+		end
+	
+		deleteall()
+	
+	end)
+	
+end;
+task.spawn(C_34);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_36()
+local script = G2L["36"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local player = game.Players.LocalPlayer
+		local char = player.Character
+		local tool
+	
+		for _,v in ipairs(player:GetDescendants()) do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+		for _,v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+		local function _(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		function SetAnchor(boolean,part)
+			local args = {
+				[1] = "SyncAnchor",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["Anchored"] = boolean
+					}
+				}
+			}
+			_(args)
+		end
+	
+		function SetLocked(part,boolean)
+			local args = {
+				[1] = "SetLocked",
+				[2] = {
+					[1] = part
+				},
+				[3] = boolean
+			}
+			_(args)
+		end
+	
+		function Unanchor()
+			for _,v in ipairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") then
+					local skip = false
+	
+					if v.Name == "Sky" then
+						skip = true
+					end
+	
+					local mesh = v:FindFirstChildOfClass("SpecialMesh")
+					if mesh and tostring(mesh.MeshId):find("111891702759441") then
+						skip = true
+					end
+	
+					if v:IsA("MeshPart") and tostring(v.MeshId):find("111891702759441") then
+						skip = true
+					end
+	
+					if not skip then
+						task.spawn(function()
+							SetLocked(v,false)
+							SetAnchor(false,v)
+						end)
+					end
+				end
+			end
+		end
+	
+		Unanchor()
+	
+	end)
+	
+end;
+task.spawn(C_36);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_38()
+local script = G2L["38"];
+	local button = script.Parent
+	local textbox = script.Parent.Parent:WaitForChild("nugget")
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local assetId = textbox.Text
+		if assetId == "" then return end
+	
+		local player = game.Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+		local tool
+	
+		for _, v in pairs(player:GetDescendants()) do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+	
+		for _, v in pairs(game.ReplicatedStorage:GetDescendants()) do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+	
+		local function invoke(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		local function RemovePart(part)
+			invoke({
+				"Remove",
+				{ part }
+			})
+		end
+	
+		local function DeleteSkyMesh()
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") then
+					for _, child in pairs(v:GetChildren()) do
+						if (child:IsA("SpecialMesh") or child:IsA("Mesh")) 
+							and tostring(child.MeshId):find("111891702759441") then
+							RemovePart(v)
+						end
+					end
+				end
+			end
+		end
+	
+		DeleteSkyMesh()
+	
+	end)
+	
+end;
+task.spawn(C_38);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.f3x.TextButton.LocalScript
+local function C_3a()
+local script = G2L["3a"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local player = game.Players.LocalPlayer 
+		local char = player.Character
+		local tool
+	
+		for i,v in player:GetDescendants() do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+		for i,v in game.ReplicatedStorage:GetDescendants() do
+			if v.Name == "SyncAPI" then
+				tool = v.Parent
+			end
+		end
+	
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+		local function _(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		local function DestroyFolder(folder)
+			local args = {
+				[1] = "Remove",
+				[2] = {
+					[1] = folder
+				}
+			}
+			_(args)
+		end
+	
+		local folderToRemove = workspace:FindFirstChild("HDAdminWorkspaceFolder")
+		if folderToRemove then
+			DestroyFolder(folderToRemove)
+		end
+	
+	end)
+	
+end;
+task.spawn(C_3a);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+local function C_3c()
+local script = G2L["3c"];
+	local button = script.Parent
+	local targetName = "home" 
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local container = button.Parent 
+	
+		for _, obj in ipairs(container:GetChildren()) do
+			if obj:IsA("Frame") then
+	
+				if obj.Name == targetName then
+					obj.Visible = true
+				else
+					obj.Visible = false
+				end
+	
+			end
+		end
+	
+	end)
+	
+end;
+task.spawn(C_3c);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+local function C_3e()
+local script = G2L["3e"];
+	local button = script.Parent
+	local targetName = "f3x"
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local container = button.Parent 
+	
+		for _, obj in ipairs(container:GetChildren()) do
+			if obj:IsA("Frame") then
+	
+				if obj.Name == targetName then
+					obj.Visible = true
+				else
+					obj.Visible = false
+				end
+	
+			end
+		end
+	
+	end)
+	
+end;
+task.spawn(C_3e);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_41()
+local script = G2L["41"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";music 16190761193 ;pitch 1.02 ;volume inf")
+	
+	end)
+	
+end;
+task.spawn(C_41);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_43()
+local script = G2L["43"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";music 82696338249251 ;pitch 0.975 ;volume inf")
+	
+	end)
+	
+end;
+task.spawn(C_43);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_45()
+local script = G2L["45"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";music 5228173823 ;volume inf")
+	
+	end)
+	
+end;
+task.spawn(C_45);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_47()
+local script = G2L["47"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";music 95156028272944 ;pitch 0.2 ;volume inf")
+	
+	end)
+	
+end;
+task.spawn(C_47);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_49()
+local script = G2L["49"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";music 132504204562767 ;pitch 0.2 ;volume inf")
+	
+	end)
+	
+end;
+task.spawn(C_49);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_4b()
+local script = G2L["4b"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";music 139488665764275 ;pitch 1.1 ;volume inf")
+	
+	end)
+	
+end;
+task.spawn(C_4b);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_4d()
+local script = G2L["4d"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		local textboxMusicId = script.Parent.Parent:WaitForChild("musec_id") 
+		local textboxPitch = script.Parent.Parent:WaitForChild("petch") 
+	
+		local musicId = textboxMusicId.Text
+		local pitch = textboxPitch.Text
+	
+		if musicId ~= "" and pitch ~= "" then
+			RequestCommand:InvokeServer(";music "..musicId.." ;pitch "..pitch..";volume inf")
+		end
+	
+	end)
+	
+end;
+task.spawn(C_4d);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_51()
+local script = G2L["51"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";forceplace all 89308754667845")
+	
+	end)
+	
+end;
+task.spawn(C_51);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_53()
+local script = G2L["53"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";btools ;give me b ;buildingtools ;f3x")
+	
+	end)
+	
+end;
+task.spawn(C_53);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_55()
+local script = G2L["55"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";r6 me")
+	
+	end)
+	
+end;
+task.spawn(C_55);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_57()
+local script = G2L["57"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";systemmessage [SYSTEM] a skid js joined ohhnooo")
+		RequestCommand:InvokeServer(";systemmessage [SYSTEM] Fgpilj2 cant define what is instance")
+		RequestCommand:InvokeServer(";systemmessage [SYSTEM] p")
+	
+	end)
+	
+end;
+task.spawn(C_57);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_59()
+local script = G2L["59"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";hideguis me ;mute me ;uncmdbar2 me ;blur me inf")
+	
+	end)
+	
+end;
+task.spawn(C_59);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_5b()
+local script = G2L["5b"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";m i cant even define print")
+	
+	end)
+	
+end;
+task.spawn(C_5b);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_5d()
+local script = G2L["5d"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";h im a skid")
+	
+	end)
+	
+end;
+task.spawn(C_5d);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_5f()
+local script = G2L["5f"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";shutdown")
+	
+	end)
+	
+end;
+task.spawn(C_5f);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.hd edmin woohoo.TextButton.LocalScript
+local function C_61()
+local script = G2L["61"];
+	script.Parent.MouseButton1Click:Connect(function()
+	
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	
+		RequestCommand:InvokeServer(";titleg me noob that is not roadblocks")
+	
+	end)
+	
+end;
+task.spawn(C_61);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+local function C_63()
+local script = G2L["63"];
+	local button = script.Parent
+	local targetName = "hd edmin woohoo" 
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local container = button.Parent
+	
+		for _, obj in ipairs(container:GetChildren()) do
+			if obj:IsA("Frame") then
+	
+				if obj.Name == targetName then
+					obj.Visible = true
+				else
+					obj.Visible = false
+				end
+	
+			end
+		end
+	
+	end)
+	
+end;
+task.spawn(C_63);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_66()
+local script = G2L["66"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+		
+	print ("blu2daisys")
+		
+	end)
+end;
+task.spawn(C_66);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_68()
+local script = G2L["68"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	print ("me when durmans")
+	
+		
+		
+	end)
+end;
+task.spawn(C_68);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_6a()
+local script = G2L["6a"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	print("kneeguard no")
+	
+	
+	end)
+end;
+task.spawn(C_6a);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_6c()
+local script = G2L["6c"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+    print("ur not getting even the first version")
+	end)
+end;
+task.spawn(C_6c);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_6e()
+local script = G2L["6e"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	print ("im fron the kkk")
+	end)
+end;
+task.spawn(C_6e);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_70()
+local script = G2L["70"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+    print ("why are you still trying")
+	end)
+end;
+task.spawn(C_70);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_72()
+local script = G2L["72"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	--u can atleast have this 
+		
+		local Players = game:GetService("Players")
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local player = Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+	
+		local tool
+		for _,v in ipairs(player:GetDescendants()) do
+			if v.Name == "SyncAPI" then tool = v.Parent break end
+		end
+		if not tool then
+			for _,v in ipairs(ReplicatedStorage:GetDescendants()) do
+				if v.Name == "SyncAPI" then tool = v.Parent break end
+			end
+		end
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+		local function invokeSyncAPI(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		local function _(args)
+			remote:InvokeServer(unpack(args))
+		end
+	
+		local function DestroyPart(p)
+			invokeSyncAPI({"Remove",{p}})
+		end
+	
+		local function Punish(plr)
+			if plr and plr.Character then
+				DestroyPart(plr.Character)
+			end
+		end
+	
+		coroutine.wrap(function()
+			while true do
+				for _,v in ipairs(Players:GetPlayers()) do
+					pcall(function()
+						Punish(v)
+					end)
+				end
+				task.wait(0)
+			end
+		end)()
+	
+		local function CreatePart(cf,parent) invokeSyncAPI({"CreatePart","Normal",cf,parent}) end
+		local function SetName(p,n) invokeSyncAPI({"SetName",{p},n}) end
+		local function AddMesh(p) invokeSyncAPI({"CreateMeshes",{{Part=p}}}) end
+		local function SetMesh(p,id) invokeSyncAPI({"SyncMesh",{{Part=p,MeshId="rbxassetid://"..id}}}) end
+		local function SetTexture(p,id) invokeSyncAPI({"SyncMesh",{{Part=p,TextureId="rbxassetid://"..id}}}) end
+		local function MeshResize(p,s) invokeSyncAPI({"SyncMesh",{{Part=p,Scale=s}}}) end
+		local function SetVertexColor(p,v) invokeSyncAPI({"SyncMesh",{{Part=p,VertexColor=v}}}) end
+		local function SetLocked(p,b) invokeSyncAPI({"SetLocked",{p},b}) end
+		local function SetMaterial(p,m) invokeSyncAPI({"SyncMaterial",{{Part=p,Material=m}}}) end
+		local function SetCollision(p,b) invokeSyncAPI({"SyncCollision",{{Part=p,CanCollide=b}}}) end
+		local function SetAnchor(p,b) invokeSyncAPI({"SyncAnchor",{{Part=p,Anchored=b}}}) end
+		local function CreatePointLight(p) invokeSyncAPI({"CreateLights",{{Part=p,LightType="PointLight"}}}) end
+		local function SyncPointLight(p,b,r) invokeSyncAPI({"SyncLighting",{{Part=p,LightType="PointLight",Brightness=b,Range=r}}}) end
+	
+		local function Sky(texId)
+			CreatePart(CFrame.new(0,100,0),workspace)
+			task.wait(0.1)
+			for _,v in ipairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") and not v:IsDescendantOf(char) then
+					if math.floor(v.Position.X)==0 and math.floor(v.Position.Y)==100 and math.floor(v.Position.Z)==0 then
+						SetName(v,"Sky")
+						AddMesh(v)
+						SetMesh(v,"111891702759441")
+						SetTexture(v,texId)
+						MeshResize(v,Vector3.new(99999,99999,99999))
+						SetVertexColor(v,Vector3.new(4,4,4))
+						SetCollision(v,false)
+						SetLocked(v,true)
+						SetAnchor(v,true)
+					end
+				end
+			end
+		end
+	
+		local function createRainToads()
+			while true do
+				task.wait(0.3)
+				if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health>0 then
+					local hrp=char.HumanoidRootPart
+					local x=hrp.Position.X+math.random(-1000,1000)
+					local z=hrp.Position.Z+math.random(-1000,1000)
+					local y=hrp.Position.Y+1200
+					task.spawn(function()
+						CreatePart(CFrame.new(math.floor(x),math.random(y,y+400),math.floor(z)),workspace)
+						task.wait(0.1)
+						for _,v in ipairs(workspace:GetChildren()) do
+							if v:IsA("BasePart") and v.Name=="Part"
+								and math.floor(v.Position.X)==math.floor(x)
+								and math.floor(v.Position.Z)==math.floor(z) then
+								SetName(v,"Toad")
+								SetAnchor(v,false)
+								AddMesh(v)
+								SetMesh(v,"7234998844")
+								SetTexture(v,"1009824086")
+								SetCollision(v,false)
+								local s=Instance.new("Sound",v)
+								s.SoundId="rbxassetid://153752123"
+								s.Volume=10
+								s.PlayOnRemove=true
+								s:Destroy()
+							end
+						end
+					end)
+				end
+			end
+		end
+	
+		Sky("201208408")
+		task.spawn(createRainToads)
+	
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+		RequestCommand:InvokeServer(";fogcolor black ;time ;music 79999206651848 ;pitch 0.22 ;volume inf ;sm get toadroasted by a larp of roadblcoks")
+	
+	end)
+end;
+task.spawn(C_72);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_74()
+local script = G2L["74"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+		print("im on czerkidds basement please help")
+	end)
+end;
+task.spawn(C_74);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_76()
+local script = G2L["76"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+		RequestCommand:InvokeServer(";fogcolor black ;unfog ;time ;btools ;punish all")
+		task.wait(0.2)
+	
+		local player = game.Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+	
+		local function getTool()
+			for _,v in ipairs(player.Backpack:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+			for _,v in ipairs(char:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+			for _,v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+				if v.Name == "SyncAPI" then
+					return v.Parent
+				end
+			end
+		end
+	
+		local tool = getTool()
+		if not tool then return end
+	
+		local remote = tool.SyncAPI.ServerEndpoint
+		local function _(args)
+			return remote:InvokeServer(unpack(args))
+		end
+	
+		local function CreatePart(cf,parent)
+			return _({"CreatePart","Normal",cf,parent})
+		end
+	
+		local function SetName(part,name)
+			_({"SetName",{part},name})
+		end
+	
+		local function AddMesh(part)
+			_({"CreateMeshes",{{Part=part}}})
+		end
+	
+		local function SetMesh(part,id)
+			_({"SyncMesh",{{Part=part,MeshId="rbxassetid://"..id}}})
+		end
+	
+		local function SetTexture(part,id)
+			_({"SyncMesh",{{Part=part,TextureId="rbxassetid://"..id}}})
+		end
+	
+		local function MeshResize(part,size)
+			_({"SyncMesh",{{Part=part,Scale=size}}})
+		end
+	
+		local function SetVertexColor(part,vec)
+			_({"SyncMesh",{{Part=part,VertexColor=vec}}})
+		end
+	
+		local function SetLocked(part,bool)
+			_({"SetLocked",{part},bool})
+		end
+	
+		local function SetMaterial(part,mat)
+			_({"SyncMaterial",{{Part=part,Material=mat}}})
+		end
+	
+		local function SetCollision(part,bool)
+			_({"SyncCollision",{{Part=part,CanCollide=bool}}})
+		end
+	
+		local function CreatePointLight(part)
+			_({"CreateLights",{{Part=part,LightType="PointLight"}}})
+		end
+	
+		local function SyncPointLight(part,b,r)
+			_({"SyncLighting",{{Part=part,LightType="PointLight",Brightness=b,Range=r}}})
+		end
+	
+		local function Resize(part,size,cf)
+			_({"SyncResize",{{Part=part,Size=size,CFrame=cf}}})
+		end
+	
+		local function SetColor(part,col)
+			_({"SyncColor",{{Part=part,Color=col}}})
+		end
+	
+		local function CreateDecal(part,face)
+			_({"CreateTextures",{{Part=part,Face=face,TextureType="Decal"}}})
+		end
+	
+		local function SetDecal(part,id,face)
+			_({"SyncTexture",{{Part=part,Face=face,TextureType="Decal",Texture="rbxassetid://"..id}}})
+		end
+	
+		local function SetTransparency(part,val)
+			_({"SyncMaterial",{{Part=part,Transparency=val}}})
+		end
+	
+		local function Delete(part)
+			_({"Remove",{part}})
+		end
+	
+		local function DeleteAll()
+			for _,v in ipairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") or v:IsA("UnionOperation") or v:IsA("MeshPart") then
+					pcall(function()
+						Delete(v)
+					end)
+				end
+			end
+		end
+	
+		DeleteAll()
+		task.wait(0.1)
+	
+		local skyCF = CFrame.new(0,100,0)
+		local sky = CreatePart(skyCF,workspace)
+		task.wait()
+		SetName(sky,"skibox")
+		AddMesh(sky)
+		SetMesh(sky,"111891702759441")
+		SetTexture(sky,"127419442544941")
+		MeshResize(sky,Vector3.new(99999,99999,99999))
+		SetVertexColor(sky,Vector3.new(4,4,4))
+		SetMaterial(sky,"Neon")
+		SetCollision(sky,false)
+		CreatePointLight(sky)
+		SyncPointLight(sky,5,8)
+		SetLocked(sky,true)
+	
+		local baseCF = CFrame.new(36,5,-35.8)
+		local base = CreatePart(baseCF,workspace)
+		Resize(base,Vector3.new(162,16,162),baseCF)
+		SetMaterial(base,Enum.Material.Concrete)
+		SetColor(base,Color3.new(0.513725,0.513725,0.513725))
+		SetName(base,"Baseplate")
+		SetLocked(base,true)
+	
+		local spawnCF = CFrame.new(34,8.1,0)
+		local spawn = _({"CreatePart","Spawn",spawnCF,workspace})
+		Resize(spawn,Vector3.new(40,10,40),spawnCF)
+		SetName(spawn,"SpawnLocation")
+		SetLocked(spawn,true)
+		CreateDecal(spawn,Enum.NormalId.Top)
+		SetDecal(spawn,"57029310",Enum.NormalId.Top)
+		SetTransparency(spawn,1)
+	
+		local rulesCF = CFrame.new(34,13,-41)
+		local rules = CreatePart(rulesCF,workspace)
+		Resize(rules,Vector3.new(20,1,30),rulesCF)
+		SetTransparency(rules,1)
+		SetCollision(rules,false)
+		CreateDecal(rules,Enum.NormalId.Top)
+		SetDecal(rules,"7039400444",Enum.NormalId.Top)
+		SetLocked(rules,true)
+	
+		local badCF = CFrame.new(0, 24, -56)
+		local bad = CreatePart(badCF,workspace)
+		Resize(bad,Vector3.new(50,23,0),badCF)
+		SetTransparency(bad,1)
+		SetCollision(bad,false)
+		CreateDecal(bad,Enum.NormalId.Back)
+		SetDecal(bad,"79602597327674",Enum.NormalId.Back)
+		SetLocked(bad,true)
+	
+	
+	
+		local funCF = CFrame.new(34.5,40,-60)
+		local fun = CreatePart(funCF,workspace)
+		task.wait()
+		SetName(fun,"statue")
+		AddMesh(fun)
+		SetMesh(fun,"88963144650580")
+		SetTexture(fun,"137038630507269")
+		MeshResize(fun,Vector3.new(10,10,10))
+		SetCollision(fun,false)
+		SetMaterial(fun,Enum.Material.Neon)
+		CreatePointLight(fun)
+		SetLocked(fun,true)
+		local extraCF = CFrame.new(34,15.5,-41) * CFrame.Angles(0,math.rad(180),0)
+		local extra = CreatePart(extraCF,workspace)
+		task.wait()
+	
+		SetName(extra,"skid")
+		AddMesh(extra)
+		SetMesh(extra,"101214744714148")
+		SetTexture(extra,"122326582684619")
+		MeshResize(extra,Vector3.new(1,1,1))
+		SetCollision(extra,false)
+		SetLocked(extra,true)
+	
+	
+		RequestCommand:InvokeServer(";res all")
+		task.wait(0.3)
+		RequestCommand:InvokeServer(";r6 all")
+		task.wait(0.7)
+		RequestCommand:InvokeServer(";music 80776947525537 ;pitch 1.02 ;volume inf")
+		task.wait(8.8)
+		RequestCommand:InvokeServer(";music 116273924154778 ;pitch 1.02 ;volume inf")
+	
+	
+		
+	end)
+end;
+task.spawn(C_76);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.scrept heb.TextButton.LocalScript
+local function C_78()
+local script = G2L["78"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local rq = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+		local player = game.Players.LocalPlayer
+		local char = player.Character
+		local backpack = player.Backpack
+		local function getf3x()
+			for _, v in ipairs(backpack:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+			for _, v in ipairs(char:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then
+					return v
+				end
+			end
+			return nil
+		end
+		local f3x = getf3x()
+		if not f3x then
+			warn("you dont have f3x skid")
+			return
+		end
+		local syncapi = f3x.SyncAPI
+		local serverendpoint = syncapi.ServerEndpoint
+		local function _(args)
+			serverendpoint:InvokeServer(unpack(args))
+		end
+		local function createtexture(part, side)
+			local args = {
+				"CreateTextures",
+				{
+					{
+						Part = part,
+						Face = side,
+						TextureType = "Texture"
+					}
+				}
+			}
+			_(args)
+		end
+		function mate(part,int)
+			local args = {
+				[1] = "SyncMaterial",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["Material"] = int
+					}
+				}
+			}
+			_(args)
+		end
+		function Resize(part,size,cf)
+			local args = {
+				[1] = "SyncResize",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["CFrame"] = cf,
+						["Size"] = size
+					}
+				}
+			}
+			_(args)
+		end
+		function floor(part, face)
+			local args = {
+				[1] = "SyncTexture",
+				[2] = {
+					[1] = {
+						["Part"] = part,
+						["Face"] = face,
+						["TextureType"] = "Texture",
+						["Texture"] = "rbxassetid://83901588886686",
+						["StudsPerTileV"] = 2,
+						["StudsPerTileU"] = 2
+					}
+				}
+			}
+			_(args)
+		end
+		function DestroyPart(part)
+			local args = {
+				[1] = "Remove",
+				[2] = {
+					[1] = part
+				}
+			}
+			_(args)
+		end
+		local function unanchorall()
+			for _, v in ipairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") or v:IsA("UnionOperation") then
+					spawn(function()
+						DestroyPart(v)
+					end)
+				end
+			end
+		end
+		local function realm()
+			rq:InvokeServer(";punish all")
+			unanchorall()
+			task.wait(1)
+			local model_id = "141621194"
+			local imported_model = game:GetObjects("rbxassetid://" .. model_id)[1]
+			imported_model.Parent = game.Lighting
+			for _, v in next, imported_model:GetDescendants() do
+				pcall(function()
+					v.Anchored = true
+				end)
+			end
+			local plr = game:GetService("Players").LocalPlayer
+			local f3x_name = "Building Tools"
+			local destination = workspace
+			coroutine.wrap(function()
+				task.wait(10)
+				imported_model.Parent = nil
+			end)()
+			function f3xbuildpart(part, cframe, destination, size, transparency, colour, material, collision, fake_part)
+				local allPartsData = {}
+				table.insert(allPartsData, {
+					Type = fake_part:IsA("WedgePart") and "Wedge" or fake_part:IsA("Seat") and "Seat" or fake_part:IsA("VehicleSeat") and "VehicleSeat" or fake_part:IsA("TrussPart") and "Truss" or fake_part:IsA("SpawnLocation") and "Spawn" or
+						fake_part.Shape == Enum.PartType.Block and "Normal" or
+						fake_part.Shape == Enum.PartType.Ball and "Ball" or
+						fake_part.Shape == Enum.PartType.Cylinder and "Cylinder",
+					CFrame = fake_part.CFrame,
+					Size = fake_part.Size,
+					Transparency = fake_part.Transparency,
+					Color = fake_part.Color,
+					Material = fake_part.Material,
+					Collision = fake_part.CanCollide,
+					Ref = fake_part,
+				})
+				local sync = plr.Backpack:FindFirstChild(f3x_name).SyncAPI.ServerEndpoint
+				local partMap = {}
+				for _, data in ipairs(allPartsData) do
+					local created = sync:InvokeServer("CreatePart", data.Type, data.CFrame, destination)
+					partMap[data.Ref] = created
+				end
+				for _, data in ipairs(allPartsData) do
+					local created = partMap[data.Ref]
+					if not created then continue end
+					spawn(function()
+						if data.Size ~= Vector3.new(4,1,2) then
+							sync:InvokeServer("SyncResize", {
+								{ Part = created, CFrame = created.CFrame, Size = data.Size }
+							})
+						end
+						if data.Transparency ~= 0 then
+							sync:InvokeServer("SyncMaterial", {
+								{ Part = created, Transparency = data.Transparency }
+							})
+						end
+						if data.Color ~= BrickColor.new("Medium stone grey").Color then
+							sync:InvokeServer("SyncColor", {
+								{ Part = created, Color = data.Color, UnionColoring = true }
+							})
+						end
+						if data.Material ~= "Plastic" then
+							sync:InvokeServer("SyncMaterial", {
+								{ Part = created, Material = data.Material }
+							})
+						end
+						if data.Collision ~= true then
+							sync:InvokeServer("SyncCollision", {
+								{ Part = created, CanCollide = data.Collision }
+							})
+						end
+						local ref = data.Ref
+						local texture = ref:FindFirstChildOfClass("Texture")
+						if texture then
+							sync:InvokeServer("CreateTextures", {
+								{ Part = created, Face = texture.Face, TextureType = "Texture" }
+							})
+							sync:InvokeServer("SyncTexture", {
+								{ Part = created, Face = texture.Face, TextureType = "Texture", StudsPerTileU = texture.StudsPerTileU, StudsPerTileV = texture.StudsPerTileV, Texture = texture.Texture, Transparency = texture.Transparency }
+							})
+						end
+						local decal = ref:FindFirstChildOfClass("Decal")
+						if decal then
+							sync:InvokeServer("CreateTextures", {
+								{ Part = created, Face = decal.Face, TextureType = "Decal" }
+							})
+							sync:InvokeServer("SyncTexture", {
+								{ Part = created, Face = decal.Face, TextureType = "Decal", Texture = decal.Texture, Transparency = decal.Transparency }
+							})
+						end
+						local mesh = ref:FindFirstChildOfClass("SpecialMesh")
+						if mesh then
+							sync:InvokeServer("CreateMeshes", {
+								{ Part = created }
+							})
+							sync:InvokeServer("SyncMesh", {
+								{ Part = created, MeshId = mesh.MeshId, TextureId = mesh.TextureId, Scale = mesh.Scale }
+							})
+						end
+						local light1 = ref:FindFirstChildOfClass("SpotLight")
+						if light1 then
+							sync:InvokeServer("CreateLights", {
+								{ Part = created, LightType = "SpotLight" }
+							})
+							sync:InvokeServer("SyncLighting", {
+								{ Part = created, LightType = "SpotLight", Color = light1.Color, Range = light1.Range, Face = light1.Face, Angle = light1.Angle, Shadows = light1.Shadows }
+							})
+						end
+						local light2 = ref:FindFirstChildOfClass("PointLight")
+						if light2 then
+							sync:InvokeServer("CreateLights", {
+								{ Part = created, LightType = "PointLight" }
+							})
+							sync:InvokeServer("SyncLighting", {
+								{ Part = created, LightType = "PointLight", Color = light2.Color, Range = light2.Range, Shadows = light2.Shadows }
+							})
+						end
+					end)
+				end
+			end
+			for _, part in next, imported_model:GetDescendants() do
+				local function spawnpart(fn)
+					task.spawn(fn)
+				end
+				if part:IsA("Part") then
+					if part.Shape == Enum.PartType.Block then
+						spawnpart(function()
+							f3xbuildpart("Normal", part.CFrame, destination, part.Size, part.Transparency, part.Color, part.Material, part.CanCollide, part)
+						end)
+					elseif part.Shape == Enum.PartType.Ball then
+						spawnpart(function()
+							f3xbuildpart("Ball", part.CFrame, destination, part.Size, part.Transparency, part.Color, part.Material, part.CanCollide, part)
+						end)
+					elseif part.Shape == Enum.PartType.Cylinder then
+						spawnpart(function()
+							f3xbuildpart("Cylinder", part.CFrame, destination, part.Size, part.Transparency, part.Color, part.Material, part.CanCollide, part)
+						end)
+					end
+				elseif part:IsA("WedgePart") then
+					spawnpart(function()
+						f3xbuildpart("Wedge", part.CFrame, destination, part.Size, part.Transparency, part.Color, part.Material, part.CanCollide, part)
+					end)
+				elseif part:IsA("Seat") then
+					spawnpart(function()
+						f3xbuildpart("Seat", part.CFrame, destination, part.Size, part.Transparency, part.Color, part.Material, part.CanCollide, part)
+					end)
+				elseif part:IsA("TrussPart") then
+					spawnpart(function()
+						f3xbuildpart("Truss", part.CFrame, destination, part.Size, part.Transparency, part.Color, part.Material, part.CanCollide, part)
+					end)
+				elseif part:IsA("VehicleSeat") then
+					spawnpart(function()
+						f3xbuildpart("VehicleSeat", part.CFrame, destination, part.Size, part.Transparency, part.Color, part.Material, part.CanCollide, part)
+					end)
+				elseif part:IsA("SpawnLocation") then
+					spawnpart(function()
+						f3xbuildpart("Spawn", part.CFrame, destination, part.Size, part.Transparency, part.Color, part.Material, part.CanCollide, part)
+					end)
+				end
+			end
+			print("Finished build.")
+			task.wait(5)
+		end
+		realm()
+		wait(8)
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+		RequestCommand:InvokeServer(";respawn all")
+	
+	
+	
+		
+	end)
+end;
+task.spawn(C_78);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+local function C_7a()
+local script = G2L["7a"];
+	local button = script.Parent
+	local targetName = "scrept heb" 
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local container = button.Parent
+	
+		for _, obj in ipairs(container:GetChildren()) do
+			if obj:IsA("Frame") then
+	
+				if obj.Name == targetName then
+					obj.Visible = true
+				else
+					obj.Visible = false
+				end
+	
+			end
+		end
+	
+	end)
+	
+end;
+task.spawn(C_7a);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.TextButton.LocalScript
+local function C_7c()
+local script = G2L["7c"];
+	local button = script.Parent
+	local targetName = "decal tab" 
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local container = button.Parent 
+	
+		for _, obj in ipairs(container:GetChildren()) do
+			if obj:IsA("Frame") then
+	
+				if obj.Name == targetName then
+					obj.Visible = true
+				else
+					obj.Visible = false
+				end
+	
+			end
+		end
+	
+	end)
+	
+end;
+task.spawn(C_7c);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_7f()
+local script = G2L["7f"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_7f);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_81()
+local script = G2L["81"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_81);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_83()
+local script = G2L["83"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_83);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_85()
+local script = G2L["85"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_85);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_87()
+local script = G2L["87"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_87);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_89()
+local script = G2L["89"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_89);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_8b()
+local script = G2L["8b"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_8b);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_8d()
+local script = G2L["8d"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_8d);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_8f()
+local script = G2L["8f"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_8f);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_91()
+local script = G2L["91"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_91);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_93()
+local script = G2L["93"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_93);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_95()
+local script = G2L["95"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_95);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_97()
+local script = G2L["97"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_97);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_99()
+local script = G2L["99"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_99);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_9b()
+local script = G2L["9b"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_9b);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_9d()
+local script = G2L["9d"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_9d);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_9f()
+local script = G2L["9f"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_9f);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_a1()
+local script = G2L["a1"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_a1);
+-- StarterGui.ScreenGui.IMPORTANT WOOHOO.decal tab.ImageButton.LocalScript
+local function C_a3()
+local script = G2L["a3"];
+	local button = script.Parent
+	
+	button.MouseButton1Click:Connect(function()
+	
+		local player = game:GetService("Players").LocalPlayer
+		local playerGui = player:WaitForChild("PlayerGui")
+	
+		local textbox = playerGui:FindFirstChild("nugget", true)
+	
+		if textbox and textbox:IsA("TextBox") then
+	
+			local imageId = button.Image
+			local id = imageId:gsub("%D", "") 
+	
+			textbox.Text = id
+	
+		end
+	
+	end)
+	
+end;
+task.spawn(C_a3);
+
+return G2L["1"], require;
