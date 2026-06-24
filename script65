@@ -1,0 +1,148 @@
+-- made by Muscle_legends2021
+
+local PsychoButton = Instance.new("TextButton")
+PsychoButton.Name = "PsychoAnim"
+PsychoButton.Text = "Psycho Anim"
+PsychoButton.Size = UDim2.new(0, 200, 0, 50)
+PsychoButton.Position = UDim2.new(0.5, -100, 0.5, -25)
+PsychoButton.BackgroundColor3 = Color3.fromRGB(139, 0, 0) -- Dark red when toggled off
+PsychoButton.TextColor3 = Color3.new(1, 1, 1)
+PsychoButton.Font = Enum.Font.Arcade -- Scarier font
+PsychoButton.TextSize = 24
+PsychoButton.BorderSizePixel = 2
+PsychoButton.BorderColor3 = Color3.new(0, 0, 0)
+PsychoButton.Draggable = true
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = PsychoButton
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.new(0, 0, 0)
+UIStroke.Parent = PsychoButton
+
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.ResetOnSpawn = false -- Prevent GUI from disappearing on respawn
+screenGui.Parent = player:WaitForChild("PlayerGui")
+PsychoButton.Parent = screenGui
+
+local animation1 = Instance.new("Animation")
+animation1.AnimationId = "rbxassetid://33796059" -- First idle animation
+
+local animationWalk = Instance.new("Animation")
+animationWalk.AnimationId = "rbxassetid://95415492" -- Walk animation
+
+local animationJump = Instance.new("Animation")
+animationJump.AnimationId = "rbxassetid://165167557" -- Jump animation
+
+local animationFall = Instance.new("Animation")
+animationFall.AnimationId = "rbxassetid://97170520" -- Fall animation
+
+local newIdleAnimation = Instance.new("Animation")
+newIdleAnimation.AnimationId = "rbxassetid://15517864808" -- New idle animation
+
+local humanoid = player.Character:WaitForChild("Humanoid")
+local idleTrack = humanoid:LoadAnimation(animation1)
+local walkAnimTrack = humanoid:LoadAnimation(animationWalk)
+local jumpTrack = humanoid:LoadAnimation(animationJump)
+local fallTrack = humanoid:LoadAnimation(animationFall)
+local newIdleTrack = humanoid:LoadAnimation(newIdleAnimation)
+
+local psychoActive = false
+local runningConnection
+local jumpPlaying = false
+
+-- Function to alternate idle animations
+local function playIdle()
+    task.spawn(function()
+        while psychoActive do
+            if humanoid.MoveDirection.Magnitude == 0 and humanoid:GetState() ~= Enum.HumanoidStateType.Jumping and humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
+                -- Play the first idle animation
+                idleTrack:Play(0.1, 1, 100)
+                task.wait(0.2)
+                idleTrack:Stop()
+                task.wait(1.5)
+
+                -- Play the new idle animation at 5x speed for 0.3 seconds
+                newIdleTrack:Play() -- Start the new idle animation
+                newIdleTrack:AdjustSpeed(5) -- Play at 5x speed
+                task.wait(0.3) -- Play for 0.3 seconds
+                newIdleTrack:Stop()
+
+                task.wait(1.5) -- Ensure total wait time for the cycle is 3 seconds
+            else
+                task.wait(0.1)
+            end
+        end
+    end)
+end
+
+local function stopIdle()
+    idleTrack:Stop()
+    newIdleTrack:Stop()
+end
+
+PsychoButton.MouseButton1Click:Connect(function()
+    psychoActive = not psychoActive
+
+    if psychoActive then
+        PsychoButton.BackgroundColor3 = Color3.fromRGB(0, 100, 0) -- Dark green when toggled on
+
+        humanoid.WalkSpeed = 9 -- Set walk speed when activated
+
+        playIdle()
+
+        if runningConnection then runningConnection:Disconnect() end
+        runningConnection = humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+            if psychoActive and humanoid.MoveDirection.Magnitude > 0 and humanoid:GetState() ~= Enum.HumanoidStateType.Jumping and humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
+                stopIdle()
+                if not walkAnimTrack.IsPlaying then
+                    walkAnimTrack:Play()
+                end
+            else
+                walkAnimTrack:Stop()
+            end
+        end)
+
+        humanoid.StateChanged:Connect(function(_, newState)
+            if newState == Enum.HumanoidStateType.Jumping then
+                if not jumpPlaying then
+                    stopIdle()
+                    walkAnimTrack:Stop()
+                    jumpPlaying = true
+                    jumpTrack:Play()
+                    jumpTrack.Stopped:Wait()
+                    jumpPlaying = false
+                end
+            elseif newState == Enum.HumanoidStateType.Freefall then
+                stopIdle()
+                jumpTrack:Stop()
+                if not fallTrack.IsPlaying then
+                    fallTrack:Play()
+                end
+            elseif newState == Enum.HumanoidStateType.Landed then
+                fallTrack:Stop()
+                playIdle()
+            end
+        end)
+    else
+        PsychoButton.BackgroundColor3 = Color3.fromRGB(139, 0, 0) -- Dark red when toggled off
+        humanoid.WalkSpeed = 16 -- Reset walk speed
+        stopIdle()
+        walkAnimTrack:Stop()
+        jumpTrack:Stop()
+        fallTrack:Stop()
+        if runningConnection then runningConnection:Disconnect() end
+    end
+end)
+
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    humanoid = character:WaitForChild("Humanoid")
+    idleTrack = humanoid:LoadAnimation(animation1)
+    walkAnimTrack = humanoid:LoadAnimation(animationWalk)
+    jumpTrack = humanoid:LoadAnimation(animationJump)
+    fallTrack = humanoid:LoadAnimation(animationFall)
+    newIdleTrack = humanoid:LoadAnimation(newIdleAnimation)
+end)
