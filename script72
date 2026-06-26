@@ -1,18 +1,13 @@
--- by 7yd7
---[[
 getgenv().Settings = {
     CopyButton = false,
     -------------------
-    AutoButton = false,
+    AutoButton = true,
     AutoInterval = 0.1,
     -------------------
     InstantPurchase = false,
-    -------------------
     AutoMassPurchase = false,
-    Debug = false
+    Debug = false,
 }
-]]
-
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
