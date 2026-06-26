@@ -201,6 +201,7 @@ local scriptsData = {
 	{name = "PolarisF3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/PolarisF3X"},
 	{name = "PolarisX9DF3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/polarisdis"},
 	{name = "RoadBlocks", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/roadblocks"},
+	{name = "C00LHACKRealm", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/coolf3x"},
 	{name = "VirusF3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/VirusF3X"}
 }
 
