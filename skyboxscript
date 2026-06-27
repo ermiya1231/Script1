@@ -1,0 +1,20 @@
+    local char = Player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    
+    local e = char.HumanoidRootPart.CFrame.x
+    local f = char.HumanoidRootPart.CFrame.y
+    local g = char.HumanoidRootPart.CFrame.z
+    
+    CreatePart(CFrame.new(math.floor(e), math.floor(f), math.floor(g)) + Vector3.new(0, 6, 0), workspace)
+    
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and v.CFrame.x == math.floor(e) and v.CFrame.z == math.floor(g) then
+            SetName(v, "Skybox")
+            AddMesh(v)
+            SetMesh(v, "111891702759441")
+            SetTexture(v, id)
+            MeshResize(v, Vector3.new(7200, 7200, 7200))
+            SetLocked(v, true)
+        end
+    end
+end
