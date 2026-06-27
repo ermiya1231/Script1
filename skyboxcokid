@@ -1,0 +1,76 @@
+-- این بخش را حتماً اول فایل گیت‌هاب بگذار تا توابع کار کنند
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+local tool
+for _, v in ipairs(Player:GetDescendants()) do
+    if v.Name == "SyncAPI" then tool = v.Parent break end
+end
+if not tool then
+    for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+        if v.Name == "SyncAPI" then tool = v.Parent break end
+    end
+end
+
+if not tool or not tool:FindFirstChild("SyncAPI") then
+    warn("SyncAPI found error inside skybox cloud script!")
+    return
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+local function _(args)
+    remote:InvokeServer(unpack(args))
+end
+
+-- تعریف توابع F3X مورد نیاز همین اسکریپت
+local function CreatePart(cf, parent)
+    _({"CreatePart", "Normal", cf, parent})
+end
+local function SetName(part, stringg)
+    _({"SetName", {part}, stringg})
+end
+local function AddMesh(part)
+    _({"CreateMeshes", {{Part = part}}})
+end
+local function SetMesh(part, meshid)
+    _({"SyncMesh", {{Part = part, MeshId = "rbxassetid://" .. meshid}}})
+end
+local function SetTexture(part, texid)
+    _({"SyncMesh", {{Part = part, TextureId = "rbxassetid://" .. texid}}})
+end
+local function MeshResize(part, size)
+    _({"SyncMesh", {{Part = part, Scale = size}}})
+end
+local function SetLocked(part, boolean)
+    _({"SetLocked", {part}, boolean})
+end
+
+-- آیدی هدف (میتوانی آیدی پیش‌فرضت را اینجا بگذاری)
+local id = "158118263" 
+
+---------------------------------------------------------
+-- منطق اصلی اسکای‌باکس تو ----------------------------------
+---------------------------------------------------------
+local char = Player.Character
+if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+
+local e = char.HumanoidRootPart.CFrame.x
+local f = char.HumanoidRootPart.CFrame.y
+local g = char.HumanoidRootPart.CFrame.z
+
+CreatePart(CFrame.new(math.floor(e), math.floor(f), math.floor(g)) + Vector3.new(0, 6, 0), workspace)
+
+task.wait(0.1) -- یک تاخیر بسیار کوتاه برای ساخته شدن پارت در سرور
+
+for _, v in ipairs(workspace:GetDescendants()) do
+    if v:IsA("BasePart") and v.Name == "Part" and v.CFrame.x == math.floor(e) and v.CFrame.z == math.floor(g) then
+        SetName(v, "Skybox")
+        AddMesh(v)
+        SetMesh(v, "111891702759441")
+        SetTexture(v, id)
+        MeshResize(v, Vector3.new(7200, 7200, 7200))
+        _({"SyncCollision", {{Part = v, CanCollide = false}}}) -- غیرفعال کردن برخورد برای آسمان
+        _({"SyncAnchor", {{Part = v, Anchored = true}}})       -- فیکس کردن آسمان در هوا
+        SetLocked(v, true)
+    end
+end
