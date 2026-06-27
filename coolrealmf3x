@@ -1,0 +1,231 @@
+local MyTargetID = "122714132204276"
+local MusicID = "104181508980428"
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Player = Players.LocalPlayer
+
+-- پیدا کردن هوشمند ابزار F3X
+local tool
+for _, v in ipairs(Player:GetDescendants()) do
+    if v.Name == "SyncAPI" then tool = v.Parent break end
+end
+if not tool then
+    for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+        if v.Name == "SyncAPI" then tool = v.Parent break end
+    end
+end
+
+if not tool or not tool:FindFirstChild("SyncAPI") then
+    warn("ابزار F3X پیدا نشد!")
+    return
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+-- تغییر نام تابع برای جلوگیری از تداخل متغیرها و ارور عدد
+local function SendF3X(args)
+    return remote:InvokeServer(unpack(args))
+end
+
+---------------------------------------------------------
+-- DEFINED FULL 6-SIDE DECAL SPAM ENGINE ----------------
+---------------------------------------------------------
+local function RunDecalSpam(id)
+    local descendants = workspace:GetDescendants()
+    
+    local allFaces = {
+        Enum.NormalId.Front,
+        Enum.NormalId.Back,
+        Enum.NormalId.Top,
+        Enum.NormalId.Bottom,
+        Enum.NormalId.Left,
+        Enum.NormalId.Right
+    }
+    
+    for i = 1, #descendants do
+        local v = descendants[i]
+        if v:IsA("BasePart") and v.Name ~= "CustomSkybox" and v.Name ~= "Skybox" then
+            SendF3X({"SetLocked", {v}, false})
+            
+            task.spawn(function()
+                for j = 1, #allFaces do
+                    local currentFace = allFaces[j]
+                    SendF3X({"CreateTextures", {{Part = v, Face = currentFace, TextureType = "Decal"}}})
+                    SendF3X({"SyncTexture", {{Part = v, Face = currentFace, TextureType = "Decal", Texture = "rbxassetid://" .. id}}})
+                end
+            end)
+        end
+    end
+end
+
+---------------------------------------------------------
+-- SAFE ANTI-VOID FLOW ----------------------------------
+---------------------------------------------------------
+task.spawn(function()
+    local char = Player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    
+    -- ۱. فریز کردن کاراکتر روی هوا
+    if root then
+        SendF3X({"SyncAnchor", {{Part = root, Anchored = true}}})
+    end
+    
+    -- ۲. پاکسازی کامل محیط ورک‌پیس
+    local items = workspace:GetDescendants()
+    for i = 1, #items do
+        local v = items[i]
+        if v:IsA("BasePart") or v:IsA("UnionOperation") then
+            if v ~= root and not v:IsDescendantOf(char) then
+                task.spawn(function()
+                    SendF3X({"Remove", {v}})
+                end)
+            end
+        end
+    end
+    
+    task.wait(0.2)
+    
+    -- ۳. محاسبات دقیق موقعیت ستاپ مپ
+    local spawnPos = root and root.Position or Vector3.new(0, 0, 0)
+    local baseCF = CFrame.new(spawnPos.X, spawnPos.Y - 20, spawnPos.Z)
+    
+    local wallFrontCF = baseCF * CFrame.new(0, 70, -80)
+    local wallBackCF = baseCF * CFrame.new(0, 70, 80)
+    
+    -- پخش آنلاین آهنگ و سیاه کردن مه سرور
+    local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient") and ReplicatedStorage.HDAdminHDClient:FindFirstChild("Signals")
+    local fireCmd = hd and (hd:FindFirstChild("RequestCommandSilent") or hd:FindFirstChild("RequestCommand"))
+    if fireCmd then
+        fireCmd:InvokeServer(";music " .. MusicID .. " ;pitch 0.22 ;volume 999999999 ;fogcolor black")
+    end
+
+    ---------------------------------------------------------
+    -- ساخت سازه‌های اصلی ابتدا انجام می‌شود --------------------
+    ---------------------------------------------------------
+    local cleanBase = SendF3X({"CreatePart", "Normal", baseCF, workspace})
+    local w1 = SendF3X({"CreatePart", "Normal", wallFrontCF, workspace})
+    local w2 = SendF3X({"CreatePart", "Normal", wallBackCF, workspace})
+    
+    -- ساخت دیوارهای قلعه
+    local castleWalls = {}
+    local r = math.random
+    for i = 1, 20 do
+        local offsetX = r(-220, 220)
+        local offsetZ = r(-220, 220)
+        
+        if math.abs(offsetX) < 45 and math.abs(offsetZ) < 45 then
+            offsetX = offsetX + 65
+        end
+        
+        local castleCF = baseCF * CFrame.new(offsetX, 90, offsetZ)
+        local cWall = SendF3X({"CreatePart", "Normal", castleCF, workspace})
+        if cWall then
+            table.insert(castleWalls, {Part = cWall, CF = castleCF})
+        end
+    end
+    
+    task.wait(0.05)
+    
+    -- ۴. کانفیگ سریع بیس‌پلیت
+    if cleanBase then
+        task.spawn(function()
+            SendF3X({"SetName", {cleanBase}, "CleanBaseplate"})
+            SendF3X({"SyncResize", {{Part = cleanBase, CFrame = baseCF, Size = Vector3.new(512, 16, 512)}}})
+            SendF3X({"SyncMaterial", {{Part = cleanBase, Material = Enum.Material.Concrete}}})
+            SendF3X({"SyncColor", {{Part = cleanBase, Color = Color3.new(0.2, 0.2, 0.2), UnionColoring = false}}})
+            SendF3X({"SetLocked", {cleanBase}, false})
+            SendF3X({"SyncAnchor", {{Part = cleanBase, Anchored = true}}})
+        end)
+    end
+    
+    -- دیوارهای جلو و عقب فوق‌العاده عریض و بلند
+    local walls = {w1, w2}
+    local wallCFs = {wallFrontCF, wallBackCF}
+    for i = 1, #walls do
+        local wall = walls[i]
+        if wall then
+            task.spawn(function()
+                SendF3X({"SetName", {wall}, "NearWall_" .. i})
+                SendF3X({"SyncResize", {{Part = wall, CFrame = wallCFs[i], Size = Vector3.new(150, 160, 4)}}})
+                SendF3X({"SyncMaterial", {{Part = wall, Material = Enum.Material.Concrete}}})
+                SendF3X({"SyncColor", {{Part = wall, Color = Color3.new(0.2, 0.2, 0.2), UnionColoring = false}}})
+                SendF3X({"SyncAnchor", {{Part = wall, Anchored = true}}})
+            end)
+        end
+    end
+    
+    -- ضخامت دیوارهای قلعه
+    for i = 1, #castleWalls do
+        local wallData = castleWalls[i]
+        if wallData.Part then
+            task.spawn(function()
+                SendF3X({"SetName", {wallData.Part}, "CastlePillar_" .. i})
+                SendF3X({"SyncResize", {{Part = wallData.Part, CFrame = wallData.CF, Size = Vector3.new(r(15, 35), 180, 12)}}})
+                SendF3X({"SyncMaterial", {{Part = wallData.Part, Material = Enum.Material.Concrete}}})
+                SendF3X({"SyncColor", {{Part = wallData.Part, Color = Color3.new(0.15, 0.15, 0.15), UnionColoring = false}}})
+                SendF3X({"SyncAnchor", {{Part = wallData.Part, Anchored = true}}})
+            end)
+        end
+    end
+    
+    -- ۵. پایداری و آن‌فریز شدن کاراکتر روی مپ جدید
+    repeat task.wait(0.05) until workspace:FindFirstChild("CleanBaseplate")
+    task.wait(0.1)
+    
+    if root then
+        SendF3X({"SyncAnchor", {{Part = root, Anchored = false}}})
+    end
+    
+    task.wait(0.001)
+    
+    -- ۶. اجرای دکال اسپم روی کل پارت‌ها
+    RunDecalSpam(MyTargetID)
+    
+    -- ۷. یک تاخیر کوتاه برای تمام شدن بار ریکوئست‌های دکال اسپم
+    task.wait(0.3) 
+
+    ---------------------------------------------------------
+    -- منطق اسکای‌باکس بدون باگ
+    ---------------------------------------------------------
+    local e = spawnPos.X
+    local f = spawnPos.Y
+    local g = spawnPos.Z
+
+    SendF3X({"CreatePart", "Normal", CFrame.new(math.floor(e), math.floor(f), math.floor(g)) + Vector3.new(0, 6, 0), workspace})
+
+    task.spawn(function()
+        task.wait(0.15) -- زمان کوتاه برای ثبت پارت اسکای‌باکس در سرور
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and v.Name == "Part" and v.CFrame.x == math.floor(e) and v.CFrame.z == math.floor(g) then
+                SendF3X({"SetName", {v}, "Skybox"})
+                SendF3X({"CreateMeshes", {{Part = v}}})
+                
+                SendF3X({"SyncMesh", {{
+                    Part = v, 
+                    MeshId = "rbxassetid://111891702759441", 
+                    TextureId = "rbxassetid://" .. MyTargetID, 
+                    Scale = Vector3.new(7200, 7200, 7200)
+                }}})
+                
+                SendF3X({"SyncCollision", {{Part = v, CanCollide = false}}})
+                SendF3X({"SyncAnchor", {{Part = v, Anchored = true}}})
+                SendF3X({"SetLocked", {v}, true})
+                break 
+            end
+        end
+    end)
+    ---------------------------------------------------------
+    
+    -- قفل کردن نهایی آبجکت‌ها
+    if cleanBase then SendF3X({"SetLocked", {cleanBase}, true}) end
+    for i = 1, #walls do 
+        if walls[i] then 
+            SendF3X({"SetLocked", {walls[i]}, true}) 
+        end 
+    end
+    for i = 1, #castleWalls do 
+        if castleWalls[i].Part then 
+            SendF3X({"SetLocked", {castleWalls[i].Part}, true}) 
+        end 
+    end
+end)
