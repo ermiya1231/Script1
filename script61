@@ -3,52 +3,51 @@
 local targetParent = (typeof(gethui) == "function" and gethui()) or game:GetService("CoreGui")
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "LuxuryUI"
+gui.Name = "LuxuryUI_Purple"
 gui.ResetOnSpawn = false
-gui.Parent = targetParent -- تغییر یافت به مسیر جدید
+gui.Parent = targetParent
 
--- Main compact frame (glass style)
+-- Main Frame (Luxury Dark Purple Glass Style)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 300)
-frame.Position = UDim2.new(0.5, -110, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-frame.BackgroundTransparency = 0.35
+frame.Size = UDim2.new(0, 240, 0, 360)
+frame.Position = UDim2.new(0.5, -120, 0.5, -180)
+frame.BackgroundColor3 = Color3.fromRGB(20, 15, 35) -- بنفش خیلی تیره لوکس
+frame.BackgroundTransparency = 0.2
 frame.BorderSizePixel = 0
 frame.Parent = gui
 
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 14)
+corner.CornerRadius = UDim.new(0, 16)
 corner.Parent = frame
+
+-- Stroke (Line around frame)
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(140, 80, 255) -- خط دور بنفش درخشان
+stroke.Thickness = 1.5
+stroke.Transparency = 0.4
+stroke.Parent = frame
 
 local gradient = Instance.new("UIGradient")
 gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(200,200,200))
-}
-gradient.Transparency = NumberSequence.new{
-    NumberSequenceKeypoint.new(0, 0.3),
-    NumberSequenceKeypoint.new(1, 0.6)
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 25, 70)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 10, 30))
 }
 gradient.Rotation = 45
 gradient.Parent = frame
 
--- DRAG BAR (for moving GUI)
+-- DRAG BAR
 local dragBar = Instance.new("Frame")
-dragBar.Size = UDim2.new(1, 0, 0, 32)
-dragBar.BackgroundTransparency = 0.4
-dragBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+dragBar.Size = UDim2.new(1, 0, 0, 38)
+dragBar.BackgroundTransparency = 1
 dragBar.Parent = frame
-
-local dragCorner = Instance.new("UICorner")
-dragCorner.CornerRadius = UDim.new(0, 14)
-dragCorner.Parent = dragBar
 
 -- Title
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -32, 1, 0)
+title.Size = UDim2.new(1, -40, 1, 0)
+title.Position = UDim2.new(0, 12, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "ساخته شده توسط 666"
-title.TextColor3 = Color3.fromRGB(0, 0, 0)
+title.Text = "Luxury Audio GUI"
+title.TextColor3 = Color3.fromRGB(240, 230, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
 title.TextXAlignment = Enum.TextXAlignment.Left
@@ -56,19 +55,18 @@ title.Parent = dragBar
 
 -- Collapse/Expand button
 local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0, 24, 0, 24)
-toggleBtn.Position = UDim2.new(1, -28, 0, 4)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-toggleBtn.BackgroundTransparency = 0.2
+toggleBtn.Size = UDim2.new(0, 26, 0, 26)
+toggleBtn.Position = UDim2.new(1, -32, 0, 6)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(100, 50, 200)
+toggleBtn.BackgroundTransparency = 0.3
 toggleBtn.Text = "▲"
 toggleBtn.Font = Enum.Font.GothamBold
-toggleBtn.TextSize = 14
-toggleBtn.TextColor3 = Color3.fromRGB(0,0,0)
-toggleBtn.BorderSizePixel = 0
+toggleBtn.TextSize = 12
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleBtn.Parent = dragBar
 
 local crnToggle = Instance.new("UICorner")
-crnToggle.CornerRadius = UDim.new(0, 6)
+crnToggle.CornerRadius = UDim.new(0, 8)
 crnToggle.Parent = toggleBtn
 
 -- Drag system
@@ -109,120 +107,171 @@ end)
 
 -- ScrollFrame
 local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, -14, 1, -40)
-scroll.Position = UDim2.new(0, 7, 0, 35)
-scroll.ScrollBarThickness = 5
+scroll.Size = UDim2.new(1, -16, 1, -50)
+scroll.Position = UDim2.new(0, 8, 0, 42)
+scroll.ScrollBarThickness = 4
+scroll.ScrollBarImageColor3 = Color3.fromRGB(140, 80, 255)
 scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
 scroll.Parent = frame
 
 local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 4)
+layout.Padding = UDim.new(0, 6)
 layout.Parent = scroll
 
-local buttonHeight = 28
-local padding = 4
-local buttonCount = 8
-scroll.CanvasSize = UDim2.new(0, 0, 0, (buttonHeight + padding) * buttonCount)
+-- Global Sound Object for playing music
+local currentSound = workspace:FindFirstChild("LuxuryGUISound") or Instance.new("Sound", workspace)
+currentSound.Name = "LuxuryGUISound"
 
--- Function to create buttons
-local function createButton(name, callback)
+-- Function to stop music
+local function stopAllMusic()
+    currentSound:Stop()
+end
+
+-- Function to play music
+local function playMusic(id, pitch)
+    currentSound:Stop()
+    currentSound.SoundId = "rbxassetid://" .. tostring(id)
+    currentSound.Pitch = pitch or 1
+    currentSound.Volume = 2
+    if not currentSound.IsLoaded then
+        currentSound.Loaded:Wait()
+    end
+    currentSound:Play()
+end
+
+-- Function to create buttons (Luxury Style)
+local function createButton(name, isStop, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -6, 0, buttonHeight)
-    btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    btn.BackgroundTransparency = 0.2
+    btn.Size = UDim2.new(1, -6, 0, 32)
+    
+    if isStop then
+        btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40) -- قرمز برای دکمه استاپ
+        btn.BackgroundTransparency = 0.3
+    else
+        btn.BackgroundColor3 = Color3.fromRGB(60, 35, 100) -- بنفش دکمه‌ها
+        btn.BackgroundTransparency = 0.5
+    end
+    
     btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(0, 0, 0)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamMedium
+    btn.TextSize = 13
     btn.BorderSizePixel = 0
     btn.Parent = scroll
 
     local crn = Instance.new("UICorner")
     crn.CornerRadius = UDim.new(0, 8)
     crn.Parent = btn
+    
+    local btnStroke = Instance.new("UIStroke")
+    btnStroke.Color = isStop and Color3.fromRGB(255,100,100) or Color3.fromRGB(140, 80, 255)
+    btnStroke.Thickness = 1
+    btnStroke.Transparency = 0.7
+    btnStroke.Parent = btn
 
+    -- Hover Animations
     btn.MouseEnter:Connect(function()
-        btn.BackgroundTransparency = 0.1
+        btn.BackgroundTransparency = isStop and 0.1 or 0.3
+        btnStroke.Transparency = 0.3
     end)
     btn.MouseLeave:Connect(function()
-        btn.BackgroundTransparency = 0.2
+        btn.BackgroundTransparency = isStop and 0.3 or 0.5
+        btnStroke.Transparency = 0.7
     end)
 
     btn.MouseButton1Click:Connect(callback)
 end
 
--- Create 18 buttons (replace scripts later)
-createButton("Audio1", function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script44'))()
+-- 1. Create STOP Button first at the top
+createButton("🛑 STOP MUSIC", true, function()
+    stopAllMusic()
 end)
 
-createButton("Audio2", function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script46'))()
-end)
+-- 2. Audio List Data
+local songs = {
+    {Name = "HR", ID = "16190782181", Pitch = 1},
+    {Name = "baby laugh", ID = "132504204562767", Pitch = 0.2},
+    {Name = "TIKI TIKI", ID = "72957306505286", Pitch = 1},
+    {Name = "stealed", ID = "70771842083730", Pitch = 1},
+    {Name = "lord theme", ID = "1839272148", Pitch = 1},
+    {Name = "Amazing", ID = "79999206651848", Pitch = 0.22},
+    {Name = "Killer Fish", ID = "7217112043", Pitch = 1},
+    {Name = "Worship", ID = "247893371", Pitch = 1},
+    {Name = "China meme", ID = "121922837560201", Pitch = 0.22},
+    {Name = "k00p Theme", ID = "1839246711", Pitch = 0.8},
+    {Name = "c00lkidd Theme", ID = "95156028272944", Pitch = 0.22},
+    {Name = "retrokidd oid Theme", ID = "104879348278763", Pitch = 0.8},
+    {Name = "الله أكبر", ID = "124956805967048", Pitch = 1},
+    {Name = "Allah is great.", ID = "85390427326662", Pitch = 0.08},
+    {Name = "wont'stop US", ID = "1847661821", Pitch = 1},
+    {Name = "spooy skeletons", ID = "122552583844805", Pitch = 0.1},
+    {Name = "AHHHHH", ID = "3152833592", Pitch = 0.8},
+    {Name = "Lnickys Theme", ID = "86412047196482", Pitch = 1},
+    {Name = "Gothic", ID = "139488665764275", Pitch = 1},
+    {Name = "Backroom", ID = "120817494107898", Pitch = 0.8},
+    {Name = "Erica(ww2Germany)", ID = "102894811708275", Pitch = 0.1},
+    {Name = "sonic.exe", ID = "133180219581309", Pitch = 0.1},
+    {Name = "re join・realm join", ID = "9069609200", Pitch = 1},
+    {Name = "CAN'T STOP RAVING", ID = "89787069440374", Pitch = 1},
+    {Name = "java 1x3x5x6 Theme", ID = "94284750410104", Pitch = 0.2},
+    {Name = "colkax Theme", ID = "71485248296105", Pitch = 1},
+    {Name = "get job!!!", ID = "112747391792663", Pitch = 1},
+    {Name = "You Are An Idiot Remix xxd'", ID = "102295928741521", Pitch = 0.14},
+    {Name = "jump style", ID = "90426128566369", Pitch = 1},
+    {Name = "USSRДля нашей родины", ID = "109261572535017", Pitch = 0.1},
+    {Name = "GETOUT!!!", ID = "17573042535", Pitch = 1},
+    {Name = "SANEEES", ID = "100093014571503", Pitch = 1},
+    {Name = "HERE I COME", ID = "78534559289195", Pitch = 1},
+    {Name = "sad song", ID = "125591252722564", Pitch = 0.1},
+    {Name = "c00kidd funk", ID = "100828050594137", Pitch = 1},
+    {Name = "Low Throat Singing 3", ID = "1845939536", Pitch = 1},
+    {Name = "d3r, m1v, asteria no escape", ID = "18841891575", Pitch = 1},
+    {Name = "[ww2]na## Germany", ID = "1845868993", Pitch = 1},
+    {Name = "jumpscare sound", ID = "6129291390", Pitch = 1},
+    {Name = "Erica funk", ID = "72796362292502", Pitch = 0.1},
+    {Name = "Squid game", ID = "1843536434", Pitch = 1},
+    {Name = "Painters Sparta", ID = "76286178156432", Pitch = 0.2},
+    {Name = "'Euro Techno'", ID = "1839246734", Pitch = 1},
+    {Name = "'wongaaa'", ID = "136201301642679", Pitch = 0.1},
+    {Name = "what mr krabs wish he had", ID = "106282004905868", Pitch = 0.1},
+    {Name = "'/...'", ID = "112226782551255", Pitch = 0.1},
+    {Name = "'f##k N###'", ID = "110587373430189", Pitch = 0.1},
+    {Name = "''Illuminati'", ID = "105355441763420", Pitch = 0.1},
+    {Name = "''bodypartz''", ID = "127653283576622", Pitch = 1}, 
+    {Name = "nowjoinWorldofkoopkidd", ID = "8894394467", Pitch = 1}, 
+    {Name = "Spain Music", ID = "77535208560062", Pitch = 1}, 
+    {Name = "loser", ID = "87617522673082", Pitch = 0.7}, 
+    {Name = "B2STheme", ID = "91475390903970", Pitch = 1}, 
+    {Name = "godisagirlnightcore", ID = "100033974889149", Pitch = 0.8}, 
+    {Name = "gangsta'sparadise", ID = "5228173823", Pitch = 1}, 
+    {Name = "'whatmrkrabswishhehad", ID = "106282004905868", Pitch = 0.1}, 
+    {Name = "jump style slow", ID = "1839246711", Pitch = 0.2}, 
+    {Name = "jump style speed up", ID = "1839246711", Pitch = 1.2}
+}
 
-createButton("Audio3", function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script47'))()
-end)
-
-createButton("Audio4", function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script58'))()
-end)
-
-createButton("Audio5", function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script59'))()
-end)
-
-createButton("Audio6", function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script60'))()
-end)
-
-createButton("Audio7", function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script62'))()
-end)
-
-createButton("Stop", function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/stopsound'))()
-end)
--- Buttons 8 to 18
-for i = 9, 1 do
-    createButton("Button"..i, function()
-        -- جای اسکریپت شما
+-- 3. Create Buttons from List
+for _, song in ipairs(songs) do
+    createButton(song.Name, false, function()
+        playMusic(song.ID, song.Pitch)
     end)
 end
 
+-- Automatic Canvas Size calculation based on total buttons
+local totalButtons = #songs + 1 -- +1 because of STOP button
+scroll.CanvasSize = UDim2.new(0, 0, 0, (32 + 6) * totalButtons + 10)
+
 -- Collapse / Expand functionality
--- Rainbow Animation
-local RunService = game:GetService("RunService")
-local hue = 0
-
-RunService.RenderStepped:Connect(function(dt)
-    hue = (hue + dt * 0.2) % 1 -- سرعت تغییر رنگ
-    local color = Color3.fromHSV(hue, 1, 1) -- 
-    
-    -- اعمال روی Frame اصلی
-    frame.BackgroundColor3 = color
-    
-    -- اعمال روی Toggle Button
-    toggleBtn.BackgroundColor3 = color
-    
-    -- اعمال روی همه دکمه‌های ScrollFrame
-    for _, btn in pairs(scroll:GetChildren()) do
-        if btn:IsA("TextButton") then
-            btn.BackgroundColor3 = color
-        end
-    end
-end)
-
 local collapsed = false
 toggleBtn.MouseButton1Click:Connect(function()
     if collapsed then
         scroll.Visible = true
-        frame.Size = UDim2.new(0, 220, 0, 300)
+        frame.Size = UDim2.new(0, 240, 0, 360)
         toggleBtn.Text = "▲"
         collapsed = false
     else
         scroll.Visible = false
-        frame.Size = UDim2.new(0, 220, 0, 40)
+        frame.Size = UDim2.new(0, 240, 0, 38)
         toggleBtn.Text = "▼"
         collapsed = true
     end
