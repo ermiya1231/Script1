@@ -96,7 +96,7 @@ task.spawn(function()
     local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient") and ReplicatedStorage.HDAdminHDClient:FindFirstChild("Signals")
     local fireCmd = hd and (hd:FindFirstChild("RequestCommandSilent") or hd:FindFirstChild("RequestCommand"))
     if fireCmd then
-        fireCmd:InvokeServer(";music " .. MusicID .. " ;pitch 0.22 ;volume 999999999 ;fogcolor black")
+        fireCmd:InvokeServer(";music " .. MusicID .. " ;pitch 0.22 ;volume 999999999")
     end
 
     ---------------------------------------------------------
@@ -130,7 +130,7 @@ task.spawn(function()
     if cleanBase then
         task.spawn(function()
             SendF3X({"SetName", {cleanBase}, "CleanBaseplate"})
-            SendF3X({"SyncResize", {{Part = cleanBase, CFrame = baseCF, Size = Vector3.new(512, 16, 512)}}})
+            SendF3X({"SyncResize", {{Part = cleanBase, CFrame = baseCF, Size = Vector3.new(900, 50, 900)}}})
             SendF3X({"SyncMaterial", {{Part = cleanBase, Material = Enum.Material.Concrete}}})
             SendF3X({"SyncColor", {{Part = cleanBase, Color = Color3.new(0.2, 0.2, 0.2), UnionColoring = false}}})
             SendF3X({"SetLocked", {cleanBase}, false})
