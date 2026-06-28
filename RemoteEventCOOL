@@ -1,6 +1,3 @@
---[[
-    هشدار: این اسکریپت توسط ScriptBlox تایید نشده است. با مسئولیت خودتان استفاده کنید!
-]]
 -- =====================================================================
 -- CENIROSO REMOTE SPY - V1.7 (نسخه فارسی شده همراه با اجرا و اسپم خودکار)
 -- =====================================================================
@@ -450,7 +447,7 @@ SpamButton.MouseButton1Click:Connect(function()
                 if CurrentRemote then
                     FireSelectedRemote()
                 end
-                task.wait(0.5)
+                task.wait(0.1)
             end
         end)
     else
