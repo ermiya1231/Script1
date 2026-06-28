@@ -2,7 +2,7 @@
     هشدار: این اسکریپت توسط ScriptBlox تایید نشده است. با مسئولیت خودتان استفاده کنید!
 ]]
 -- =====================================================================
--- CENIROSO REMOTE SPY - V1.7 (نسخه فارسی شده همراه با اجرا و اسپم خودکار + Executor داخلی)
+-- CENIROSO REMOTE SPY - V1.8 (نسخه توسعه یافته با اکزکتور پیشرفته و منوی عریض)
 -- =====================================================================
 
 if getgenv().SoroniceV1SpyLoaded then
@@ -20,10 +20,11 @@ _G.RawCode = ""
 local CurrentRemote = nil
 local CurrentArgs = {}
 local IsSpamming = false
-local IsExpanded = false -- وضعیت باز/بسته بودن تکست باکس اجرای کد
+local IsExpanded = false 
+local IsExecSpamming = false -- وضعیت اسپم اختصاصی Executor
 
 -- =====================================================================
--- ۱. ساخت رابط کاربری (UI)
+-- ۱. ساخت رابط کاربری (UI) - افزایش ارتفاع به 420
 -- =====================================================================
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -37,8 +38,8 @@ MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 37, 43)
 MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.5, -275, 0.5, -175)
-MainFrame.Size = UDim2.new(0, 560, 0, 350)
+MainFrame.Position = UDim2.new(0.5, -275, 0.5, -210)
+MainFrame.Size = UDim2.new(0, 560, 0, 420) -- ارتفاع از 350 به 420 ارتقا یافت
 MainFrame.ClipsDescendants = true
 MainFrame.Active = true
 
@@ -71,12 +72,11 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.Size = UDim2.new(0.5, 0, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "C00L Remote Spy - V1.7 (فارسی)"
+Title.Text = "C00L Remote Spy - V1.8 (پیشرفته)"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- دکمه فلش برای باز کردن بخش Executor (سمت راست دکمه خروج)
 local ExpandButton = Instance.new("TextButton")
 ExpandButton.Name = "ExpandButton"
 ExpandButton.Parent = TopBar
@@ -106,7 +106,7 @@ RemotesList.Active = true
 RemotesList.BackgroundColor3 = Color3.fromRGB(28, 30, 36)
 RemotesList.BorderSizePixel = 0
 RemotesList.Position = UDim2.new(0, 10, 0, 40)
-RemotesList.Size = UDim2.new(0, 180, 1, -50)
+RemotesList.Size = UDim2.new(0, 180, 1, -90)
 RemotesList.CanvasSize = UDim2.new(0, 0, 0, 0)
 RemotesList.ScrollBarThickness = 4
 RemotesList.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
@@ -126,7 +126,7 @@ CodeDisplay.Parent = MainFrame
 CodeDisplay.BackgroundColor3 = Color3.fromRGB(40, 42, 54)
 CodeDisplay.BorderSizePixel = 0
 CodeDisplay.Position = UDim2.new(0, 200, 0, 40)
-CodeDisplay.Size = UDim2.new(0, 350, 1, -90) -- تغییر اندازه به مقدار ثابت برای هماهنگی با Expand
+CodeDisplay.Size = UDim2.new(0, 350, 1, -130)
 CodeDisplay.Font = Enum.Font.Code
 CodeDisplay.Text = "<font color=\"#7A828B\">-- در انتظار دریافت رویدادها...\n-- اسکریپت‌ها در این قسمت با تفکیک رنگی کلمات نمایش داده می‌شوند.</font>"
 CodeDisplay.TextColor3 = Color3.fromRGB(248, 248, 242)
@@ -145,6 +145,7 @@ UIPadding.Parent = CodeDisplay
 UIPadding.PaddingTop = UDim.new(0, 10)
 UIPadding.PaddingLeft = UDim.new(0, 10)
 
+-- دکمه‌های پایینی ریموت اسپای
 local CopyButton = Instance.new("TextButton")
 CopyButton.Name = "CopyButton"
 CopyButton.Parent = MainFrame
@@ -152,7 +153,7 @@ CopyButton.BackgroundColor3 = Color3.fromRGB(45, 100, 200)
 CopyButton.Position = UDim2.new(0, 200, 1, -40)
 CopyButton.Size = UDim2.new(0, 80, 0, 30)
 CopyButton.Font = Enum.Font.GothamBold
-CopyButton.Text = "کپی کد"
+CopyButton.Text = "Copy"
 CopyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CopyButton.TextSize = 13
 
@@ -167,7 +168,7 @@ ExecuteButton.BackgroundColor3 = Color3.fromRGB(46, 139, 87)
 ExecuteButton.Position = UDim2.new(0, 285, 1, -40)
 ExecuteButton.Size = UDim2.new(0, 80, 0, 30)
 ExecuteButton.Font = Enum.Font.GothamBold
-ExecuteButton.Text = "اجرا"
+ExecuteButton.Text = "Execute"
 ExecuteButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ExecuteButton.TextSize = 13
 
@@ -182,7 +183,7 @@ SpamButton.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
 SpamButton.Position = UDim2.new(0, 370, 1, -40)
 SpamButton.Size = UDim2.new(0, 90, 0, 30)
 SpamButton.Font = Enum.Font.GothamBold
-SpamButton.Text = "اسپم: خاموش"
+SpamButton.Text = "Spam = OFF"
 SpamButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpamButton.TextSize = 13
 
@@ -197,7 +198,7 @@ ClearButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
 ClearButton.Position = UDim2.new(0, 465, 1, -40)
 ClearButton.Size = UDim2.new(0, 85, 0, 30)
 ClearButton.Font = Enum.Font.GothamBold
-ClearButton.Text = "پاکسازی لیست"
+ClearButton.Text = "Clear"
 ClearButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ClearButton.TextSize = 11
 
@@ -206,7 +207,7 @@ ClearCorner.CornerRadius = UDim.new(0, 6)
 ClearCorner.Parent = ClearButton
 
 -- =====================================================================
--- ساخت بخش جدید Executor (پنل سمت راست)
+-- بخش جدید Executor پیشرفته (پنل سمت راست با کنترل کامل متون)
 -- =====================================================================
 
 local ExecTextBox = Instance.new("TextBox")
@@ -215,7 +216,7 @@ ExecTextBox.Parent = MainFrame
 ExecTextBox.BackgroundColor3 = Color3.fromRGB(40, 42, 54)
 ExecTextBox.BorderSizePixel = 0
 ExecTextBox.Position = UDim2.new(0, 565, 0, 40)
-ExecTextBox.Size = UDim2.new(0, 250, 1, -90)
+ExecTextBox.Size = UDim2.new(0, 260, 1, -130)
 ExecTextBox.Font = Enum.Font.Code
 ExecTextBox.Text = ""
 ExecTextBox.PlaceholderText = "-- اسکریپت خود را اینجا بنویسید..."
@@ -226,6 +227,7 @@ ExecTextBox.TextXAlignment = Enum.TextXAlignment.Left
 ExecTextBox.TextYAlignment = Enum.TextYAlignment.Top
 ExecTextBox.ClearTextOnFocus = false
 ExecTextBox.MultiLine = true
+ExecTextBox.TextWrapped = true -- جلوگیری از خروج متن از کادر کانتینر
 
 local ExecTextCorner = Instance.new("UICorner")
 ExecTextCorner.CornerRadius = UDim.new(0, 6)
@@ -236,25 +238,74 @@ ExecPadding.Parent = ExecTextBox
 ExecPadding.PaddingTop = UDim.new(0, 10)
 ExecPadding.PaddingLeft = UDim.new(0, 10)
 
+-- دکمه اصلی اجرای کد در Executor
 local CustomExecButton = Instance.new("TextButton")
 CustomExecButton.Name = "CustomExecButton"
 CustomExecButton.Parent = MainFrame
 CustomExecButton.BackgroundColor3 = Color3.fromRGB(150, 70, 200)
 CustomExecButton.Position = UDim2.new(0, 565, 1, -40)
-CustomExecButton.Size = UDim2.new(0, 250, 0, 30)
+CustomExecButton.Size = UDim2.new(0, 80, 0, 30)
 CustomExecButton.Font = Enum.Font.GothamBold
-CustomExecButton.Text = "Execute (اجرای متن)"
+CustomExecButton.Text = "Execute"
 CustomExecButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CustomExecButton.TextSize = 13
+CustomExecButton.TextSize = 12
 
 local CustomExecCorner = Instance.new("UICorner")
 CustomExecCorner.CornerRadius = UDim.new(0, 6)
 CustomExecCorner.Parent = CustomExecButton
 
--- منطق انیمیشن دکمه Expand
+-- دکمه کپی متن داخل Executor
+local ExecCopyButton = Instance.new("TextButton")
+ExecCopyButton.Name = "ExecCopyButton"
+ExecCopyButton.Parent = MainFrame
+ExecCopyButton.BackgroundColor3 = Color3.fromRGB(45, 100, 200)
+ExecCopyButton.Position = UDim2.new(0, 650, 1, -40)
+ExecCopyButton.Size = UDim2.new(0, 55, 0, 30)
+ExecCopyButton.Font = Enum.Font.GothamBold
+ExecCopyButton.Text = "Copy"
+ExecCopyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecCopyButton.TextSize = 12
+
+local ExecCopyCorner = Instance.new("UICorner")
+ExecCopyCorner.CornerRadius = UDim.new(0, 6)
+ExecCopyCorner.Parent = ExecCopyButton
+
+-- دکمه پاکسازی متن داخل Executor
+local ExecClearButton = Instance.new("TextButton")
+ExecClearButton.Name = "ExecClearButton"
+ExecClearButton.Parent = MainFrame
+ExecClearButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+ExecClearButton.Position = UDim2.new(0, 710, 1, -40)
+ExecClearButton.Size = UDim2.new(0, 55, 0, 30)
+ExecClearButton.Font = Enum.Font.GothamBold
+ExecClearButton.Text = "Clear"
+ExecClearButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecClearButton.TextSize = 12
+
+local ExecClearCorner = Instance.new("UICorner")
+ExecClearCorner.CornerRadius = UDim.new(0, 6)
+ExecClearCorner.Parent = ExecClearButton
+
+-- دکمه اسپم اختصاصی کدهای درون Executor
+local ExecSpamButton = Instance.new("TextButton")
+ExecSpamButton.Name = "ExecSpamButton"
+ExecSpamButton.Parent = MainFrame
+ExecSpamButton.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+ExecSpamButton.Position = UDim2.new(0, 770, 1, -40)
+ExecSpamButton.Size = UDim2.new(0, 55, 0, 30)
+ExecSpamButton.Font = Enum.Font.GothamBold
+ExecSpamButton.Text = "SPAM"
+ExecSpamButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecSpamButton.TextSize = 12
+
+local ExecSpamCorner = Instance.new("UICorner")
+ExecSpamCorner.CornerRadius = UDim.new(0, 6)
+ExecSpamCorner.Parent = ExecSpamButton
+
+-- منطق انیمیشن دکمه Expand (تغییر طول نهایی به 835)
 ExpandButton.MouseButton1Click:Connect(function()
     IsExpanded = not IsExpanded
-    local targetSize = IsExpanded and UDim2.new(0, 825, 0, 350) or UDim2.new(0, 560, 0, 350)
+    local targetSize = IsExpanded and UDim2.new(0, 835, 0, 420) or UDim2.new(0, 560, 0, 420)
     ExpandButton.Text = IsExpanded and "<" or ">"
     
     TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -262,8 +313,8 @@ ExpandButton.MouseButton1Click:Connect(function()
     }):Play()
 end)
 
--- اجرای کدهای نوشته شده در Executor اختصاصی
-CustomExecButton.MouseButton1Click:Connect(function()
+-- تابع کمکی اجرای امن کدهای درون تکست باکس Executor
+local function ExecuteCustomCode()
     local codeToRun = ExecTextBox.Text
     if codeToRun and codeToRun ~= "" then
         local success, err = pcall(function()
@@ -272,7 +323,7 @@ CustomExecButton.MouseButton1Click:Connect(function()
                 if func then
                     task.spawn(func)
                 else
-                    warn("خطا در کامپایل اسکریپت!")
+                    warn("خطا در کامپایل اسکریپت اکزکتور!")
                 end
             else
                 warn("اجراکننده شما از قابلیت loadstring پشتیبانی نمی‌کند.")
@@ -281,8 +332,41 @@ CustomExecButton.MouseButton1Click:Connect(function()
         if not success then
             warn("خطا در اجرا: " .. tostring(err))
         end
+    end
+end
+
+CustomExecButton.MouseButton1Click:Connect(ExecuteCustomCode)
+
+-- عملکرد دکمه کپی تکست باکس Executor
+ExecCopyButton.MouseButton1Click:Connect(function()
+    if setclipboard and ExecTextBox.Text ~= "" then
+        setclipboard(ExecTextBox.Text)
+        ExecCopyButton.Text = "کپی شد"
+        task.wait(1)
+        ExecCopyButton.Text = "کپی"
+    end
+end)
+
+-- عملکرد دکمه پاکسازی متن Executor
+ExecClearButton.MouseButton1Click:Connect(function()
+    ExecTextBox.Text = ""
+end)
+
+-- عملکرد دکمه اسپم کد در Executor
+ExecSpamButton.MouseButton1Click:Connect(function()
+    IsExecSpamming = not IsExecSpamming
+    if IsExecSpamming then
+        ExecSpamButton.Text = "Pause"
+        ExecSpamButton.BackgroundColor3 = Color3.fromRGB(200, 130, 40)
+        task.spawn(function()
+            while IsExecSpamming do
+                ExecuteCustomCode()
+                task.wait(0.5) -- فاصله زمانی نیم ثانیه‌ای بین هر بار اجرا
+            end
+        end)
     else
-        warn("لطفاً ابتدا کدی را در باکس بنویسید!")
+        ExecSpamButton.Text = "SPAM"
+        ExecSpamButton.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
     end
 end)
 
@@ -321,6 +405,7 @@ end)
 
 CloseButton.MouseButton1Click:Connect(function()
     IsSpamming = false
+    IsExecSpamming = false
     ScreenGui:Destroy()
 end)
 
@@ -537,7 +622,7 @@ SpamButton.MouseButton1Click:Connect(function()
     IsSpamming = not IsSpamming
     
     if IsSpamming then
-        SpamButton.Text = "اسپم: روشن"
+        SpamButton.Text = "SPAM = ON"
         SpamButton.BackgroundColor3 = Color3.fromRGB(200, 130, 40)
         
         task.spawn(function()
@@ -549,7 +634,7 @@ SpamButton.MouseButton1Click:Connect(function()
             end
         end)
     else
-        SpamButton.Text = "اسپم: خاموش"
+        SpamButton.Text = "SPAM = OFF"
         SpamButton.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
     end
 end)
@@ -563,4 +648,4 @@ ClearButton.MouseButton1Click:Connect(function()
     RemotesList.CanvasSize = UDim2.new(0, 0, 0, 0)
 end)
 
-print("اسکریپت پس ریموت ورژن ۱.۷ فارسی (همراه با Executor داخلی) با موفقیت بارگذاری شد.")
+print("اسکریپت پس ریموت ورژن ۱.۸ فارسی با موفقیت بارگذاری شد.")
