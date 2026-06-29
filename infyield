@@ -13415,10 +13415,8 @@ local function toggleRobloxMenu()
             end
         end
 
-        -- اگر روی موبایل بود و ساختار بالا پیدا نشد، به صورت مستقیم و بدون ارور منو رو باز و بسته میکنه
         if not foundOverlay then
             GuiService:SetMenuIsOpen(true)
-            task.wait(0.05) -- یک تاخیر بسیار کم برای پردازش روی موبایل
             GuiService:SetMenuIsOpen(false)
         end
     end)
@@ -14043,9 +14041,6 @@ local function injectButtons(originalBtn)
 end
 
 local function getActions(foundation)
-    if not foundation then return nil end
-    
-    -- تلاش برای پیدا کردن مسیر دسکتاپ
     local actions = foundation:FindFirstChild("SafeAreaFrame")
     actions = actions and actions:FindFirstChild("OverlayPortal")
     actions = actions and actions:FindFirstChild("SheetContainer")
@@ -14053,17 +14048,7 @@ local function getActions(foundation)
     actions = actions and actions:FindFirstChild("Sheet")
     actions = actions and actions:FindFirstChild("Content")
     actions = actions and actions:FindFirstChild("Actions")
-    
-    if actions then return actions end
-    
-    -- اگر مسیر بالا پیدا نشد (حالت موبایل)، به صورت عمقی دنبال Actions یا دکمه‌های خرید می‌گردد
-    local mobileActions = foundation:FindFirstChild("Actions", true)
-    if mobileActions then
-        return mobileActions
-    end
-    
-    -- Fallback نهایی برای سیستم‌های جدیدتر موبایل روبلاکس
-    return foundation:FindFirstChild("ButtonContainer", true) or foundation:FindFirstChild("Footer", true)
+    return actions or foundation:FindFirstChild("Actions", true)
 end
 
 local function scanActions(actionsFolder)
