@@ -1,0 +1,251 @@
+local MyTargetID = "122714132204276" -- آیدی دکال خود را اینجا قرار دهید
+
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local tool
+
+-- جستجو برای پیدا کردن ابزار F3X
+for i, v in player:GetDescendants() do
+	if v.Name == "SyncAPI" then
+		tool = v.Parent
+	end
+end
+
+for i, v in game.ReplicatedStorage:GetDescendants() do
+	if v.Name == "SyncAPI" then
+		tool = v.Parent
+	end
+end
+
+-- جلوگیری از ارور در صورت پیدا نشدن تول
+if not tool or not tool:FindFirstChild("SyncAPI") then
+	warn("ابزار F3X پیدا نشد!")
+	return
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+function _(args)
+	remote:InvokeServer(unpack(args))
+end
+
+function SetCollision(part, boolean)
+	local args = {
+		[1] = "SyncCollision",
+		[2] = {
+			[1] = {
+				["Part"] = part,
+				["CanCollide"] = boolean
+			}
+		}
+	}
+	_(args)
+end
+
+function SetAnchor(boolean, part)
+	local args = {
+		[1] = "SyncAnchor",
+		[2] = {
+			[1] = {
+				["Part"] = part,
+				["Anchored"] = boolean
+			}
+		}
+	}
+	_(args)
+end
+
+function CreatePart(cf, parent)
+	local args = {
+		[1] = "CreatePart",
+		[2] = "Normal",
+		[3] = cf,
+		[4] = parent
+	}
+	_(args)
+end
+
+function Resize(part, size, cf)
+	local args = {
+		[1] = "SyncResize",
+		[2] = {
+			[1] = {
+				["Part"] = part,
+				["CFrame"] = cf,
+				["Size"] = size
+			}
+		}
+	}
+	_(args)
+end
+
+function AddMesh(part)
+	local args = {
+		[1] = "CreateMeshes",
+		[2] = {
+			[1] = {
+				["Part"] = part
+			}
+		}
+	}
+	_(args)
+end
+
+function SetMesh(part, meshid)
+	local args = {
+		[1] = "SyncMesh",
+		[2] = {
+			[1] = {
+				["Part"] = part,
+				["MeshId"] = "rbxassetid://" .. meshid
+			}
+		}
+	}
+	_(args)
+end
+
+local function delete(part)
+	local args = {
+		[1] = "Remove",
+		[2] = {
+			[1] = part
+		}
+	}
+	remote:InvokeServer(unpack(args))
+end
+
+function SetTexture(part, texid)
+	local args = {
+		[1] = "SyncMesh",
+		[2] = {
+			[1] = {
+				["Part"] = part,
+				["TextureId"] = "rbxassetid://" .. texid
+			}
+		}
+	}
+	_(args)
+end
+
+function SetTrans(part, int)
+	local args = {
+		[1] = "SyncMaterial",
+		[2] = {
+			[1] = {
+				["Part"] = part,
+				["Transparency"] = int
+			}
+		}
+	}
+	_(args)
+end
+
+function MeshResize(part, size)
+	local args = {
+		[1] = "SyncMesh",
+		[2] = {
+			[1] = {
+				["Part"] = part,
+				["Scale"] = size
+			}
+		}
+	}
+	_(args)
+end
+
+function SpawnDecal(part, side)
+	local args = {
+		[1] = "CreateTextures",
+		[2] = {
+			[1] = {
+				["Part"] = part,
+				["Face"] = side,
+				["TextureType"] = "Decal"
+			}
+		}
+	}
+	_(args)
+end
+
+function AddDecal(part, asset, side)
+	local args = {
+		[1] = "SyncTexture",
+		[2] = {
+			[1] = {
+				["Part"] = part,
+				["Face"] = side,
+				["TextureType"] = "Decal",
+				["Texture"] = "rbxassetid://".. asset
+			}
+		}
+	}
+	_(args)
+end
+
+function SetName(part, stringg)
+	local args = {
+		[1] = "SetName",
+		[2] = {
+			[1] = part -- اصلاح شد: قبلا workspace.Part بود
+		},
+		[3] = stringg
+	}
+	_(args)
+end
+
+local function particle()
+	while true do
+		wait(0.1)
+		if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+			local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+			if not hrp then continue end
+
+			local x = hrp.Position.X + math.random(-60, 60)
+			local z = hrp.Position.Z + math.random(-60, 60)
+			local y = hrp.Position.Y - 50 
+
+			local spawnPosition = CFrame.new(x, y, z)
+
+			spawn(function()
+				CreatePart(spawnPosition, workspace)
+
+				wait(0.1)
+
+				for _, v in workspace:GetChildren() do
+					if v:IsA("Part") and (v.Position - Vector3.new(x, y, z)).Magnitude < 1 then
+						local part = v
+
+						SetName(part, "czer")
+						Resize(part, Vector3.new(6, 6, 0.001), part.CFrame)
+						SetCollision(part, false)
+						SetTrans(part, 1)
+						SetAnchor(true, part)
+						part.Orientation = Vector3.new(0, 0, 0)
+
+						SpawnDecal(part, Enum.NormalId.Front)
+						AddDecal(part, MyTargetID, Enum.NormalId.Front)
+
+						SpawnDecal(part, Enum.NormalId.Back)
+						AddDecal(part, MyTargetID, Enum.NormalId.Back)
+
+						local up = 90
+						for i = 2, up do
+							if part and part.Parent then
+								local newCF = part.CFrame + Vector3.new(0, 2, 0)
+								Resize(part, part.Size, newCF)
+								wait(0.03)
+							end
+						end
+
+						delete(part)
+						break
+					end
+				end
+			end)
+		else
+			wait(1)
+		end
+	end
+end
+
+coroutine.wrap(particle)()
