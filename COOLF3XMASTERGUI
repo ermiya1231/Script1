@@ -1,5 +1,5 @@
 -- COOL F3X MENU - Premium Edition v1.6 (Official GitHub Rejoin Link Integrated)
-print("================ [COOL F3X MENU LOAD] ================")
+print("================ [COOL F3X GIGA MENU LOAD] ================")
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
