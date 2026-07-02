@@ -1,3 +1,5 @@
+-- Why You See my Script? Skid
+print("loading...")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
