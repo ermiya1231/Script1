@@ -1,0 +1,342 @@
+-- کامند های دستی
+-- CanCollide: False
+-- SpawnPoint: True
+-- Decal.Top,Right... = ID
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Player = Players.LocalPlayer
+
+-- متغیرهای سراسری برای سیستم هوشمند اسپاون‌پوینت
+local OriginalSpawnPoint = nil
+local TargetSpawnCFrame = nil
+local TargetSpawnSize = nil
+
+-- پیدا کردن هوشمند ابزار F3X
+local tool
+for _, v in ipairs(Player:GetDescendants()) do if v.Name == "SyncAPI" then tool = v.Parent break end end
+if not tool then for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do if v.Name == "SyncAPI" then tool = v.Parent break end end end
+if not tool or not tool:FindFirstChild("SyncAPI") then warn("F3X Tool not found!") return end
+
+local remote = tool.SyncAPI.ServerEndpoint
+local function SendF3X(args) return remote:InvokeServer(unpack(args)) end
+
+tool.Parent = ReplicatedStorage
+---------------------------------------------------------
+-- [کدهای خام خود را در کادر زیر کپی کن] ------------------
+---------------------------------------------------------
+local RawData = [[
+
+]]
+---------------------------------------------------------
+
+local function RescueOriginalSpawn()
+    print("مرحله ۰: ردیابی و مخفی‌سازی اسپاون‌پوینت اصلی...")
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if v:IsA("SpawnLocation") then
+            OriginalSpawnPoint = v
+            break
+        end
+    end
+    
+    if OriginalSpawnPoint then
+        print("اسپاون‌پوینت پیدا شد! در حال انتقال به مکان امن...")
+        local safeCFrame = CFrame.new(0, -50000, 0)
+        SendF3X({"SyncResize", {{Part = OriginalSpawnPoint, CFrame = safeCFrame, Size = OriginalSpawnPoint.Size}}})
+        
+        -- پیدا کردن و حذف لوگوی روی اسپاون‌پوینت اصلی
+        local decalsToRemove = {}
+        for _, child in ipairs(OriginalSpawnPoint:GetDescendants()) do
+            if child:IsA("Decal") or child:IsA("Texture") then
+                table.insert(decalsToRemove, child)
+            end
+        end
+        if #decalsToRemove > 0 then
+            print("در حال حذف لوگوهای پیش‌فرض اسپاون‌پوینت...")
+            SendF3X({"Remove", decalsToRemove})
+        end
+        
+        task.wait(0.2)
+    else
+        warn("هیچ SpawnLocation پیش‌فرضی در مپ یافت نشد!")
+    end
+end
+
+-- ۱. اولویت اول: فریز کردن شما و حذف فیزیکی بقیه بازیکنان
+local function RemoveAllPlayers()
+    print("مرحله ۱: فریز کردن شما و حذف فیزیکی بقیه بازیکنان...")
+    if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+        Player.Character.HumanoidRootPart.Anchored = true
+    end
+    
+    local playerParts = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= Player then 
+            if p.Character then
+                for _, child in ipairs(p.Character:GetDescendants()) do
+                    if child:IsA("BasePart") then
+                        table.insert(playerParts, child)
+                    end
+                end
+            end
+        end
+    end
+    
+    if #playerParts > 0 then
+        SendF3X({"SetLocked", playerParts, false})
+        SendF3X({"Remove", playerParts})
+        task.wait(0.5)
+    end
+end
+
+-- ۲. اولویت دوم: پاکسازی کامل مپ قبلی (با فیلتر اسپاون‌پوینت اصلی)
+local function ClearRemainingMap()
+    print("مرحله ۲: پاکسازی کامل محیط ورک‌پیس...")
+    local mapParts = {}
+    
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if (v:IsA("BasePart") or v:IsA("UnionOperation")) and v.Name ~= "Terrain" then
+            if not v:IsDescendantOf(Player.Character) and v ~= OriginalSpawnPoint then
+                table.insert(mapParts, v)
+            end
+        end
+    end
+    
+    if #mapParts > 0 then
+        SendF3X({"SetLocked", mapParts, false})
+        SendF3X({"Remove", mapParts})
+        
+        local timeout = 0
+        while mapParts[1] and mapParts[1].Parent ~= nil and timeout < 40 do
+            task.wait(0.1)
+            timeout = timeout + 1
+        end
+    end
+    task.wait(0.3)
+end
+
+-- ۳. اولویت سوم: لود مپ جدید
+local function BuildAndVerifyMap(data)
+    print("مرحله ۳: آنالیز مپ جدید و آماده‌سازی بسته‌های اطلاعاتی...")
+    local partsToBuild = {}
+    TargetSpawnCFrame = nil
+    TargetSpawnSize = nil
+    
+    local cleanData = data:gsub("Part %d+:", "|||")
+    for partBlock in cleanData:gmatch("([^|]+)") do
+        local x, y, z = partBlock:match("Position:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+        local rx, ry, rz = partBlock:match("Rotation:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+        local shape = partBlock:match("Shape:%s*([%a%d]+)")
+        local sx, sy, sz = partBlock:match("Size:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+        local r, g, b = partBlock:match("Color:%s*([^,]+),%s*([^,]+),%s*([^%s\r\n]+)")
+        local mat = partBlock:match("Material:%s*([%a%d]+)")
+        local trans = partBlock:match("Transparency:%s*([%d%.]+)")
+        local decalFace, decalId = partBlock:match("Decal%.(%a+)%s*=%s*(%d+)")
+        local meshId = partBlock:match("MeshId:%s*(%S+)")
+        local textureId = partBlock:match("TextureId:%s*(%S+)")
+        
+        local isSpawnPoint = partBlock:match("SpawnPoint:%s*[Tt]rue") and true or false
+        local canCollideStr = partBlock:match("CanCollide:%s*([%a%d]+)")
+        local canCollide = true
+        if canCollideStr and canCollideStr:lower() == "false" then
+            canCollide = false
+        end
+        
+        local f3xShape = "Normal"
+        if shape == "Cylinder" then f3xShape = "Cylinder"
+        elseif shape == "Ball" or shape == "Sphere" then f3xShape = "Ball"
+        elseif shape == "Wedge" then f3xShape = "Wedge" end
+        
+        if x and sx then
+            table.insert(partsToBuild, {
+                pos = Vector3.new(tonumber(x), tonumber(y), tonumber(z)),
+                rot = rx and Vector3.new(tonumber(rx), tonumber(ry), tonumber(rz)) or Vector3.new(0, 0, 0),
+                shape = f3xShape,
+                size = Vector3.new(tonumber(sx), tonumber(sy), tonumber(sz)),
+                color = r and Color3.new(tonumber(r), tonumber(g), tonumber(b)) or Color3.new(1, 1, 1),
+                material = mat or "Plastic",
+                transparency = trans and tonumber(trans) or 0,
+                decalFace = decalFace,
+                decalId = decalId,
+                meshId = meshId,
+                textureId = textureId,
+                isSpawn = isSpawnPoint,
+                collision = canCollide
+            })
+        end
+    end
+    
+    local totalParts = #partsToBuild
+    if totalParts == 0 then warn("خطا: هیچ پارتی شناسایی نشد!") return end
+    
+    local batches = {
+        resize = {}, color = {}, material = {}, anchor = {}, collision = {},
+        meshCreate = {}, meshSync = {}, decalCreate = {}, decalSync = {}
+    }
+    
+    local activeThreads = 0
+    
+    for i, pData in ipairs(partsToBuild) do
+        activeThreads = activeThreads + 1
+        task.spawn(function()
+            local baseCFrame = CFrame.new(pData.pos) * CFrame.fromOrientation(math.rad(pData.rot.X), math.rad(pData.rot.Y), math.rad(pData.rot.Z))
+            
+            if pData.isSpawn then
+                TargetSpawnCFrame = baseCFrame
+                TargetSpawnSize = pData.size
+            end
+            
+            local p = SendF3X({"CreatePart", pData.shape, baseCFrame, workspace})
+            
+            if p then
+                table.insert(batches.resize, {Part = p, CFrame = baseCFrame, Size = pData.size})
+                table.insert(batches.color, {Part = p, Color = pData.color, UnionColoring = false})
+                table.insert(batches.anchor, {Part = p, Anchored = true})
+                table.insert(batches.collision, {Part = p, CanCollide = pData.collision})
+                
+                -- [بروزرسانی مهم بر اساس کد شما]: ادغام Material و Transparency در یک درخواست
+                local matInfo = {Part = p, Transparency = pData.transparency}
+                local matSuccess, matEnum = pcall(function() return Enum.Material[pData.material] end)
+                if matSuccess and matEnum then
+                    matInfo.Material = matEnum
+                end
+                table.insert(batches.material, matInfo)
+                
+                if pData.meshId then
+                    local numMeshId = pData.meshId:match("%d+")
+                    local numTexId = pData.textureId and pData.textureId:match("%d+")
+                    local cleanMeshId = numMeshId and ("rbxassetid://" .. numMeshId) or pData.meshId
+                    local cleanTextureId = numTexId and ("rbxassetid://" .. numTexId) or ""
+                    table.insert(batches.meshCreate, {Part = p, MeshType = Enum.MeshType.FileMesh})
+                    table.insert(batches.meshSync, {Part = p, MeshId = cleanMeshId, TextureId = cleanTextureId, Scale = Vector3.new(1, 1, 1), Offset = Vector3.new(0, 0, 0)})
+                end
+                
+                if pData.decalFace and pData.decalId then
+                    local formattedFace = pData.decalFace:sub(1,1):upper() .. pData.decalFace:sub(2):lower()
+                    local success, faceEnum = pcall(function() return Enum.NormalId[formattedFace] end)
+                    if success and faceEnum then
+                        table.insert(batches.decalCreate, {Part = p, Face = faceEnum, TextureType = "Decal"})
+                        table.insert(batches.decalSync, {Part = p, Face = faceEnum, TextureType = "Decal", Texture = "rbxassetid://" .. pData.decalId})
+                    end
+                end
+            end
+            activeThreads = activeThreads - 1
+        end)
+        
+        if i % 10 == 0 then task.wait() end
+    end
+    
+    while activeThreads > 0 do task.wait(0.05) end
+    
+    if #batches.resize > 0 then SendF3X({"SyncResize", batches.resize}) end
+    if #batches.color > 0 then SendF3X({"SyncColor", batches.color}) end
+    -- ارسال گروهی Material و Transparency با متد صحیح
+    if #batches.material > 0 then SendF3X({"SyncMaterial", batches.material}) end
+    if #batches.anchor > 0 then SendF3X({"SyncAnchor", batches.anchor}) end
+    if #batches.collision > 0 then SendF3X({"SyncCollision", batches.collision}) end
+    if #batches.meshCreate > 0 then SendF3X({"CreateMeshes", batches.meshCreate}) SendF3X({"SyncMesh", batches.meshSync}) end
+    if #batches.decalCreate > 0 then SendF3X({"CreateTextures", batches.decalCreate}) SendF3X({"SyncTexture", batches.decalSync}) end
+    
+    print("مپ کاملا لود شد!")
+    task.wait(1)
+end
+
+-- مرحله ۳.۵: همگام‌سازی نهایی اسپاون‌پوینت دزدیده‌شده
+local function SetupNewSpawn()
+    if OriginalSpawnPoint and TargetSpawnCFrame and TargetSpawnSize then
+        print("در حال فیکس کردن نهایی اسپاون‌پوینت نامرئی روی مپ...")
+        
+        SendF3X({"SyncResize", {{
+            Part = OriginalSpawnPoint, 
+            CFrame = TargetSpawnCFrame, 
+            Size = TargetSpawnSize
+        }}})
+        
+        -- [بروزرسانی]: استفاده از متد SyncMaterial برای ۱۰۰٪ نامرئی کردن اسپاون اصلی
+        SendF3X({"SyncMaterial", {{
+            Part = OriginalSpawnPoint, 
+            Transparency = 1
+        }}})
+        
+        -- اطمینان از اینکه بازیکن‌ها در اسپاون گیر نکنند
+        SendF3X({"SyncCollision", {{
+            Part = OriginalSpawnPoint,
+            CanCollide = false
+        }}})
+        
+        task.wait(0.3)
+        print("اسپاون‌پوینت با موفقیت ۱۰۰٪ نامرئی و فعال شد!")
+    else
+        warn("تنظیم اسپاون‌پوینت نامرئی ناموفق بود.")
+    end
+end
+
+---------------------------------------------------------
+-- تنظیم لیست دستورات دلخواه برای چت و HD Admin
+---------------------------------------------------------
+local CustomCommands = {
+    ";music 85390427326662",
+    ";pitch 0.132", 
+    ";volume 999",
+    ";kill all"
+}
+
+-- ۴. اولویت آخر: آنفریز کردن شما، اجرای لیست دستورات و ری‌اسپاون
+local function FinalRespawn(commandsList)
+    print("مرحله نهایی: آنفریز کردن شما و ارسال دستورات...")
+    if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+        Player.Character.HumanoidRootPart.Anchored = false
+    end
+    
+    local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient")
+    local legacyChat = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+    local textChatService = game:GetService("TextChatService")
+    
+    if commandsList and #commandsList > 0 then
+        for _, cmd in ipairs(commandsList) do
+            if cmd and cmd ~= "" then
+                if hd and hd:FindFirstChild("Signals") then
+                    local fireCmd = hd.Signals:FindFirstChild("RequestCommandSilent") or hd.Signals:FindFirstChild("RequestCommand")
+                    if fireCmd then fireCmd:InvokeServer(cmd) end
+                end
+                
+                pcall(function()
+                    if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then
+                        legacyChat.SayMessageRequest:FireServer(cmd, "All")
+                    else
+                        textChatService.TextChannels.RBXGeneral:SendAsync(cmd)
+                    end
+                end)
+                task.wait(0.2)
+            end
+        end
+    end
+    
+    if hd and hd:FindFirstChild("Signals") then
+        local fireCmd = hd.Signals:FindFirstChild("RequestCommandSilent") or hd.Signals:FindFirstChild("RequestCommand")
+        if fireCmd then fireCmd:InvokeServer(";kill all") end
+    end
+    
+    pcall(function()
+        if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then
+            legacyChat.SayMessageRequest:FireServer(";kill all", "All")
+        else
+            textChatService.TextChannels.RBXGeneral:SendAsync(";kill all")
+        end
+    end)
+    
+    tool.Parent = Player:FindFirstChild("Backpack") or ReplicatedStorage
+    print("تمام! مپ لود شد، سیستم نامرئی‌سازی با فرمت جدید روی پارت‌ها و اسپاون‌پوینت اعمال شد.")
+end
+
+---------------------------------------------------------
+-- شروع عملیات زنجیره‌ای
+---------------------------------------------------------
+task.spawn(function()
+    RescueOriginalSpawn()     
+    RemoveAllPlayers()        
+    ClearRemainingMap()       
+    BuildAndVerifyMap(RawData)
+    SetupNewSpawn()           
+    FinalRespawn(CustomCommands) 
+end)
