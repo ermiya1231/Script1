@@ -45,13 +45,14 @@ Part 2:
  Transparency: 0.50
 
 Part 3:
- Position: (73.50, 11.00, -193.50)
+ Position: (-51.00, 11.00, -448.50)
  Rotation: (0.00, 0.00, 0.00)
  Shape: Block
  Size: (2047.00, 20.00, 2047.00)
  Color: 0.0509804, 0.411765, 0.67451
  Material: Sand
  Transparency: 0.00
+ CanCollide: False
 
 Part 4:
  Position: (-131.81, 183.50, 209.19)
@@ -5425,6 +5426,4348 @@ Part 600:
  Color: 0.854902, 0.521569, 0.254902
  Material: Plastic
  Transparency: 0.00
+
+ Part 601:
+ Position: (107.03, 61.00, -200.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 602:
+ Position: (107.03, 61.00, -184.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 603:
+ Position: (103.53, 52.40, -176.03)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 16.00, 16.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 604:
+ Position: (190.53, 71.90, -215.03)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 13.00, 10.00)
+ Color: 0.854902, 0.521569, 0.254902
+ Material: Plastic
+ Transparency: 0.00
+
+Part 605:
+ Position: (73.03, 44.60, -136.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 606:
+ Position: (73.03, 44.60, -156.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 607:
+ Position: (73.03, 44.60, -176.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 608:
+ Position: (87.07, 47.34, -80.03)
+ Rotation: (-0.00, 0.00, -116.56)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 609:
+ Position: (87.52, 48.23, -80.03)
+ Rotation: (-0.00, 0.00, -116.56)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 610:
+ Position: (87.96, 49.13, -80.03)
+ Rotation: (-0.00, 0.00, -116.56)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 611:
+ Position: (86.80, 46.80, -80.03)
+ Rotation: (-26.57, -90.00, 180.00)
+ Shape: Wedge
+ Size: (4.00, 0.20, 0.40)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 612:
+ Position: (86.53, 46.60, -80.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 613:
+ Position: (84.53, 46.60, -80.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 614:
+ Position: (85.53, 46.60, -80.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Seat
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 615:
+ Position: (86.53, 45.60, -81.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 616:
+ Position: (86.53, 45.60, -78.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 617:
+ Position: (82.53, 46.60, -80.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 618:
+ Position: (83.53, 46.60, -80.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 619:
+ Position: (81.53, 46.60, -80.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 620:
+ Position: (80.53, 46.60, -80.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 621:
+ Position: (80.53, 45.60, -81.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 622:
+ Position: (80.53, 45.60, -78.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 623:
+ Position: (73.03, 44.60, -196.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 624:
+ Position: (93.03, 44.60, -60.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 625:
+ Position: (57.03, 45.00, -171.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 626:
+ Position: (55.03, 45.00, -171.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.419608, 0.196078, 0.486275
+ Material: Plastic
+ Transparency: 0.00
+
+Part 627:
+ Position: (53.03, 45.00, -171.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 628:
+ Position: (51.03, 45.00, -171.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.419608, 0.196078, 0.486275
+ Material: Plastic
+ Transparency: 0.00
+
+Part 629:
+ Position: (49.03, 45.00, -171.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 630:
+ Position: (141.53, 67.90, -225.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (8.00, 1.00, 1.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 631:
+ Position: (151.53, 66.90, -229.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.00, 1.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 632:
+ Position: (146.53, 67.90, -229.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (9.00, 1.00, 1.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 633:
+ Position: (88.07, 47.34, -71.03)
+ Rotation: (-0.00, 0.00, -116.56)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 634:
+ Position: (88.52, 48.23, -71.03)
+ Rotation: (-0.00, 0.00, -116.56)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 635:
+ Position: (88.96, 49.13, -71.03)
+ Rotation: (-0.00, 0.00, -116.56)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 636:
+ Position: (87.80, 46.80, -71.03)
+ Rotation: (-26.57, -90.00, 180.00)
+ Shape: Wedge
+ Size: (4.00, 0.20, 0.40)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 637:
+ Position: (87.53, 46.60, -71.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 638:
+ Position: (85.53, 46.60, -71.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 639:
+ Position: (86.53, 46.60, -71.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Seat
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 640:
+ Position: (87.53, 45.60, -72.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 641:
+ Position: (87.53, 45.60, -69.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 642:
+ Position: (83.53, 46.60, -71.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 643:
+ Position: (84.53, 46.60, -71.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 644:
+ Position: (82.53, 46.60, -71.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 645:
+ Position: (81.53, 46.60, -71.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 646:
+ Position: (81.53, 45.60, -72.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 647:
+ Position: (81.53, 45.60, -69.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 648:
+ Position: (93.03, 44.60, -236.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 649:
+ Position: (93.03, 44.60, -216.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 650:
+ Position: (61.96, 49.13, -121.03)
+ Rotation: (-0.00, 0.00, -116.57)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 651:
+ Position: (61.52, 48.23, -121.03)
+ Rotation: (-0.00, 0.00, -116.57)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 652:
+ Position: (60.53, 45.60, -119.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 653:
+ Position: (61.07, 47.34, -121.03)
+ Rotation: (-0.00, 0.00, -116.57)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 654:
+ Position: (60.53, 46.60, -121.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 655:
+ Position: (60.80, 46.80, -121.03)
+ Rotation: (-26.57, -90.00, 180.00)
+ Shape: Wedge
+ Size: (4.00, 0.20, 0.40)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 656:
+ Position: (59.03, 48.20, -119.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 657:
+ Position: (59.53, 46.60, -121.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Seat
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 658:
+ Position: (59.03, 48.20, -122.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 659:
+ Position: (60.53, 45.60, -122.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 660:
+ Position: (58.53, 46.60, -121.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 661:
+ Position: (57.53, 46.60, -121.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (2.00, 0.40, 1.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 662:
+ Position: (57.53, 46.40, -119.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.20, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 663:
+ Position: (57.53, 46.40, -122.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.20, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 664:
+ Position: (103.53, 63.40, -230.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.60, 1.00)
+ Color: 0.486275, 0.360784, 0.27451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 665:
+ Position: (103.53, 52.40, -224.03)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 16.00, 16.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 666:
+ Position: (69.03, 45.00, -211.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 667:
+ Position: (67.03, 45.00, -211.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 668:
+ Position: (65.03, 45.00, -211.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 669:
+ Position: (63.03, 45.00, -211.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 670:
+ Position: (61.03, 45.00, -211.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 671:
+ Position: (102.03, 52.80, -234.03)
+ Rotation: (0.00, -90.00, 180.00)
+ Shape: Truss
+ Size: (2.00, 16.00, 2.00)
+ Color: 0.105882, 0.164706, 0.207843
+ Material: Plastic
+ Transparency: 0.00
+
+Part 672:
+ Position: (103.53, 64.20, -218.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (23.00, 1.20, 1.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 673:
+ Position: (68.03, 45.00, -204.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.854902, 0.521569, 0.254902
+ Material: Plastic
+ Transparency: 0.00
+
+Part 674:
+ Position: (66.03, 45.00, -204.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 675:
+ Position: (64.03, 45.00, -204.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.854902, 0.521569, 0.254902
+ Material: Plastic
+ Transparency: 0.00
+
+Part 676:
+ Position: (62.03, 45.00, -204.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 677:
+ Position: (60.03, 45.00, -204.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.854902, 0.521569, 0.254902
+ Material: Plastic
+ Transparency: 0.00
+
+Part 678:
+ Position: (141.53, 66.90, -229.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.00, 1.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 679:
+ Position: (103.53, 52.40, -240.03)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 16.00, 16.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 680:
+ Position: (137.03, 61.00, -248.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 681:
+ Position: (137.03, 61.00, -232.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 682:
+ Position: (93.53, 44.60, -54.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (2.00, 0.40, 15.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 683:
+ Position: (33.03, 44.60, -196.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 684:
+ Position: (107.03, 61.00, -232.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 685:
+ Position: (107.03, 61.00, -216.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 686:
+ Position: (53.03, 44.60, -196.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 687:
+ Position: (73.03, 44.60, -216.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 688:
+ Position: (53.03, 44.60, -156.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 689:
+ Position: (73.03, 44.60, -116.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 690:
+ Position: (53.03, 44.60, -216.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 691:
+ Position: (73.03, 44.60, -76.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 692:
+ Position: (73.03, 44.60, -96.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 693:
+ Position: (122.03, 60.60, -240.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 0.40, 22.00)
+ Color: 0.105882, 0.164706, 0.207843
+ Material: Plastic
+ Transparency: 0.00
+
+Part 694:
+ Position: (53.03, 44.60, -136.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 695:
+ Position: (103.53, 63.40, -237.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.60, 1.00)
+ Color: 0.486275, 0.360784, 0.27451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 696:
+ Position: (122.03, 60.60, -224.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 0.40, 22.00)
+ Color: 0.105882, 0.164706, 0.207843
+ Material: Plastic
+ Transparency: 0.00
+
+Part 697:
+ Position: (82.03, 44.60, -53.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 8.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 698:
+ Position: (53.03, 44.60, -176.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 699:
+ Position: (53.53, 45.00, -121.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 1.00)
+ Color: 1, 0.8, 0.6
+ Material: Plastic
+ Transparency: 0.00
+
+Part 700:
+ Position: (44.53, 45.00, -149.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 0.40, 17.00)
+ Color: 1, 0.8, 0.6
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 701:
+ Position: (35.53, 45.00, -120.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (19.00, 0.40, 1.00)
+ Color: 1, 0.8, 0.6
+ Material: Plastic
+ Transparency: 0.00
+
+Part 702:
+ Position: (44.53, 45.00, -111.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 0.40, 17.00)
+ Color: 1, 0.8, 0.6
+ Material: Plastic
+ Transparency: 0.00
+
+Part 703:
+ Position: (37.53, 49.80, -130.53)
+ Rotation: (0.00, 90.00, 180.00)
+ Shape: Block
+ Size: (1.00, 10.00, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 704:
+ Position: (44.53, 54.30, -130.43)
+ Rotation: (90.00, 0.00, 0.00)
+ Shape: Block
+ Size: (13.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 705:
+ Position: (44.53, 51.30, -130.43)
+ Rotation: (90.00, 0.00, 0.00)
+ Shape: Block
+ Size: (13.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 706:
+ Position: (51.53, 49.80, -130.53)
+ Rotation: (0.00, 90.00, 180.00)
+ Shape: Block
+ Size: (1.00, 10.00, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 707:
+ Position: (35.53, 45.00, -140.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 1.00)
+ Color: 1, 0.8, 0.6
+ Material: Plastic
+ Transparency: 0.00
+
+Part 708:
+ Position: (53.53, 45.00, -140.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (19.00, 0.40, 1.00)
+ Color: 1, 0.8, 0.6
+ Material: Plastic
+ Transparency: 0.00
+
+Part 709:
+ Position: (26.96, 49.13, -200.03)
+ Rotation: (-0.00, 0.00, -116.57)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 710:
+ Position: (26.52, 48.23, -200.03)
+ Rotation: (-0.00, 0.00, -116.57)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 711:
+ Position: (25.53, 45.60, -198.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 712:
+ Position: (26.07, 47.34, -200.03)
+ Rotation: (-0.00, 0.00, -116.57)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 713:
+ Position: (25.53, 46.60, -200.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 714:
+ Position: (25.80, 46.80, -200.03)
+ Rotation: (-26.57, -90.00, 180.00)
+ Shape: Wedge
+ Size: (4.00, 0.20, 0.40)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 715:
+ Position: (24.03, 48.20, -198.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 716:
+ Position: (24.53, 46.60, -200.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Seat
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 717:
+ Position: (24.03, 48.20, -201.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 718:
+ Position: (25.53, 45.60, -201.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 719:
+ Position: (23.53, 46.60, -200.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 720:
+ Position: (22.53, 46.60, -200.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (2.00, 0.40, 1.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 721:
+ Position: (22.53, 46.40, -198.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.20, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 722:
+ Position: (22.53, 46.40, -201.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.20, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 723:
+ Position: (73.03, 44.60, -60.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 724:
+ Position: (93.03, 44.60, -256.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 725:
+ Position: (27.03, 45.00, -208.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 726:
+ Position: (25.03, 45.00, -208.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 727:
+ Position: (23.03, 45.00, -208.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 728:
+ Position: (21.03, 45.00, -208.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 729:
+ Position: (19.03, 45.00, -208.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 730:
+ Position: (103.53, 52.40, -256.03)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 16.00, 16.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 731:
+ Position: (137.03, 61.00, -280.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 732:
+ Position: (137.03, 61.00, -264.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 733:
+ Position: (33.03, 44.60, -176.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 734:
+ Position: (33.03, 44.60, -156.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 735:
+ Position: (33.03, 44.60, -216.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 736:
+ Position: (107.03, 61.00, -248.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 737:
+ Position: (107.03, 61.00, -264.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 738:
+ Position: (53.03, 44.60, -78.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 739:
+ Position: (53.03, 44.60, -236.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 740:
+ Position: (53.03, 44.60, -96.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 741:
+ Position: (73.03, 44.60, -236.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 742:
+ Position: (122.03, 60.60, -256.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 0.40, 22.00)
+ Color: 0.105882, 0.164706, 0.207843
+ Material: Plastic
+ Transparency: 0.00
+
+Part 743:
+ Position: (122.03, 60.60, -272.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 0.40, 22.00)
+ Color: 0.105882, 0.164706, 0.207843
+ Material: Plastic
+ Transparency: 0.00
+
+Part 744:
+ Position: (103.53, 64.20, -249.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (23.00, 1.20, 1.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 745:
+ Position: (103.53, 63.40, -261.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.60, 1.00)
+ Color: 0.486275, 0.360784, 0.27451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 746:
+ Position: (53.03, 44.60, -116.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 747:
+ Position: (13.03, 44.60, -196.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 748:
+ Position: (33.03, 44.60, -136.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 749:
+ Position: (50.53, 84.20, -244.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 2.00, 11.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 750:
+ Position: (50.53, 78.20, -244.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 10.00, 1.00)
+ Color: 0.486275, 0.360784, 0.27451
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 751:
+ Position: (13.03, 44.60, -176.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 752:
+ Position: (13.03, 44.60, -216.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 753:
+ Position: (13.03, 44.60, -156.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 754:
+ Position: (92.53, 44.60, -276.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 21.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 755:
+ Position: (8.53, 55.80, -139.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 2.00, 11.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 756:
+ Position: (8.53, 49.80, -139.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 10.00, 1.00)
+ Color: 0.486275, 0.360784, 0.27451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 757:
+ Position: (51.03, 65.80, -241.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Truss
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.105882, 0.164706, 0.207843
+ Material: Plastic
+ Transparency: 0.00
+
+Part 758:
+ Position: (41.53, 74.40, -241.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (10.00, 2.40, 1.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 759:
+ Position: (51.53, 74.40, -238.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (2.00, 2.40, 1.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 760:
+ Position: (47.03, 74.40, -236.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (10.00, 2.40, 1.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 761:
+ Position: (46.53, 73.00, -241.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (10.00, 0.40, 11.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 762:
+ Position: (50.03, 65.80, -238.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Block
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 763:
+ Position: (50.03, 51.80, -244.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Block
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 764:
+ Position: (50.03, 51.80, -238.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Block
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 765:
+ Position: (47.03, 74.40, -245.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (10.00, 2.40, 1.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 766:
+ Position: (51.03, 51.80, -241.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Truss
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.105882, 0.164706, 0.207843
+ Material: Plastic
+ Transparency: 0.00
+
+Part 767:
+ Position: (51.53, 74.40, -244.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (2.00, 2.40, 1.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 768:
+ Position: (42.03, 65.80, -238.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Block
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 769:
+ Position: (42.03, 65.80, -244.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Block
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 770:
+ Position: (50.03, 65.80, -244.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Block
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 771:
+ Position: (42.03, 51.80, -238.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Block
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 772:
+ Position: (42.03, 51.80, -244.03)
+ Rotation: (0.00, 180.00, 180.00)
+ Shape: Block
+ Size: (2.00, 14.00, 2.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 773:
+ Position: (-6.97, 44.60, -214.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 774:
+ Position: (120.03, 60.60, -297.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 18.00)
+ Color: 0.105882, 0.164706, 0.207843
+ Material: Plastic
+ Transparency: 0.00
+
+Part 775:
+ Position: (28.03, 45.00, -115.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 776:
+ Position: (26.03, 45.00, -115.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.294118, 0.592157, 0.294118
+ Material: Plastic
+ Transparency: 0.00
+
+Part 777:
+ Position: (24.03, 45.00, -115.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 778:
+ Position: (22.03, 45.00, -115.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.294118, 0.592157, 0.294118
+ Material: Plastic
+ Transparency: 0.00
+
+Part 779:
+ Position: (20.03, 45.00, -115.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 780:
+ Position: (21.03, 45.00, -232.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 781:
+ Position: (19.03, 45.00, -232.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 782:
+ Position: (17.03, 45.00, -232.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 783:
+ Position: (15.03, 45.00, -232.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.768627, 0.156863, 0.109804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 784:
+ Position: (13.03, 45.00, -232.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 785:
+ Position: (103.53, 52.40, -272.03)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 16.00, 16.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 786:
+ Position: (103.53, 52.40, -288.03)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 16.00, 16.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 787:
+ Position: (33.03, 44.60, -96.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 788:
+ Position: (33.03, 44.60, -236.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 789:
+ Position: (38.03, 44.60, -78.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 0.40, 10.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 790:
+ Position: (33.03, 44.60, -116.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 791:
+ Position: (137.03, 61.00, -291.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 792:
+ Position: (107.03, 61.00, -280.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 793:
+ Position: (94.53, 55.80, -281.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 2.00, 11.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 794:
+ Position: (94.53, 49.80, -281.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 10.00, 1.00)
+ Color: 0.486275, 0.360784, 0.27451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 795:
+ Position: (122.03, 60.60, -287.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (14.00, 0.40, 22.00)
+ Color: 0.105882, 0.164706, 0.207843
+ Material: Plastic
+ Transparency: 0.00
+
+Part 796:
+ Position: (103.53, 64.20, -273.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (23.00, 1.20, 1.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 797:
+ Position: (73.53, 44.60, -256.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 19.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 798:
+ Position: (97.96, 49.13, -277.03)
+ Rotation: (-0.00, 0.00, -116.57)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 799:
+ Position: (97.52, 48.23, -277.03)
+ Rotation: (-0.00, 0.00, -116.57)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 800:
+ Position: (96.53, 45.60, -275.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 801:
+ Position: (97.07, 47.34, -277.03)
+ Rotation: (-0.00, 0.00, -116.57)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 802:
+ Position: (96.53, 46.60, -277.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 803:
+ Position: (96.80, 46.80, -277.03)
+ Rotation: (-26.57, -90.00, 180.00)
+ Shape: Wedge
+ Size: (4.00, 0.20, 0.40)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 804:
+ Position: (95.03, 48.20, -275.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 805:
+ Position: (95.53, 46.60, -277.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Seat
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 806:
+ Position: (95.03, 48.20, -278.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 0.40, 4.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 807:
+ Position: (96.53, 45.60, -278.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.60, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 808:
+ Position: (94.53, 46.60, -277.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 809:
+ Position: (93.53, 46.60, -277.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (2.00, 0.40, 1.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 810:
+ Position: (93.53, 46.40, -275.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.20, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 811:
+ Position: (93.53, 46.40, -278.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.20, 1.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 812:
+ Position: (53.53, 44.60, -255.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (19.00, 0.40, 21.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 813:
+ Position: (103.53, 63.40, -285.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.60, 1.00)
+ Color: 0.486275, 0.360784, 0.27451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 814:
+ Position: (55.53, 44.60, -66.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (7.00, 0.40, 15.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 815:
+ Position: (18.53, 55.80, -236.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 2.00, 11.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 816:
+ Position: (18.53, 49.80, -236.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 10.00, 1.00)
+ Color: 0.486275, 0.360784, 0.27451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 817:
+ Position: (13.03, 44.60, -116.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 818:
+ Position: (-6.97, 44.60, -196.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 819:
+ Position: (13.03, 44.60, -234.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 820:
+ Position: (15.03, 44.60, -247.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 0.40, 16.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 821:
+ Position: (13.03, 44.60, -136.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 822:
+ Position: (-4.47, 44.60, -227.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 0.40, 15.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 823:
+ Position: (1.53, 44.60, -237.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (9.00, 0.40, 3.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 824:
+ Position: (-18.47, 44.60, -214.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (15.00, 0.40, 3.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 825:
+ Position: (-6.97, 44.60, -176.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 826:
+ Position: (98.53, 44.60, -291.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (10.00, 0.40, 9.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 827:
+ Position: (110.03, 61.00, -298.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 1.20, 2.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 828:
+ Position: (89.03, 45.00, -283.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 829:
+ Position: (89.03, 45.00, -281.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 830:
+ Position: (89.03, 45.00, -279.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 831:
+ Position: (89.03, 45.00, -277.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 832:
+ Position: (89.03, 45.00, -275.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 2.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 833:
+ Position: (41.53, 44.60, -269.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (8.00, 0.40, 15.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 834:
+ Position: (33.03, 44.60, -255.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (19.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 835:
+ Position: (25.53, 44.60, -80.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 0.40, 15.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 836:
+ Position: (107.03, 61.00, -292.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (8.00, 1.20, 8.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Plastic
+ Transparency: 0.00
+
+Part 837:
+ Position: (56.53, 44.60, -273.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (17.00, 0.40, 15.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 838:
+ Position: (73.03, 44.60, -276.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (21.00, 0.40, 18.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 839:
+ Position: (88.03, 44.60, -288.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (5.00, 0.40, 12.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 840:
+ Position: (103.53, 63.40, -295.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (1.00, 3.60, 1.00)
+ Color: 0.486275, 0.360784, 0.27451
+ Material: Plastic
+ Transparency: 0.00
+
+Part 841:
+ Position: (103.53, 64.20, -290.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (9.00, 1.20, 1.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 842:
+ Position: (-6.97, 44.60, -135.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (21.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 843:
+ Position: (13.03, 44.60, -96.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 844:
+ Position: (21.03, 44.60, -259.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (12.00, 0.40, 4.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 845:
+ Position: (10.53, 44.60, -85.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (2.00, 0.40, 15.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 846:
+ Position: (-6.97, 44.60, -156.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 20.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 847:
+ Position: (-21.97, 44.60, -196.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (21.00, 0.40, 10.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 848:
+ Position: (-5.97, 44.60, -115.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (19.00, 0.40, 18.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 849:
+ Position: (-25.47, 44.60, -176.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 17.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 850:
+ Position: (-30.47, 44.60, -189.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (6.00, 0.40, 7.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 851:
+ Position: (-1.47, 44.60, -100.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 0.40, 9.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 852:
+ Position: (-24.47, 44.60, -156.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 15.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 853:
+ Position: (-34.47, 44.60, -160.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 0.40, 5.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 854:
+ Position: (-19.47, 44.60, -119.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (12.00, 0.40, 9.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 855:
+ Position: (-35.47, 44.60, -168.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.40, 3.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 856:
+ Position: (-21.97, 44.60, -135.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (21.00, 0.40, 10.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 857:
+ Position: (-37.47, 44.60, -173.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (7.00, 0.40, 7.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 858:
+ Position: (-29.47, 44.60, -142.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (7.00, 0.40, 5.00)
+ Color: 0.992157, 0.917647, 0.552941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 859:
+ Position: (66.53, 38.50, -71.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (40.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 860:
+ Position: (121.53, 27.50, -53.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 861:
+ Position: (4.53, 16.50, -267.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 862:
+ Position: (9.53, 27.50, -266.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (13.00, 11.00, 13.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 863:
+ Position: (106.53, 27.50, -48.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 864:
+ Position: (91.53, 27.50, -45.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 865:
+ Position: (76.53, 27.50, -47.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 866:
+ Position: (61.53, 27.50, -54.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (14.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 867:
+ Position: (46.53, 27.50, -60.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 868:
+ Position: (31.53, 27.50, -65.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (15.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 869:
+ Position: (77.53, 16.50, -303.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 870:
+ Position: (62.53, 16.50, -299.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 871:
+ Position: (47.53, 16.50, -293.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 872:
+ Position: (32.53, 16.50, -286.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (12.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 873:
+ Position: (17.53, 16.50, -277.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 874:
+ Position: (-6.47, 16.50, -254.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 17.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 875:
+ Position: (-17.47, 16.50, -243.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 876:
+ Position: (68.53, 27.50, -294.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 877:
+ Position: (53.53, 27.50, -289.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 878:
+ Position: (38.53, 27.50, -283.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (13.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 879:
+ Position: (23.53, 27.50, -275.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 880:
+ Position: (4.53, 27.50, -253.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (23.00, 11.00, 13.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 881:
+ Position: (-9.97, 27.50, -242.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (16.00, 11.00, 9.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 882:
+ Position: (-14.47, 27.50, -232.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 27.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 883:
+ Position: (66.53, 38.50, -275.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (32.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 884:
+ Position: (51.53, 38.50, -272.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (27.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 885:
+ Position: (36.53, 38.50, -268.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (19.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 886:
+ Position: (21.53, 38.50, -264.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 887:
+ Position: (38.03, 38.50, -253.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 72.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 888:
+ Position: (35.03, 38.50, -242.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 78.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 889:
+ Position: (29.03, 38.50, -231.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 90.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 890:
+ Position: (25.03, 38.50, -218.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (98.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 891:
+ Position: (73.03, 44.20, -280.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (14.00, 0.40, 18.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 892:
+ Position: (56.53, 44.20, -277.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (9.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 893:
+ Position: (13.03, 44.20, -243.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 0.40, 12.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 894:
+ Position: (3.53, 44.20, -237.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (9.00, 0.40, 7.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 895:
+ Position: (3.53, 44.20, -227.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 0.40, 31.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 896:
+ Position: (16.53, 27.50, -70.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 897:
+ Position: (7.03, 27.50, -81.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 18.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 898:
+ Position: (133.53, 16.50, -50.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 899:
+ Position: (92.53, 16.50, -307.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 900:
+ Position: (-28.47, 16.50, -232.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 901:
+ Position: (98.53, 27.50, -302.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 902:
+ Position: (83.53, 27.50, -298.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 903:
+ Position: (81.53, 38.50, -240.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (109.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 904:
+ Position: (88.03, 44.20, -282.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (18.00, 0.40, 12.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 905:
+ Position: (-0.47, 44.20, -214.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (39.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 906:
+ Position: (118.53, 16.50, -45.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 907:
+ Position: (103.53, 16.50, -41.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 908:
+ Position: (129.03, 27.50, -303.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (12.00, 11.00, 16.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 909:
+ Position: (98.53, 44.20, -183.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (164.00, 0.40, 159.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 910:
+ Position: (88.53, 16.50, -42.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 911:
+ Position: (73.53, 16.50, -45.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 912:
+ Position: (58.53, 16.50, -49.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 913:
+ Position: (122.53, 16.50, -309.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 914:
+ Position: (107.53, 16.50, -311.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 915:
+ Position: (-32.97, 16.50, -216.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (16.00, 11.00, 17.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 916:
+ Position: (113.53, 27.50, -305.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 917:
+ Position: (-21.47, 27.50, -219.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (21.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 918:
+ Position: (-30.47, 27.50, -204.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (17.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 919:
+ Position: (111.53, 38.50, -245.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (118.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 920:
+ Position: (96.53, 38.50, -243.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (114.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 921:
+ Position: (21.53, 38.50, -203.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (105.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 922:
+ Position: (101.53, 44.20, -284.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (23.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 923:
+ Position: (119.03, 44.20, -286.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (27.00, 0.40, 20.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 924:
+ Position: (106.03, 44.20, -269.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (8.00, 0.40, 144.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 925:
+ Position: (-3.97, 44.20, -199.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (46.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 926:
+ Position: (144.53, 27.50, -297.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (13.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 927:
+ Position: (159.53, 27.50, -290.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (18.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 928:
+ Position: (171.53, 16.50, -297.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 929:
+ Position: (154.53, 16.50, -301.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 19.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 930:
+ Position: (43.53, 16.50, -53.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (12.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 931:
+ Position: (28.53, 16.50, -59.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (13.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 932:
+ Position: (13.53, 16.50, -64.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 933:
+ Position: (2.53, 16.50, -75.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 934:
+ Position: (-7.47, 27.50, -92.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 935:
+ Position: (136.53, 27.50, -58.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 936:
+ Position: (151.53, 27.50, -63.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 937:
+ Position: (166.53, 27.50, -72.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (16.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 938:
+ Position: (179.53, 27.50, -81.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 939:
+ Position: (137.53, 16.50, -305.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 940:
+ Position: (-42.47, 16.50, -200.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 941:
+ Position: (-49.47, 16.50, -185.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 942:
+ Position: (-54.47, 16.50, -170.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 943:
+ Position: (196.53, 16.50, -277.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 944:
+ Position: (186.53, 16.50, -290.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 945:
+ Position: (-36.47, 27.50, -189.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (19.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 946:
+ Position: (-43.47, 27.50, -174.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (17.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 947:
+ Position: (-44.47, 27.50, -159.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 948:
+ Position: (195.03, 27.50, -265.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (12.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 949:
+ Position: (187.53, 27.50, -280.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 950:
+ Position: (174.53, 27.50, -283.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (20.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 951:
+ Position: (144.53, 38.50, -124.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (124.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 952:
+ Position: (165.03, 38.50, -132.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (108.00, 11.00, 26.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 953:
+ Position: (193.03, 38.50, -238.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (28.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 954:
+ Position: (189.03, 38.50, -253.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (20.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 955:
+ Position: (184.53, 38.50, -268.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 956:
+ Position: (171.53, 38.50, -235.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (98.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 957:
+ Position: (156.53, 38.50, -239.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (106.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 958:
+ Position: (141.53, 38.50, -242.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (112.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 959:
+ Position: (126.53, 38.50, -246.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (120.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 960:
+ Position: (18.03, 38.50, -188.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (112.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 961:
+ Position: (14.53, 38.50, -173.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (119.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 962:
+ Position: (16.53, 38.50, -158.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (115.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 963:
+ Position: (136.53, 44.20, -283.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (21.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 964:
+ Position: (151.53, 44.20, -280.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (15.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 965:
+ Position: (167.03, 44.20, -276.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (7.00, 0.40, 16.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 966:
+ Position: (182.03, 44.20, -265.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (8.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 967:
+ Position: (187.03, 44.20, -250.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (18.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 968:
+ Position: (191.03, 44.20, -235.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (26.00, 0.40, 16.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 969:
+ Position: (-7.47, 44.20, -184.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (53.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 970:
+ Position: (-10.97, 44.20, -173.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (60.00, 0.40, 7.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 971:
+ Position: (-8.97, 44.20, -162.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (56.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 972:
+ Position: (213.03, 27.50, -130.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (16.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 973:
+ Position: (-48.47, 16.50, -155.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 974:
+ Position: (205.53, 16.50, -262.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (13.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 975:
+ Position: (204.53, 27.50, -250.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 976:
+ Position: (129.53, 38.50, -121.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (129.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 977:
+ Position: (197.03, 38.50, -223.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (36.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 978:
+ Position: (19.03, 38.50, -143.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (110.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 979:
+ Position: (195.03, 44.20, -219.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (34.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 980:
+ Position: (-6.47, 44.20, -147.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (51.00, 0.40, 16.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 981:
+ Position: (169.03, 44.20, -91.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (19.00, 0.40, 12.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 982:
+ Position: (180.03, 44.20, -95.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (10.00, 0.40, 11.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 983:
+ Position: (190.53, 44.20, -122.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (25.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 984:
+ Position: (187.03, 44.20, -108.03)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (18.00, 0.40, 14.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 985:
+ Position: (198.53, 44.20, -152.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (41.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 986:
+ Position: (194.03, 44.20, -137.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (32.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 987:
+ Position: (113.03, 38.50, -118.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (135.00, 11.00, 18.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 988:
+ Position: (96.53, 38.50, -117.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (137.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 989:
+ Position: (220.53, 27.50, -145.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (15.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 990:
+ Position: (226.53, 27.50, -160.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 991:
+ Position: (229.53, 27.50, -175.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 992:
+ Position: (159.53, 38.50, -72.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 993:
+ Position: (27.53, 38.50, -106.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (8.00, 11.00, 93.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 994:
+ Position: (31.53, 38.50, -96.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 85.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 995:
+ Position: (-44.47, 16.50, -140.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 996:
+ Position: (198.53, 16.50, -88.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 997:
+ Position: (229.53, 16.50, -202.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 998:
+ Position: (225.53, 16.50, -217.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 999:
+ Position: (221.53, 16.50, -232.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1000:
+ Position: (214.53, 16.50, -247.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 1001:
+ Position: (-39.47, 27.50, -144.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1002:
+ Position: (-35.47, 27.50, -129.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1003:
+ Position: (190.53, 27.50, -91.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1004:
+ Position: (201.53, 27.50, -100.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1005:
+ Position: (206.53, 27.50, -115.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (17.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1006:
+ Position: (224.53, 27.50, -190.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1007:
+ Position: (220.53, 27.50, -205.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1008:
+ Position: (216.53, 27.50, -220.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1009:
+ Position: (211.53, 27.50, -235.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1010:
+ Position: (183.53, 38.50, -136.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 100.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1011:
+ Position: (194.53, 38.50, -103.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1012:
+ Position: (198.03, 38.50, -118.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (18.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1013:
+ Position: (201.53, 38.50, -133.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (25.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1014:
+ Position: (205.53, 38.50, -148.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (33.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1015:
+ Position: (208.53, 38.50, -163.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (39.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1016:
+ Position: (207.53, 38.50, -178.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (37.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1017:
+ Position: (201.03, 38.50, -193.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (44.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1018:
+ Position: (199.03, 38.50, -208.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (40.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1019:
+ Position: (21.53, 38.50, -128.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (105.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1020:
+ Position: (23.03, 38.50, -115.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 102.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1021:
+ Position: (81.53, 38.50, -116.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (139.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1022:
+ Position: (198.53, 44.20, -189.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (41.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1023:
+ Position: (197.03, 44.20, -204.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (38.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1024:
+ Position: (200.03, 44.20, -175.03)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (44.00, 0.40, 14.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1025:
+ Position: (-3.97, 44.20, -132.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (46.00, 0.40, 14.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1026:
+ Position: (201.03, 44.20, -164.03)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (46.00, 0.40, 8.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1027:
+ Position: (125.53, 44.20, -80.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (41.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1028:
+ Position: (109.53, 44.20, -78.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (46.00, 0.40, 17.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1029:
+ Position: (141.03, 44.20, -83.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (36.00, 0.40, 16.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1030:
+ Position: (11.03, 44.20, -103.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (16.00, 0.40, 5.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1031:
+ Position: (93.53, 44.20, -77.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (48.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1032:
+ Position: (82.03, 44.20, -76.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (50.00, 0.40, 8.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1033:
+ Position: (70.53, 44.20, -78.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (46.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1034:
+ Position: (10.53, 44.20, -92.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (17.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1035:
+ Position: (25.53, 44.20, -88.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (26.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1036:
+ Position: (55.53, 44.20, -82.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (38.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1037:
+ Position: (40.53, 44.20, -85.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (31.00, 0.40, 15.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1038:
+ Position: (-1.47, 44.20, -100.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 0.40, 9.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1039:
+ Position: (2.03, 44.20, -109.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (7.00, 0.40, 34.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1040:
+ Position: (-2.47, 44.20, -119.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (12.00, 0.40, 43.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1041:
+ Position: (156.03, 44.20, -86.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (30.00, 0.40, 14.00)
+ Color: 0.156863, 0.498039, 0.278431
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1042:
+ Position: (51.53, 38.50, -75.03)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (32.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1043:
+ Position: (36.53, 38.50, -78.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (25.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1044:
+ Position: (21.53, 38.50, -81.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (19.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1045:
+ Position: (6.53, 38.50, -85.53)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1046:
+ Position: (-39.47, 16.50, -125.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1047:
+ Position: (-29.97, 16.50, -110.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (16.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1048:
+ Position: (-20.47, 16.50, -97.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1049:
+ Position: (-9.47, 16.50, -86.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 17.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1050:
+ Position: (148.53, 16.50, -54.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 1051:
+ Position: (163.53, 16.50, -59.53)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1052:
+ Position: (176.53, 16.50, -70.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1053:
+ Position: (187.53, 16.50, -78.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1054:
+ Position: (209.53, 16.50, -97.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1055:
+ Position: (214.53, 16.50, -112.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (17.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1056:
+ Position: (221.53, 16.50, -127.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (15.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1057:
+ Position: (226.03, 16.50, -142.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (14.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1058:
+ Position: (231.53, 16.50, -157.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1059:
+ Position: (235.53, 16.50, -172.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1060:
+ Position: (232.53, 16.50, -187.53)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1061:
+ Position: (-29.47, 27.50, -114.53)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (11.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1062:
+ Position: (-16.47, 27.50, -105.03)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (14.00, 11.00, 15.00)
+ Color: 0.411765, 0.25098, 0.156863
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1063:
+ Position: (-205.74, 201.40, 216.51)
+ Rotation: (0.00, -30.45, 0.00)
+ Shape: Block
+ Size: (11.00, 12.00, 0.20)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Slate
+ Transparency: 1.00
+
+Part 1064:
+ Position: (-206.05, 199.90, 217.04)
+ Rotation: (0.00, -30.45, 0.00)
+ Shape: Block
+ Size: (13.00, 17.00, 1.20)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Brick
+ Transparency: 0.00
+
+Part 1065:
+ Position: (-205.74, 201.40, 216.52)
+ Rotation: (0.00, -30.45, 0.00)
+ Shape: Block
+ Size: (11.00, 12.00, 0.20)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1066:
+ Position: (-206.05, 191.90, 217.04)
+ Rotation: (0.00, -30.45, 0.00)
+ Shape: Block
+ Size: (13.80, 1.00, 2.00)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Brick
+ Transparency: 0.00
+
+Part 1067:
+ Position: (-176.00, 199.40, 225.50)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (16.00, 8.00, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+ Decal.Front = 1008744
+
+Part 1068:
+ Position: (-167.50, 197.40, 225.50)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 12.00, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1069:
+ Position: (-176.00, 204.00, 225.50)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (18.00, 1.20, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1070:
+ Position: (-176.00, 194.80, 225.50)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (16.00, 1.20, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1071:
+ Position: (-184.50, 197.40, 225.50)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (1.00, 12.00, 1.00)
+ Color: 0.94902, 0.952941, 0.952941
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1072:
+ Position: (-226.41, 206.90, 194.68)
+ Rotation: (0.00, -60.00, 0.00)
+ Shape: Block
+ Size: (11.00, 1.00, 1.00)
+ Color: 0.388235, 0.372549, 0.384314
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1073:
+ Position: (-228.91, 198.90, 190.35)
+ Rotation: (0.00, -60.00, 0.00)
+ Shape: Block
+ Size: (1.00, 15.00, 1.00)
+ Color: 0.388235, 0.372549, 0.384314
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1074:
+ Position: (-226.41, 200.40, 194.68)
+ Rotation: (0.00, -60.00, 0.00)
+ Shape: Block
+ Size: (9.00, 12.00, 1.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+ Decal.Front = 143630310
+
+Part 1075:
+ Position: (-226.41, 193.90, 194.68)
+ Rotation: (0.00, -60.00, 0.00)
+ Shape: Block
+ Size: (9.00, 1.00, 1.00)
+ Color: 0.388235, 0.372549, 0.384314
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1076:
+ Position: (-223.91, 198.90, 199.01)
+ Rotation: (0.00, -60.00, 0.00)
+ Shape: Block
+ Size: (1.00, 15.00, 1.00)
+ Color: 0.388235, 0.372549, 0.384314
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1077:
+ Position: (-147.06, 206.90, 215.61)
+ Rotation: (0.00, 30.27, 0.00)
+ Shape: Block
+ Size: (11.00, 1.00, 1.00)
+ Color: 0.388235, 0.372549, 0.384314
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1078:
+ Position: (-151.38, 198.90, 218.13)
+ Rotation: (0.00, 30.27, 0.00)
+ Shape: Block
+ Size: (1.00, 15.00, 1.00)
+ Color: 0.388235, 0.372549, 0.384314
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1079:
+ Position: (-147.06, 200.40, 215.61)
+ Rotation: (0.00, 30.27, 0.00)
+ Shape: Block
+ Size: (9.00, 12.00, 1.00)
+ Color: 0.898039, 0.894118, 0.87451
+ Material: Plastic
+ Transparency: 0.00
+ Decal.Front = 184773920
+
+Part 1080:
+ Position: (-147.06, 193.90, 215.61)
+ Rotation: (0.00, 30.27, 0.00)
+ Shape: Block
+ Size: (9.00, 1.00, 1.00)
+ Color: 0.388235, 0.372549, 0.384314
+ Material: Plastic
+ Transparency: 0.00
+
+Part 1081:
+ Position: (-142.74, 198.90, 213.09)
+ Rotation: (0.00, 30.27, 0.00)
+ Shape: Block
+ Size: (1.00, 15.00, 1.00)
+ Color: 0.388235, 0.372549, 0.384314
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 1082:
+ Position: (-199.83, 175.99, 205.00)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Block
+ Size: (12.00, 1.00, 12.00)
+ Color: 163, 162, 165
+ Material: Snow
+ Transparency: 1.00
+ SpawnPoint: True
 ]]
 ---------------------------------------------------------
 
