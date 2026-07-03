@@ -1,4 +1,4 @@
--- NICE PANEL -- GOD
+-- NICE PANEL -- GOD-OP
 local function notify(text)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0, 280, 0, 40)
