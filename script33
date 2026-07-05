@@ -350,21 +350,31 @@ end)
 local espEnabled = false
 local tracerFolder = gui:FindFirstChild("TracerFolder") or Instance.new("Folder", gui)
 tracerFolder.Name = "TracerFolder"
-local HB_SIZE = 40
+local HB_SIZE = 40 -- اندازه هیت‌باکس سر (می‌تونی کمترش کنی مثلا 20 اگه خواستی)
 
--- حافظه کش کلاینت برای مدیریت ردیاب‌ها
+-- حافظه کش کلاینت برای مدیریت ردیاب‌ها و هیت‌باکس‌های فیک
 local linesCache = {}
+local fakeHitboxes = {}
 -- متغیر هیو برای انیمیشن متحرک RGB 🌈
 local hueCounter = 0
+
+-- تابع پاک‌سازی هیت‌باکس‌های فیک
+local function clearFakeHitboxes()
+    for playerId, box in pairs(fakeHitboxes) do
+        if box then box:Destroy() end
+    end
+    fakeHitboxes = {}
+end
 
 RunService.RenderStepped:Connect(function()
     if not espEnabled then 
         tracerFolder:ClearAllChildren() 
         linesCache = {}
+        clearFakeHitboxes()
         return 
     end
 
-    -- بروزرسانی گام انیمیشن رنگین‌کمانی (سرعت حرکت رنگ‌ها)
+    -- بروزرسانی گام انیمیشن رنگین‌کمانی
     hueCounter = (hueCounter + 0.005) % 1
     local rgbColor = Color3.fromHSV(hueCounter, 0.8, 1)
 
@@ -374,16 +384,32 @@ RunService.RenderStepped:Connect(function()
     local startPos = Vector2.new(viewportSize.X / 2, viewportSize.Y)
 
     for _, v in ipairs(currentPlayers) do
-        if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-            local root = v.Character.HumanoidRootPart
+        -- 🎯 اینجا به جای HumanoidRootPart، مستقیماً Head رو تارگت می‌کنیم
+        if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("Head") then
+            local head = v.Character.Head
             
-            -- تنظیمات هیت باکس و RGB Chams لوکس 💎
+            -- ساخت هیت‌باکس فیک دقیقاً روی سر (هدشات تضمینی)
             pcall(function()
-                root.Size = Vector3.new(HB_SIZE, HB_SIZE, HB_SIZE)
-                root.Transparency = 1
-                root.CanCollide = false
-                root.CanQuery = true
+                local fakeBox = fakeHitboxes[v.Name]
+                if not fakeBox or not fakeBox.Parent then
+                    fakeBox = Instance.new("Part")
+                    fakeBox.Name = "FakeHitbox_HeadShot"
+                    fakeBox.Material = Enum.Material.ForceField
+                    fakeBox.CastShadow = false
+                    fakeBox.Massless = true
+                    fakeBox.CanCollide = false 
+                    fakeBox.CanQuery = true   
+                    fakeBox.Transparency = 1  
+                    
+                    fakeBox.Parent = v.Character
+                    fakeHitboxes[v.Name] = fakeBox
+                end
                 
+                -- بروزرسانی سایز بزرگ و موقعیت هیت‌باکس همگام با سر انمی
+                fakeBox.Size = Vector3.new(HB_SIZE, HB_SIZE, HB_SIZE)
+                fakeBox.CFrame = head.CFrame
+                
+                -- افکت Highlight روی کاراکتر
                 local hl = v.Character:FindFirstChild("ESPHighlight")
                 if not hl then
                     hl = Instance.new("Highlight")
@@ -393,16 +419,15 @@ RunService.RenderStepped:Connect(function()
                     hl.Parent = v.Character
                 end
                 
-                -- اعمال لحظه‌ای رنگ RGB روی فیل و اوت‌لاین کاراکتر پلیرها
                 hl.Enabled = true
                 hl.FillColor = rgbColor
                 hl.FillTransparency = 0.5
                 hl.OutlineColor = rgbColor
             end)
 
-            -- محاسبه و بروزرسانی ردیاب‌های خطی با رنگ هماهنگ RGB
+            -- 🎯 ردیاب‌ها (Tracers) حالا دقیقاً وسط سر انمی رو نشونه می‌گیرن
             pcall(function()
-                local pos, onScreen = camera:WorldToViewportPoint(root.Position)
+                local pos, onScreen = camera:WorldToViewportPoint(head.Position)
                 local line = linesCache[v.Name]
 
                 if onScreen then
@@ -420,7 +445,6 @@ RunService.RenderStepped:Connect(function()
                     line.Position = UDim2.fromOffset((startPos.X + endPos.X) / 2, (startPos.Y + endPos.Y) / 2)
                     line.Rotation = math.deg(math.atan2(endPos.Y - startPos.Y, endPos.X - startPos.X))
                     
-                    -- خط ردیاب هم با رنگ چمس‌ها همگام (Sync) می‌شود
                     line.BackgroundColor3 = rgbColor
                     line.Visible = true
                 else
@@ -432,64 +456,68 @@ RunService.RenderStepped:Connect(function()
                 linesCache[v.Name]:Destroy()
                 linesCache[v.Name] = nil
             end
+            if fakeHitboxes[v.Name] then
+                fakeHitboxes[v.Name]:Destroy()
+                fakeHitboxes[v.Name] = nil
+            end
         end
     end
 end)
 
 espBtn.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    espBtn.Text = espEnabled and "👁️ ESP & RGB Chams: ON" or "👁️ ESP & RGB Chams: OFF"
+    espBtn.Text = espEnabled and "👁️ ESP & HeadShot: ON" or "👁️ ESP & HeadShot: OFF"
     espBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(60, 180, 100) or Color3.fromRGB(235, 70, 70)
     
     if not espEnabled then
         for _, v in ipairs(Players:GetPlayers()) do
             pcall(function()
-                if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                    local root = v.Character.HumanoidRootPart
-                    root.Size = Vector3.new(2, 2, 1)
-                    root.CanCollide = true
-                    if v.Character:FindFirstChild("ESPHighlight") then 
-                        v.Character.ESPHighlight.Enabled = false 
-                    end
+                if v.Character and v.Character:FindFirstChild("ESPHighlight") then 
+                    v.Character.ESPHighlight.Enabled = false 
                 end
             end)
         end
+        clearFakeHitboxes()
         tracerFolder:ClearAllChildren()
         linesCache = {}
     end
 end)
 
 -------------------------------------------------
--- Fixed WallShot
+-- ⚡ ADVANCED WALLSHOT LOGIC (نفوذ از دیوار به هیت‌باکس سر)
 -------------------------------------------------
-local WallWaitTime = 5 
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end 
     if input.UserInputType == Enum.UserInputType.MouseButton1 and espEnabled then
-        local mouse = LocalPlayer:GetMouse()
-        local target = mouse.Target
-        if target and target:IsA("BasePart") then
-            local isAPlayer = target.Parent:FindFirstChildOfClass("Humanoid")
-            if not isAPlayer and not target:IsDescendantOf(LocalPlayer.Character) then
-                pcall(function()
-                    if target.Size.Magnitude < 200 then
-                        local originalCFrame = target.CFrame
-                        local originalAnchored = target.Anchored
-                        target.Anchored = true
-                        target.CFrame = originalCFrame + Vector3.new(0, 5000, 0)
-                        task.delay(WallWaitTime, function()
-                            if target and target.Parent then
-                                target.CFrame = originalCFrame
-                                target.Anchored = originalAnchored
-                            end
-                        end)
-                    end
-                end)
+        local camera = workspace.CurrentCamera
+        local mousePos = UserInputService:GetMouseLocation()
+        local unitRay = camera:ViewportPointToRay(mousePos.X, mousePos.Y)
+        
+        local raycastParams = RaycastParams.new()
+        raycastParams.FilterType = Enum.RaycastFilterType.Include
+        
+        -- هدف‌گیری فقط روی هیت‌باکس‌های فیک سر انجام می‌شود
+        local targetList = {}
+        for _, box in pairs(fakeHitboxes) do
+            if box and box.Parent then
+                table.insert(targetList, box)
+            end
+        end
+        raycastParams.FilterDescendantsInstances = targetList
+        
+        local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000, raycastParams)
+        
+        if raycastResult and raycastResult.Instance then
+            local hitPart = raycastResult.Instance
+            local enemyModel = hitPart.Parent
+            if enemyModel and enemyModel:FindFirstChildOfClass("Humanoid") then
+                print("💀 HeadShot Registered via WallShot on: " .. enemyModel.Name)
+                
+                -- [نکته] اگه بازی کاستوم فریم‌ورک داره، اینجا باید پارت Head رو به عنوان هدف به سرور بفرستی.
             end
         end
     end
 end)
-
 -------------------------------------------------
 -- Kill Aura Logic
 -------------------------------------------------
