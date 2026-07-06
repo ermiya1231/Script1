@@ -1,460 +1,296 @@
--- Luxury Reverse Flash GUI: Sky Flicker, WalkSpeed, Dynamic Audio, Instant R-Hold Noclip, Midnight Mode & 0.01 Ultimate Audio Slomo (Workspace + SoundService)
-local player = game.Players.LocalPlayer
-local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui")
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-local humanoid = character:WaitForChild("Humanoid")
-local camera = workspace.CurrentCamera
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local Lighting = game:GetService("Lighting")
-local SoundService = game:GetService("SoundService")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
 
--- حذف نسخه‌های قبلی برای جلوگیری از تداخل
-if playerGui:FindFirstChild("ReverseFlashGui") then 
-    playerGui.ReverseFlashGui:Destroy() 
-end
-for _, obj in pairs(workspace:GetChildren()) do
-    if obj.Name == "ReverseFlashMusic" or obj.Name == "ReverseFlashMusic2" then
-        obj:Destroy()
-    end
-end
+local SuperSpeedAmount = 200 
+local PhaseDistance = 0.2   
+local SoundID = "rbxassetid://89362634813966"
 
--- // ساخت رابط کاربری حرفه‌ای (Luxury UI) //
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ReverseFlashGui"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+-- ساخت GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "PureSpeedGUI"
+gui.ResetOnSpawn = false
+if game.CoreGui:FindFirstChild("PureSpeedGUI") then game.CoreGui.PureSpeedGUI:Destroy() end
+gui.Parent = game.CoreGui
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 220, 0, 130)
-mainFrame.Position = UDim2.new(0.15, 0, 0.4, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.Size = UDim2.new(0, 300, 0, 180)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 mainFrame.BorderSizePixel = 0
+mainFrame.Parent = gui
 mainFrame.Active = true
-mainFrame.Draggable = true 
-mainFrame.Parent = screenGui
 
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 12)
-uiCorner.Parent = mainFrame
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(0, 255, 150)
+stroke.Thickness = 2
+stroke.Parent = mainFrame
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = mainFrame
 
-local uiStroke = Instance.new("UIStroke")
-uiStroke.Color = Color3.fromRGB(255, 20, 20)
-uiStroke.Thickness = 2
-uiStroke.Parent = mainFrame
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -50, 0, 40)
+title.Position = UDim2.new(0, 15, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "C00LHACK1124 - SPEED"
+title.TextColor3 = Color3.fromRGB(0, 255, 150)
+title.Font = Enum.Font.Code
+title.TextSize = 16
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = mainFrame
 
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0.3, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "REVERSE FLASH"
-titleLabel.TextColor3 = Color3.fromRGB(255, 230, 0)
-titleLabel.TextSize = 18
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Parent = mainFrame
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -38, 0, 5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+closeBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.Code
+closeBtn.TextSize = 16
+closeBtn.Parent = mainFrame
 
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0.8, 0, 0.4, 0)
-toggleButton.Position = UDim2.new(0.1, 0, 0.45, 0)
-toggleButton.BackgroundColor3 = Color3.fromRGB(40, 5, 5)
-toggleButton.Text = "STATUS: OFF"
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.TextSize = 14
-toggleButton.Font = Enum.Font.GothamBold
-toggleButton.Parent = mainFrame
+local speedBtn = Instance.new("TextButton")
+speedBtn.Size = UDim2.new(0.9, 0, 0, 45)
+speedBtn.Position = UDim2.new(0.05, 0, 0, 50)
+speedBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+speedBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+speedBtn.Text = "Speed MODE [OFF]"
+speedBtn.Font = Enum.Font.Code
+speedBtn.TextSize = 15
+speedBtn.Parent = mainFrame
 
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0, 8)
-btnCorner.Parent = toggleButton
+local dodgeBtn = Instance.new("TextButton")
+dodgeBtn.Size = UDim2.new(0.9, 0, 0, 45)
+dodgeBtn.Position = UDim2.new(0.05, 0, 0, 110)
+dodgeBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+dodgeBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+dodgeBtn.Text = "DODGE MASTER [OFF]"
+dodgeBtn.Font = Enum.Font.Code
+dodgeBtn.TextSize = 15
+dodgeBtn.Parent = mainFrame
 
--- متن وسط صفحه برای حالت Noclip
-local noclipScreenText = Instance.new("TextLabel")
-noclipScreenText.Size = UDim2.new(0, 300, 0, 50)
-noclipScreenText.Position = UDim2.new(0.5, -150, 0.45, -25)
-noclipScreenText.BackgroundTransparency = 1
-noclipScreenText.Text = "NOCLIP"
-noclipScreenText.TextColor3 = Color3.fromRGB(255, 0, 0)
-noclipScreenText.TextSize = 45
-noclipScreenText.Font = Enum.Font.GothamBold
-noclipScreenText.TextTransparency = 1 
-noclipScreenText.Parent = screenGui
-
--- // تنظیمات افکت و وضعیت‌ها //
-local isActive = false
-local isNoclip = false
-local SKY_HEIGHT = 2000 
-local cameraConnection = nil
-local noclipConnection = nil
-local lastStablePosition = Vector3.new()
-local originalCFrame = nil 
-local savedSpeedBeforeNoclip = 150 
-
--- جدول نگهداری پیتچ اصلی صداهای مپ (Workspace + SoundService) برای بازگردانی دقیق
-local originalPitches = {}
-
-local originalClockTime = Lighting.ClockTime
-local originalOutdoorAmbient = Lighting.OutdoorAmbient
-
--- ساخت پارت مجازی دوربین
-local virtualTarget = Instance.new("Part")
-virtualTarget.Name = "StableCameraTarget"
-virtualTarget.Size = Vector3.new(1, 1, 1)
-virtualTarget.Transparency = 1
-virtualTarget.CanCollide = false
-virtualTarget.Anchored = true
-virtualTarget.Parent = workspace
-
--- // سیستم نوتیفیکیشن هوشمند ضد اسپم //
-local currentNotifFrame = nil
-local currentNotifText = nil
-local notifThread = nil
-
-local function showNotification(message)
-    if currentNotifFrame and currentNotifText then
-        currentNotifText.Text = message
-        if notifThread then task.cancel(notifThread) end
-        
-        notifThread = task.spawn(function()
-            task.wait(2)
-            local tweenOut = TweenService:Create(currentNotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-                Position = UDim2.new(1, 10, 0.85, 0)
-            })
-            tweenOut:Play()
-            tweenOut.Completed:Connect(function()
-                if currentNotifFrame then currentNotifFrame:Destroy() end
-                currentNotifFrame = nil
-                currentNotifText = nil
-            end)
-        end)
-        return
-    end
-
-    currentNotifFrame = Instance.new("Frame")
-    currentNotifFrame.Size = UDim2.new(0, 200, 0, 50)
-    currentNotifFrame.Position = UDim2.new(1, 10, 0.85, 0)
-    currentNotifFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    currentNotifFrame.BorderSizePixel = 0
-    currentNotifFrame.Parent = screenGui
-
-    local notifCorner = Instance.new("UICorner")
-    notifCorner.CornerRadius = UDim.new(0, 8)
-    notifCorner.Parent = currentNotifFrame
-
-    local notifStroke = Instance.new("UIStroke")
-    notifStroke.Color = Color3.fromRGB(255, 230, 0)
-    notifStroke.Thickness = 1.5
-    notifStroke.Parent = currentNotifFrame
-
-    currentNotifText = Instance.new("TextLabel")
-    currentNotifText.Size = UDim2.new(1, 0, 1, 0)
-    currentNotifText.BackgroundTransparency = 1
-    currentNotifText.Text = message
-    currentNotifText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    currentNotifText.TextSize = 13
-    currentNotifText.Font = Enum.Font.GothamBold
-    currentNotifText.Parent = currentNotifFrame
-
-    local tweenIn = TweenService:Create(currentNotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.82, 0, 0.85, 0)
-    })
-    tweenIn:Play()
-
-    notifThread = task.spawn(function()
-        task.wait(2)
-        local tweenOut = TweenService:Create(currentNotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-            Position = UDim2.new(1, 10, 0.85, 0)
-        })
-        tweenOut:Play()
-        tweenOut.Completed:Connect(function()
-            if currentNotifFrame then currentNotifFrame:Destroy() end
-            currentNotifFrame = nil
-            currentNotifText = nil
-        end)
-    end)
-end
-
--- // مدیریت لایه‌های صوتی ترکیبی دوتایی با شرط حرکت //
-local soundThread = nil
-
-local function stopSoundLoop()
-    if soundThread then
-        task.cancel(soundThread)
-        soundThread = nil
-    end
-    for _, obj in pairs(workspace:GetChildren()) do
-        if obj.Name == "ReverseFlashMusic" or obj.Name == "ReverseFlashMusic2" then
-            obj:Destroy()
-        end
-    end
-end
-
-local function startSoundLoop()
-    stopSoundLoop() 
-    soundThread = task.spawn(function()
-        while isActive do
-            local currentSpeed1 = 1
-            local currentSpeed2 = 1.2
-
-            local flashSound1 = Instance.new("Sound")
-            flashSound1.Name = "ReverseFlashMusic"
-            flashSound1.SoundId = "rbxassetid://89362634813966"
-            flashSound1.Volume = 4
-            flashSound1.PlaybackSpeed = currentSpeed1
-            flashSound1.Looped = false
-            flashSound1.Parent = workspace
-            flashSound1:Play()
-            flashSound1.Ended:Connect(function() flashSound1:Destroy() end)
-            
-            if humanoid and humanoid.MoveDirection.Magnitude > 0 then
-                local flashSound2 = Instance.new("Sound")
-                flashSound2.Name = "ReverseFlashMusic2"
-                flashSound2.SoundId = "rbxassetid://128695660714222"
-                flashSound2.Volume = 1.7
-                flashSound2.PlaybackSpeed = currentSpeed2
-                flashSound2.Looped = false
-                flashSound2.Parent = workspace
-                flashSound2:Play()
-                flashSound2.Ended:Connect(function() flashSound2:Destroy() end)
-            end
-            
-            task.wait(0.5)
+-- سیستم درگ GUI
+local function dragify(Frame)
+    local dragToggle, dragStart, startPos, dragInput
+    Frame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = Frame.Position
         end
     end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+        if input == dragInput and dragToggle then
+            local Delta = input.Position - dragStart
+            local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+            TweenService:Create(Frame, TweenInfo.new(0.15), {Position = Position}):Play()
+        end
+    end)
+    Frame.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragToggle = false end end)
 end
+dragify(mainFrame)
 
--- // منطق رگباری اتوماتیک تله‌پورت //
-task.spawn(function()
-    while true do
-        task.wait(0.01) 
-        
-        if isActive and character and humanoidRootPart and humanoid then
-            local currentCFrame = humanoidRootPart.CFrame
-            
-            if currentCFrame.Y < (SKY_HEIGHT - 300) then
-                lastStablePosition = currentCFrame.Position
-                originalCFrame = currentCFrame
-            end
-            
-            local savedAssemblyVelocity = humanoidRootPart.AssemblyLinearVelocity
-            local savedAssemblyAngularVelocity = humanoidRootPart.AssemblyAngularVelocity
-            
-            local skyCFrame = originalCFrame + Vector3.new(0, SKY_HEIGHT, 0)
-            
-            humanoidRootPart.CFrame = skyCFrame
-            task.wait(0.001) 
-            
-            if isActive and humanoidRootPart and originalCFrame then
-                humanoidRootPart.CFrame = originalCFrame
-                humanoidRootPart.AssemblyLinearVelocity = savedAssemblyVelocity
-                humanoidRootPart.AssemblyAngularVelocity = savedAssemblyAngularVelocity
-            end
-        end
-    end
-end)
+local speedActive, speedConnection, camPart, lastOffset, audioLoopRunning = false, nil, nil, 0, false
+local dodgeActive = false
+local dodgeCamPart = nil
+local dodgeCamConnection = nil
+local dodgeCenterCFrame = nil 
 
--- // مدیریت پارت مجازی دوربین //
-local function syncVirtualTarget()
-    if isActive and humanoidRootPart then
-        virtualTarget.Position = virtualTarget.Position:Lerp(lastStablePosition, 0.25)
-    end
-end
+local function getHRP() return player.Character and player.Character:FindFirstChild("HumanoidRootPart") end
 
--- // سیستم ردیابی کلیدها (Q, E, R) همراه با اسکن فوق عمیق Workspace و SoundService //
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if not isActive or not humanoid then return end
-
-    if input.KeyCode == Enum.KeyCode.E then
-        if not isNoclip then
-            humanoid.WalkSpeed = humanoid.WalkSpeed + 10
-            showNotification("⚡ SPEED: " .. tostring(humanoid.WalkSpeed))
-        else
-            savedSpeedBeforeNoclip = savedSpeedBeforeNoclip + 10
-            showNotification("⚡ SPEED (QUEUED): " .. tostring(savedSpeedBeforeNoclip))
-        end
-    elseif input.KeyCode == Enum.KeyCode.Q then
-        if not isNoclip then
-            if humanoid.WalkSpeed > 16 then
-                humanoid.WalkSpeed = math.max(16, humanoid.WalkSpeed - 10)
-                showNotification("⚠️ SPEED: " .. tostring(humanoid.WalkSpeed))
-            end
-        else
-            if savedSpeedBeforeNoclip > 16 then
-                savedSpeedBeforeNoclip = math.max(16, savedSpeedBeforeNoclip - 10)
-                showNotification("⚠️ SPEED (QUEUED): " .. tostring(savedSpeedBeforeNoclip))
-            end
-        end
+local function disableHack()
+    speedActive = false
+    dodgeActive = false
+    speedBtn.Text = "Speed MODE [OFF]"
+    speedBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+    dodgeBtn.Text = "DODGE MASTER [OFF]"
+    dodgeBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
     
-    -- فعالسازی NOCLIP فوری و اسکن عمیق صوتی با دکمه R
-    elseif input.KeyCode == Enum.KeyCode.R then
-        isNoclip = true
-        noclipScreenText.TextTransparency = 0.8
-        
-        savedSpeedBeforeNoclip = humanoid.WalkSpeed
-        humanoid.WalkSpeed = 20
-        
-        Lighting.ClockTime = 0 
-        Lighting.OutdoorAmbient = Color3.fromRGB(10, 10, 10)
-
-        -- پاکسازی لیست پیتچ‌های قدیمی
-        table.clear(originalPitches)
-
-        -- تابع محلی برای اسکن صداها در یک کانتینر مشخص
-        local function scanContainer(container)
-            for _, obj in pairs(container:GetDescendants()) do
-                if obj:IsA("Sound") then
-                    -- مستثنی کردن صداهای خود چیت معکوس
-                    if obj.Name ~= "ReverseFlashMusic" and obj.Name ~= "ReverseFlashMusic2" then
-                        originalPitches[obj] = obj.PlaybackSpeed
-                        obj.PlaybackSpeed = 0.01
-                    end
-                end
+    if speedConnection then speedConnection:Disconnect() speedConnection = nil end
+    if camPart then camPart:Destroy() camPart = nil end
+    
+    if dodgeCamConnection then dodgeCamConnection:Disconnect() dodgeCamConnection = nil end
+    if dodgeCamPart then dodgeCamPart:Destroy() dodgeCamPart = nil end
+    
+    audioLoopRunning = false
+    
+    local hrp = getHRP()
+    if hrp and dodgeCenterCFrame then
+        hrp.CFrame = dodgeCenterCFrame
+    end
+    dodgeCenterCFrame = nil
+    
+    if hrp and hrp:FindFirstChild("HackSounds") then hrp.HackSounds:Destroy() end
+    local hum = player.Character and player.Character:FindFirstChild("Humanoid")
+    if hum then 
+        hum.AutoRotate = true 
+        Workspace.CurrentCamera.CameraSubject = hum 
+        local animator = hum:FindFirstChildOfClass("Animator")
+        if animator then
+            for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+                track:AdjustSpeed(1)
             end
         end
+    end
+    lastOffset = 0
+end
 
-        -- اسکن همزمان کل مپ و سرویس صداها
-        scanContainer(workspace)
-        scanContainer(SoundService)
-
-        -- لوپ فریم به فریم نوکلیپ آنی بدون باگ فیزیکی
-        if noclipConnection then noclipConnection:Disconnect() end
-        noclipConnection = RunService.Stepped:Connect(function()
-            if character then
-                for _, part in pairs(character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
+-- سیستم Speed + اصلاح سرعت انیمیشن
+speedBtn.MouseButton1Click:Connect(function()
+    if speedActive then disableHack() else
+        speedActive = true
+        speedBtn.Text = "SERVER BLUR MODE [ON]"
+        speedBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+        camPart = Instance.new("Part")
+        camPart.Transparency = 1; camPart.CanCollide = false; camPart.Anchored = true; camPart.Size = Vector3.new(1, 1, 1)
+        local hrp = getHRP()
+        if hrp then camPart.CFrame = hrp.CFrame end
+        camPart.Parent = Workspace
+        Workspace.CurrentCamera.CameraSubject = camPart
+        audioLoopRunning = true
+        task.spawn(function()
+            while audioLoopRunning do
+                local currentHrp = getHRP()
+                if currentHrp then
+                    local folder = currentHrp:FindFirstChild("HackSounds") or Instance.new("Folder", currentHrp)
+                    folder.Name = "HackSounds"
+                    local burstSound = Instance.new("Sound")
+                    burstSound.SoundId = SoundID; burstSound.Volume = 8; burstSound.Parent = folder
+                    burstSound:Play()
+                    task.delay(1.5, function() if burstSound then burstSound:Destroy() end end)
+                end
+                task.wait(0.2)
+            end
+        end)
+        speedConnection = RunService.RenderStepped:Connect(function(dt)
+            local currentHrp = getHRP()
+            local hum = player.Character and player.Character:FindFirstChild("Humanoid")
+            if currentHrp and hum then
+                local baseCFrame = currentHrp.CFrame * CFrame.new(-lastOffset, 0, 0)
+                
+                local animator = hum:FindFirstChildOfClass("Animator")
+                if hum.MoveDirection.Magnitude > 0 then
+                    hum.AutoRotate = false
+                    local nextPos = baseCFrame.Position + (hum.MoveDirection * (SuperSpeedAmount * dt))
+                    baseCFrame = CFrame.lookAt(nextPos, nextPos + hum.MoveDirection)
+                    
+                    if animator then
+                        for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+                            track:AdjustSpeed(4.5)
+                        end
+                    end
+                else 
+                    hum.AutoRotate = true 
+                    if animator then
+                        for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+                            track:AdjustSpeed(1)
+                        end
                     end
                 end
+                
+                camPart.CFrame = camPart.CFrame:Lerp(baseCFrame * CFrame.new(0, 1.5, 0), 0.45)
+                lastOffset = (lastOffset == PhaseDistance) and -PhaseDistance or PhaseDistance
+                currentHrp.CFrame = baseCFrame * CFrame.new(lastOffset, 0, 0)
             end
         end)
     end
 end)
 
-UserInputService.InputEnded:Connect(function(input, gameProcessed)
-    if not isActive then return end
+-- سیستم دوج مسافت اصلاح شده (بازه متغیر بین ۲۰ تا ۳۰ استد)
+dodgeBtn.MouseButton1Click:Connect(function()
+    dodgeActive = not dodgeActive
+    dodgeBtn.Text = dodgeActive and "DODGE MASTER [ON]" or "DODGE MASTER [OFF]"
+    dodgeBtn.TextColor3 = dodgeActive and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(255, 80, 80)
     
-    -- غیرفعال کردن آنی حالت NOCLIP و بازگشت ۱۰۰٪ سریع فیزیک دیوارها
-    if input.KeyCode == Enum.KeyCode.R then
-        isNoclip = false
-        noclipScreenText.TextTransparency = 1 
-        
-        if humanoid then
-            humanoid.WalkSpeed = savedSpeedBeforeNoclip
+    if dodgeActive then
+        if not dodgeCamPart then
+            dodgeCamPart = Instance.new("Part")
+            dodgeCamPart.Transparency = 1; dodgeCamPart.CanCollide = false; dodgeCamPart.Anchored = true; dodgeCamPart.Size = Vector3.new(1, 1, 1)
+            dodgeCamPart.Name = "DodgeCamPart"
+            dodgeCamPart.Parent = Workspace
         end
         
-        Lighting.ClockTime = originalClockTime
-        Lighting.OutdoorAmbient = originalOutdoorAmbient
-
-        -- قطع فوری لوپ نوکلیپ
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
+        local hrpStart = getHRP()
+        if hrpStart then
+            dodgeCenterCFrame = hrpStart.CFrame
+            dodgeCamPart.CFrame = dodgeCenterCFrame
+            Workspace.CurrentCamera.CameraSubject = dodgeCamPart
         end
         
-        -- فعال‌سازی آنی CanCollide برای سفت شدن آنی دیوارها
-        if character then
-            for _, part in pairs(character:GetDescendants()) do
-                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                    part.CanCollide = true
+        dodgeCamConnection = RunService.RenderStepped:Connect(function()
+            if dodgeCenterCFrame and dodgeCamPart then
+                local targetCamPos = dodgeCenterCFrame * CFrame.new(0, 1.5, 0)
+                dodgeCamPart.CFrame = dodgeCamPart.CFrame:Lerp(targetCamPos, 0.12)
+            end
+        end)
+        
+        local currentAngle = 0
+        local waveCounter = 0 
+        
+        task.spawn(function()
+            while dodgeActive do
+                local hrp = getHRP()
+                local hum = player.Character and player.Character:FindFirstChild("Humanoid")
+                
+                if hrp and hum then
+                    if hum.MoveDirection.Magnitude > 0 then
+                        local moveSpeed = hum.WalkSpeed > 16 and hum.WalkSpeed or 16
+                        dodgeCenterCFrame = dodgeCenterCFrame + (hum.MoveDirection * (moveSpeed * 0.048))
+                    end
+                    
+                    local center = dodgeCenterCFrame
+                    
+                    waveCounter = waveCounter + 0.75
+                    -- تغییر فرمول به بازه ۲۰ تا ۳۰ استد (مرکز روی ۲۵ استد + ۵ استد نوسان موج سینوسی)
+                    local dynamicRadius = 25 + (math.sin(waveCounter) * 5)
+                    
+                    currentAngle = currentAngle + math.rad(80) 
+                    
+                    local targets = {
+                        center * CFrame.Angles(0, currentAngle, 0) * CFrame.new(dynamicRadius, 0, 0),
+                        center * CFrame.Angles(0, currentAngle + math.rad(90), 0) * CFrame.new(dynamicRadius, 0, 0),
+                        center * CFrame.Angles(0, currentAngle + math.rad(180), 0) * CFrame.new(dynamicRadius, 0, 0),
+                        center * CFrame.Angles(0, currentAngle + math.rad(270), 0) * CFrame.new(dynamicRadius, 0, 0)
+                    }
+                    
+                    for _, targetCFrame in ipairs(targets) do
+                        if not dodgeActive then break end
+                        local currentHrp = getHRP()
+                        if currentHrp then
+                            currentHrp.CFrame = targetCFrame
+                        end
+                        task.wait() 
+                    end
+                else
+                    task.wait()
                 end
             end
-        end
-        
-        -- برگرداندن پیتچ تمام صداها (Workspace + SoundService) به حالت اولیه خودشان
-        for obj, originalPitch in pairs(originalPitches) do
-            if obj and obj.Parent then
-                obj.PlaybackSpeed = originalPitch
-            end
-        end
-        table.clear(originalPitches)
-    end
-end)
-
--- // مدیریت دکمه و وضعیت همراه با فرود امن روی زمین //
-toggleButton.MouseButton1Click:Connect(function()
-    isActive = not isActive
-    
-    if isActive then
-        toggleButton.Text = "STATUS: ON"
-        toggleButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-        toggleButton.TextColor3 = Color3.fromRGB(255, 255, 0)
-        
-        originalClockTime = Lighting.ClockTime
-        originalOutdoorAmbient = Lighting.OutdoorAmbient
-        
-        startSoundLoop()
-        
-        if humanoid then
-            humanoid.WalkSpeed = 150
-        end
-        
-        lastStablePosition = humanoidRootPart.Position
-        originalCFrame = humanoidRootPart.CFrame
-        virtualTarget.Position = lastStablePosition
-        
-        camera.CameraSubject = virtualTarget
-        cameraConnection = RunService.RenderStepped:Connect(syncVirtualTarget)
+        end)
     else
-        toggleButton.Text = "STATUS: OFF"
-        toggleButton.BackgroundColor3 = Color3.fromRGB(40, 5, 5)
-        toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        if dodgeCamConnection then dodgeCamConnection:Disconnect() dodgeCamConnection = nil end
+        if dodgeCamPart then dodgeCamPart:Destroy() dodgeCamPart = nil end
         
-        stopSoundLoop()
-        isNoclip = false
-        noclipScreenText.TextTransparency = 1
+        local hrp = getHRP()
+        if hrp and dodgeCenterCFrame then
+            hrp.CFrame = dodgeCenterCFrame
+        end
+        dodgeCenterCFrame = nil
         
-        Lighting.ClockTime = originalClockTime
-        Lighting.OutdoorAmbient = originalOutdoorAmbient
-        
-        if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
-        
-        if character then
-            for _, part in pairs(character:GetDescendants()) do
-                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                    part.CanCollide = true
-                end
+        local hum = player.Character and player.Character:FindFirstChild("Humanoid")
+        if hum then 
+            hum.AutoRotate = true 
+            if not speedActive then
+                 Workspace.CurrentCamera.CameraSubject = hum
             end
         end
-        
-        if humanoid then
-            humanoid.WalkSpeed = 16
-        end
-        
-        if humanoidRootPart and originalCFrame then
-            humanoidRootPart.CFrame = originalCFrame
-            humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        end
-        
-        if cameraConnection then
-            cameraConnection:Disconnect()
-            cameraConnection = nil
-        end
-        camera.CameraSubject = humanoid
     end
 end)
 
--- بازنشانی در صورت مرگ
-player.CharacterAdded:Connect(function(newChar)
-    character = newChar
-    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    humanoid = character:WaitForChild("Humanoid")
-    
-    if isActive then
-        stopSoundLoop()
-        isNoclip = false
-        noclipScreenText.TextTransparency = 1
-        Lighting.ClockTime = originalClockTime
-        Lighting.OutdoorAmbient = originalOutdoorAmbient
-        if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
-        if cameraConnection then
-            cameraConnection:Disconnect()
-            cameraConnection = nil
-        end
-        camera.CameraSubject = humanoid
-        isActive = false
-        toggleButton.Text = "STATUS: OFF"
-        toggleButton.BackgroundColor3 = Color3.fromRGB(40, 5, 5)
-        toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end
-end)
+closeBtn.MouseButton1Click:Connect(function() disableHack() gui:Destroy() end)
