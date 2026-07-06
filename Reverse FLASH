@@ -146,7 +146,7 @@ end
 speedBtn.MouseButton1Click:Connect(function()
     if speedActive then disableHack() else
         speedActive = true
-        speedBtn.Text = "SERVER BLUR MODE [ON]"
+        speedBtn.Text = "Speed MODE [ON]"
         speedBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
         camPart = Instance.new("Part")
         camPart.Transparency = 1; camPart.CanCollide = false; camPart.Anchored = true; camPart.Size = Vector3.new(1, 1, 1)
