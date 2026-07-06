@@ -47,7 +47,7 @@ gui.ResetOnSpawn = false
 gui.Parent = targetParent -- تغییر یافت به مسیر جدید
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 580)
+main.Size = UDim2.fromOffset(220, 691)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -109,7 +109,7 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 580)
+local originalSize = UDim2.fromOffset(220, 691)
 local collapsedSize = UDim2.fromOffset(220, 30)
 
 local collapseBtn = Instance.new("TextButton")
@@ -151,34 +151,29 @@ local function createButton(text, posY, color)
 	return btn
 end
 
--------------------------------------------------
--- Buttons
--------------------------------------------------
--------------------------------------------------
--- Buttons (مرتب شده بدون تداخل مابقی دکمه‌ها)
--------------------------------------------------
 local fireBtn = createButton("🔥 Fire ClickDetectors", 38, Color3.fromRGB(70,140,255))
--- دکمه جدید تو که اسم‌های خاص رو فایر می‌کنه و به عنوان دکمه دوم اضافه شده
-local fireSpecificBtn = createButton("🔑 Open Keypad Doors", 76, Color3.fromRGB(255, 150, 50))
+local fireSpecificBtn = createButton("🔑 Open Keypad Doors", 76, Color3.fromRGB(70,140,255))
 
--- بقیه دکمه‌ها هرکدام ۳۸ واحد رفتن پایین‌تر تا فضا کاملاً باز بشه
-local promptBtn = createButton("⚡ Instant Prompt: OFF", 114, Color3.fromRGB(255,90,90))
-local swimBtn = createButton("🌊 Swim Disable: OFF", 152, Color3.fromRGB(255,90,90))
+-- 📦 دکمه تی‌پي آیتم‌ها
+local tpUnanchoredBtn = createButton("📦 TP Unanchored Items", 114, Color3.fromRGB(70,140,255))
 
--- عدد این خط روی 190 تنظیم شد تا سوراخ پر بشه
-local espBtn = createButton("👁️ ESP & Hitbox & Wallshot: OFF", 190, Color3.fromRGB(255,90,90))
+-- 🎒 دو دکمه‌ی جدید که طبق خواسته‌ات دقیقاً زیر دکمه بالا و به صورت کلیکی اضافه شدند:
+local equipToolsBtn = createButton("🎒 Equip All Tools", 152, Color3.fromRGB(70,140,255))
+local dropToolsBtn = createButton("🗑️ Drop All Tools", 190, Color3.fromRGB(70,140,255))
 
--- عدد این خط روی 228 موند تا روی دکمه بالایی نیفته
-local killBtn   = createButton("💀 NPC Kill Aura: OFF", 228, Color3.fromRGB(255,90,90))
-
-local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 266, Color3.fromRGB(255, 90, 90))
-local xrayBtn = createButton("💎 X-Ray Vision: OFF", 304, Color3.fromRGB(255, 90, 90))
-local noclipBtn = createButton("👻 NoClip: OFF", 342, Color3.fromRGB(255, 90, 90))
-local climbBtn = createButton("🧗 Spiderman : OFF", 380, Color3.fromRGB(255, 90, 90))
-local fullBrightBtn = createButton("☀️ FullBright: OFF", 418, Color3.fromRGB(255, 90, 90))
-local weightBtn = createButton("🛸 Titan Mass:: OFF", 456, Color3.fromRGB(255, 90, 90))
-local wallWalkBtn = createButton("🧗 Walk On Walls: OFF", 494, Color3.fromRGB(255, 90, 90))
-local grabtoolsBtn = createButton("🎒 Grabtools: OFF", 532, Color3.fromRGB(255, 90, 90))
+-- ⚡ بقیه دکمه‌های منو برای باز شدن فضا ۷۶ واحد به پایین منتقل شدند:
+local promptBtn = createButton("⚡ Instant Prompt: OFF", 228, Color3.fromRGB(255,90,90))
+local swimBtn = createButton("🌊 Swim Disable: OFF", 266, Color3.fromRGB(255,90,90))
+local espBtn = createButton("👁️ ESP & Hitbox & Wallshot: OFF", 304, Color3.fromRGB(255,90,90))
+local killBtn   = createButton("💀 NPC Kill Aura: OFF", 342, Color3.fromRGB(255,90,90))
+local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 380, Color3.fromRGB(255, 90, 90))
+local xrayBtn = createButton("💎 X-Ray Vision: OFF", 418, Color3.fromRGB(255, 90, 90))
+local noclipBtn = createButton("ghost: NoClip: OFF", 456, Color3.fromRGB(255, 90, 90))
+local climbBtn = createButton("🧗 Spiderman : OFF", 494, Color3.fromRGB(255, 90, 90))
+local fullBrightBtn = createButton("☀️ FullBright: OFF", 532, Color3.fromRGB(255, 90, 90))
+local weightBtn = createButton("🛸 Titan Mass:: OFF", 570, Color3.fromRGB(255, 90, 90))
+local wallWalkBtn = createButton("🧗 Walk On Walls: OFF", 608, Color3.fromRGB(255, 90, 90))
+local grabtoolsBtn = createButton("🎒 Grabtools: OFF", 646, Color3.fromRGB(255, 90, 90))
 -------------------------------------------------
 -- Fire ClickDetectors
 -------------------------------------------------
@@ -979,7 +974,115 @@ grabtoolsBtn.MouseButton1Click:Connect(function()
 		notify("Grabtools De-Activated", "Auto pick-up disabled")
 	end
 end)
+
 -------------------------------------------------
+-- 📦 TP UNANCHORED LOGIC (No Jumping Bug + MAX Network Power)
+-------------------------------------------------
+local frozenParts = {}
+
+tpUnanchoredBtn.MouseButton1Click:Connect(function()
+    local speaker = Players.LocalPlayer
+    local players = {speaker.Name}
+    
+    -- 📡 حفظ نتورک با قدرت بی‌نهایت (آپدیت شده)
+    task.spawn(function()
+        for _ = 1, 30 do
+            pcall(function()
+                settings().Physics.AllowSleep = false
+                
+                -- تنظیمات عادی
+                speaker.SimulationRadius = math.huge
+                speaker.MaximumSimulationRadius = math.huge
+                
+                -- 👇 تزریق قدرت حداکثری از طریق توابع مخفی اکسپلویت
+                if sethiddenproperty then
+                    sethiddenproperty(speaker, "SimulationRadius", math.huge)
+                    sethiddenproperty(speaker, "MaxSimulationRadius", math.huge)
+                end
+            end)
+            task.wait(0.2)
+        end
+    end)
+    
+    -- 🚀 منطق اصلی (دقیقاً همون کد خودت بدون هیچ تغییری)
+    task.spawn(function()
+        for i,v in pairs(players) do
+            local Forces = {}
+            local count = 0 
+            
+            for _,part in pairs(workspace:GetDescendants()) do
+                count = count + 1
+                if count % 500 == 0 then task.wait() end 
+                
+                if Players[v].Character:FindFirstChild('Head') and part:IsA("BasePart" or "UnionOperation" or "Model") and part.Anchored == false and not part:IsDescendantOf(speaker.Character) and part.Name == "Torso" == false and part.Name == "Head" == false and part.Name == "Right Arm" == false and part.Name == "Left Arm" == false and part.Name == "Right Leg" == false and part.Name == "Left Leg" == false and part.Name == "HumanoidRootPart" == false then
+                    
+                    for i,c in pairs(part:GetChildren()) do
+                        if c:IsA("BodyPosition") or c:IsA("BodyGyro") then
+                            c:Destroy()
+                        end
+                    end
+                    
+                    local ForceInstance = Instance.new("BodyPosition")
+                    -- 👇 خط طلایی خودت
+                    ForceInstance.Position = Players[v].Character.Head.Position 
+                    ForceInstance.Parent = part
+                    ForceInstance.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                    table.insert(Forces, ForceInstance)
+                    
+                    if not table.find(frozenParts,part) then
+                        table.insert(frozenParts,part)
+                    end
+                end
+            end
+            
+            -- حلقه آخر (سر جای خودش)
+            for i,c in pairs(Forces) do
+                c.Position = Players[v].Character.Head.Position
+            end
+        end
+    end)
+    
+    notify("TP Unanchored (Max Network Power) Executed! 📦⚡")
+end)
+
+-------------------------------------------------
+-- 🎒 EQUIP TOOLS LOGIC
+-------------------------------------------------
+equipToolsBtn.MouseButton1Click:Connect(function()
+	local speaker = Players.LocalPlayer
+	
+	-- ⬇️ دقیقاً منطق دست‌نخورده خودت برای پوشیدن آیتم‌ها
+	for i,v in pairs(speaker:FindFirstChildOfClass("Backpack"):GetChildren()) do
+		if v:IsA("Tool") or v:IsA("HopperBin") then
+			v.Parent = speaker.Character
+		end
+	end
+	
+	notify("All tools equipped! 🎒")
+end)
+
+-------------------------------------------------
+-- 🗑️ DROP TOOLS LOGIC
+-------------------------------------------------
+dropToolsBtn.MouseButton1Click:Connect(function()
+	local speaker = Players.LocalPlayer
+	
+	-- ⬇️ دقیقاً منطق دست‌نخورده خودت برای انداختن آیتم‌ها روی زمین
+	for i,v in pairs(speaker.Backpack:GetChildren()) do
+		if v:IsA("Tool") then
+			v.Parent = speaker.Character
+		end
+	end
+	wait()
+	for i,v in pairs(speaker.Character:GetChildren()) do
+		if v:IsA("Tool") then
+			v.Parent = workspace
+		end
+	end
+	
+	notify("All tools dropped! 🗑️")
+end)
+------------------------------------------
 -- Color Animation
 -------------------------------------------------
 task.spawn(function()
