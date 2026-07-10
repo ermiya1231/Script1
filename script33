@@ -47,7 +47,7 @@ gui.ResetOnSpawn = false
 gui.Parent = targetParent -- تغییر یافت به مسیر جدید
 
 local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(220, 691)
+main.Size = UDim2.fromOffset(220, 653)
 main.Position = UDim2.fromScale(0.05, 0.4)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 main.BorderSizePixel = 0
@@ -109,7 +109,7 @@ title.Parent = main
 -- 🔽 EXPAND / COLLAPSE SYSTEM
 -------------------------------------------------
 local isCollapsed = false
-local originalSize = UDim2.fromOffset(220, 691)
+local originalSize = UDim2.fromOffset(220, 653)
 local collapsedSize = UDim2.fromOffset(220, 30)
 
 local collapseBtn = Instance.new("TextButton")
@@ -157,23 +157,22 @@ local fireSpecificBtn = createButton("🔑 Open Keypad Doors", 76, Color3.fromRG
 -- 📦 دکمه تی‌پي آیتم‌ها
 local tpUnanchoredBtn = createButton("📦 TP Unanchored Items", 114, Color3.fromRGB(70,140,255))
 
--- 🎒 دو دکمه‌ی جدید که طبق خواسته‌ات دقیقاً زیر دکمه بالا و به صورت کلیکی اضافه شدند:
+-- 🎒 دو دکمه‌ی جدید
 local equipToolsBtn = createButton("🎒 Equip All Tools", 152, Color3.fromRGB(70,140,255))
 local dropToolsBtn = createButton("🗑️ Drop All Tools", 190, Color3.fromRGB(70,140,255))
 
--- ⚡ بقیه دکمه‌های منو برای باز شدن فضا ۷۶ واحد به پایین منتقل شدند:
+-- ⚡ بقیه دکمه‌های منو (مختصات Y برای پر کردن جای خالی ESP اصلاح شد)
 local promptBtn = createButton("⚡ Instant Prompt: OFF", 228, Color3.fromRGB(255,90,90))
 local swimBtn = createButton("🌊 Swim Disable: OFF", 266, Color3.fromRGB(255,90,90))
-local espBtn = createButton("👁️ ESP & Hitbox & Wallshot: OFF", 304, Color3.fromRGB(255,90,90))
-local killBtn   = createButton("💀 NPC Kill Aura: OFF", 342, Color3.fromRGB(255,90,90))
-local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 380, Color3.fromRGB(255, 90, 90))
-local xrayBtn = createButton("💎 X-Ray Vision: OFF", 418, Color3.fromRGB(255, 90, 90))
-local noclipBtn = createButton("ghost: NoClip: OFF", 456, Color3.fromRGB(255, 90, 90))
-local climbBtn = createButton("🧗 Spiderman : OFF", 494, Color3.fromRGB(255, 90, 90))
-local fullBrightBtn = createButton("☀️ FullBright: OFF", 532, Color3.fromRGB(255, 90, 90))
-local weightBtn = createButton("🛸 Titan Mass:: OFF", 570, Color3.fromRGB(255, 90, 90))
-local wallWalkBtn = createButton("🧗 Walk On Walls: OFF", 608, Color3.fromRGB(255, 90, 90))
-local grabtoolsBtn = createButton("🎒 Grabtools: OFF", 646, Color3.fromRGB(255, 90, 90))
+local killBtn   = createButton("💀 NPC Kill Aura: OFF", 304, Color3.fromRGB(255,90,90))
+local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 342, Color3.fromRGB(255, 90, 90))
+local xrayBtn = createButton("💎 X-Ray Vision: OFF", 380, Color3.fromRGB(255, 90, 90))
+local noclipBtn = createButton("ghost: NoClip: OFF", 418, Color3.fromRGB(255, 90, 90))
+local climbBtn = createButton("🧗 Spiderman : OFF", 456, Color3.fromRGB(255, 90, 90))
+local fullBrightBtn = createButton("☀️ FullBright: OFF", 494, Color3.fromRGB(255, 90, 90))
+local weightBtn = createButton("🛸 Titan Mass:: OFF", 532, Color3.fromRGB(255, 90, 90))
+local wallWalkBtn = createButton("🧗 Walk On Walls: OFF", 570, Color3.fromRGB(255, 90, 90))
+local grabtoolsBtn = createButton("🎒 Grabtools: OFF", 608, Color3.fromRGB(255, 90, 90))
 -------------------------------------------------
 -- Fire ClickDetectors
 -------------------------------------------------
@@ -337,145 +336,6 @@ swimBtn.MouseButton1Click:Connect(function()
 	else
 		unhideWaterPartsClientSide()
 	end
-end)
-
--------------------------------------------------
--- ESP, Tracer, Hitbox & RGB Chams (Lag-Free Engine)
--------------------------------------------------
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-
--- فرض می‌کنیم 'gui' و 'espBtn' قبلاً در اسکریپت شما تعریف شده‌اند
-local espEnabled = false
-local tracerFolder = gui:FindFirstChild("TracerFolder") or Instance.new("Folder", gui)
-tracerFolder.Name = "TracerFolder"
-
-local linesCache = {}
-local hueCounter = 0
-
--- تنظیمات LoopBring
-local BRING_RADIUS = 10 -- شعاع تشخیص (استود)
-local BRING_OFFSET = CFrame.new(0, 0, -3) -- دقیقاً 3 استود جلوی کاراکتر شما
-
-RunService.RenderStepped:Connect(function()
-    if not espEnabled then 
-        tracerFolder:ClearAllChildren() 
-        linesCache = {}
-        return 
-    end
-
-    -- انیمیشن رنگین‌کمانی ESP
-    hueCounter = (hueCounter + 0.005) % 1
-    local rgbColor = Color3.fromHSV(hueCounter, 0.8, 1)
-
-    local currentPlayers = Players:GetPlayers()
-    local camera = workspace.CurrentCamera
-    local viewportSize = camera.ViewportSize
-    local startPos = Vector2.new(viewportSize.X / 2, viewportSize.Y)
-
-    -- اطلاعات کاراکتر خودمون
-    local myChar = LocalPlayer.Character
-    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-
-    for _, v in ipairs(currentPlayers) do
-        if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("Head") and v.Character:FindFirstChild("HumanoidRootPart") then
-            local head = v.Character.Head
-            local enemyRoot = v.Character.HumanoidRootPart
-            
-            -- =====================================
-            -- 1. سیستم ESP Highlight
-            -- =====================================
-            local hl = v.Character:FindFirstChild("ESPHighlight")
-            if not hl then
-                hl = Instance.new("Highlight")
-                hl.Name = "ESPHighlight"
-                hl.OutlineTransparency = 0
-                hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                hl.Parent = v.Character
-            end
-            hl.Enabled = true
-            hl.FillColor = rgbColor
-            hl.FillTransparency = 0.5
-            hl.OutlineColor = rgbColor
-
-            -- =====================================
-            -- 2. سیستم Tracers (خط به سمت سر)
-            -- =====================================
-            local pos, onScreen = camera:WorldToViewportPoint(head.Position)
-            local line = linesCache[v.Name]
-
-            if onScreen then
-                if not line then
-                    line = Instance.new("Frame")
-                    line.BorderSizePixel = 0
-                    line.AnchorPoint = Vector2.new(0.5, 0.5)
-                    line.Parent = tracerFolder
-                    linesCache[v.Name] = line
-                end
-                
-                local endPos = Vector2.new(pos.X, pos.Y)
-                local distance = (startPos - endPos).Magnitude
-                line.Size = UDim2.fromOffset(distance, 1.2)
-                line.Position = UDim2.fromOffset((startPos.X + endPos.X) / 2, (startPos.Y + endPos.Y) / 2)
-                line.Rotation = math.deg(math.atan2(endPos.Y - startPos.Y, endPos.X - startPos.X))
-                
-                line.BackgroundColor3 = rgbColor
-                line.Visible = true
-            else
-                if line then line.Visible = false end
-            end
-
-            -- =====================================
-            -- 3. سیستم Auto Proximity LoopBring
-            -- =====================================
-            if myRoot then
-                -- محاسبه فاصله بین شما و حریف
-                local dist = (myRoot.Position - enemyRoot.Position).Magnitude
-                
-                -- اگر حریف در فاصله 10 استودی بود
-                if dist <= BRING_RADIUS then
-                    -- انتقال دقیق حریف به نقطه جلوی شما
-                    enemyRoot.CFrame = myRoot.CFrame * BRING_OFFSET
-                    
-                    -- صفر کردن سرعت حریف برای جلوگیری از پرت شدن (Fling) ناخواسته
-                    enemyRoot.Velocity = Vector3.zero
-                    enemyRoot.RotVelocity = Vector3.zero
-                end
-            end
-
-        else
-            -- پاکسازی خطوط و افکت‌ها برای بازیکنانی که مردند یا از بازی رفتند
-            if linesCache[v.Name] then
-                linesCache[v.Name]:Destroy()
-                linesCache[v.Name] = nil
-            end
-            if v.Character and v.Character:FindFirstChild("ESPHighlight") then
-                v.Character.ESPHighlight.Enabled = false
-            end
-        end
-    end
-end)
-
--- دکمه روشن/خاموش
-espBtn.MouseButton1Click:Connect(function()
-    espEnabled = not espEnabled
-    espBtn.Text = espEnabled and "👁️ ESP & AutoBring: ON" or "👁️ ESP & AutoBring: OFF"
-    espBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(60, 180, 100) or Color3.fromRGB(235, 70, 70)
-    
-    -- وقتی خاموش شد، همه‌چیز رو پاک کن
-    if not espEnabled then
-        for _, v in ipairs(Players:GetPlayers()) do
-            pcall(function()
-                if v.Character and v.Character:FindFirstChild("ESPHighlight") then 
-                    v.Character.ESPHighlight.Enabled = false 
-                end
-            end)
-        end
-        tracerFolder:ClearAllChildren()
-        linesCache = {}
-    end
 end)
 -------------------------------------------------
 -- Kill Aura Logic
