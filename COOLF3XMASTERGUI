@@ -203,6 +203,8 @@ local scriptsData = {
 	{name = "RoadBlocks", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/roadblocks"},
 	{name = "C00LHACK F3X GUI", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/coolf3x"},
 	{name = "F3X Panel", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script52"},
+	{name = "F3X Nyxes", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/nyxes"},
+	{name = "F3X Zibran", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/zibran"},
 	{name = "VirusF3X", url = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/VirusF3X"}
 }
 
