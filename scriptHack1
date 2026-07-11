@@ -1,0 +1,955 @@
+-- NICE PANEL -- GOD-OP
+local function notify(text)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 280, 0, 40)
+    label.Position = UDim2.new(1, -300, 1, -60)
+    label.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Text = text
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 14
+    label.Parent = gui
+    Instance.new("UICorner", label)
+    task.delay(3, function() if label then label:Destroy() end end)
+end
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 10)
+local workspace = game:GetService("Workspace")
+local xrayEnabled = false
+local originalTransparency = {}
+local noclipEnabled = false
+local noclipConn = nil
+
+-- Helper Functions
+local function partowner(part)
+    return part.ReceiveAge == 0
+end
+
+local function isnpc(ins)
+    local humanoid = ins:FindFirstChildOfClass("Humanoid")
+    local player = Players:GetPlayerFromCharacter(ins)
+    return humanoid and not player
+end
+-------------------------------------------------
+-- GUI Create
+-------------------------------------------------
+-- تشخیص خودکار مسیر امن برای اگزکتور
+local targetParent = (typeof(gethui) == "function" and gethui()) or game:GetService("CoreGui")
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "ProClickGUI"
+gui.ResetOnSpawn = false
+gui.Parent = targetParent -- تغییر یافت به مسیر جدید
+
+local main = Instance.new("Frame")
+main.Size = UDim2.fromOffset(220, 653)
+main.Position = UDim2.fromScale(0.05, 0.4)
+main.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+main.BorderSizePixel = 0
+main.Active = true
+main.ClipsDescendants = true
+main.Parent = gui
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
+
+-------------------------------------------------
+-- Drag System (Fixed)
+-------------------------------------------------
+do
+	local dragging, dragStart, startPos
+	local function update(input)
+		local delta = input.Position - dragStart
+		main.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+	main.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = main.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and (
+			input.UserInputType == Enum.UserInputType.MouseMovement
+			or input.UserInputType == Enum.UserInputType.Touch
+		) then
+			update(input)
+		end
+	end)
+end
+
+-------------------------------------------------
+-- Title
+-------------------------------------------------
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "⚡ Pro Click Panel"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextColor3 = Color3.fromRGB(255, 200, 80)
+title.Parent = main
+
+-------------------------------------------------
+-- 🔽 EXPAND / COLLAPSE SYSTEM
+-------------------------------------------------
+local isCollapsed = false
+local originalSize = UDim2.fromOffset(220, 653)
+local collapsedSize = UDim2.fromOffset(220, 30)
+
+local collapseBtn = Instance.new("TextButton")
+collapseBtn.Size = UDim2.fromOffset(25, 25)
+collapseBtn.Position = UDim2.new(1, -30, 0, 2)
+collapseBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+collapseBtn.Text = "-"
+collapseBtn.TextColor3 = Color3.new(1, 1, 1)
+collapseBtn.Font = Enum.Font.GothamBold
+collapseBtn.TextSize = 20
+collapseBtn.Parent = main
+Instance.new("UICorner", collapseBtn).CornerRadius = UDim.new(0, 5)
+
+collapseBtn.MouseButton1Click:Connect(function()
+    isCollapsed = not isCollapsed
+    local targetSize = isCollapsed and collapsedSize or originalSize
+    local targetText = isCollapsed and "+" or "-"
+    game:GetService("TweenService"):Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+        Size = targetSize
+    }):Play()
+    collapseBtn.Text = targetText
+end)
+
+-------------------------------------------------
+-- Button Template
+-------------------------------------------------
+local function createButton(text, posY, color)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0.9, 0, 0, 32)
+	btn.Position = UDim2.new(0.05, 0, 0, posY)
+	btn.BackgroundColor3 = color
+	btn.Text = text
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
+	btn.BorderSizePixel = 0
+	btn.Parent = main
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+	return btn
+end
+
+local fireBtn = createButton("🔥 Fire ClickDetectors", 38, Color3.fromRGB(70,140,255))
+local fireSpecificBtn = createButton("🔑 Open Keypad Doors", 76, Color3.fromRGB(70,140,255))
+
+-- 📦 دکمه تی‌پي آیتم‌ها
+local tpUnanchoredBtn = createButton("📦 TP Unanchored Items", 114, Color3.fromRGB(70,140,255))
+
+-- 🎒 دو دکمه‌ی جدید
+local equipToolsBtn = createButton("🎒 Equip All Tools", 152, Color3.fromRGB(70,140,255))
+local dropToolsBtn = createButton("🗑️ Drop All Tools", 190, Color3.fromRGB(70,140,255))
+
+-- ⚡ بقیه دکمه‌های منو (مختصات Y برای پر کردن جای خالی ESP اصلاح شد)
+local promptBtn = createButton("⚡ Instant Prompt: OFF", 228, Color3.fromRGB(255,90,90))
+local swimBtn = createButton("🌊 Swim Disable: OFF", 266, Color3.fromRGB(255,90,90))
+local killBtn   = createButton("💀 NPC Kill Aura: OFF", 304, Color3.fromRGB(255,90,90))
+local npcJumpBtn = createButton("🕺 NPC Jump Aura: OFF", 342, Color3.fromRGB(255, 90, 90))
+local xrayBtn = createButton("💎 X-Ray Vision: OFF", 380, Color3.fromRGB(255, 90, 90))
+local noclipBtn = createButton("ghost: NoClip: OFF", 418, Color3.fromRGB(255, 90, 90))
+local climbBtn = createButton("🧗 Spiderman : OFF", 456, Color3.fromRGB(255, 90, 90))
+local fullBrightBtn = createButton("☀️ FullBright: OFF", 494, Color3.fromRGB(255, 90, 90))
+local weightBtn = createButton("🛸 Titan Mass:: OFF", 532, Color3.fromRGB(255, 90, 90))
+local wallWalkBtn = createButton("🧗 Walk On Walls: OFF", 570, Color3.fromRGB(255, 90, 90))
+local grabtoolsBtn = createButton("🎒 Grabtools: OFF", 608, Color3.fromRGB(255, 90, 90))
+-------------------------------------------------
+-- Fire ClickDetectors
+-------------------------------------------------
+fireBtn.MouseButton1Click:Connect(function()
+	for _, d in ipairs(workspace:GetDescendants()) do
+		if d:IsA("ClickDetector") then
+			pcall(function() fireclickdetector(d) end)
+		end
+	end
+end)
+
+-------------------------------------------------
+-- Fire Specific ClickDetector
+-------------------------------------------------
+-- لیست اسم‌های هدف (همه با حروف کوچک برای مقایسه دقیق‌تر)
+local targetNames = {
+    ["open"] = true,
+    ["keypad"] = true,
+    ["key pad"] = true
+}
+
+fireSpecificBtn.MouseButton1Click:Connect(function()
+    local found = false
+    for _, d in ipairs(workspace:GetDescendants()) do
+        if d:IsA("ClickDetector") then
+            -- تبدیل اسم پارتی که کلیک‌دیتکتور داخلشه، یا اسم خود کلیک‌دیتکتور به حروف کوچک
+            local parentNameLower = d.Parent.Name:lower()
+            local detectorNameLower = d.Name:lower()
+            
+            -- چک کردن اینکه آیا اسم خود دیتکتور یا پارت مادرش تو لیست هست یا نه
+            if targetNames[parentNameLower] or targetNames[detectorNameLower] then
+                pcall(function() 
+                    fireclickdetector(d)
+                    found = true
+                end)
+            end
+        end
+    end
+    
+    if found then
+        notify("Target ClickDetector Fired! 🔑")
+    else
+        notify("No Target Detector Found! ❌")
+    end
+end)
+
+-------------------------------------------------
+-- Instant Prompt
+-------------------------------------------------
+local originalHoldTimes = {}
+local instantPromptEnabled = false
+local function applyPromptState(prompt)
+	if not prompt:IsA("ProximityPrompt") then return end
+	if originalHoldTimes[prompt] == nil then
+		originalHoldTimes[prompt] = prompt.HoldDuration
+	end
+	prompt.HoldDuration = instantPromptEnabled and 0 or originalHoldTimes[prompt]
+end
+local function refreshAllPrompts()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("ProximityPrompt") then applyPromptState(obj) end
+	end
+end
+workspace.DescendantAdded:Connect(function(obj)
+	if obj:IsA("ProximityPrompt") then task.wait() applyPromptState(obj) end
+end)
+promptBtn.MouseButton1Click:Connect(function()
+	instantPromptEnabled = not instantPromptEnabled
+	promptBtn.Text = instantPromptEnabled and "⚡ Instant Prompt: ON" or "⚡ Instant Prompt: OFF"
+	promptBtn.BackgroundColor3 = instantPromptEnabled and Color3.fromRGB(80,200,120) or Color3.fromRGB(255,90,90)
+	refreshAllPrompts()
+end)
+
+-------------------------------------------------
+-- Swim Disable
+-------------------------------------------------
+local swimDisabled = false
+local connections = {}
+
+local function removeBodyForces(character)
+	for _, obj in ipairs(character:GetDescendants()) do
+		if obj:IsA("BodyVelocity") or obj:IsA("BodyForce") or obj:IsA("BodyPosition") or obj:IsA("VectorForce") or obj:IsA("AlignPosition") or obj:IsA("AlignOrientation") then
+			pcall(function() obj:Destroy() end)
+		end
+	end
+end
+
+local function hideWaterPartsClientSide()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			local ok, isWater = pcall(function() return (obj.Material == Enum.Material.Water) or (string.find(string.lower(obj.Name), "water") ~= nil) end)
+			if ok and isWater then
+				pcall(function() obj.LocalTransparencyModifier = 1 obj.CanCollide = false end)
+			end
+		end
+	end
+end
+
+local function unhideWaterPartsClientSide()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			local ok, isWater = pcall(function() return (obj.Material == Enum.Material.Water) or (string.find(string.lower(obj.Name), "water") ~= nil) end)
+			if ok and isWater then pcall(function() obj.LocalTransparencyModifier = 0 end) end
+		end
+	end
+end
+
+local function disableSwimImmediate(character)
+	if not character or not character.Parent then return end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local root = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+	if humanoid then
+		removeBodyForces(character)
+		pcall(function() humanoid:ChangeState(Enum.HumanoidStateType.Running) humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false) end)
+		if root then
+			pcall(function()
+				root.CFrame = root.CFrame + Vector3.new(0, 3, 0)
+				root.Velocity = Vector3.new(root.Velocity.X, 0, root.Velocity.Z)
+			end)
+		end
+	end
+end
+
+local function onCharacterAdded(character)
+	if connections[character] then
+		for _, c in ipairs(connections[character]) do pcall(function() c:Disconnect() end) end
+	end
+	connections[character] = {}
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local root = character:WaitForChild("HumanoidRootPart", 5)
+
+	if humanoid then
+		local connState = humanoid.StateChanged:Connect(function(old, new)
+			if swimDisabled and new == Enum.HumanoidStateType.Swimming then disableSwimImmediate(character) end
+		end)
+		table.insert(connections[character], connState)
+	end
+	if root then
+		local connTouch = root.Touched:Connect(function(part)
+			if not swimDisabled then return end
+			local ok, isWater = pcall(function() return (part.Material == Enum.Material.Water) or (string.find(string.lower(part.Name), "water") ~= nil) end)
+			if ok and isWater then
+				disableSwimImmediate(character)
+				pcall(function() part.LocalTransparencyModifier = 1 part.CanCollide = false end)
+			end
+		end)
+		table.insert(connections[character], connTouch)
+	end
+end
+
+if LocalPlayer.Character then onCharacterAdded(LocalPlayer.Character) end
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+
+swimBtn.MouseButton1Click:Connect(function()
+	swimDisabled = not swimDisabled
+	swimBtn.Text = swimDisabled and "🌊 Swim Disable: ON" or "🌊 Swim Disable: OFF"
+	swimBtn.BackgroundColor3 = swimDisabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255,90,90)
+	if swimDisabled then
+		hideWaterPartsClientSide()
+		if LocalPlayer.Character then disableSwimImmediate(LocalPlayer.Character) end
+	else
+		unhideWaterPartsClientSide()
+	end
+end)
+-------------------------------------------------
+-- Kill Aura Logic
+-------------------------------------------------
+local killAuraEnabled = false
+local killAuraConn
+
+killBtn.MouseButton1Click:Connect(function()
+    killAuraEnabled = not killAuraEnabled
+    killBtn.Text = killAuraEnabled and "💀 NPC Kill Aura: ON" or "💀 NPC Kill Aura: OFF"
+    killBtn.BackgroundColor3 = killAuraEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    if killAuraEnabled then
+        killAuraConn = RunService.Stepped:Connect(function()
+            local char = LocalPlayer.Character
+            local hrp1 = char and char:FindFirstChild("HumanoidRootPart")
+            if not hrp1 then return end
+            LocalPlayer.SimulationRadius = 150
+            local objects = workspace:GetPartBoundsInRadius(hrp1.Position, 18)
+            for _, part in pairs(objects) do
+                local model = part:FindFirstAncestorOfClass("Model")
+                if model and isnpc(model) and model ~= char then
+                    local hrp = model:FindFirstChild("HumanoidRootPart")
+                    local hum = model:FindFirstChildOfClass("Humanoid")
+                    if hrp and partowner(hrp) and not hrp.Anchored then
+                        hum:ChangeState(Enum.HumanoidStateType.Dead)
+                        hum.Health = 0
+                    end
+                end
+            end
+        end)
+    else
+        if killAuraConn then killAuraConn:Disconnect() end
+    end
+end)
+
+-------------------------------------------------
+-- NPC JUMP AURA
+-------------------------------------------------
+local npcJumpEnabled = false
+local npcJumpConn
+
+npcJumpBtn.MouseButton1Click:Connect(function()
+    npcJumpEnabled = not npcJumpEnabled
+    npcJumpBtn.Text = npcJumpEnabled and "🕺 NPC Jump Aura: ON" or "🕺 NPC Jump Aura: OFF"
+    npcJumpBtn.BackgroundColor3 = npcJumpEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    if npcJumpEnabled then
+        npcJumpConn = RunService.Heartbeat:Connect(function()
+            local hrp1 = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp1 then return end
+            LocalPlayer.SimulationRadius = 200
+            settings().Physics.AllowSleep = false
+            for _, part in pairs(workspace:GetPartBoundsInRadius(hrp1.Position, 12)) do
+                local m = part:FindFirstAncestorOfClass("Model")
+                if m and isnpc(m) then
+                    local hum = m:FindFirstChildOfClass("Humanoid")
+                    if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+                end
+            end
+        end)
+    else
+        if npcJumpConn then npcJumpConn:Disconnect() npcJumpConn = nil end
+    end
+end)
+
+-------------------------------------------------
+-- X-RAY VISION
+-------------------------------------------------
+xrayBtn.MouseButton1Click:Connect(function()
+    xrayEnabled = not xrayEnabled
+    xrayBtn.Text = xrayEnabled and "💎 X-Ray Vision: ON" or "💎 X-Ray Vision: OFF"
+    xrayBtn.BackgroundColor3 = xrayEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    pcall(function()
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                local isCharacter = v:FindFirstAncestorOfClass("Model") and v:FindFirstAncestorOfClass("Model"):FindFirstChildOfClass("Humanoid")
+                if not isCharacter then v.LocalTransparencyModifier = xrayEnabled and 0.5 or 0 end
+            end
+        end
+    end)
+    notify(xrayEnabled and "X-Ray: Snapshot Applied 📸" or "X-Ray: Vision Reset")
+end)
+
+-------------------------------------------------
+-- 👻 PRO NOCLIP
+-------------------------------------------------
+local function toggleNoclip()
+    if noclipEnabled then
+        noclipConn = RunService.Stepped:Connect(function()
+            if noclipEnabled and LocalPlayer.Character then
+                for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then part.CanCollide = false end
+                end
+            end
+        end)
+        notify("NoClip Activated 👻")
+    else
+        if noclipConn then noclipConn:Disconnect() noclipConn = nil end
+        if LocalPlayer.Character then
+            for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then part.CanCollide = true end
+            end
+        end
+        notify("NoClip De-Activated ✅")
+    end
+end
+
+noclipBtn.MouseButton1Click:Connect(function()
+    noclipEnabled = not noclipEnabled
+    noclipBtn.Text = noclipEnabled and "👻 NoClip: ON" or "👻 NoClip: OFF"
+    noclipBtn.BackgroundColor3 = noclipEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    toggleNoclip()
+end)
+
+-------------------------------------------------
+-- 🧗 SPIDERMAN
+-------------------------------------------------
+local climbEnabled = false
+local climbConn = nil
+local ghostTruss = nil
+
+local function toggleClimb()
+    if climbEnabled then
+        pcall(function()
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://132085489682908"
+			sound.Volume = 10
+            sound.Parent = workspace
+            sound:Play()
+        end)
+        ghostTruss = Instance.new("TrussPart")
+        ghostTruss.Name = "GhostTruss_Client"
+        ghostTruss.Transparency = 1
+        ghostTruss.Size = Vector3.new(2, 2, 2)
+        ghostTruss.CanCollide = false
+        ghostTruss.Anchored = true
+        ghostTruss.Parent = workspace
+
+        local lastWallPos = nil
+        local lastWallNorm = nil
+
+        climbConn = RunService.RenderStepped:Connect(function()
+            local char = LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if not root or not hum then return end
+
+            local rayparams = RaycastParams.new()
+            rayparams.FilterDescendantsInstances = {char, ghostTruss}
+            rayparams.FilterType = Enum.RaycastFilterType.Exclude
+
+            local result = workspace:Raycast(root.Position, root.CFrame.LookVector * 2.5, rayparams)
+            if result then
+                lastWallPos = result.Position
+                lastWallNorm = result.Normal
+                ghostTruss.CanCollide = true
+                ghostTruss.CFrame = CFrame.new(result.Position, result.Position + result.Normal)
+            else
+                if hum:GetState() == Enum.HumanoidStateType.Climbing and lastWallPos then
+                    ghostTruss.CFrame = CFrame.new(lastWallPos + Vector3.new(0, 1.5, 0), lastWallPos + lastWallNorm + Vector3.new(0, 1.5, 0))
+                    ghostTruss.CanCollide = true
+                else
+                    ghostTruss.CanCollide = false
+                    ghostTruss.CFrame = CFrame.new(0, -1000, 0)
+                end
+            end
+        end)
+        notify("Spiderman Activated 🧗")
+    else
+        if climbConn then climbConn:Disconnect() climbConn = nil end
+        if ghostTruss then ghostTruss:Destroy() ghostTruss = nil end
+        notify("Spiderman De-Activated ✅")
+    end
+end
+
+climbBtn.MouseButton1Click:Connect(function()
+    climbEnabled = not climbEnabled
+    climbBtn.Text = climbEnabled and "🧗 Spiderman : ON" or "🧗 Spiderman : OFF"
+    climbBtn.BackgroundColor3 = climbEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    toggleClimb()
+end)
+
+-------------------------------------------------
+-- ☀️ FULLBRIGHT SYSTEM
+-------------------------------------------------
+local fullBrightEnabled = false
+local brightLoopConn = nil
+local originalLightingSettings = {
+    Brightness = Lighting.Brightness,
+    ClockTime = Lighting.ClockTime,
+    FogEnd = Lighting.FogEnd,
+    GlobalShadows = Lighting.GlobalShadows,
+    OutdoorAmbient = Lighting.OutdoorAmbient
+}
+
+local function applyFullBright()
+    Lighting.Brightness = 2
+    Lighting.ClockTime = 14
+    Lighting.FogEnd = 100000
+    Lighting.GlobalShadows = false
+    Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+end
+
+fullBrightBtn.MouseButton1Click:Connect(function()
+    fullBrightEnabled = not fullBrightEnabled
+    fullBrightBtn.Text = fullBrightEnabled and "☀️ FullBright: ON" or "☀️ FullBright: OFF"
+    fullBrightBtn.BackgroundColor3 = fullBrightEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    
+    if fullBrightEnabled then
+        originalLightingSettings.Brightness = Lighting.Brightness
+        originalLightingSettings.ClockTime = Lighting.ClockTime
+        originalLightingSettings.FogEnd = Lighting.FogEnd
+        originalLightingSettings.GlobalShadows = Lighting.GlobalShadows
+        originalLightingSettings.OutdoorAmbient = Lighting.OutdoorAmbient
+
+        applyFullBright()
+        brightLoopConn = RunService.RenderStepped:Connect(applyFullBright)
+        notify("FullBright Loop Activated ☀️")
+    else
+        if brightLoopConn then brightLoopConn:Disconnect() brightLoopConn = nil end
+        pcall(function()
+            Lighting.Brightness = originalLightingSettings.Brightness
+            Lighting.ClockTime = originalLightingSettings.ClockTime
+            Lighting.FogEnd = originalLightingSettings.FogEnd
+            Lighting.GlobalShadows = originalLightingSettings.GlobalShadows
+            Lighting.OutdoorAmbient = originalLightingSettings.OutdoorAmbient
+        end)
+        notify("FullBright Reset to Default 🛑")
+    end
+end)
+
+-------------------------------------------------
+-- 🛸 SKY FLOAT & INFINITE MASS SYSTEM (Anti-Void)
+-------------------------------------------------
+local weightEnabled = false
+local weightConn = nil
+local ghostLoopConn = nil
+local charMassConn = nil
+
+-- تابع برای سنگین کردن کاراکتر خودمون (مثل تانک)
+local function makeCharacterHeavy(char)
+	if not char then return end
+	pcall(function()
+		for _, part in ipairs(char:GetDescendants()) do
+			if part:IsA("BasePart") then
+				-- تنظیم چگالی کاراکتر روی 100 (حداکثر مقدار مجاز در روبلاکس)
+				part.CustomPhysicalProperties = PhysicalProperties.new(
+					100,  -- Density: فوق سنگین! همه چیز را با یک برخورد شوت می‌کند
+					0.3,  -- Friction
+					0.1,  -- Elasticity
+					1,    
+					1     
+				)
+			end
+		end
+	end)
+end
+
+-- تابع برای روح کردن و بی‌وزن کردن اجسام محیط
+local function makePartGhostAndFloat(part)
+	if part:IsA("BasePart") and not part.Anchored then
+		if not part:IsDescendantOf(LocalPlayer.Character) and not part.Parent:FindFirstChildOfClass("Humanoid") then
+			pcall(function()
+				part.CustomPhysicalProperties = PhysicalProperties.new(
+					0.001, -- فوق‌العاده سبک برای کلاینت
+					0,     
+					0,     
+					0,     
+					0      
+				)
+				part.CanCollide = false
+			end)
+		end
+	end
+end
+
+weightBtn.MouseButton1Click:Connect(function()
+	weightEnabled = not weightEnabled
+	weightBtn.Text = weightEnabled and "🛸 Titan Mass: ON" or "🛸 Titan Mass: OFF"
+	weightBtn.BackgroundColor3 = weightEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+	
+	if weightEnabled then
+		-- ۱. تصاحب کامل فیزیک شبکه سرور
+		LocalPlayer.SimulationRadius = math.huge
+		LocalPlayer.MaximumSimulationRadius = math.huge
+		settings().Physics.AllowSleep = false
+		
+		-- ۲. تبدیل کاراکتر خودمان به یک وزنه فوق سنگین
+		if LocalPlayer.Character then makeCharacterHeavy(LocalPlayer.Character) end
+		charMassConn = LocalPlayer.CharacterAdded:Connect(makeCharacterHeavy)
+		
+		-- ۳. اعمال روی پارت‌های فعلی مپ
+		for _, obj in ipairs(workspace:GetDescendants()) do
+			makePartGhostAndFloat(obj)
+		end
+		
+		-- ۴. اعمال روی پارت‌های جدید
+		weightConn = workspace.DescendantAdded:Connect(function(obj)
+			task.wait()
+			if weightEnabled then makePartGhostAndFloat(obj) end
+		end)
+		
+		-- ⚡ لوپ پردازش: صعود به آسمان + سیستم ضد سقوط به زیر زمین (Anti-Void)
+		ghostLoopConn = RunService.RenderStepped:Connect(function()
+			local char = LocalPlayer.Character
+			local root = char and char:FindFirstChild("HumanoidRootPart")
+			if not root then return end
+			
+			-- رادار ۶۰ متری کلاینت
+			local nearbyParts = workspace:GetPartBoundsInRadius(root.Position, 60)
+			
+			for _, part in ipairs(nearbyParts) do
+				if not part.Anchored and not part:IsDescendantOf(char) and not part.Parent:FindFirstChildOfClass("Humanoid") then
+					pcall(function()
+						part.CanCollide = false
+						
+						local currentVel = part.AssemblyLinearVelocity
+						local targetYVelocity = 0
+						
+						-- 🛑 سیستم قفل کف زمین (Anti-Void): اگر جسم خواست به زیر ارتفاع روت‌پارت شما منهای ۵ برود
+						if part.Position.Y < root.Position.Y - 5 then
+							-- یک نیروی بالابرنده شدید برای پرتاب به بالا
+							targetYVelocity = 30 
+						-- 🚀 اگر جسم در محدوده امن بود ولی هنوز به بالای سر شما نرسیده بود
+						elseif part.Position.Y < root.Position.Y + 8 then
+							targetYVelocity = 12 -- صعود نرم به بالا
+						else
+							targetYVelocity = 0 -- معلق ماندن در هوا
+						end
+						
+						-- اعمال سرعت ترکیبی
+						part.AssemblyLinearVelocity = Vector3.new(currentVel.X, targetYVelocity, currentVel.Z)
+						
+						-- جلوگیری از چرخیدن‌های گلیچ‌دار طناب
+						part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+					end)
+				end
+			end
+		end)
+		
+		notify("Titan Mass Activated! 🦾")
+	else
+		-- ریست کامل و پاکسازی کانکشن‌ها برای جلوگیری از لگ
+		if weightConn then weightConn:Disconnect() weightConn = nil end
+		if ghostLoopConn then ghostLoopConn:Disconnect() ghostLoopConn = nil end
+		if charMassConn then charMassConn:Disconnect() charMassConn = nil end
+		
+		-- برگرداندن کاراکتر به وزن عادی
+		pcall(function()
+			if LocalPlayer.Character then
+				for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+					if part:IsA("BasePart") then part.CustomPhysicalProperties = nil end
+				end
+			end
+		end)
+		
+		-- برگرداندن اجسام مپ به حالت عادی
+		pcall(function()
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("BasePart") and obj.CustomPhysicalProperties then
+					obj.CustomPhysicalProperties = nil
+					obj.CanCollide = true
+					obj.AssemblyLinearVelocity = Vector3.new(0, -10, 0)
+				end
+			end
+		end)
+		notify("Physics Returned to Normal 🛑")
+	end
+end)
+
+-------------------------------------------------
+-- 🧗 WALK ON WALLS (100% Pure Load + Genius Respawn + ShiftLock Fix)
+-------------------------------------------------
+local wallWalkEnabled = false
+
+wallWalkBtn.MouseButton1Click:Connect(function()
+    wallWalkEnabled = not wallWalkEnabled
+    wallWalkBtn.Text = wallWalkEnabled and "🧗 Walk On Walls: ON" or "🧗 Walk On Walls: OFF"
+    wallWalkBtn.BackgroundColor3 = wallWalkEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+    
+    if wallWalkEnabled then
+        pcall(function()
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://132085489682908"
+            sound.Parent = workspace
+            sound:Play()
+        end)
+        notify("Loading Wall Walker Script... 🧗")
+        
+        -- 📥 لود کاملاً خالص و بدون دستکاری سورس گیت‌هاب
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/WallWalk"))()
+        end)
+        
+    else
+        notify("Executing Genius Clean-up... ⚡")
+        
+        pcall(function()
+            -- فورس مکس قطع کردن متغیرهای سراسری وال‌واکر
+            _G.WallWalkerEnabled = false
+            if _G.WallWalk then _G.WallWalk:Disconnect() _G.WallWalk = nil end
+            workspace.Gravity = 196.2
+            
+            local char = LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+            
+            if char and root and humanoid and humanoid.Health > 0 then
+                -- ۱. ذخیره موقعیت دقیق تو (کمی بالاتر برای جلوگیری از باگ زمین)
+                local savedCFrame = root.CFrame * CFrame.new(0, 3, 0)
+                
+                -- ۲. کشتن بازیکن برای پاکسازی کامل کدهای دوربین سایت
+                humanoid.Health = 0
+                notify("Refreshing Character... ⏳")
+                
+                -- ۳. تلپورت و فیکس کردن شیفت‌لاک بلافاصله پس از ریسپاون شدن کاراکتر جدید
+                local characterAddedConn
+                characterAddedConn = LocalPlayer.CharacterAdded:Connect(function(newChar)
+                    local newRoot = newChar:WaitForChild("HumanoidRootPart", 5)
+                    local newHumanoid = newChar:WaitForChild("Humanoid", 5)
+                    
+                    if newRoot and newHumanoid then
+                        task.wait(0.15) -- صبر کوتاه برای پایداری کامل سیستم دوربین روبلاکس
+                        
+                        -- تلپورت به موقعیت قبلی
+                        newRoot.CFrame = savedCFrame
+                        
+                        -- 🔒 فیکس کردن قطعی باگ شیفت‌لاک (Mouse Lock)
+                        pcall(function()
+                            local playerScripts = LocalPlayer:WaitForChild("PlayerScripts", 5)
+                            if playerScripts then
+                                local playerModule = require(playerScripts:WaitForChild("PlayerModule"))
+                                if playerModule then
+                                    local cameraModule = playerModule:GetCameras()
+                                    if cameraModule and cameraModule.activeMouseLockController then
+                                        local mouseLock = cameraModule.activeMouseLockController
+                                        -- ریفرش کردن استیت شیفت‌لاک کلاینت برای همگام‌سازی مجدد با دوربین کاراکتر جدید
+                                        if mouseLock:GetIsMouseLocked() then
+                                            mouseLock:OnMouseLockToggled() -- خاموش کردن موقت
+                                            task.wait(0.05)
+                                            mouseLock:OnMouseLockToggled() -- روشن کردن مجدد برای قفل شدن روی مرکز صفحه
+                                        end
+                                    end
+                                end
+                            end
+                        end)
+                        
+                        notify("Physics & ShiftLock Restored! ✅")
+                    end
+                    characterAddedConn:Disconnect()
+                end)
+            else
+                notify("Error: Character not ready.")
+            end
+        end)
+    end
+end)
+
+-------------------------------------------------
+-- 🎒 GRABTOOLS LOGIC (New Addition)
+-------------------------------------------------
+grabtoolsBtn.MouseButton1Click:Connect(function()
+	grabtoolsEnabled = not grabtoolsEnabled
+	grabtoolsBtn.Text = grabtoolsEnabled and "🎒 Grabtools: ON" or "🎒 Grabtools: OFF"
+	grabtoolsBtn.BackgroundColor3 = grabtoolsEnabled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(255, 90, 90)
+
+	if grabtoolsEnabled then
+		local char = LocalPlayer.Character
+		local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+		
+		if humanoid then
+			-- ۱. اسکن و جمع‌آوری ابزارهای فعلی مپ در اولین کلیک
+			for _, child in ipairs(workspace:GetChildren()) do
+				if LocalPlayer.Character and child:IsA("BackpackItem") and child:FindFirstChild("Handle") then
+					pcall(function() humanoid:EquipTool(child) end)
+				end
+			end
+
+			-- ۲. متصل کردن لوپ برای ابزارهایی که بعداً روی زمین می‌افتند
+			if grabtoolsFunc then grabtoolsFunc:Disconnect() end
+			grabtoolsFunc = workspace.ChildAdded:Connect(function(child)
+				if LocalPlayer.Character and child:IsA("BackpackItem") and child:FindFirstChild("Handle") then
+					local currentHum = LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+					if currentHum then
+						pcall(function() currentHum:EquipTool(child) end)
+					end
+				end
+			end)
+		end
+		notify("Grabtools Activated", "Picking up any dropped tools")
+	else
+		-- قطع ارتباط لوپ در صورت غیرفعال شدن دکمه
+		if grabtoolsFunc then 
+			grabtoolsFunc:Disconnect() 
+			grabtoolsFunc = nil
+		end
+		notify("Grabtools De-Activated", "Auto pick-up disabled")
+	end
+end)
+
+-------------------------------------------------
+-- 📦 TP UNANCHORED LOGIC (No Jumping Bug + MAX Network Power)
+-------------------------------------------------
+local frozenParts = {}
+
+tpUnanchoredBtn.MouseButton1Click:Connect(function()
+    local speaker = Players.LocalPlayer
+    local players = {speaker.Name}
+    
+    -- 📡 حفظ نتورک با قدرت بی‌نهایت (آپدیت شده)
+    task.spawn(function()
+        for _ = 1, 30 do
+            pcall(function()
+                settings().Physics.AllowSleep = false
+                
+                -- تنظیمات عادی
+                speaker.SimulationRadius = math.huge
+                speaker.MaximumSimulationRadius = math.huge
+                
+                -- 👇 تزریق قدرت حداکثری از طریق توابع مخفی اکسپلویت
+                if sethiddenproperty then
+                    sethiddenproperty(speaker, "SimulationRadius", math.huge)
+                    sethiddenproperty(speaker, "MaxSimulationRadius", math.huge)
+                end
+            end)
+            task.wait(0.2)
+        end
+    end)
+    
+    -- 🚀 منطق اصلی (دقیقاً همون کد خودت بدون هیچ تغییری)
+    task.spawn(function()
+        for i,v in pairs(players) do
+            local Forces = {}
+            local count = 0 
+            
+            for _,part in pairs(workspace:GetDescendants()) do
+                count = count + 1
+                if count % 500 == 0 then task.wait() end 
+                
+                if Players[v].Character:FindFirstChild('Head') and part:IsA("BasePart" or "UnionOperation" or "Model") and part.Anchored == false and not part:IsDescendantOf(speaker.Character) and part.Name == "Torso" == false and part.Name == "Head" == false and part.Name == "Right Arm" == false and part.Name == "Left Arm" == false and part.Name == "Right Leg" == false and part.Name == "Left Leg" == false and part.Name == "HumanoidRootPart" == false then
+                    
+                    for i,c in pairs(part:GetChildren()) do
+                        if c:IsA("BodyPosition") or c:IsA("BodyGyro") then
+                            c:Destroy()
+                        end
+                    end
+                    
+                    local ForceInstance = Instance.new("BodyPosition")
+                    -- 👇 خط طلایی خودت
+                    ForceInstance.Position = Players[v].Character.Head.Position 
+                    ForceInstance.Parent = part
+                    ForceInstance.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                    table.insert(Forces, ForceInstance)
+                    
+                    if not table.find(frozenParts,part) then
+                        table.insert(frozenParts,part)
+                    end
+                end
+            end
+            
+            -- حلقه آخر (سر جای خودش)
+            for i,c in pairs(Forces) do
+                c.Position = Players[v].Character.Head.Position
+            end
+        end
+    end)
+    
+    notify("TP Unanchored (Max Network Power) Executed! 📦⚡")
+end)
+
+-------------------------------------------------
+-- 🎒 EQUIP TOOLS LOGIC
+-------------------------------------------------
+equipToolsBtn.MouseButton1Click:Connect(function()
+	local speaker = Players.LocalPlayer
+	
+	-- ⬇️ دقیقاً منطق دست‌نخورده خودت برای پوشیدن آیتم‌ها
+	for i,v in pairs(speaker:FindFirstChildOfClass("Backpack"):GetChildren()) do
+		if v:IsA("Tool") or v:IsA("HopperBin") then
+			v.Parent = speaker.Character
+		end
+	end
+	
+	notify("All tools equipped! 🎒")
+end)
+
+-------------------------------------------------
+-- 🗑️ DROP TOOLS LOGIC
+-------------------------------------------------
+dropToolsBtn.MouseButton1Click:Connect(function()
+	local speaker = Players.LocalPlayer
+	
+	-- ⬇️ دقیقاً منطق دست‌نخورده خودت برای انداختن آیتم‌ها روی زمین
+	for i,v in pairs(speaker.Backpack:GetChildren()) do
+		if v:IsA("Tool") then
+			v.Parent = speaker.Character
+		end
+	end
+	wait()
+	for i,v in pairs(speaker.Character:GetChildren()) do
+		if v:IsA("Tool") then
+			v.Parent = workspace
+		end
+	end
+	
+	notify("All tools dropped! 🗑️")
+end)
+------------------------------------------
+-- Color Animation
+-------------------------------------------------
+task.spawn(function()
+	while true do
+		for h = 0, 1, 0.02 do
+			title.TextColor3 = Color3.fromHSV(h, 0.8, 1)
+			task.wait(0.05)
+		end
+	end
+end)
