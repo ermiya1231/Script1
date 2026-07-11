@@ -172,7 +172,7 @@ end
 -- ================== منطق اصلی هک (V8) ==================
 HackBtn.MouseButton1Click:Connect(function()
     TerminalWindow.Text = "" 
-    HackBtn.Text = "AI SCANNING..."
+    HackBtn.Text = "SCANNING..."
     HackBtn.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     
     local fakeLogs = {
