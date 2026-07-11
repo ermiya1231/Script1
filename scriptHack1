@@ -1,4 +1,4 @@
--- Ultra OP
+-- Ultra C00L
 local player = game:GetService("Players").LocalPlayer
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
