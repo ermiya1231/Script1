@@ -1,0 +1,312 @@
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local humanoid = char:WaitForChild("Humanoid")
+local mouse = player:GetMouse()
+local SoundService = game:GetService("SoundService")
+
+-- 1. SETUP ANIMATION
+local anim = Instance.new("Animation")
+anim.AnimationId = "rbxassetid://184574340"
+local animator = humanoid:FindFirstChildOfClass("Animator") or humanoid
+local swingTrack = animator:LoadAnimation(anim)
+
+-- 2. SETUP BTOOLS (حل مشکل گیر کردن در پیدا کردن ابزار)
+local function waitForTool()
+    while true do
+        -- جستجو در کوله پشتی و دست کاراکتر به صورت همزمان
+        local searchAreas = {}
+        if player:FindFirstChild("Backpack") then table.insert(searchAreas, player.Backpack) end
+        if player.Character then table.insert(searchAreas, player.Character) end
+        
+        for _, area in pairs(searchAreas) do
+            for _, item in pairs(area:GetChildren()) do 
+                if item:IsA("Tool") and item:FindFirstChild("SyncAPI") and item.SyncAPI:FindFirstChild("ServerEndpoint") then 
+                    return item 
+                end 
+            end
+        end
+        task.wait(0.5)
+    end
+end
+
+local tool = waitForTool()
+local remote = tool.SyncAPI.ServerEndpoint
+
+local function _(args)
+    task.spawn(function()
+        pcall(function()
+            remote:InvokeServer(unpack(args))
+        end)
+    end)
+end
+
+local torso = char:WaitForChild("Torso") or char:WaitForChild("UpperTorso")
+local root = char:WaitForChild("HumanoidRootPart")
+
+-- ساخت چکش در محیط امن
+local Hammer
+pcall(function()
+    Hammer = remote:InvokeServer("CreatePart", "Normal", torso.CFrame, char)
+end)
+
+if Hammer then
+    task.spawn(function()
+        _({"SetName", {Hammer}, "BanHammer"})
+        _({"SyncCollision", {{Part = Hammer, CanCollide = false}}})
+        _({"SyncAnchor", {{Part = Hammer, Anchored = true}}})
+        _({"SyncResize", {{Part = Hammer, Size = Vector3.new(2.853, 8.875, 4.872), CFrame = Hammer.CFrame}}})
+        _({"CreateMeshes", {{Part = Hammer}}})
+        _({"SyncMesh", {{Part = Hammer, MeshId = "rbxassetid://10604848", TextureId = "rbxassetid://10605252"}}})
+    end)
+end
+
+local trashZoneCFrame = CFrame.new(0, -5000, 0) 
+humanoid.Died:Connect(function()
+    if Hammer and Hammer.Parent then
+        _({"SyncMove", {{Part = Hammer, CFrame = trashZoneCFrame}}})
+    end
+end)
+
+local isAttacking = false
+
+-- سیستم اجرای کامند ادمین
+local rq
+local hdAdmin = game.ReplicatedStorage:FindFirstChild("HDAdminHDClient")
+
+if hdAdmin then
+    rq = hdAdmin.Signals.RequestCommandSilent
+else
+    rq = {
+        InvokeServer = function(self, command)
+            local chatCommand = command:gsub("^;", ":")
+            local legacyChat = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+            if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then
+                legacyChat.SayMessageRequest:FireServer(chatCommand, "All")
+            end
+            local textChatService = game:GetService("TextChatService")
+            if textChatService and textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                local channel = textChatService:FindFirstChild("TextChannels") and textChatService.TextChannels:FindFirstChild("RBXGeneral")
+                if channel then
+                    channel:SendAsync(chatCommand)
+                end
+            end
+        end
+    }
+end
+
+local function doKill(targetPlayer)
+    if targetPlayer and targetPlayer.Character then
+        local targetHead = targetPlayer.Character:FindFirstChild("Head")
+        if targetHead then _({"Remove", {targetHead}}) end
+    end
+end
+
+local function playLocalSound()
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://147722910"
+    sound.Volume = 1.5
+    sound.Parent = SoundService
+    sound:Play()
+    task.spawn(function()
+        sound.Ended:Wait()
+        sound:Destroy()
+    end)
+end
+
+-- 3. CLICK LOGIC
+mouse.Button1Down:Connect(function()
+    local currentCharacter = player.Character
+    if not currentCharacter or not currentCharacter:FindFirstChild("BanHammer") then return end
+
+    if not humanoid or humanoid.Health <= 0 then return end 
+    if isAttacking then return end
+    isAttacking = true
+    
+    local killedPlayers = {}
+    local rightArm = char:FindFirstChild("Right Arm") or char:FindFirstChild("RightHand") or torso
+    
+    swingTrack:Play()
+    swingTrack:AdjustSpeed(4)
+    
+    local startTime = tick()
+    while tick() - startTime < 0.3 do
+        if not Hammer or not Hammer.Parent then break end
+        _({"SyncMove", {{Part = Hammer, CFrame = rightArm.CFrame * CFrame.new(0, -1, 0) * CFrame.Angles(math.rad(-90), 0, 0)}}})
+        task.wait(0.05) 
+    end
+    
+    local centerPos = root.Position + (root.CFrame.LookVector * 4) - Vector3.new(0, 2.5, 0)
+    local impactCFrame = root.CFrame * CFrame.new(0, -1, -4)
+    
+    _({"SyncMove", {{Part = Hammer, CFrame = impactCFrame * CFrame.Angles(math.rad(-90), 0, 0)}}})
+    
+    playLocalSound()
+    
+    local newRadius = 20
+    
+    task.spawn(function()
+        local sphere = remote:InvokeServer("CreatePart", "Ball", CFrame.new(centerPos), char)
+        if sphere then
+            _({"SetName", {sphere}, "ExplosionWave"})
+            _({"SyncColor", {{Part = sphere, Color = Color3.fromRGB(255, 0, 0)}}})
+            _({"SyncMaterial", {{Part = sphere, Material = Enum.Material.Neon}}})
+            _({"SyncCollision", {{Part = sphere, CanCollide = false}}})
+            _({"SyncAnchor", {{Part = sphere, Anchored = true}}})
+            
+            local maxSize = newRadius * 2
+            local steps = 12 
+            
+            for i = 1, steps do
+                local progress = i / steps
+                local currentSize = Vector3.new(maxSize, maxSize, maxSize) * progress
+                local currentRadius = newRadius * progress
+                
+                _({"SyncResize", {{Part = sphere, Size = currentSize, CFrame = CFrame.new(centerPos)}}})
+                
+                for _, p in pairs(game.Players:GetPlayers()) do
+                    if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p ~= player then
+                        if not killedPlayers[p.Name] then
+                            local targetRoot = p.Character:FindFirstChild("HumanoidRootPart")
+                            local dist = (targetRoot.Position - centerPos).Magnitude
+                            if dist <= currentRadius then
+                                killedPlayers[p.Name] = true
+                                task.spawn(function()
+                                    doKill(p)
+                                end)
+                            end
+                        end
+                    end
+                end
+                task.wait(0.015)
+            end
+            
+            task.wait(0.1)
+            _({"SyncMove", {{Part = sphere, CFrame = trashZoneCFrame}}})
+        end
+    end)
+    
+    task.spawn(function()
+        local partCount = 14 
+        for i = 1, partCount do
+            task.spawn(function()
+                local angle = (i / partCount) * math.pi * 2
+                local offset = Vector3.new(math.cos(angle) * newRadius, 0, math.sin(angle) * newRadius)
+                local spawnCFrame = CFrame.new(centerPos + offset) * CFrame.Angles(math.random(-45, 45), math.random(-45, 45), math.random(-45, 45))
+                
+                local debris = remote:InvokeServer("CreatePart", "Normal", spawnCFrame, char)
+                if debris then
+                    local randomX = math.random(15, 35) / 10  
+                    local randomY = math.random(10, 25) / 10  
+                    local randomZ = math.random(15, 35) / 10  
+                    local randomSize = Vector3.new(randomX, randomY, randomZ)
+                    
+                    _({"SetName", {debris}, "GroundDebris"})
+                    _({"SyncResize", {{Part = debris, Size = randomSize, CFrame = spawnCFrame}}})
+                    _({"SyncMaterial", {{Part = debris, Material = Enum.Material.Slate}}})
+                    _({"SyncColor", {{Part = debris, Color = Color3.fromRGB(110, 100, 90)}}})
+                    _({"SyncCollision", {{Part = debris, CanCollide = true}}})
+                    _({"SyncAnchor", {{Part = debris, Anchored = true}}})
+                    
+                    local upCFrame = spawnCFrame * CFrame.new(0, 4, 0)
+                    _({"SyncMove", {{Part = debris, CFrame = upCFrame}}})
+                    
+                    task.wait(0.05)
+                    _({"SyncAnchor", {{Part = debris, Anchored = false}}})
+                    
+                    task.wait(1.2)
+                    _({"SyncMove", {{Part = debris, CFrame = trashZoneCFrame}}})
+                end
+            end)
+        end
+    end)
+    
+    task.wait(0.25)
+    isAttacking = false
+end)
+
+-- 4. FOLLOW LOOP
+task.spawn(function()
+    while task.wait(0.03) do 
+        if not isAttacking and Hammer and Hammer.Parent then
+            if humanoid.Health > 0 then
+                _({"SyncMove", {{Part = Hammer, CFrame = torso.CFrame * CFrame.new(0, 0.5, 1.5) * CFrame.Angles(0, 0, math.rad(-45))}}})
+            end
+        end
+    end
+end)
+
+-- 5. PROCEDURAL VISUAL ANIMATIONS
+task.spawn(function()
+    if char:FindFirstChild("Torso") then
+        local torso_r6 = char.Torso
+        local rootJoint = root:WaitForChild("RootJoint", 5)
+        local neck = torso_r6:WaitForChild("Neck", 5)
+        local rShoulder = torso_r6:WaitForChild("Right Shoulder", 5)
+        local lShoulder = torso_r6:WaitForChild("Left Shoulder", 5)
+        local rHip = torso_r6:WaitForChild("Right Hip", 5)
+        local lHip = torso_r6:WaitForChild("Left Hip", 5)
+
+        if not (rootJoint and neck and rShoulder and lShoulder and rHip and lHip) then return end
+
+        local oRJ = rootJoint.C0
+        local oNeck = neck.C0
+        local oRS = rShoulder.C0
+        local oLS = lShoulder.C0
+        local oRH = rHip.C0
+        local oLH = lHip.C0
+
+        local animateScript = char:FindFirstChild("Animate")
+        local sine = 0 
+        local wasMoving = false 
+        local RunService = game:GetService("RunService")
+
+        RunService.RenderStepped:Connect(function(deltaTime)
+            if not humanoid or humanoid.Health <= 0 then return end
+            
+            local speed = root.Velocity.Magnitude
+            local isMoving = speed > 2
+            
+            sine = sine + deltaTime * (isMoving and 16 or 3)
+            
+            local s = math.sin(sine)
+            local c = math.cos(sine)
+
+            if not isMoving then
+                if wasMoving then
+                    wasMoving = false
+                    pcall(function() if animateScript then animateScript.Disabled = true end end)
+                    
+                    local animator = humanoid:FindFirstChildOfClass("Animator")
+                    if animator then
+                        for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+                            if track.Priority == Enum.AnimationPriority.Core or track.Priority == Enum.AnimationPriority.Movement or track.Priority == Enum.AnimationPriority.Idle then
+                                track:Stop(0.1)
+                            end
+                        end
+                    end
+                end
+
+                rootJoint.C0 = rootJoint.C0:Lerp(oRJ * CFrame.new(0, -0.1 + 0.1 * s, 0) * CFrame.Angles(math.rad(-5), 0, math.rad(5 * c)), 0.1)
+                neck.C0 = neck.C0:Lerp(oNeck * CFrame.Angles(math.rad(5 * s), math.rad(5 * c), 0), 0.1)
+                
+                rShoulder.C0 = rShoulder.C0:Lerp(oRS * CFrame.new(0, 0.05 * s, 0) * CFrame.Angles(math.rad(-15), math.rad(-10), math.rad(10 + 5 * s)), 0.1)
+                lShoulder.C0 = lShoulder.C0:Lerp(oLS * CFrame.new(0, 0.05 * s, 0) * CFrame.Angles(math.rad(-15), math.rad(10), math.rad(-10 - 5 * s)), 0.1)
+                
+                rHip.C0 = rHip.C0:Lerp(oRH * CFrame.new(0, 0.1 - 0.1 * s, 0) * CFrame.Angles(math.rad(-5), 0, math.rad(-5)), 0.1)
+                lHip.C0 = lHip.C0:Lerp(oLH * CFrame.new(0, 0.1 - 0.1 * s, 0) * CFrame.Angles(math.rad(-5), 0, math.rad(5)), 0.1)
+            else
+                if not wasMoving then
+                    wasMoving = true
+                    pcall(function() if animateScript then animateScript.Disabled = false end end)
+                end
+
+                rootJoint.C0 = rootJoint.C0:Lerp(oRJ, 0.2)
+                neck.C0 = neck.C0:Lerp(oNeck, 0.2)
+                rShoulder.C0 = rShoulder.C0:Lerp(oRS, 0.2)
+                lShoulder.C0 = lShoulder.C0:Lerp(oLS, 0.2)
+                rHip.C0 = rHip.C0:Lerp(oRH, 0.2)
+                lHip.C0 = lHip.C0:Lerp(oLH, 0.2)
+            end
+        end)
+    end
+end)
