@@ -11,7 +11,7 @@ gui.Parent = targetParent
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 240, 0, 360)
 frame.Position = UDim2.new(0.5, -120, 0.5, -180)
-frame.BackgroundColor3 = Color3.fromRGB(20, 15, 35) -- بنفش خیلی تیره لوکس
+frame.BackgroundColor3 = Color3.fromRGB(20, 15, 35)
 frame.BackgroundTransparency = 0.2
 frame.BorderSizePixel = 0
 frame.Parent = gui
@@ -22,7 +22,7 @@ corner.Parent = frame
 
 -- Stroke (Line around frame)
 local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(140, 80, 255) -- خط دور بنفش درخشان
+stroke.Color = Color3.fromRGB(140, 80, 255)
 stroke.Thickness = 1.5
 stroke.Transparency = 0.4
 stroke.Parent = frame
@@ -122,6 +122,7 @@ layout.Parent = scroll
 -- Global Sound Object for playing music
 local currentSound = workspace:FindFirstChild("LuxuryGUISound") or Instance.new("Sound", workspace)
 currentSound.Name = "LuxuryGUISound"
+currentSound.Looped = true -- << این خط اضافه شد تا همه آهنگ‌ها تکرار شوند
 
 -- Function to stop music
 local function stopAllMusic()
@@ -133,7 +134,7 @@ local function playMusic(id, pitch)
     currentSound:Stop()
     currentSound.SoundId = "rbxassetid://" .. tostring(id)
     currentSound.Pitch = pitch or 1
-    currentSound.Volume = 2
+    currentSound.Volume = 10
     if not currentSound.IsLoaded then
         currentSound.Loaded:Wait()
     end
@@ -146,10 +147,10 @@ local function createButton(name, isStop, callback)
     btn.Size = UDim2.new(1, -6, 0, 32)
     
     if isStop then
-        btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40) -- قرمز برای دکمه استاپ
+        btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
         btn.BackgroundTransparency = 0.3
     else
-        btn.BackgroundColor3 = Color3.fromRGB(60, 35, 100) -- بنفش دکمه‌ها
+        btn.BackgroundColor3 = Color3.fromRGB(60, 35, 100)
         btn.BackgroundTransparency = 0.5
     end
     
@@ -192,7 +193,6 @@ end)
 local songs = {
     {Name = "HR", ID = "16190782181", Pitch = 1},
     {Name = "baby laugh", ID = "132504204562767", Pitch = 0.2},
-    {Name = "TIKI TIKI", ID = "72957306505286", Pitch = 1},
     {Name = "stealed", ID = "70771842083730", Pitch = 1},
     {Name = "lord theme", ID = "1839272148", Pitch = 1},
     {Name = "Amazing", ID = "79999206651848", Pitch = 0.22},
@@ -247,7 +247,28 @@ local songs = {
     {Name = "gangsta'sparadise", ID = "5228173823", Pitch = 1}, 
     {Name = "'whatmrkrabswishhehad", ID = "106282004905868", Pitch = 0.1}, 
     {Name = "jump style slow", ID = "1839246711", Pitch = 0.2}, 
-    {Name = "jump style speed up", ID = "1839246711", Pitch = 1.2}
+    {Name = "jump style speed up", ID = "1839246711", Pitch = 1.2},
+    {Name = "7 Weeks and 3 Days", ID = "82149511707056", Pitch = 1},
+    {Name = "newextract", ID = "80611440709854", Pitch = 1},
+    {Name = "i love you so", ID = "100048144167699", Pitch = 1},
+    {Name = "POP", ID = "87550953106660", Pitch = 0.1},
+    {Name = "OG", ID = "1846368080", Pitch = 1},
+    {Name = "CoolBeat", ID = "110788401793874", Pitch = 1},
+    {Name = "Daisy", ID = "108035501622201", Pitch = 0.05},
+    {Name = "Funky Town", ID = "92445302507746", Pitch = 0.22},
+    {Name = "JumpBroken", ID = "93968185614670", Pitch = 0.1},
+    {Name = "lovebomb", ID = "18841888868", Pitch = 1},
+    {Name = "This Is Sparta", ID = "140240856766854", Pitch = 0.22},
+    {Name = "NewGoodExtract", ID = "92959057847076", Pitch = 1},
+    {Name = "CoolKIDD PITCH 1", ID = "94635984925376", Pitch = 1},
+    {Name = "newBypass", ID = "75865270673378", Pitch = 0.5},
+    {Name = "Alone", ID = "75485931767123", Pitch = 1},
+    {Name = "Nigg", ID = "91075435074569", Pitch = 0.22},
+    {Name = "Verity", ID = "116704489332329", Pitch = 1},
+    {Name = "Zibran Theme", ID = "120785124326826", Pitch = 0.8},
+    {Name = "quaran", ID = "137707770535603", Pitch = 1},
+    {Name = "Ali Ali", ID = "91522881145883", Pitch = 0.5},
+    {Name = "Bomb Hard", ID = "1839270925", Pitch = 0.8}
 }
 
 -- 3. Create Buttons from List
