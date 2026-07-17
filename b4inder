@@ -1,0 +1,174 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+-- سیستم درگ
+local function makeDraggable(frame, topBar)
+    local dragToggle, dragStart, startPos
+    topBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragToggle = true; dragStart = input.Position; startPos = frame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragToggle then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragToggle = false end
+    end)
+end
+
+-- اسکنر قوی
+local function scanForRemotes()
+    local remotes = {}
+    local servicesToScan = {game:GetService("ReplicatedStorage"), game:GetService("Workspace"), game:GetService("Lighting"), game:GetService("SoundService"), game:GetService("StarterPack"), game:GetService("Players")}
+    for _, service in ipairs(servicesToScan) do
+        pcall(function()
+            for _, obj in ipairs(service:GetDescendants()) do
+                if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) then
+                    table.insert(remotes, obj)
+                end
+            end
+        end)
+    end
+    return remotes
+end
+
+local function createFastAdminGUI()
+    local targetGuiParent = pcall(function() return CoreGui.Name end) and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+    if targetGuiParent:FindFirstChild("GodModePanel") then targetGuiParent.GodModePanel:Destroy() end
+
+    local ScreenGui = Instance.new("ScreenGui", targetGuiParent)
+    ScreenGui.Name = "GodModePanel"
+    ScreenGui.ResetOnSpawn = false
+
+    local currentMode = "Custom"
+    local remotes = scanForRemotes()
+
+    -- پنل اصلی
+    local MainFrame = Instance.new("Frame", ScreenGui)
+    MainFrame.Size = UDim2.new(0, 350, 0, 450); MainFrame.Position = UDim2.new(0.5, -175, 0.5, -225)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20); MainFrame.BorderSizePixel = 2
+    MainFrame.BorderColor3 = Color3.fromRGB(80, 0, 0)
+
+    local TopBar = Instance.new("Frame", MainFrame)
+    TopBar.Size = UDim2.new(1, 0, 0, 35); TopBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    makeDraggable(MainFrame, TopBar)
+
+    -- دکمه بستن
+    local CloseMain = Instance.new("TextButton", TopBar)
+    CloseMain.Size = UDim2.new(0, 35, 1, 0); CloseMain.Position = UDim2.new(1, -35, 0, 0)
+    CloseMain.BackgroundTransparency = 1; CloseMain.Text = "X"; CloseMain.TextColor3 = Color3.fromRGB(255, 0, 0)
+    CloseMain.TextSize = 20
+    CloseMain.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+    -- دکمه جدید START FIRE (سمت راست)
+    local StartFireBtn = Instance.new("TextButton", TopBar)
+    StartFireBtn.Size = UDim2.new(0, 90, 1, 0); StartFireBtn.Position = UDim2.new(1, -130, 0, 0)
+    StartFireBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0); StartFireBtn.Text = "START FIRE"
+    StartFireBtn.TextColor3 = Color3.new(1,1,1); StartFireBtn.Font = Enum.Font.Code; StartFireBtn.TextSize = 12
+
+    -- سیستم Mode
+    local ModeBtn = Instance.new("TextButton", TopBar)
+    ModeBtn.Size = UDim2.new(0, 120, 1, 0); ModeBtn.Position = UDim2.new(0, 5, 0, 0)
+    ModeBtn.BackgroundColor3 = Color3.fromRGB(40, 0, 0); ModeBtn.Text = "Mode: Custom"
+    ModeBtn.TextColor3 = Color3.new(1,1,1); ModeBtn.Font = Enum.Font.Code; ModeBtn.TextSize = 14
+
+    local Dropdown = Instance.new("Frame", TopBar)
+    Dropdown.Size = UDim2.new(0, 150, 0, 175); Dropdown.Position = UDim2.new(0, 5, 1, 0)
+    Dropdown.BackgroundColor3 = Color3.fromRGB(30, 30, 30); Dropdown.Visible = false; Dropdown.ZIndex = 10
+    Instance.new("UIListLayout", Dropdown)
+    ModeBtn.MouseButton1Click:Connect(function() Dropdown.Visible = not Dropdown.Visible end)
+
+    for _, mode in ipairs({"Custom", "HD Admin", "Fire", "Fire all", "Fire all as HD admin"}) do
+        local btn = Instance.new("TextButton", Dropdown)
+        btn.Size = UDim2.new(1, 0, 0, 35); btn.Text = mode; btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.Code; btn.TextSize = 13
+        btn.ZIndex = 10
+        btn.MouseButton1Click:Connect(function() currentMode = mode; ModeBtn.Text = "Mode: "..mode; Dropdown.Visible = false end)
+    end
+
+    -- منطق دکمه جدید START FIRE
+    StartFireBtn.MouseButton1Click:Connect(function()
+        if currentMode == "Fire all" then
+            for _, r in ipairs(remotes) do
+                if r:IsA("RemoteEvent") then pcall(function() r:FireServer() end)
+                elseif r:IsA("RemoteFunction") then task.spawn(function() pcall(function() r:InvokeServer() end) end) end
+            end
+        elseif currentMode == "Fire all as HD admin" then
+            local payload = "require(7192763922).load(\""..LocalPlayer.Name.."\")"
+            for _, r in ipairs(remotes) do
+                if r:IsA("RemoteEvent") then pcall(function() r:FireServer(payload) end)
+                elseif r:IsA("RemoteFunction") then task.spawn(function() pcall(function() r:InvokeServer(payload) end) end) end
+            end
+        else
+            warn("لطفا مد Fire all یا Fire all as HD admin را انتخاب کنید!")
+        end
+    end)
+
+    -- لیست ریموت‌ها
+    local ScrollingFrame = Instance.new("ScrollingFrame", MainFrame)
+    ScrollingFrame.Size = UDim2.new(1, -10, 1, -45); ScrollingFrame.Position = UDim2.new(0, 5, 0, 40)
+    ScrollingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30); ScrollingFrame.BorderSizePixel = 0
+    
+    local UIListLayout = Instance.new("UIListLayout", ScrollingFrame)
+    UIListLayout.Padding = UDim.new(0, 4)
+    UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+    end)
+
+    -- پنل Executor (برای مدهای دستی)
+    local RequireFrame = Instance.new("Frame", ScreenGui)
+    RequireFrame.Size = UDim2.new(0, 450, 0, 200); RequireFrame.Position = UDim2.new(0.5, -225, 0.5, -100)
+    RequireFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5); RequireFrame.Visible = false
+    makeDraggable(RequireFrame, RequireFrame)
+    
+    -- دکمه بستن Executor
+    local ReqTopBar = Instance.new("Frame", RequireFrame)
+    ReqTopBar.Size = UDim2.new(1, 0, 0, 30); ReqTopBar.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+    local CloseReq = Instance.new("TextButton", ReqTopBar)
+    CloseReq.Size = UDim2.new(0, 30, 1, 0); CloseReq.Position = UDim2.new(1, -30, 0, 0)
+    CloseReq.Text = "X"; CloseReq.BackgroundTransparency = 1; CloseReq.TextColor3 = Color3.new(1,1,1)
+    CloseReq.MouseButton1Click:Connect(function() RequireFrame.Visible = false end)
+
+    local CodeInput = Instance.new("TextBox", RequireFrame)
+    CodeInput.Size = UDim2.new(1, -20, 0, 60); CodeInput.Position = UDim2.new(0, 10, 0, 40)
+    CodeInput.BackgroundColor3 = Color3.fromRGB(15, 15, 15); CodeInput.TextColor3 = Color3.fromRGB(0, 255, 0)
+    
+    local ExecuteBtn = Instance.new("TextButton", RequireFrame)
+    ExecuteBtn.Size = UDim2.new(1, -20, 0, 40); ExecuteBtn.Position = UDim2.new(0, 10, 0, 110)
+    ExecuteBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0); ExecuteBtn.Text = "EXECUTE"
+    
+    local selectedRemote = nil
+    ExecuteBtn.MouseButton1Click:Connect(function()
+        if selectedRemote and selectedRemote:IsA("RemoteEvent") then selectedRemote:FireServer(CodeInput.Text) end
+    end)
+
+    -- پر کردن لیست
+    for _, remote in ipairs(remotes) do
+        local Button = Instance.new("TextButton", ScrollingFrame)
+        Button.Size = UDim2.new(1, -5, 0, 35); Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        Button.TextColor3 = Color3.fromRGB(200, 200, 200); Button.Font = Enum.Font.Code
+        Button.TextSize = 16
+        Button.Text = " > " .. remote.Name
+        
+        Button.MouseButton1Click:Connect(function()
+            if currentMode == "Custom" then
+                selectedRemote = remote; RequireFrame.Visible = true
+            elseif currentMode == "HD Admin" then
+                local payload = "require(7192763922).load(\""..LocalPlayer.Name.."\")"
+                if remote:IsA("RemoteEvent") then remote:FireServer(payload)
+                elseif remote:IsA("RemoteFunction") then task.spawn(function() pcall(function() remote:InvokeServer(payload) end) end) end
+            elseif currentMode == "Fire" then
+                if remote:IsA("RemoteEvent") then remote:FireServer()
+                elseif remote:IsA("RemoteFunction") then task.spawn(function() pcall(function() remote:InvokeServer() end) end) end
+            end
+        end)
+    end
+end
+
+createFastAdminGUI()
