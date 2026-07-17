@@ -177,7 +177,7 @@ CodeDisplay.BackgroundColor3 = Color3.fromRGB(40, 42, 54)
 CodeDisplay.Position = UDim2.new(0, 340, 0, 75)
 CodeDisplay.Size = UDim2.new(0, 330, 1, -125)
 CodeDisplay.Font = Enum.Font.Code
-CodeDisplay.Text = "<font color=\"#7A828B\">-- تب سرورساید فعال است.\n-- در حال شنود خودکار ریموت‌ها...</font>"
+CodeDisplay.Text = "<font color=\"#7A828B\">-- Server Side Tab Active.\n-- Auto-logging remotes...</font>"
 CodeDisplay.TextColor3 = Color3.fromRGB(248, 248, 242)
 CodeDisplay.TextSize = 13
 CodeDisplay.TextXAlignment = Enum.TextXAlignment.Left
@@ -233,25 +233,54 @@ ClearDataBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ClearDataBtn.TextSize = 12
 Instance.new("UICorner", ClearDataBtn).CornerRadius = UDim.new(0, 6)
 
--- پنل اکسکیوتور کاستوم
+-- =====================================================================
+-- پنل اکسکیوتور کاستوم (اصلاح شده و بدون باگ)
+-- =====================================================================
+local ExecScrollFrame = Instance.new("ScrollingFrame")
+ExecScrollFrame.Parent = MainFrame
+ExecScrollFrame.BackgroundColor3 = Color3.fromRGB(40, 42, 54)
+ExecScrollFrame.Position = UDim2.new(0, 685, 0, 75)
+ExecScrollFrame.Size = UDim2.new(0, 260, 1, -125)
+ExecScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) -- سایز داینامیک محاسبه می‌شود
+ExecScrollFrame.ScrollBarThickness = 5
+ExecScrollFrame.BorderSizePixel = 0
+Instance.new("UICorner", ExecScrollFrame).CornerRadius = UDim.new(0, 6)
+
 local ExecTextBox = Instance.new("TextBox")
-ExecTextBox.Parent = MainFrame
-ExecTextBox.BackgroundColor3 = Color3.fromRGB(40, 42, 54)
-ExecTextBox.Position = UDim2.new(0, 685, 0, 75)
-ExecTextBox.Size = UDim2.new(0, 260, 1, -125)
+ExecTextBox.Parent = ExecScrollFrame
+ExecTextBox.BackgroundTransparency = 1
+ExecTextBox.Size = UDim2.new(1, -10, 1, -10)
+ExecTextBox.Position = UDim2.new(0, 5, 0, 5)
 ExecTextBox.Font = Enum.Font.Code
 ExecTextBox.Text = ""
-ExecTextBox.PlaceholderText = "-- اسکریپت کاستوم شما..."
+ExecTextBox.PlaceholderText = "-- اسکریپت کاستوم شما...\n-- (مشکل تایپ و اسکرول حل شد)"
 ExecTextBox.TextColor3 = Color3.fromRGB(248, 248, 242)
 ExecTextBox.TextSize = 13
 ExecTextBox.TextXAlignment = Enum.TextXAlignment.Left
 ExecTextBox.TextYAlignment = Enum.TextYAlignment.Top
 ExecTextBox.ClearTextOnFocus = false
 ExecTextBox.MultiLine = true
-ExecTextBox.TextWrapped = true
-Instance.new("UICorner", ExecTextBox).CornerRadius = UDim.new(0, 6)
-local ExecPadding = Instance.new("UIPadding", ExecTextBox)
-ExecPadding.PaddingTop, ExecPadding.PaddingLeft = UDim.new(0, 10), UDim.new(0, 10)
+ExecTextBox.TextWrapped = false -- خاموش کردن برای رفع باگ پرش متن و فعال شدن اسکرول افقی
+
+-- آپدیت هوشمند و بدون باگ سایز اسکرول بر اساس متن
+local function UpdateTextBoxSize()
+    local textBounds = ExecTextBox.TextBounds
+    -- سایز باکس حداقل به اندازه خود پنل است تا هر کجای پنل کلیک کردید بتوانید تایپ کنید
+    local newWidth = math.max(ExecScrollFrame.AbsoluteSize.X - 10, textBounds.X + 20)
+    local newHeight = math.max(ExecScrollFrame.AbsoluteSize.Y - 10, textBounds.Y + 20)
+    
+    ExecTextBox.Size = UDim2.new(0, newWidth, 0, newHeight)
+    ExecScrollFrame.CanvasSize = UDim2.new(0, newWidth, 0, newHeight)
+end
+
+-- هر بار که متنی تایپ می‌شود، سایز آپدیت می‌شود
+ExecTextBox:GetPropertyChangedSignal("TextBounds"):Connect(UpdateTextBoxSize)
+
+-- تنظیم سایز اولیه هنگام لود شدن
+task.spawn(function()
+    task.wait(0.1)
+    UpdateTextBoxSize()
+end)
 
 local CustomExecBtn = Instance.new("TextButton")
 CustomExecBtn.Parent = MainFrame
@@ -259,11 +288,10 @@ CustomExecBtn.BackgroundColor3 = Color3.fromRGB(150, 70, 200)
 CustomExecBtn.Position = UDim2.new(0, 685, 1, -40)
 CustomExecBtn.Size = UDim2.new(0, 65, 0, 30)
 CustomExecBtn.Font = Enum.Font.GothamBold
-CustomExecBtn.Text = "Exec"
+CustomExecBtn.Text = "Execute"
 CustomExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CustomExecBtn.TextSize = 12
 Instance.new("UICorner", CustomExecBtn).CornerRadius = UDim.new(0, 6)
-
 -- =====================================================================
 -- توابع کمکی
 -- =====================================================================
@@ -442,19 +470,44 @@ local function LogEvent(side, remote, args, method)
 end
 
 -- =====================================================================
--- هوک کردن امن برای اکسکیوتورهای ضعیف
+-- هوک کردن امن (با استفاده از __namecall و بای‌پس آنتی‌اسکم اکسکیوتور)
 -- =====================================================================
 if hookmetamethod then
     local oldNamecall
     pcall(function()
         oldNamecall = hookmetamethod(game, "__namecall", _newcclosure(function(self, ...)
             local method = tostring(_getnamecallmethod())
-            if not _checkcaller() and typeof(self) == "Instance" then
-                if method == "FireServer" or method == "InvokeServer" then
-                    local args = {...}
-                    pcall(function() LogEvent("Server", self, args, method) end)
+            
+            -- [بای‌پس مشکل گیم‌پس و محصولات]
+            -- اگر تابع مربوط به سیستم خرید بود، اکسکیوتور رو دور میزنیم و مستقیما اجراش میکنیم
+            if method == "PromptProductPurchase" or method == "PromptGamePassPurchase" or method == "PromptPurchase" then
+                -- با گرفتن مستقیم تابع از داخل کلاس، متامتدِ namecall دور زده میشه
+                -- و ارور "blacklisted function" که توسط خود اکسکیوتور داده میشد از بین میره
+                local func = self[method]
+                return func(self, ...)
+            end
+            
+            -- خروج سریع برای توابعی که ریموت نیستند (جلوگیری از لگ شدن بازی)
+            if method ~= "FireServer" and method ~= "InvokeServer" then
+                return oldNamecall(self, ...)
+            end
+            
+            -- لاگ کردن ریموت‌ها فقط برای کلاینت (بازی)
+            if not _checkcaller() then
+                if typeof(self) == "Instance" then
+                    local className = self.ClassName
+                    
+                    if method == "FireServer" and className == "RemoteEvent" then
+                        local args = {...}
+                        task.spawn(function() pcall(function() LogEvent("Server", self, args, method) end) end)
+                        
+                    elseif method == "InvokeServer" and className == "RemoteFunction" then
+                        local args = {...}
+                        task.spawn(function() pcall(function() LogEvent("Server", self, args, method) end) end)
+                    end
                 end
             end
+            
             return oldNamecall(self, ...)
         end))
     end)
@@ -478,10 +531,9 @@ for _, f in ipairs({game.ReplicatedStorage, game.StarterGui, game.StarterPack, g
 end
 
 -- =====================================================================
--- رویداد دکمه‌ها (نسخه اصلاح شده برای اسپم)
+-- رویداد دکمه‌ها
 -- =====================================================================
 
--- یک تابع مستقل برای اجرای ریموت می‌سازیم تا نیازی به :Fire نباشد
 local function ExecuteSelectedRemote()
     if SelectedRemote and SelectedArgs then
         if CurrentTab == "Server" then
@@ -496,10 +548,8 @@ local function ExecuteSelectedRemote()
     end
 end
 
--- دکمه Execute حالا مستقیم این تابع را اجرا می‌کند
 ExecuteButton.MouseButton1Click:Connect(ExecuteSelectedRemote)
 
--- دکمه اسپم هم به جای فشار دادن مجازی دکمه، مستقیم تابع بالا را در حلقه اجرا می‌کند
 SpamButton.MouseButton1Click:Connect(function()
     IsSpamming = not IsSpamming
     SpamButton.Text = IsSpamming and "Spam = ON" or "Spam = OFF"
@@ -508,8 +558,8 @@ SpamButton.MouseButton1Click:Connect(function()
     if IsSpamming then 
         task.spawn(function() 
             while IsSpamming do 
-                ExecuteSelectedRemote() -- فراخوانی مستقیم و بدون دردسر تابع
-                task.wait(0.03) -- فاصله زمانی بین هر ارسال (برای جلوگیری از کرش شدن بازی)
+                ExecuteSelectedRemote()
+                task.wait(0.03)
             end 
         end) 
     end
