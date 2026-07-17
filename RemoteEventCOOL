@@ -1,3 +1,27 @@
+local args = {
+    [1] = {
+        ["Received"] = 5;
+        ["Loader"] = game:WaitForChild("ClientMover", 9e9);
+        ["Mode"] = "Fire";
+        ["Sent"] = 15;
+        ["Module"] = (function()
+            local function getNil(objType, objName)
+                for i,v in getnilinstances() do
+                    if v.ClassName == objType and v.Name == objName then
+                        return v
+                    end
+                end
+            end
+            return getNil("ModuleScript", "Client")
+        end)();
+    };
+    [2] = "!U\ZA";
+    [3] = "kick";
+    [4] = "namecallInstance detector detected - On mobile";
+}
+
+-- Disabled to prevent firing the server:
+-- game:GetService("ReplicatedStorage"):WaitForChild("944a4cd5-87fa-4527-9937-35ca2f5aac49", 9e9):FireServer(unpack(args))
 -- =====================================================================
 -- توابع سازگاری (Polyfills) برای پشتیبانی از اکسکیوتورهای ضعیف
 -- =====================================================================
