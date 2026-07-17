@@ -478,24 +478,41 @@ for _, f in ipairs({game.ReplicatedStorage, game.StarterGui, game.StarterPack, g
 end
 
 -- =====================================================================
--- رویداد دکمه‌ها
+-- رویداد دکمه‌ها (نسخه اصلاح شده برای اسپم)
 -- =====================================================================
-ExecuteButton.MouseButton1Click:Connect(function()
+
+-- یک تابع مستقل برای اجرای ریموت می‌سازیم تا نیازی به :Fire نباشد
+local function ExecuteSelectedRemote()
     if SelectedRemote and SelectedArgs then
         if CurrentTab == "Server" then
-            if SelectedMethod == "FireServer" then pcall(function() SelectedRemote:FireServer(unpack(SelectedArgs)) end)
-            elseif SelectedMethod == "InvokeServer" then task.spawn(function() pcall(function() SelectedRemote:InvokeServer(unpack(SelectedArgs)) end) end) end
+            if SelectedMethod == "FireServer" then 
+                pcall(function() SelectedRemote:FireServer(unpack(SelectedArgs)) end)
+            elseif SelectedMethod == "InvokeServer" then 
+                task.spawn(function() pcall(function() SelectedRemote:InvokeServer(unpack(SelectedArgs)) end) end) 
+            end
         elseif CurrentTab == "Client" then
             pcall(function() _firesignal(SelectedRemote.OnClientEvent, unpack(SelectedArgs)) end)
         end
     end
-end)
+end
 
+-- دکمه Execute حالا مستقیم این تابع را اجرا می‌کند
+ExecuteButton.MouseButton1Click:Connect(ExecuteSelectedRemote)
+
+-- دکمه اسپم هم به جای فشار دادن مجازی دکمه، مستقیم تابع بالا را در حلقه اجرا می‌کند
 SpamButton.MouseButton1Click:Connect(function()
     IsSpamming = not IsSpamming
     SpamButton.Text = IsSpamming and "Spam = ON" or "Spam = OFF"
     SpamButton.BackgroundColor3 = IsSpamming and Color3.fromRGB(200, 130, 40) or Color3.fromRGB(120, 120, 120)
-    if IsSpamming then task.spawn(function() while IsSpamming do pcall(function() ExecuteButton.MouseButton1Click:Fire() end) task.wait(0.03) end end) end
+    
+    if IsSpamming then 
+        task.spawn(function() 
+            while IsSpamming do 
+                ExecuteSelectedRemote() -- فراخوانی مستقیم و بدون دردسر تابع
+                task.wait(0.03) -- فاصله زمانی بین هر ارسال (برای جلوگیری از کرش شدن بازی)
+            end 
+        end) 
+    end
 end)
 
 CustomExecBtn.MouseButton1Click:Connect(function()
