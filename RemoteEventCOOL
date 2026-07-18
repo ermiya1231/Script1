@@ -182,7 +182,7 @@ SwitchTableBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy() -- حذف کامل منوی فعلی
     pcall(function()
         -- ⚠️ آدرس گیت‌هاب اسکریپت دوم خود را در خط زیر قرار دهید
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/REPO/main/YOUR_TABLE_MODE_SCRIPT.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/rspy1"))()
     end)
 end)
 -- =====================================================================
