@@ -7,6 +7,13 @@ local _getnamecallmethod = getnamecallmethod or function() return "" end
 local _setclipboard = setclipboard or toclipboard or function(text) warn("Clipboard not supported") end
 local _firesignal = firesignal or function() warn("firesignal not supported!") end
 
+-- =====================================================================
+-- سیستم پاکسازی نسخه‌های قبلی
+-- =====================================================================
+if _getgenv().CenirosoSpyUpdater then
+    pcall(function() _getgenv().CenirosoSpyUpdater:Disconnect() end)
+end
+
 if _getgenv().SoroniceV1SpyLoaded then
     for _, gui in pairs({game:GetService("CoreGui"), game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")}) do
         pcall(function() if gui:FindFirstChild("cenirosoRemoteSpy") then gui.cenirosoRemoteSpy:Destroy() end end)
@@ -102,7 +109,6 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- دکمه جدید Switch To Normal Mode
 local NormalModeBtn = Instance.new("TextButton")
 NormalModeBtn.Parent = TopBar
 NormalModeBtn.BackgroundColor3 = Color3.fromRGB(50, 120, 200)
@@ -207,7 +213,6 @@ ModeToggleBtn.Position, ModeToggleBtn.Size = UDim2.new(0, 685, 0, 35), UDim2.new
 ModeToggleBtn.Font, ModeToggleBtn.Text, ModeToggleBtn.TextColor3, ModeToggleBtn.TextSize = Enum.Font.GothamBold, "🔄 Switch to Converter", Color3.fromRGB(255, 255, 255), 13
 Instance.new("UICorner", ModeToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Executor Frame
 local ExecScrollFrame = Instance.new("ScrollingFrame", MainFrame)
 ExecScrollFrame.BackgroundColor3, ExecScrollFrame.Position, ExecScrollFrame.Size = Color3.fromRGB(40, 42, 54), UDim2.new(0, 685, 0, 75), UDim2.new(0, 260, 1, -125)
 ExecScrollFrame.ScrollBarThickness, ExecScrollFrame.BorderSizePixel = 5, 0
@@ -225,7 +230,6 @@ CustomExecBtn.BackgroundColor3, CustomExecBtn.Position, CustomExecBtn.Size = Col
 CustomExecBtn.Font, CustomExecBtn.Text, CustomExecBtn.TextColor3, CustomExecBtn.TextSize = Enum.Font.GothamBold, "Run Custom Code", Color3.fromRGB(255, 255, 255), 14
 Instance.new("UICorner", CustomExecBtn).CornerRadius = UDim.new(0, 6)
 
--- Converter Frame
 local ConverterPanel = Instance.new("Frame", MainFrame)
 ConverterPanel.BackgroundColor3, ConverterPanel.Position, ConverterPanel.Size = Color3.fromRGB(40, 42, 54), UDim2.new(0, 685, 0, 75), UDim2.new(0, 260, 1, -85)
 ConverterPanel.Visible = false
@@ -357,7 +361,8 @@ local function SwitchTab(tabName)
     for remote, entry in pairs(SpyData[CurrentTab]) do BuildRemoteButton(remote, entry) end
 end
 
-RunService.Heartbeat:Connect(function()
+-- ذخیره لوپ در متغیر جهانی برای متوقف کردن آن در آینده
+_getgenv().CenirosoSpyUpdater = RunService.Heartbeat:Connect(function()
     if #UIUpdateQueue > 0 then
         for _, data in ipairs(UIUpdateQueue) do
             if CurrentTab == data.side then
@@ -387,7 +392,9 @@ local function LogEvent(side, remote, args, method)
     table.insert(UIUpdateQueue, {side = side, remote = remote, entry = entry})
 end
 
-if hookmetamethod then
+-- محدود کردن هوک فقط به یک بار اجرا
+if hookmetamethod and not _getgenv().CenirosoHookLoaded then
+    _getgenv().CenirosoHookLoaded = true
     local oldNamecall
     pcall(function()
         oldNamecall = hookmetamethod(game, "__namecall", _newcclosure(function(self, ...)
@@ -476,16 +483,26 @@ ConvertBtn.MouseButton1Click:Connect(function()
     ConvOutputBox.Text = result
 end)
 
--- منطق دکمه Normal Mode
-NormalModeBtn.MouseButton1Click:Connect(function()
+-- تابع پاکسازی کلی هنگام بستن یا تغییر مود
+local function PerformCleanup()
     IsSpamming = false
+    if _getgenv().CenirosoSpyUpdater then
+        pcall(function() _getgenv().CenirosoSpyUpdater:Disconnect() end)
+    end
     ScreenGui:Destroy()
+end
+
+NormalModeBtn.MouseButton1Click:Connect(function()
+    PerformCleanup()
     
     -- !توجه: آدرس پایین رو با لینک واقعی اسکریپت گیت‌هابِ مد نظرت عوض کن!
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/rspy1"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/YOUR_GITHUB_LINK_HERE.lua"))()
 end)
 
 CopyBtn.MouseButton1Click:Connect(function() if _G.RawCode then _setclipboard(_G.RawCode) end end)
-CloseButton.MouseButton1Click:Connect(function() IsSpamming = false; ScreenGui:Destroy() end)
+
+CloseButton.MouseButton1Click:Connect(function() 
+    PerformCleanup()
+end)
 
 SwitchTab("Server")
