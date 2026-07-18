@@ -1,4 +1,4 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/bypassrspy"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/rspybypass"))()
 local _getgenv = getgenv or function() return _G end
 local _newcclosure = newcclosure or function(f) return f end
 local _checkcaller = checkcaller or function() return false end
