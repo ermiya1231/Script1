@@ -30,10 +30,7 @@ local function scanForRemotes()
     local blacklistedServices = {
         ["ServerScriptService"] = true,
         ["ServerStorage"] = true,
-        ["HttpService"] = true,
-        ["Chat"] = true,
-        ["RobloxReplicatedStorage"] = true,
-        ["CorePackages"] = true
+        ["RobloxReplicatedStorage"] = true
     }
 
     -- گرفتن تمام بخش‌های بازی به جای اینکه دستی اسمشونو بنویسیم
