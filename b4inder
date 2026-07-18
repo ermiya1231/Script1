@@ -1,24 +1,48 @@
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService") -- اضافه شدن TweenService برای حرکت نرم
 local LocalPlayer = Players.LocalPlayer
 
--- سیستم درگ
-local function makeDraggable(frame, topBar)
-    local dragToggle, dragStart, startPos
-    topBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragToggle = true; dragStart = input.Position; startPos = frame.Position
+-- سیستم درگ جدید (هیولا، نرم و سازگار با موبایل)
+local function makeDraggable(Frame, TopBar)
+    TopBar = TopBar or Frame -- اگر تاپ باری مشخص نشد، خود فریم رو قابل درگ میکنه
+    local dragToggle = false
+    local dragSpeed = 0.15
+    local dragInput = nil
+    local dragStart = nil
+    local startPos = nil
+
+    local function updateInput(input)
+        local Delta = input.Position - dragStart
+        local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+        TweenService:Create(Frame, TweenInfo.new(dragSpeed), {Position = Position}):Play()
+    end
+
+    TopBar.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = Frame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
         end
     end)
+
+    TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
     UserInputService.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and dragToggle then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        if input == dragInput and dragToggle then
+            updateInput(input)
         end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragToggle = false end
     end)
 end
 
@@ -97,7 +121,7 @@ local function createFastAdminGUI()
 
     local TopBar = Instance.new("Frame", MainFrame)
     TopBar.Size = UDim2.new(1, 0, 0, 35); TopBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    makeDraggable(MainFrame, TopBar)
+    makeDraggable(MainFrame, TopBar) -- استفاده از سیستم درگ جدید
 
     -- دکمه بستن
     local CloseMain = Instance.new("TextButton", TopBar)
@@ -165,7 +189,7 @@ local function createFastAdminGUI()
     local RequireFrame = Instance.new("Frame", ScreenGui)
     RequireFrame.Size = UDim2.new(0, 450, 0, 200); RequireFrame.Position = UDim2.new(0.5, -225, 0.5, -100)
     RequireFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5); RequireFrame.Visible = false
-    makeDraggable(RequireFrame, RequireFrame)
+    makeDraggable(RequireFrame, RequireFrame) -- استفاده از سیستم درگ جدید برای پنل دوم
     
     -- دکمه بستن Executor
     local ReqTopBar = Instance.new("Frame", RequireFrame)
