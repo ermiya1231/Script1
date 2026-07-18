@@ -115,10 +115,8 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 local UIScale = Instance.new("UIScale", MainFrame)
 local screenSize = workspace.CurrentCamera.ViewportSize
 if screenSize.X < 800 or screenSize.Y < 600 then
-    -- تنظیم مقیاس برای موبایل (منو ۶۰٪ سایز اصلی میشه تا جا بشه)
     UIScale.Scale = 0.6 
 else
-    -- سایز روی کامپیوتر
     UIScale.Scale = 0.9 
 end
 
@@ -130,7 +128,6 @@ TopBar.BorderSizePixel = 0
 TopBar.Size = UDim2.new(1, 0, 0, 30)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 8)
 
--- اعمال سیستم درگ جدید روی فریم
 makeDraggable(MainFrame, TopBar)
 
 local Title = Instance.new("TextLabel")
@@ -141,7 +138,7 @@ Title.Size = UDim2.new(0.5, 0, 1, 0)
 Title.Font = Enum.Font.GothamBold
 Title.Text = "C00L Remote Spy - Compat Edition"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 14
+Title.TextSize = 16 -- بزرگ شد
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 local ExpandButton = Instance.new("TextButton")
@@ -152,7 +149,7 @@ ExpandButton.Size = UDim2.new(0, 30, 1, 0)
 ExpandButton.Font = Enum.Font.GothamBold
 ExpandButton.Text = ">"
 ExpandButton.TextColor3 = Color3.fromRGB(150, 150, 150)
-ExpandButton.TextSize = 16
+ExpandButton.TextSize = 18 -- بزرگ شد
 
 local CloseButton = Instance.new("TextButton")
 CloseButton.Parent = TopBar
@@ -162,7 +159,7 @@ CloseButton.Size = UDim2.new(0, 30, 1, 0)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.Text = "X"
 CloseButton.TextColor3 = Color3.fromRGB(200, 80, 80)
-CloseButton.TextSize = 14
+CloseButton.TextSize = 16 -- بزرگ شد
 
 local TabContainer = Instance.new("Frame")
 TabContainer.Parent = MainFrame
@@ -179,7 +176,7 @@ ServerTabBtn.Size = UDim2.new(0, 140, 0, 25)
 ServerTabBtn.Font = Enum.Font.GothamBold
 ServerTabBtn.Text = "Serverside Executing"
 ServerTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ServerTabBtn.TextSize = 12
+ServerTabBtn.TextSize = 14 -- بزرگ شد
 Instance.new("UICorner", ServerTabBtn).CornerRadius = UDim.new(0, 4)
 
 local ClientTabBtn = Instance.new("TextButton")
@@ -190,7 +187,7 @@ ClientTabBtn.Size = UDim2.new(0, 140, 0, 25)
 ClientTabBtn.Font = Enum.Font.GothamBold
 ClientTabBtn.Text = "Client Side Executing"
 ClientTabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-ClientTabBtn.TextSize = 12
+ClientTabBtn.TextSize = 14 -- بزرگ شد
 Instance.new("UICorner", ClientTabBtn).CornerRadius = UDim.new(0, 4)
 
 local RemotesList = Instance.new("ScrollingFrame")
@@ -229,7 +226,7 @@ CodeDisplay.Size = UDim2.new(0, 330, 1, -125)
 CodeDisplay.Font = Enum.Font.Code
 CodeDisplay.Text = "<font color=\"#7A828B\">-- Server Side Tab Active.\n-- Auto-logging remotes...</font>"
 CodeDisplay.TextColor3 = Color3.fromRGB(248, 248, 242)
-CodeDisplay.TextSize = 13
+CodeDisplay.TextSize = 15 -- بزرگ شد
 CodeDisplay.TextXAlignment = Enum.TextXAlignment.Left
 CodeDisplay.TextYAlignment = Enum.TextYAlignment.Top
 CodeDisplay.RichText = true
@@ -247,7 +244,7 @@ CopyButton.Size = UDim2.new(0, 70, 0, 30)
 CopyButton.Font = Enum.Font.GothamBold
 CopyButton.Text = "Copy"
 CopyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CopyButton.TextSize = 12
+CopyButton.TextSize = 14 -- بزرگ شد
 Instance.new("UICorner", CopyButton).CornerRadius = UDim.new(0, 6)
 
 local ExecuteButton = Instance.new("TextButton")
@@ -258,7 +255,7 @@ ExecuteButton.Size = UDim2.new(0, 75, 0, 30)
 ExecuteButton.Font = Enum.Font.GothamBold
 ExecuteButton.Text = "Execute"
 ExecuteButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ExecuteButton.TextSize = 12
+ExecuteButton.TextSize = 14 -- بزرگ شد
 Instance.new("UICorner", ExecuteButton).CornerRadius = UDim.new(0, 6)
 
 local SpamButton = Instance.new("TextButton")
@@ -269,7 +266,7 @@ SpamButton.Size = UDim2.new(0, 85, 0, 30)
 SpamButton.Font = Enum.Font.GothamBold
 SpamButton.Text = "Spam = OFF"
 SpamButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpamButton.TextSize = 12
+SpamButton.TextSize = 14 -- بزرگ شد
 Instance.new("UICorner", SpamButton).CornerRadius = UDim.new(0, 6)
 
 local ClearDataBtn = Instance.new("TextButton")
@@ -280,7 +277,7 @@ ClearDataBtn.Size = UDim2.new(0, 70, 0, 30)
 ClearDataBtn.Font = Enum.Font.GothamBold
 ClearDataBtn.Text = "Clear All"
 ClearDataBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ClearDataBtn.TextSize = 12
+ClearDataBtn.TextSize = 14 -- بزرگ شد
 Instance.new("UICorner", ClearDataBtn).CornerRadius = UDim.new(0, 6)
 
 local ExecScrollFrame = Instance.new("ScrollingFrame")
@@ -291,6 +288,7 @@ ExecScrollFrame.Size = UDim2.new(0, 260, 1, -125)
 ExecScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 ExecScrollFrame.ScrollBarThickness = 5
 ExecScrollFrame.BorderSizePixel = 0
+ExecScrollFrame.ScrollingDirection = Enum.ScrollingDirection.Y -- جلوگیری از اسکرول چپ و راست
 Instance.new("UICorner", ExecScrollFrame).CornerRadius = UDim.new(0, 6)
 
 local ExecTextBox = Instance.new("TextBox")
@@ -300,22 +298,22 @@ ExecTextBox.Size = UDim2.new(1, -10, 1, -10)
 ExecTextBox.Position = UDim2.new(0, 5, 0, 5)
 ExecTextBox.Font = Enum.Font.Code
 ExecTextBox.Text = ""
-ExecTextBox.PlaceholderText = "-- اسکریپت کاستوم شما...\n-- (مشکل تایپ و اسکرول حل شد)"
+ExecTextBox.PlaceholderText = "-- اسکریپت کاستوم شما...\n-- مشکل تایپ و اسکرول حل شد!"
 ExecTextBox.TextColor3 = Color3.fromRGB(248, 248, 242)
-ExecTextBox.TextSize = 13
+ExecTextBox.TextSize = 15 -- فونت بزرگتر برای تایپ راحت
 ExecTextBox.TextXAlignment = Enum.TextXAlignment.Left
 ExecTextBox.TextYAlignment = Enum.TextYAlignment.Top
 ExecTextBox.ClearTextOnFocus = false
 ExecTextBox.MultiLine = true
-ExecTextBox.TextWrapped = false
+ExecTextBox.TextWrapped = true -- شکسته شدن خودکار خطوط طولانی
 
 local function UpdateTextBoxSize()
+    -- از اونجا که TextWrapped فعاله، فقط نیاز داریم ارتفاع رو آپدیت کنیم
     local textBounds = ExecTextBox.TextBounds
-    local newWidth = math.max(ExecScrollFrame.AbsoluteSize.X - 10, textBounds.X + 20)
     local newHeight = math.max(ExecScrollFrame.AbsoluteSize.Y - 10, textBounds.Y + 20)
     
-    ExecTextBox.Size = UDim2.new(0, newWidth, 0, newHeight)
-    ExecScrollFrame.CanvasSize = UDim2.new(0, newWidth, 0, newHeight)
+    ExecTextBox.Size = UDim2.new(1, -10, 0, newHeight)
+    ExecScrollFrame.CanvasSize = UDim2.new(0, 0, 0, newHeight)
 end
 
 ExecTextBox:GetPropertyChangedSignal("TextBounds"):Connect(UpdateTextBoxSize)
@@ -333,7 +331,7 @@ CustomExecBtn.Size = UDim2.new(0, 65, 0, 30)
 CustomExecBtn.Font = Enum.Font.GothamBold
 CustomExecBtn.Text = "Execute"
 CustomExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CustomExecBtn.TextSize = 12
+CustomExecBtn.TextSize = 14 -- بزرگ شد
 Instance.new("UICorner", CustomExecBtn).CornerRadius = UDim.new(0, 6)
 
 local function ApplySyntaxHighlighting(codeString)
@@ -401,7 +399,7 @@ local function LoadHistory(remote)
         TimeBtn.Font = Enum.Font.Gotham
         TimeBtn.Text = " 🕒 " .. log.Time
         TimeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-        TimeBtn.TextSize = 12
+        TimeBtn.TextSize = 13 -- بزرگ شد
         TimeBtn.TextXAlignment = Enum.TextXAlignment.Left
         Instance.new("UICorner", TimeBtn).CornerRadius = UDim.new(0, 4)
         
@@ -428,7 +426,7 @@ local function BuildRemoteButton(remote, entry)
     RemoteBtn.Font = Enum.Font.Gotham
     RemoteBtn.Text = " " .. entry.Name
     RemoteBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
-    RemoteBtn.TextSize = 12
+    RemoteBtn.TextSize = 14 -- بزرگ شد
     RemoteBtn.TextXAlignment = Enum.TextXAlignment.Left
     Instance.new("UICorner", RemoteBtn).CornerRadius = UDim.new(0, 4)
     
@@ -441,7 +439,7 @@ local function BuildRemoteButton(remote, entry)
     CountBadge.Font = Enum.Font.GothamBold
     CountBadge.Text = "x" .. tostring(entry.Count)
     CountBadge.TextColor3 = Color3.fromRGB(114, 137, 218)
-    CountBadge.TextSize = 11
+    CountBadge.TextSize = 13 -- بزرگ شد
     CountBadge.TextXAlignment = Enum.TextXAlignment.Right
     
     RemoteBtn.MouseButton1Click:Connect(function()
