@@ -32,7 +32,7 @@ local function scanForRemotes()
         ["ServerStorage"] = true,
         ["HttpService"] = true,
         ["Chat"] = true,
-        ["CoreGui"] = true,
+        ["RobloxReplicatedStorage"] = true,
         ["CorePackages"] = true
     }
 
