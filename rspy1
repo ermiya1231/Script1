@@ -1,0 +1,645 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/bypassrspy"))()
+local _getgenv = getgenv or function() return _G end
+local _newcclosure = newcclosure or function(f) return f end
+local _checkcaller = checkcaller or function() return false end
+local _getnamecallmethod = getnamecallmethod or function() return "" end
+local _setclipboard = setclipboard or toclipboard or function(text) warn("Clipboard not supported: " .. tostring(text)) end
+local _firesignal = firesignal or function() warn("firesignal is not supported on your executor!") end
+
+if _getgenv().SoroniceV1SpyLoaded then
+    -- پیدا کردن رابط کاربری قبلی و پاک کردنش از هر جایی که هست
+    for _, gui in pairs({game:GetService("CoreGui"), game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")}) do
+        pcall(function()
+            if gui:FindFirstChild("cenirosoRemoteSpy") then gui.cenirosoRemoteSpy:Destroy() end
+        end)
+    end
+end
+_getgenv().SoroniceV1SpyLoaded = true
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+-- =====================================================================
+-- سیستم درگ نرم و پشتیبانی کننده از موبایل
+-- =====================================================================
+local function makeDraggable(Frame, TopBar)
+    TopBar = TopBar or Frame
+    local dragToggle = false
+    local dragSpeed = 0.15
+    local dragInput = nil
+    local dragStart = nil
+    local startPos = nil
+
+    local function updateInput(input)
+        local Delta = input.Position - dragStart
+        local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+        TweenService:Create(Frame, TweenInfo.new(dragSpeed), {Position = Position}):Play()
+    end
+
+    TopBar.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = Frame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+
+    TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then
+            updateInput(input)
+        end
+    end)
+end
+
+-- =====================================================================
+-- پیدا کردن بهترین مکان برای لود کردن GUI بر اساس قدرت اکسکیوتور
+-- =====================================================================
+local UIParent = game:GetService("CoreGui")
+local canUseCoreGui = pcall(function() 
+    local test = Instance.new("Folder") 
+    test.Parent = UIParent 
+    test:Destroy() 
+end)
+
+if not canUseCoreGui then
+    UIParent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+end
+if gethui then
+    pcall(function() UIParent = gethui() end)
+end
+
+_G.RawCode = ""
+local CurrentTab = "Server" 
+local SelectedRemote = nil
+local SelectedArgs = {}
+local SelectedMethod = ""
+local IsExpanded = false 
+local IsSpamming = false
+local IsExecSpamming = false
+
+local SpyData = { Server = {}, Client = {} }
+local RemoteIDCounter = 0 
+local UIUpdateQueue = {}
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "cenirosoRemoteSpy"
+ScreenGui.Parent = UIParent
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 32, 38)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, -340, 0.5, -230)
+MainFrame.Size = UDim2.new(0, 680, 0, 460) 
+MainFrame.ClipsDescendants = true
+MainFrame.Active = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+-- سیستم تشخیص خودکار موبایل و کوچیک کردن منو
+local UIScale = Instance.new("UIScale", MainFrame)
+local screenSize = workspace.CurrentCamera.ViewportSize
+if screenSize.X < 800 or screenSize.Y < 600 then
+    UIScale.Scale = 0.6 
+else
+    UIScale.Scale = 0.9 
+end
+
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Parent = MainFrame
+TopBar.BackgroundColor3 = Color3.fromRGB(22, 24, 28)
+TopBar.BorderSizePixel = 0
+TopBar.Size = UDim2.new(1, 0, 0, 30)
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 8)
+
+makeDraggable(MainFrame, TopBar)
+
+local Title = Instance.new("TextLabel")
+Title.Parent = TopBar
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.Size = UDim2.new(0.4, 0, 1, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "C00L Remote Spy"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16 
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local ExpandButton = Instance.new("TextButton")
+ExpandButton.Parent = TopBar
+ExpandButton.BackgroundTransparency = 1
+ExpandButton.Position = UDim2.new(1, -60, 0, 0)
+ExpandButton.Size = UDim2.new(0, 30, 1, 0)
+ExpandButton.Font = Enum.Font.GothamBold
+ExpandButton.Text = ">"
+ExpandButton.TextColor3 = Color3.fromRGB(150, 150, 150)
+ExpandButton.TextSize = 18 
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Parent = TopBar
+CloseButton.BackgroundTransparency = 1
+CloseButton.Position = UDim2.new(1, -30, 0, 0)
+CloseButton.Size = UDim2.new(0, 30, 1, 0)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(200, 80, 80)
+CloseButton.TextSize = 16 
+
+-- =====================================================================
+-- دکمه سوئیچ به حالت جدول (Table Mode)
+-- =====================================================================
+local SwitchTableBtn = Instance.new("TextButton")
+SwitchTableBtn.Name = "SwitchTableBtn"
+SwitchTableBtn.Parent = TopBar
+SwitchTableBtn.BackgroundColor3 = Color3.fromRGB(45, 48, 56)
+SwitchTableBtn.Position = UDim2.new(1, -195, 0, 3)
+SwitchTableBtn.Size = UDim2.new(0, 130, 0, 24)
+SwitchTableBtn.Font = Enum.Font.GothamBold
+SwitchTableBtn.Text = "Switch To Table Mode"
+SwitchTableBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
+SwitchTableBtn.TextSize = 11
+Instance.new("UICorner", SwitchTableBtn).CornerRadius = UDim.new(0, 4)
+
+SwitchTableBtn.MouseButton1Click:Connect(function()
+    IsSpamming = false
+    IsExecSpamming = false
+    ScreenGui:Destroy() -- حذف کامل منوی فعلی
+    pcall(function()
+        -- ⚠️ آدرس گیت‌هاب اسکریپت دوم خود را در خط زیر قرار دهید
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/REPO/main/YOUR_TABLE_MODE_SCRIPT.lua"))()
+    end)
+end)
+-- =====================================================================
+
+local TabContainer = Instance.new("Frame")
+TabContainer.Parent = MainFrame
+TabContainer.BackgroundColor3 = Color3.fromRGB(25, 27, 33)
+TabContainer.BorderSizePixel = 0
+TabContainer.Position = UDim2.new(0, 0, 0, 30)
+TabContainer.Size = UDim2.new(1, 0, 0, 35)
+
+local ServerTabBtn = Instance.new("TextButton")
+ServerTabBtn.Parent = TabContainer
+ServerTabBtn.BackgroundColor3 = Color3.fromRGB(114, 137, 218)
+ServerTabBtn.Position = UDim2.new(0, 10, 0, 5)
+ServerTabBtn.Size = UDim2.new(0, 140, 0, 25)
+ServerTabBtn.Font = Enum.Font.GothamBold
+ServerTabBtn.Text = "Serverside Executing"
+ServerTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ServerTabBtn.TextSize = 14 
+Instance.new("UICorner", ServerTabBtn).CornerRadius = UDim.new(0, 4)
+
+local ClientTabBtn = Instance.new("TextButton")
+ClientTabBtn.Parent = TabContainer
+ClientTabBtn.BackgroundColor3 = Color3.fromRGB(40, 42, 50)
+ClientTabBtn.Position = UDim2.new(0, 160, 0, 5)
+ClientTabBtn.Size = UDim2.new(0, 140, 0, 25)
+ClientTabBtn.Font = Enum.Font.GothamBold
+ClientTabBtn.Text = "Client Side Executing"
+ClientTabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+ClientTabBtn.TextSize = 14 
+Instance.new("UICorner", ClientTabBtn).CornerRadius = UDim.new(0, 4)
+
+local RemotesList = Instance.new("ScrollingFrame")
+RemotesList.Parent = MainFrame
+RemotesList.BackgroundColor3 = Color3.fromRGB(22, 24, 28)
+RemotesList.Position = UDim2.new(0, 10, 0, 75)
+RemotesList.Size = UDim2.new(0, 170, 1, -85)
+RemotesList.ScrollBarThickness = 3
+RemotesList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Instance.new("UICorner", RemotesList).CornerRadius = UDim.new(0, 6)
+local RemotesLayout = Instance.new("UIListLayout", RemotesList)
+RemotesLayout.Padding = UDim.new(0, 5)
+
+local HistoryPanel = Instance.new("Frame")
+HistoryPanel.Parent = MainFrame
+HistoryPanel.BackgroundColor3 = Color3.fromRGB(22, 24, 28)
+HistoryPanel.Position = UDim2.new(0, 190, 0, 75)
+HistoryPanel.Size = UDim2.new(0, 140, 1, -85)
+Instance.new("UICorner", HistoryPanel).CornerRadius = UDim.new(0, 6)
+
+local HistoryList = Instance.new("ScrollingFrame")
+HistoryList.Parent = HistoryPanel
+HistoryList.BackgroundTransparency = 1
+HistoryList.Position = UDim2.new(0, 0, 0, 25)
+HistoryList.Size = UDim2.new(1, 0, 1, -25)
+HistoryList.ScrollBarThickness = 3
+HistoryList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+local HistoryLayout = Instance.new("UIListLayout", HistoryList)
+HistoryLayout.Padding = UDim.new(0, 3)
+
+local CodeDisplay = Instance.new("TextLabel")
+CodeDisplay.Parent = MainFrame
+CodeDisplay.BackgroundColor3 = Color3.fromRGB(40, 42, 54)
+CodeDisplay.Position = UDim2.new(0, 340, 0, 75)
+CodeDisplay.Size = UDim2.new(0, 330, 1, -125)
+CodeDisplay.Font = Enum.Font.Code
+CodeDisplay.Text = "<font color=\"#7A828B\">-- Server Side Tab Active.\n-- Auto-logging remotes...</font>"
+CodeDisplay.TextColor3 = Color3.fromRGB(248, 248, 242)
+CodeDisplay.TextSize = 15 
+CodeDisplay.TextXAlignment = Enum.TextXAlignment.Left
+CodeDisplay.TextYAlignment = Enum.TextYAlignment.Top
+CodeDisplay.RichText = true
+CodeDisplay.TextWrapped = true
+Instance.new("UICorner", CodeDisplay).CornerRadius = UDim.new(0, 6)
+local UIPadding = Instance.new("UIPadding", CodeDisplay)
+UIPadding.PaddingTop, UIPadding.PaddingLeft = UDim.new(0, 10), UDim.new(0, 10)
+
+-- دکمه‌های کنترل
+local CopyButton = Instance.new("TextButton")
+CopyButton.Parent = MainFrame
+CopyButton.BackgroundColor3 = Color3.fromRGB(45, 100, 200)
+CopyButton.Position = UDim2.new(0, 340, 1, -40)
+CopyButton.Size = UDim2.new(0, 70, 0, 30)
+CopyButton.Font = Enum.Font.GothamBold
+CopyButton.Text = "Copy"
+CopyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CopyButton.TextSize = 14 
+Instance.new("UICorner", CopyButton).CornerRadius = UDim.new(0, 6)
+
+local ExecuteButton = Instance.new("TextButton")
+ExecuteButton.Parent = MainFrame
+ExecuteButton.BackgroundColor3 = Color3.fromRGB(46, 139, 87)
+ExecuteButton.Position = UDim2.new(0, 420, 1, -40)
+ExecuteButton.Size = UDim2.new(0, 75, 0, 30)
+ExecuteButton.Font = Enum.Font.GothamBold
+ExecuteButton.Text = "Execute"
+ExecuteButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecuteButton.TextSize = 14 
+Instance.new("UICorner", ExecuteButton).CornerRadius = UDim.new(0, 6)
+
+local SpamButton = Instance.new("TextButton")
+SpamButton.Parent = MainFrame
+SpamButton.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+SpamButton.Position = UDim2.new(0, 505, 1, -40)
+SpamButton.Size = UDim2.new(0, 85, 0, 30)
+SpamButton.Font = Enum.Font.GothamBold
+SpamButton.Text = "Spam = OFF"
+SpamButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpamButton.TextSize = 14 
+Instance.new("UICorner", SpamButton).CornerRadius = UDim.new(0, 6)
+
+local ClearDataBtn = Instance.new("TextButton")
+ClearDataBtn.Parent = MainFrame
+ClearDataBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+ClearDataBtn.Position = UDim2.new(0, 600, 1, -40)
+ClearDataBtn.Size = UDim2.new(0, 70, 0, 30)
+ClearDataBtn.Font = Enum.Font.GothamBold
+ClearDataBtn.Text = "Clear All"
+ClearDataBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ClearDataBtn.TextSize = 14 
+Instance.new("UICorner", ClearDataBtn).CornerRadius = UDim.new(0, 6)
+
+local ExecScrollFrame = Instance.new("ScrollingFrame")
+ExecScrollFrame.Parent = MainFrame
+ExecScrollFrame.BackgroundColor3 = Color3.fromRGB(40, 42, 54)
+ExecScrollFrame.Position = UDim2.new(0, 685, 0, 75)
+ExecScrollFrame.Size = UDim2.new(0, 260, 1, -125)
+ExecScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ExecScrollFrame.ScrollBarThickness = 5
+ExecScrollFrame.BorderSizePixel = 0
+ExecScrollFrame.ScrollingDirection = Enum.ScrollingDirection.Y 
+Instance.new("UICorner", ExecScrollFrame).CornerRadius = UDim.new(0, 6)
+
+local ExecTextBox = Instance.new("TextBox")
+ExecTextBox.Parent = ExecScrollFrame
+ExecTextBox.BackgroundTransparency = 1
+ExecTextBox.Size = UDim2.new(1, -10, 1, -10)
+ExecTextBox.Position = UDim2.new(0, 5, 0, 5)
+ExecTextBox.Font = Enum.Font.Code
+ExecTextBox.Text = ""
+ExecTextBox.PlaceholderText = "-- اسکریپت کاستوم شما...\n-- مشکل تایپ و اسکرول حل شد!"
+ExecTextBox.TextColor3 = Color3.fromRGB(248, 248, 242)
+ExecTextBox.TextSize = 15 
+ExecTextBox.TextXAlignment = Enum.TextXAlignment.Left
+ExecTextBox.TextYAlignment = Enum.TextYAlignment.Top
+ExecTextBox.ClearTextOnFocus = false
+ExecTextBox.MultiLine = true
+ExecTextBox.TextWrapped = true 
+
+local function UpdateTextBoxSize()
+    local textBounds = ExecTextBox.TextBounds
+    local newHeight = math.max(ExecScrollFrame.AbsoluteSize.Y - 10, textBounds.Y + 20)
+    
+    ExecTextBox.Size = UDim2.new(1, -10, 0, newHeight)
+    ExecScrollFrame.CanvasSize = UDim2.new(0, 0, 0, newHeight)
+end
+
+ExecTextBox:GetPropertyChangedSignal("TextBounds"):Connect(UpdateTextBoxSize)
+
+task.spawn(function()
+    task.wait(0.1)
+    UpdateTextBoxSize()
+end)
+
+local CustomExecBtn = Instance.new("TextButton")
+CustomExecBtn.Parent = MainFrame
+CustomExecBtn.BackgroundColor3 = Color3.fromRGB(150, 70, 200)
+CustomExecBtn.Position = UDim2.new(0, 685, 1, -40)
+CustomExecBtn.Size = UDim2.new(0, 65, 0, 30)
+CustomExecBtn.Font = Enum.Font.GothamBold
+CustomExecBtn.Text = "Execute"
+CustomExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CustomExecBtn.TextSize = 14 
+Instance.new("UICorner", CustomExecBtn).CornerRadius = UDim.new(0, 6)
+
+local function ApplySyntaxHighlighting(codeString)
+    local highlighted = codeString:gsub("<", "&lt;"):gsub(">", "&gt;")
+    local cKeyword, cString, cNumber, cMethod = "#FF79C6", "#F1FA8C", "#BD93F9", "#50FA7B"
+    highlighted = highlighted:gsub('("[^"]*")', '<font color="'..cString..'">%1</font>')
+    highlighted = highlighted:gsub("([%s%[,=])(%d+%.?%d*)([%s%],;])", "%1<font color=\""..cNumber.."\">%2</font>%3")
+    highlighted = highlighted:gsub("^(%d+%.?%d*)([%s%],;])", "<font color=\""..cNumber.."\">%1</font>%2")
+    highlighted = highlighted:gsub("(FireServer)", '<font color="'..cMethod..'">%1</font>')
+    highlighted = highlighted:gsub("(InvokeServer)", '<font color="'..cMethod..'">%1</font>')
+    local keywords = {"local", "function", "return", "if", "then", "else", "end", "for", "while", "do", "in", "and", "or", "not", "true", "false", "nil", "unpack"}
+    for _, kw in pairs(keywords) do
+        highlighted = highlighted:gsub("([^%a_])("..kw..")([^%a_])", "%1<font color=\""..cKeyword.."\">%2</font>%3")
+    end
+    return highlighted
+end
+
+local function getPathToInstance(instance)
+    local path = {}
+    local current = instance
+    while current and current ~= game do
+        local name = current.Name
+        if name:match("%s") or name:match("^%d") then name = '["' .. name .. '"]'
+        elseif name:sub(1, 4) == "Game" then name = "game" .. name:sub(5) end
+        table.insert(path, 1, name)
+        current = current.Parent
+    end
+    return table.concat(path, ".")
+end
+
+local function formatValue(value)
+    if typeof(value) == "string" then return string.format("%q", value)
+    elseif typeof(value) == "number" then return tostring(value)
+    elseif typeof(value) == "boolean" then return value and "true" or "false"
+    elseif typeof(value) == "Instance" then return getPathToInstance(value)
+    elseif typeof(value) == "Vector3" then return string.format("Vector3.new(%f, %f, %f)", value.X, value.Y, value.Z)
+    else return string.format("%q", tostring(value)) end
+end
+
+local function GenerateCodeString(side, remote, args, method)
+    local formattedArgs = {}
+    for i, arg in ipairs(args) do formattedArgs[i] = string.format("[%d] = %s", i, formatValue(arg)) end
+    local argsString = table.concat(formattedArgs, ",\n    ")
+    local fullPath = getPathToInstance(remote)
+    if side == "Server" then
+        return string.format("local args = {\n    %s\n}\n\n%s:%s(unpack(args))", argsString, fullPath, method)
+    else
+        return string.format("local args = {\n    %s\n}\n\nfiresignal(%s.OnClientEvent, unpack(args))", argsString, fullPath)
+    end
+end
+
+local function LoadHistory(remote)
+    for _, child in pairs(HistoryList:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+    local entry = SpyData[CurrentTab][remote]
+    if not entry then return end
+    
+    local logs = entry.Logs
+    for i = #logs, 1, -1 do
+        local log = logs[i]
+        local TimeBtn = Instance.new("TextButton")
+        TimeBtn.Parent = HistoryList
+        TimeBtn.BackgroundColor3 = Color3.fromRGB(35, 37, 43)
+        TimeBtn.BorderSizePixel = 0
+        TimeBtn.Size = UDim2.new(1, -6, 0, 22)
+        TimeBtn.Font = Enum.Font.Gotham
+        TimeBtn.Text = " 🕒 " .. log.Time
+        TimeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        TimeBtn.TextSize = 13 
+        TimeBtn.TextXAlignment = Enum.TextXAlignment.Left
+        Instance.new("UICorner", TimeBtn).CornerRadius = UDim.new(0, 4)
+        
+        TimeBtn.MouseButton1Click:Connect(function()
+            _G.RawCode = log.Code
+            SelectedArgs = log.Args
+            SelectedMethod = log.Method
+            CodeDisplay.Text = ApplySyntaxHighlighting(log.Code)
+            for _, btn in pairs(HistoryList:GetChildren()) do if btn:IsA("TextButton") then btn.BackgroundColor3 = Color3.fromRGB(35, 37, 43) end end
+            TimeBtn.BackgroundColor3 = Color3.fromRGB(80, 100, 180)
+        end)
+    end
+end
+
+local function BuildRemoteButton(remote, entry)
+    if RemotesList:FindFirstChild(entry.ID) then return end
+    
+    local RemoteBtn = Instance.new("TextButton")
+    RemoteBtn.Name = entry.ID
+    RemoteBtn.Parent = RemotesList
+    RemoteBtn.BackgroundColor3 = (SelectedRemote == remote) and Color3.fromRGB(60, 65, 80) or Color3.fromRGB(35, 37, 45)
+    RemoteBtn.BorderSizePixel = 0
+    RemoteBtn.Size = UDim2.new(1, -10, 0, 25)
+    RemoteBtn.Font = Enum.Font.Gotham
+    RemoteBtn.Text = " " .. entry.Name
+    RemoteBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+    RemoteBtn.TextSize = 14 
+    RemoteBtn.TextXAlignment = Enum.TextXAlignment.Left
+    Instance.new("UICorner", RemoteBtn).CornerRadius = UDim.new(0, 4)
+    
+    local CountBadge = Instance.new("TextLabel")
+    CountBadge.Name = "CountBadge"
+    CountBadge.Parent = RemoteBtn
+    CountBadge.BackgroundTransparency = 1
+    CountBadge.Size = UDim2.new(0, 30, 1, 0)
+    CountBadge.Position = UDim2.new(1, -35, 0, 0)
+    CountBadge.Font = Enum.Font.GothamBold
+    CountBadge.Text = "x" .. tostring(entry.Count)
+    CountBadge.TextColor3 = Color3.fromRGB(114, 137, 218)
+    CountBadge.TextSize = 13 
+    CountBadge.TextXAlignment = Enum.TextXAlignment.Right
+    
+    RemoteBtn.MouseButton1Click:Connect(function()
+        SelectedRemote = remote
+        if #entry.Logs > 0 then
+            local lastLog = entry.Logs[#entry.Logs]
+            _G.RawCode = lastLog.Code
+            SelectedArgs = lastLog.Args
+            SelectedMethod = lastLog.Method
+            CodeDisplay.Text = ApplySyntaxHighlighting(lastLog.Code)
+        end
+        for _, btn in pairs(RemotesList:GetChildren()) do 
+            if btn:IsA("TextButton") then btn.BackgroundColor3 = Color3.fromRGB(35, 37, 45) end 
+        end
+        RemoteBtn.BackgroundColor3 = Color3.fromRGB(60, 65, 80)
+        LoadHistory(remote)
+    end)
+end
+
+local function SwitchTab(tabName)
+    CurrentTab = tabName
+    SelectedRemote = nil
+    for _, child in pairs(RemotesList:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+    for _, child in pairs(HistoryList:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+    for remote, entry in pairs(SpyData[CurrentTab]) do BuildRemoteButton(remote, entry) end
+end
+
+RunService.Heartbeat:Connect(function()
+    if #UIUpdateQueue > 0 then
+        for _, data in ipairs(UIUpdateQueue) do
+            if CurrentTab == data.side then
+                local existingBtn = RemotesList:FindFirstChild(data.entry.ID)
+                if not existingBtn then
+                    BuildRemoteButton(data.remote, data.entry)
+                else
+                    local badge = existingBtn:FindFirstChild("CountBadge")
+                    if badge then badge.Text = "x" .. tostring(data.entry.Count) end
+                    if SelectedRemote == data.remote then LoadHistory(data.remote) end
+                end
+            end
+        end
+        table.clear(UIUpdateQueue)
+    end
+end)
+
+local function LogEvent(side, remote, args, method)
+    local db = SpyData[side]
+    if not db[remote] then
+        RemoteIDCounter = RemoteIDCounter + 1
+        local success, rName = pcall(function() return remote.Name end)
+        db[remote] = { ID = "Remote_" .. tostring(RemoteIDCounter), Name = success and rName or "UnknownRemote", Count = 0, Logs = {} }
+    end
+    
+    local entry = db[remote]
+    entry.Count = entry.Count + 1
+    if #entry.Logs > 50 then table.remove(entry.Logs, 1) end
+    
+    table.insert(entry.Logs, {
+        Time = os.date("%H:%M:%S"),
+        Code = GenerateCodeString(side, remote, args, method),
+        Args = args, Method = method
+    })
+    table.insert(UIUpdateQueue, {side = side, remote = remote, entry = entry})
+end
+
+if hookmetamethod then
+    local oldNamecall
+    pcall(function()
+        oldNamecall = hookmetamethod(game, "__namecall", _newcclosure(function(self, ...)
+            local method = tostring(_getnamecallmethod())
+            
+            if method == "PromptProductPurchase" or method == "PromptGamePassPurchase" or method == "PromptPurchase" then
+                local func = self[method]
+                return func(self, ...)
+            end
+            
+            if method ~= "FireServer" and method ~= "InvokeServer" then
+                return oldNamecall(self, ...)
+            end
+            
+            if not _checkcaller() then
+                if typeof(self) == "Instance" then
+                    local className = self.ClassName
+                    
+                    if method == "FireServer" and className == "RemoteEvent" then
+                        local args = {...}
+                        task.spawn(function() pcall(function() LogEvent("Server", self, args, method) end) end)
+                        
+                    elseif method == "InvokeServer" and className == "RemoteFunction" then
+                        local args = {...}
+                        task.spawn(function() pcall(function() LogEvent("Server", self, args, method) end) end)
+                    end
+                end
+            end
+            
+            return oldNamecall(self, ...)
+        end))
+    end)
+else
+    warn("Your executor does not support hookmetamethod. Server Side executing cannot be logged.")
+end
+
+local function wrapRemotes(folder)
+    for _, obj in ipairs(folder:GetDescendants()) do
+        if obj:IsA("RemoteEvent") then
+            obj.OnClientEvent:Connect(function(...)
+                local args = {...}
+                pcall(function() LogEvent("Client", obj, args, "OnClientEvent") end)
+            end)
+        end
+    end
+end
+for _, f in ipairs({game.ReplicatedStorage, game.StarterGui, game.StarterPack, game.StarterPlayer}) do
+    pcall(function() wrapRemotes(f) end)
+end
+
+local function ExecuteSelectedRemote()
+    if SelectedRemote and SelectedArgs then
+        if CurrentTab == "Server" then
+            if SelectedMethod == "FireServer" then 
+                pcall(function() SelectedRemote:FireServer(unpack(SelectedArgs)) end)
+            elseif SelectedMethod == "InvokeServer" then 
+                task.spawn(function() pcall(function() SelectedRemote:InvokeServer(unpack(SelectedArgs)) end) end) 
+            end
+        elseif CurrentTab == "Client" then
+            pcall(function() _firesignal(SelectedRemote.OnClientEvent, unpack(SelectedArgs)) end)
+        end
+    end
+end
+
+ExecuteButton.MouseButton1Click:Connect(ExecuteSelectedRemote)
+
+SpamButton.MouseButton1Click:Connect(function()
+    IsSpamming = not IsSpamming
+    SpamButton.Text = IsSpamming and "Spam = ON" or "Spam = OFF"
+    SpamButton.BackgroundColor3 = IsSpamming and Color3.fromRGB(200, 130, 40) or Color3.fromRGB(120, 120, 120)
+    
+    if IsSpamming then 
+        task.spawn(function() 
+            while IsSpamming do 
+                ExecuteSelectedRemote()
+                task.wait(0.03)
+            end 
+        end) 
+    end
+end)
+
+CustomExecBtn.MouseButton1Click:Connect(function()
+    local codeToRun = ExecTextBox.Text
+    if codeToRun ~= "" then pcall(function() local func = loadstring(codeToRun); if func then task.spawn(func) end end) end
+end)
+
+ServerTabBtn.MouseButton1Click:Connect(function()
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(114, 137, 218)
+    ClientTabBtn.BackgroundColor3 = Color3.fromRGB(40, 42, 50)
+    CodeDisplay.Text = "<font color=\"#7A828B\">-- Server Side Tab Active</font>"
+    SwitchTab("Server")
+end)
+
+ClientTabBtn.MouseButton1Click:Connect(function()
+    ClientTabBtn.BackgroundColor3 = Color3.fromRGB(114, 137, 218)
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(40, 42, 50)
+    CodeDisplay.Text = "<font color=\"#7A828B\">-- Client Side Tab Active</font>"
+    SwitchTab("Client")
+end)
+
+ClearDataBtn.MouseButton1Click:Connect(function() SpyData[CurrentTab] = {}; SwitchTab(CurrentTab) end)
+
+ExpandButton.MouseButton1Click:Connect(function()
+    IsExpanded = not IsExpanded
+    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = IsExpanded and UDim2.new(0, 960, 0, 460) or UDim2.new(0, 680, 0, 460)}):Play()
+    ExpandButton.Text = IsExpanded and "<" or ">"
+end)
+
+CopyButton.MouseButton1Click:Connect(function() if _G.RawCode then _setclipboard(_G.RawCode) end end)
+
+CloseButton.MouseButton1Click:Connect(function() IsSpamming = false; IsExecSpamming = false; ScreenGui:Destroy() end)
+SwitchTab("Server")
