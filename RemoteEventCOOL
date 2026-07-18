@@ -21,6 +21,50 @@ local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
 -- =====================================================================
+-- سیستم درگ نرم و پشتیبانی کننده از موبایل
+-- =====================================================================
+local function makeDraggable(Frame, TopBar)
+    TopBar = TopBar or Frame
+    local dragToggle = false
+    local dragSpeed = 0.15
+    local dragInput = nil
+    local dragStart = nil
+    local startPos = nil
+
+    local function updateInput(input)
+        local Delta = input.Position - dragStart
+        local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+        TweenService:Create(Frame, TweenInfo.new(dragSpeed), {Position = Position}):Play()
+    end
+
+    TopBar.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = Frame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+
+    TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then
+            updateInput(input)
+        end
+    end)
+end
+
+-- =====================================================================
 -- پیدا کردن بهترین مکان برای لود کردن GUI بر اساس قدرت اکسکیوتور
 -- =====================================================================
 local UIParent = game:GetService("CoreGui")
@@ -37,9 +81,6 @@ if gethui then
     pcall(function() UIParent = gethui() end)
 end
 
--- =====================================================================
--- متغیرهای پایه
--- =====================================================================
 _G.RawCode = ""
 local CurrentTab = "Server" 
 local SelectedRemote = nil
@@ -53,9 +94,6 @@ local SpyData = { Server = {}, Client = {} }
 local RemoteIDCounter = 0 
 local UIUpdateQueue = {}
 
--- =====================================================================
--- ۱. ساخت رابط کاربری
--- =====================================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "cenirosoRemoteSpy"
 ScreenGui.Parent = UIParent
@@ -73,6 +111,17 @@ MainFrame.ClipsDescendants = true
 MainFrame.Active = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
+-- سیستم تشخیص خودکار موبایل و کوچیک کردن منو
+local UIScale = Instance.new("UIScale", MainFrame)
+local screenSize = workspace.CurrentCamera.ViewportSize
+if screenSize.X < 800 or screenSize.Y < 600 then
+    -- تنظیم مقیاس برای موبایل (منو ۶۰٪ سایز اصلی میشه تا جا بشه)
+    UIScale.Scale = 0.6 
+else
+    -- سایز روی کامپیوتر
+    UIScale.Scale = 0.9 
+end
+
 local TopBar = Instance.new("Frame")
 TopBar.Name = "TopBar"
 TopBar.Parent = MainFrame
@@ -80,6 +129,9 @@ TopBar.BackgroundColor3 = Color3.fromRGB(22, 24, 28)
 TopBar.BorderSizePixel = 0
 TopBar.Size = UDim2.new(1, 0, 0, 30)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 8)
+
+-- اعمال سیستم درگ جدید روی فریم
+makeDraggable(MainFrame, TopBar)
 
 local Title = Instance.new("TextLabel")
 Title.Parent = TopBar
@@ -231,15 +283,12 @@ ClearDataBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ClearDataBtn.TextSize = 12
 Instance.new("UICorner", ClearDataBtn).CornerRadius = UDim.new(0, 6)
 
--- =====================================================================
--- پنل اکسکیوتور کاستوم (اصلاح شده و بدون باگ)
--- =====================================================================
 local ExecScrollFrame = Instance.new("ScrollingFrame")
 ExecScrollFrame.Parent = MainFrame
 ExecScrollFrame.BackgroundColor3 = Color3.fromRGB(40, 42, 54)
 ExecScrollFrame.Position = UDim2.new(0, 685, 0, 75)
 ExecScrollFrame.Size = UDim2.new(0, 260, 1, -125)
-ExecScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) -- سایز داینامیک محاسبه می‌شود
+ExecScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 ExecScrollFrame.ScrollBarThickness = 5
 ExecScrollFrame.BorderSizePixel = 0
 Instance.new("UICorner", ExecScrollFrame).CornerRadius = UDim.new(0, 6)
@@ -258,12 +307,10 @@ ExecTextBox.TextXAlignment = Enum.TextXAlignment.Left
 ExecTextBox.TextYAlignment = Enum.TextYAlignment.Top
 ExecTextBox.ClearTextOnFocus = false
 ExecTextBox.MultiLine = true
-ExecTextBox.TextWrapped = false -- خاموش کردن برای رفع باگ پرش متن و فعال شدن اسکرول افقی
+ExecTextBox.TextWrapped = false
 
--- آپدیت هوشمند و بدون باگ سایز اسکرول بر اساس متن
 local function UpdateTextBoxSize()
     local textBounds = ExecTextBox.TextBounds
-    -- سایز باکس حداقل به اندازه خود پنل است تا هر کجای پنل کلیک کردید بتوانید تایپ کنید
     local newWidth = math.max(ExecScrollFrame.AbsoluteSize.X - 10, textBounds.X + 20)
     local newHeight = math.max(ExecScrollFrame.AbsoluteSize.Y - 10, textBounds.Y + 20)
     
@@ -271,10 +318,8 @@ local function UpdateTextBoxSize()
     ExecScrollFrame.CanvasSize = UDim2.new(0, newWidth, 0, newHeight)
 end
 
--- هر بار که متنی تایپ می‌شود، سایز آپدیت می‌شود
 ExecTextBox:GetPropertyChangedSignal("TextBounds"):Connect(UpdateTextBoxSize)
 
--- تنظیم سایز اولیه هنگام لود شدن
 task.spawn(function()
     task.wait(0.1)
     UpdateTextBoxSize()
@@ -290,9 +335,7 @@ CustomExecBtn.Text = "Execute"
 CustomExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CustomExecBtn.TextSize = 12
 Instance.new("UICorner", CustomExecBtn).CornerRadius = UDim.new(0, 6)
--- =====================================================================
--- توابع کمکی
--- =====================================================================
+
 local function ApplySyntaxHighlighting(codeString)
     local highlighted = codeString:gsub("<", "&lt;"):gsub(">", "&gt;")
     local cKeyword, cString, cNumber, cMethod = "#FF79C6", "#F1FA8C", "#BD93F9", "#50FA7B"
@@ -342,9 +385,6 @@ local function GenerateCodeString(side, remote, args, method)
     end
 end
 
--- =====================================================================
--- لاجیک تاریخچه و رندر
--- =====================================================================
 local function LoadHistory(remote)
     for _, child in pairs(HistoryList:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
     local entry = SpyData[CurrentTab][remote]
@@ -467,30 +507,21 @@ local function LogEvent(side, remote, args, method)
     table.insert(UIUpdateQueue, {side = side, remote = remote, entry = entry})
 end
 
--- =====================================================================
--- هوک کردن امن (با استفاده از __namecall و بای‌پس آنتی‌اسکم اکسکیوتور)
--- =====================================================================
 if hookmetamethod then
     local oldNamecall
     pcall(function()
         oldNamecall = hookmetamethod(game, "__namecall", _newcclosure(function(self, ...)
             local method = tostring(_getnamecallmethod())
             
-            -- [بای‌پس مشکل گیم‌پس و محصولات]
-            -- اگر تابع مربوط به سیستم خرید بود، اکسکیوتور رو دور میزنیم و مستقیما اجراش میکنیم
             if method == "PromptProductPurchase" or method == "PromptGamePassPurchase" or method == "PromptPurchase" then
-                -- با گرفتن مستقیم تابع از داخل کلاس، متامتدِ namecall دور زده میشه
-                -- و ارور "blacklisted function" که توسط خود اکسکیوتور داده میشد از بین میره
                 local func = self[method]
                 return func(self, ...)
             end
             
-            -- خروج سریع برای توابعی که ریموت نیستند (جلوگیری از لگ شدن بازی)
             if method ~= "FireServer" and method ~= "InvokeServer" then
                 return oldNamecall(self, ...)
             end
             
-            -- لاگ کردن ریموت‌ها فقط برای کلاینت (بازی)
             if not _checkcaller() then
                 if typeof(self) == "Instance" then
                     local className = self.ClassName
@@ -513,7 +544,6 @@ else
     warn("Your executor does not support hookmetamethod. Server Side executing cannot be logged.")
 end
 
--- شنود کلاینت
 local function wrapRemotes(folder)
     for _, obj in ipairs(folder:GetDescendants()) do
         if obj:IsA("RemoteEvent") then
@@ -527,10 +557,6 @@ end
 for _, f in ipairs({game.ReplicatedStorage, game.StarterGui, game.StarterPack, game.StarterPlayer}) do
     pcall(function() wrapRemotes(f) end)
 end
-
--- =====================================================================
--- رویداد دکمه‌ها
--- =====================================================================
 
 local function ExecuteSelectedRemote()
     if SelectedRemote and SelectedArgs then
@@ -591,20 +617,6 @@ ExpandButton.MouseButton1Click:Connect(function()
 end)
 
 CopyButton.MouseButton1Click:Connect(function() if _G.RawCode then _setclipboard(_G.RawCode) end end)
-
-local dragging, dragStart, startPos
-TopBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true; dragStart = input.Position; startPos = MainFrame.Position
-        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
-    end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
 
 CloseButton.MouseButton1Click:Connect(function() IsSpamming = false; IsExecSpamming = false; ScreenGui:Destroy() end)
 SwitchTab("Server")
