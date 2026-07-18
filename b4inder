@@ -25,16 +25,59 @@ end
 -- اسکنر قوی
 local function scanForRemotes()
     local remotes = {}
-    local servicesToScan = {game:GetService("ReplicatedStorage"), game:GetService("Workspace"), game:GetService("Lighting"), game:GetService("SoundService"), game:GetService("StarterPack"), game:GetService("Players")}
-    for _, service in ipairs(servicesToScan) do
-        pcall(function()
-            for _, obj in ipairs(service:GetDescendants()) do
-                if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) then
-                    table.insert(remotes, obj)
+    
+    -- لیست سرویس‌هایی که سمت کلاینت قفل هستن و اسکن کردنشون باعث ارور میشه
+    local blacklistedServices = {
+        ["ServerScriptService"] = true,
+        ["ServerStorage"] = true,
+        ["HttpService"] = true,
+        ["Chat"] = true,
+        ["CoreGui"] = true,
+        ["CorePackages"] = true
+    }
+
+    -- گرفتن تمام بخش‌های بازی به جای اینکه دستی اسمشونو بنویسیم
+    local allServices = game:GetChildren()
+
+    for _, service in ipairs(allServices) do
+        -- اگر سرویس توی بلک‌لیست نبود، اسکنش رو شروع می‌کنیم
+        if not blacklistedServices[service.Name] then
+            pcall(function()
+                local descendants = service:GetDescendants()
+                for _, obj in ipairs(descendants) do
+                    -- پیدا کردن ریموت ایونت‌ها و ریموت فانکشن‌ها
+                    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+                        table.insert(remotes, obj)
+                    end
+                end
+            end)
+        end
+    end
+
+    -- محکم‌کاری: گاهی اوقات کاراکتر بازیکنا توی اسکن اولیه Workspace جا می‌مونه
+    -- اینجا یه اسکن اختصاصی برای کاراکترها و ابزارهای دستشون (Tool) می‌زنیم
+    pcall(function()
+        local Players = game:GetService("Players")
+        for _, player in ipairs(Players:GetPlayers()) do
+            -- اسکن کوله‌پشتی بازیکن
+            if player:FindFirstChild("Backpack") then
+                for _, obj in ipairs(player.Backpack:GetDescendants()) do
+                    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+                        table.insert(remotes, obj)
+                    end
                 end
             end
-        end)
-    end
+            -- اسکن خود کاراکتر
+            if player.Character then
+                for _, obj in ipairs(player.Character:GetDescendants()) do
+                    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+                        table.insert(remotes, obj)
+                    end
+                end
+            end
+        end
+    end)
+
     return remotes
 end
 
