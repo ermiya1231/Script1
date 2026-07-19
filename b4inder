@@ -1,12 +1,12 @@
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService") -- اضافه شدن TweenService برای حرکت نرم
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
--- سیستم درگ جدید (هیولا، نرم و سازگار با موبایل)
+-- سیستم درگ نرم و سازگار با موبایل
 local function makeDraggable(Frame, TopBar)
-    TopBar = TopBar or Frame -- اگر تاپ باری مشخص نشد، خود فریم رو قابل درگ میکنه
+    TopBar = TopBar or Frame
     local dragToggle = false
     local dragSpeed = 0.15
     local dragInput = nil
@@ -46,60 +46,93 @@ local function makeDraggable(Frame, TopBar)
     end)
 end
 
--- اسکنر قوی
-local function scanForRemotes()
-    local remotes = {}
-    
-    -- لیست سرویس‌هایی که سمت کلاینت قفل هستن و اسکن کردنشون باعث ارور میشه
-    local blacklistedServices = {
-        ["ServerScriptService"] = true,
-        ["ServerStorage"] = true,
-        ["RobloxReplicatedStorage"] = true
-    }
+-- جدول ریموت‌ها برای جلوگیری از تکرار
+local remotes = {}
+local remoteSet = {}
 
-    -- گرفتن تمام بخش‌های بازی به جای اینکه دستی اسمشونو بنویسیم
-    local allServices = game:GetChildren()
+local function addRemote(obj)
+    if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) and not remoteSet[obj] then
+        remoteSet[obj] = true
+        table.insert(remotes, obj)
+        return true
+    end
+    return false
+end
 
-    for _, service in ipairs(allServices) do
-        -- اگر سرویس توی بلک‌لیست نبود، اسکنش رو شروع می‌کنیم
+-- لیست سرویس‌های ممنوعه کلاینت
+local blacklistedServices = {
+    ["ServerScriptService"] = true,
+    ["ServerStorage"] = true,
+    ["RobloxReplicatedStorage"] = true
+}
+
+-- استارت اسکن اولیه و سیستم شنود لحظه‌ای (Real-time Scanner)
+local function startLiveScanning(onNewRemoteFound)
+    -- اسکن همه‌جا در ابتدا
+    for _, service in ipairs(game:GetChildren()) do
         if not blacklistedServices[service.Name] then
             pcall(function()
-                local descendants = service:GetDescendants()
-                for _, obj in ipairs(descendants) do
-                    -- پیدا کردن ریموت ایونت‌ها و ریموت فانکشن‌ها
-                    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-                        table.insert(remotes, obj)
+                for _, obj in ipairs(service:GetDescendants()) do
+                    if addRemote(obj) and onNewRemoteFound then
+                        onNewRemoteFound(obj)
                     end
                 end
+                
+                -- شنود لحظه‌ای برای ریموت‌های جدید در این سرویس
+                service.DescendantAdded:Connect(function(obj)
+                    if addRemote(obj) and onNewRemoteFound then
+                        onNewRemoteFound(obj)
+                    end
+                end)
             end)
         end
     end
 
-    -- محکم‌کاری: گاهی اوقات کاراکتر بازیکنا توی اسکن اولیه Workspace جا می‌مونه
-    -- اینجا یه اسکن اختصاصی برای کاراکترها و ابزارهای دستشون (Tool) می‌زنیم
-    pcall(function()
-        local Players = game:GetService("Players")
-        for _, player in ipairs(Players:GetPlayers()) do
-            -- اسکن کوله‌پشتی بازیکن
-            if player:FindFirstChild("Backpack") then
-                for _, obj in ipairs(player.Backpack:GetDescendants()) do
-                    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-                        table.insert(remotes, obj)
-                    end
+    -- اسکن ویژه کوله‌پشتی و کاراکتر بازیکنان (پویا)
+    local function listenToPlayer(player)
+        player.CharacterAdded:Connect(function(char)
+            pcall(function()
+                for _, obj in ipairs(char:GetDescendants()) do
+                    if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
                 end
-            end
-            -- اسکن خود کاراکتر
-            if player.Character then
-                for _, obj in ipairs(player.Character:GetDescendants()) do
-                    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-                        table.insert(remotes, obj)
-                    end
-                end
-            end
-        end
-    end)
+                char.DescendantAdded:Connect(function(obj)
+                    if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
+                end)
+            end)
+        end)
 
-    return remotes
+        player:GetPropertyChangedSignal("Backpack"):Connect(function()
+            local bp = player:FindFirstChild("Backpack")
+            if bp then
+                pcall(function()
+                    for _, obj in ipairs(bp:GetDescendants()) do
+                        if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
+                    end
+                    bp.DescendantAdded:Connect(function(obj)
+                        if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
+                    end)
+                end)
+            end
+        end)
+        
+        -- بررسی کوله‌پشتی فعلی در صورت وجود
+        local bp = player:FindFirstChild("Backpack")
+        if bp then
+            pcall(function()
+                for _, obj in ipairs(bp:GetDescendants()) do
+                    if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
+                end
+                bp.DescendantAdded:Connect(function(obj)
+                    if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
+                end)
+            end)
+        end
+    end
+
+    Players.PlayerAdded:Connect(listenToPlayer)
+    for _, p in ipairs(Players:GetPlayers()) do
+        listenToPlayer(p)
+    end
 end
 
 local function createFastAdminGUI()
@@ -111,52 +144,193 @@ local function createFastAdminGUI()
     ScreenGui.ResetOnSpawn = false
 
     local currentMode = "Custom"
-    local remotes = scanForRemotes()
+    local selectedRemote = nil
 
-    -- پنل اصلی
+    -- پنل اصلی (Modern Dark UI)
     local MainFrame = Instance.new("Frame", ScreenGui)
-    MainFrame.Size = UDim2.new(0, 350, 0, 450); MainFrame.Position = UDim2.new(0.5, -175, 0.5, -225)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20); MainFrame.BorderSizePixel = 2
-    MainFrame.BorderColor3 = Color3.fromRGB(80, 0, 0)
+    MainFrame.Size = UDim2.new(0, 360, 0, 460)
+    MainFrame.Position = UDim2.new(0.5, -180, 0.5, -230)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.BorderSizePixel = 0
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
+    -- تاپ بار پنل
     local TopBar = Instance.new("Frame", MainFrame)
-    TopBar.Size = UDim2.new(1, 0, 0, 35); TopBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    makeDraggable(MainFrame, TopBar) -- استفاده از سیستم درگ جدید
+    TopBar.Size = UDim2.new(1, 0, 0, 45)
+    TopBar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    TopBar.BorderSizePixel = 0
+    local TopCorner = Instance.new("UICorner", TopBar)
+    TopCorner.CornerRadius = UDim.new(0, 8)
+    makeDraggable(MainFrame, TopBar)
 
-    -- دکمه بستن
+    -- دکمه بستن زیبا
     local CloseMain = Instance.new("TextButton", TopBar)
-    CloseMain.Size = UDim2.new(0, 35, 1, 0); CloseMain.Position = UDim2.new(1, -35, 0, 0)
-    CloseMain.BackgroundTransparency = 1; CloseMain.Text = "X"; CloseMain.TextColor3 = Color3.fromRGB(255, 0, 0)
-    CloseMain.TextSize = 20
+    CloseMain.Size = UDim2.new(0, 35, 0, 35)
+    CloseMain.Position = UDim2.new(1, -40, 0, 5)
+    CloseMain.BackgroundTransparency = 1
+    CloseMain.Text = "✕"
+    CloseMain.TextColor3 = Color3.fromRGB(200, 70, 70)
+    CloseMain.TextSize = 18
+    CloseMain.Font = Enum.Font.ArialBold
     CloseMain.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-    -- دکمه جدید START FIRE (سمت راست)
+    -- دکمه START FIRE مدرن
     local StartFireBtn = Instance.new("TextButton", TopBar)
-    StartFireBtn.Size = UDim2.new(0, 90, 1, 0); StartFireBtn.Position = UDim2.new(1, -130, 0, 0)
-    StartFireBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0); StartFireBtn.Text = "START FIRE"
-    StartFireBtn.TextColor3 = Color3.new(1,1,1); StartFireBtn.Font = Enum.Font.Code; StartFireBtn.TextSize = 12
+    StartFireBtn.Size = UDim2.new(0, 95, 0, 30)
+    StartFireBtn.Position = UDim2.new(1, -145, 0, 7)
+    StartFireBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    StartFireBtn.Text = "FireAllAsMode"
+    StartFireBtn.TextColor3 = Color3.new(1,1,1)
+    StartFireBtn.Font = Enum.Font.ArialBold
+    StartFireBtn.TextSize = 12
+    Instance.new("UICorner", StartFireBtn).CornerRadius = UDim.new(0, 6)
 
-    -- سیستم Mode
+    -- منوی دراپ‌داون مدها
     local ModeBtn = Instance.new("TextButton", TopBar)
-    ModeBtn.Size = UDim2.new(0, 120, 1, 0); ModeBtn.Position = UDim2.new(0, 5, 0, 0)
-    ModeBtn.BackgroundColor3 = Color3.fromRGB(40, 0, 0); ModeBtn.Text = "Mode: Custom"
-    ModeBtn.TextColor3 = Color3.new(1,1,1); ModeBtn.Font = Enum.Font.Code; ModeBtn.TextSize = 14
+    ModeBtn.Size = UDim2.new(0, 130, 0, 30)
+    ModeBtn.Position = UDim2.new(0, 10, 0, 7)
+    ModeBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    ModeBtn.Text = "Mode: Custom"
+    ModeBtn.TextColor3 = Color3.new(1,1,1)
+    ModeBtn.Font = Enum.Font.Arial
+    ModeBtn.TextSize = 13
+    Instance.new("UICorner", ModeBtn).CornerRadius = UDim.new(0, 6)
 
     local Dropdown = Instance.new("Frame", TopBar)
-    Dropdown.Size = UDim2.new(0, 150, 0, 175); Dropdown.Position = UDim2.new(0, 5, 1, 0)
-    Dropdown.BackgroundColor3 = Color3.fromRGB(30, 30, 30); Dropdown.Visible = false; Dropdown.ZIndex = 10
-    Instance.new("UIListLayout", Dropdown)
+    Dropdown.Size = UDim2.new(0, 150, 0, 175)
+    Dropdown.Position = UDim2.new(0, 10, 1, 5)
+    Dropdown.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Dropdown.Visible = false
+    Dropdown.ZIndex = 10
+    Dropdown.BorderSizePixel = 0
+    Instance.new("UICorner", Dropdown).CornerRadius = UDim.new(0, 6)
+    local dropList = Instance.new("UIListLayout", Dropdown)
+    dropList.Padding = UDim.new(0, 2)
+
     ModeBtn.MouseButton1Click:Connect(function() Dropdown.Visible = not Dropdown.Visible end)
 
-    for _, mode in ipairs({"Custom", "HD Admin", "Fire", "Fire all", "Fire all as HD admin"}) do
-        local btn = Instance.new("TextButton", Dropdown)
-        btn.Size = UDim2.new(1, 0, 0, 35); btn.Text = mode; btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-        btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.Code; btn.TextSize = 13
-        btn.ZIndex = 10
-        btn.MouseButton1Click:Connect(function() currentMode = mode; ModeBtn.Text = "Mode: "..mode; Dropdown.Visible = false end)
+    -- لیست ریموت‌ها با اسکرول نرم
+    local ScrollingFrame = Instance.new("ScrollingFrame", MainFrame)
+    ScrollingFrame.Size = UDim2.new(1, -20, 1, -65)
+    ScrollingFrame.Position = UDim2.new(0, 10, 0, 55)
+    ScrollingFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    ScrollingFrame.BorderSizePixel = 0
+    ScrollingFrame.ScrollBarThickness = 4
+    ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
+    Instance.new("UICorner", ScrollingFrame).CornerRadius = UDim.new(0, 6)
+    
+    local listPadding = Instance.new("UIPadding", ScrollingFrame)
+    listPadding.PaddingTop = UDim.new(0, 5)
+    listPadding.PaddingLeft = UDim.new(0, 5)
+
+    local UIListLayout = Instance.new("UIListLayout", ScrollingFrame)
+    UIListLayout.Padding = UDim.new(0, 5)
+    UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 15)
+    end)
+
+    -- پنل تکست باکس اکزکیوتور
+    local RequireFrame = Instance.new("Frame", ScreenGui)
+    RequireFrame.Size = UDim2.new(0, 400, 0, 180)
+    RequireFrame.Position = UDim2.new(0.5, -200, 0.5, -90)
+    RequireFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    RequireFrame.Visible = false
+    RequireFrame.BorderSizePixel = 0
+    Instance.new("UICorner", RequireFrame).CornerRadius = UDim.new(0, 8)
+    makeDraggable(RequireFrame, RequireFrame)
+    
+    local ReqTopBar = Instance.new("Frame", RequireFrame)
+    ReqTopBar.Size = UDim2.new(1, 0, 0, 35)
+    ReqTopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    ReqTopBar.BorderSizePixel = 0
+    local ReqCorner = Instance.new("UICorner", ReqTopBar)
+    ReqCorner.CornerRadius = UDim.new(0, 8)
+
+    local CloseReq = Instance.new("TextButton", ReqTopBar)
+    CloseReq.Size = UDim2.new(0, 30, 1, 0)
+    CloseReq.Position = UDim2.new(1, -35, 0, 0)
+    CloseReq.Text = "x"
+    CloseReq.BackgroundTransparency = 1
+    CloseReq.TextColor3 = Color3.fromRGB(200,70,70)
+    CloseReq.MouseButton1Click:Connect(function() RequireFrame.Visible = false end)
+
+    local CodeInput = Instance.new("TextBox", RequireFrame)
+    CodeInput.Size = UDim2.new(1, -20, 0, 60)
+    CodeInput.Position = UDim2.new(0, 10, 0, 45)
+    CodeInput.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    CodeInput.TextColor3 = Color3.fromRGB(80, 220, 80)
+    CodeInput.Text = ""
+    CodeInput.PlaceholderText = "Arguments here..."
+    CodeInput.Font = Enum.Font.Code
+    CodeInput.TextSize = 14
+    CodeInput.ClearTextOnFocus = false
+    Instance.new("UICorner", CodeInput).CornerRadius = UDim.new(0, 6)
+    
+    local ExecuteBtn = Instance.new("TextButton", RequireFrame)
+    ExecuteBtn.Size = UDim2.new(1, -20, 0, 40)
+    ExecuteBtn.Position = UDim2.new(0, 10, 0, 115)
+    ExecuteBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    ExecuteBtn.Text = "EXECUTE REMOTE"
+    ExecuteBtn.TextColor3 = Color3.new(1,1,1)
+    ExecuteBtn.Font = Enum.Font.ArialBold
+    ExecuteBtn.TextSize = 14
+    Instance.new("UICorner", ExecuteBtn).CornerRadius = UDim.new(0, 6)
+
+    ExecuteBtn.MouseButton1Click:Connect(function()
+        if selectedRemote and selectedRemote:IsA("RemoteEvent") then 
+            selectedRemote:FireServer(CodeInput.Text) 
+        elseif selectedRemote and selectedRemote:IsA("RemoteFunction") then
+            task.spawn(function() pcall(function() selectedRemote:InvokeServer(CodeInput.Text) end) end)
+        end
+    end)
+
+    -- ایجاد دکمه برای هر ریموت پیدا شده
+    local function createRemoteButton(remote)
+        local Button = Instance.new("TextButton", ScrollingFrame)
+        Button.Size = UDim2.new(1, -15, 0, 35)
+        Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        Button.TextColor3 = Color3.fromRGB(230, 230, 230)
+        Button.Font = Enum.Font.SourceSans
+        Button.TextSize = 15
+        Button.TextXAlignment = Enum.TextXAlignment.Left
+        Button.Text = "  [" .. remote.ClassName .. "] " .. remote.Name
+        Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 5)
+
+        Button.MouseButton1Click:Connect(function()
+            if currentMode == "Custom" then
+                selectedRemote = remote
+                RequireFrame.Visible = true
+            -- مدهای دیگر
+            elseif currentMode == "HD Admin" then
+                local payload = "require(7192763922).load(\""..LocalPlayer.Name.."\")"
+                if remote:IsA("RemoteEvent") then remote:FireServer(payload)
+                elseif remote:IsA("RemoteFunction") then task.spawn(function() pcall(function() remote:InvokeServer(payload) end) end) end
+            elseif currentMode == "Fire" then
+                if remote:IsA("RemoteEvent") then remote:FireServer()
+                elseif remote:IsA("RemoteFunction") then task.spawn(function() pcall(function() remote:InvokeServer() end) end) end
+            end
+        end)
     end
 
-    -- منطق دکمه جدید START FIRE
+    -- ساخت آیتم‌های دراپ‌داون مد
+    for _, mode in ipairs({"Custom", "HD Admin", "Fire", "Fire all", "Fire all as HD admin"}) do
+        local btn = Instance.new("TextButton", Dropdown)
+        btn.Size = UDim2.new(1, 0, 0, 32)
+        btn.Text = mode
+        btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Font = Enum.Font.Arial
+        btn.TextSize = 13
+        btn.ZIndex = 10
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+        btn.MouseButton1Click:Connect(function() 
+            currentMode = mode 
+            ModeBtn.Text = "Mode: "..mode 
+            Dropdown.Visible = false 
+        end)
+    end
+
+    -- لاجیک دکمه اصلی آتش همگانی
     StartFireBtn.MouseButton1Click:Connect(function()
         if currentMode == "Fire all" then
             for _, r in ipairs(remotes) do
@@ -174,65 +348,10 @@ local function createFastAdminGUI()
         end
     end)
 
-    -- لیست ریموت‌ها
-    local ScrollingFrame = Instance.new("ScrollingFrame", MainFrame)
-    ScrollingFrame.Size = UDim2.new(1, -10, 1, -45); ScrollingFrame.Position = UDim2.new(0, 5, 0, 40)
-    ScrollingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30); ScrollingFrame.BorderSizePixel = 0
-    
-    local UIListLayout = Instance.new("UIListLayout", ScrollingFrame)
-    UIListLayout.Padding = UDim.new(0, 4)
-    UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+    -- شروع اسکن زنده و پویای بازی و رندر دکمه‌ها به محض کشف ریموت جدید
+    startLiveScanning(function(newRemote)
+        createRemoteButton(newRemote)
     end)
-
-    -- پنل Executor (برای مدهای دستی)
-    local RequireFrame = Instance.new("Frame", ScreenGui)
-    RequireFrame.Size = UDim2.new(0, 450, 0, 200); RequireFrame.Position = UDim2.new(0.5, -225, 0.5, -100)
-    RequireFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5); RequireFrame.Visible = false
-    makeDraggable(RequireFrame, RequireFrame) -- استفاده از سیستم درگ جدید برای پنل دوم
-    
-    -- دکمه بستن Executor
-    local ReqTopBar = Instance.new("Frame", RequireFrame)
-    ReqTopBar.Size = UDim2.new(1, 0, 0, 30); ReqTopBar.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
-    local CloseReq = Instance.new("TextButton", ReqTopBar)
-    CloseReq.Size = UDim2.new(0, 30, 1, 0); CloseReq.Position = UDim2.new(1, -30, 0, 0)
-    CloseReq.Text = "X"; CloseReq.BackgroundTransparency = 1; CloseReq.TextColor3 = Color3.new(1,1,1)
-    CloseReq.MouseButton1Click:Connect(function() RequireFrame.Visible = false end)
-
-    local CodeInput = Instance.new("TextBox", RequireFrame)
-    CodeInput.Size = UDim2.new(1, -20, 0, 60); CodeInput.Position = UDim2.new(0, 10, 0, 40)
-    CodeInput.BackgroundColor3 = Color3.fromRGB(15, 15, 15); CodeInput.TextColor3 = Color3.fromRGB(0, 255, 0)
-    
-    local ExecuteBtn = Instance.new("TextButton", RequireFrame)
-    ExecuteBtn.Size = UDim2.new(1, -20, 0, 40); ExecuteBtn.Position = UDim2.new(0, 10, 0, 110)
-    ExecuteBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0); ExecuteBtn.Text = "EXECUTE"
-    
-    local selectedRemote = nil
-    ExecuteBtn.MouseButton1Click:Connect(function()
-        if selectedRemote and selectedRemote:IsA("RemoteEvent") then selectedRemote:FireServer(CodeInput.Text) end
-    end)
-
-    -- پر کردن لیست
-    for _, remote in ipairs(remotes) do
-        local Button = Instance.new("TextButton", ScrollingFrame)
-        Button.Size = UDim2.new(1, -5, 0, 35); Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        Button.TextColor3 = Color3.fromRGB(200, 200, 200); Button.Font = Enum.Font.Code
-        Button.TextSize = 16
-        Button.Text = " > " .. remote.Name
-        
-        Button.MouseButton1Click:Connect(function()
-            if currentMode == "Custom" then
-                selectedRemote = remote; RequireFrame.Visible = true
-            elseif currentMode == "HD Admin" then
-                local payload = "require(7192763922).load(\""..LocalPlayer.Name.."\")"
-                if remote:IsA("RemoteEvent") then remote:FireServer(payload)
-                elseif remote:IsA("RemoteFunction") then task.spawn(function() pcall(function() remote:InvokeServer(payload) end) end) end
-            elseif currentMode == "Fire" then
-                if remote:IsA("RemoteEvent") then remote:FireServer()
-                elseif remote:IsA("RemoteFunction") then task.spawn(function() pcall(function() remote:InvokeServer() end) end) end
-            end
-        end)
-    end
 end
 
 createFastAdminGUI()
