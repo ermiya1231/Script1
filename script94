@@ -1,6 +1,6 @@
 local gameId = game.PlaceId
 local supportedGames = {
-    [6839171747] = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script92",
+    [8524519453] = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script92",
 }
     
     local success, result = pcall(function()
