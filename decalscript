@@ -1,69 +1,83 @@
-local MyTargetID = "122714132204276"
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
+local player = game.Players.LocalPlayer
+local tool = nil
+local remote = nil
 
----------------------------------------------------------
--- 1. پیدا کردن هوشمند ابزار F3X
----------------------------------------------------------
-local tool
-for _, v in ipairs(Player:GetDescendants()) do
-    if v.Name == "SyncAPI" then tool = v.Parent break end
+-- جستجو در کاراکتر و بک‌پک بازیکن
+for _, v in ipairs(player:GetDescendants()) do
+	if v.Name == "SyncAPI" then
+		tool = v.Parent
+		break
+	end
 end
+
+-- اگر پیدا نشد، در ReplicatedStorage بگرد
 if not tool then
-    for _, v in ipairs(game:GetService("ReplicatedStorage"):GetDescendants()) do
-        if v.Name == "SyncAPI" then tool = v.Parent break end
-    end
+	for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+		if v.Name == "SyncAPI" then
+			tool = v.Parent
+			break
+		end
+	end
 end
 
-if not tool or not tool:FindFirstChild("SyncAPI") then
-    warn("ابزار F3X پیدا نشد!")
-    return
+-- بررسی اینکه آیا تول و ریموت پیدا شده‌اند یا خیر
+if tool and tool:FindFirstChild("SyncAPI") then
+	remote = tool.SyncAPI:FindFirstChild("ServerEndpoint")
+else
+	warn("SyncAPI پیدا نشد! مطمئن شوید که Btools را در اختیار دارید.")
+	return -- توقف اسکریپت برای جلوگیری از ارور
 end
 
-local remote = tool.SyncAPI.ServerEndpoint
-
--- تابع ارسال دستورات به سرور F3X
-local function SendF3X(args)
-    return remote:InvokeServer(unpack(args))
+local function _(args)
+	if remote then
+		remote:InvokeServer(unpack(args))
+	end
 end
 
----------------------------------------------------------
--- 2. موتور اصلی DECAL SPAM روی 6 وجه
----------------------------------------------------------
-local function RunDecalSpam(id)
-    local descendants = workspace:GetDescendants()
-    
-    local allFaces = {
-        Enum.NormalId.Front,
-        Enum.NormalId.Back,
-        Enum.NormalId.Top,
-        Enum.NormalId.Bottom,
-        Enum.NormalId.Left,
-        Enum.NormalId.Right
-    }
-    
-    for i = 1, #descendants do
-        local v = descendants[i]
-        
-        -- فیلتر کردن پارت‌ها و نادیده گرفتن اسکای‌باکس
-        if v:IsA("BasePart") and v.Name ~= "CustomSkybox" and v.Name ~= "Skybox" then
-            -- باز کردن قفل پارت در صورت قفل بودن
-            SendF3X({"SetLocked", {v}, false})
-            
-            task.spawn(function()
-                for j = 1, #allFaces do
-                    local currentFace = allFaces[j]
-                    -- ایجاد دکال و اعمال آیدی عکس به صورت همزمان
-                    SendF3X({"CreateTextures", {{Part = v, Face = currentFace, TextureType = "Decal"}}})
-                    SendF3X({"SyncTexture", {{Part = v, Face = currentFace, TextureType = "Decal", Texture = "rbxassetid://" .. id}}})
-                end
-            end)
-        end
-    end
+-- (توابع دیگر مانند SetCollision, CreatePart و... دقیقا مثل قبل اینجا قرار می‌گیرند)
+-- برای کوتاه شدن کد، فقط توابع مورد نیاز برای اسپم را می‌نویسم:
+
+local function SetLocked(part, boolean)
+	local args = { "SetLocked", { part }, boolean }
+	_(args)
 end
 
----------------------------------------------------------
--- 3. اجرای مستقیم اسپم
----------------------------------------------------------
-RunDecalSpam(MyTargetID)
-print("Decal Spam باموفقیت روی تمامی پارت ها اعمال شد!")
+local function SpawnDecal(part, side)
+	local args = { "CreateTextures", { { ["Part"] = part, ["Face"] = side, ["TextureType"] = "Decal" } } }
+	_(args)
+end
+
+local function AddDecal(part, asset, side)
+	local args = { "SyncTexture", { { ["Part"] = part, ["Face"] = side, ["TextureType"] = "Decal", ["Texture"] = "rbxassetid://" .. asset } } }
+	_(args)
+end
+
+local function spam(id)
+	local count = 0
+	for _, v in ipairs(workspace:GetDescendants()) do
+		if v:IsA("BasePart") then
+			task.spawn(function()
+				SetLocked(v, false)
+				local faces = {
+					Enum.NormalId.Front, Enum.NormalId.Back,
+					Enum.NormalId.Right, Enum.NormalId.Left,
+					Enum.NormalId.Bottom, Enum.NormalId.Top
+				}
+				
+				for _, face in ipairs(faces) do
+					SpawnDecal(v, face)
+					AddDecal(v, id, face)
+				end
+			end)
+			
+			count = count + 1
+			-- ایجاد وقفه کوتاه هر 15 پارت برای جلوگیری از کرش شدن کلایِنت و کیک شدن توسط سرور
+			if count % 15 == 0 then
+				task.wait(0.1)
+			end
+		end
+	end
+	print("اسپم عکس به پایان رسید!")
+end
+
+spam("122714132204276")
