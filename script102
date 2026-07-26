@@ -1,0 +1,85 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+
+-- آیدی انیمیشن‌ها برای هر دو مدل
+local R6_AnimId = "rbxassetid://68433924"
+local R15_AnimId = "rbxassetid://100199766676370"
+
+local track = nil
+local weight = Instance.new("NumberValue")
+weight.Value = 0
+
+-- ================== SETUP & ON ==================
+local function LoadAndPlay(character, rigType)
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+    
+    -- متوقف کردن انیمیشن قبلی در صورت وجود
+    if track then track:Stop() end
+
+    local anim = Instance.new("Animation")
+    -- انتخاب انیمیشن بر اساس نوع کاراکتر
+    anim.AnimationId = (rigType == Enum.HumanoidRigType.R15) and R15_AnimId or R6_AnimId
+    
+    -- استفاده از Animator برای لود کردن انیمیشن (روش استاندارد جدید روبلاکس)
+    local animator = humanoid:FindFirstChildOfClass("Animator")
+    if not animator then
+        animator = Instance.new("Animator")
+        animator.Parent = humanoid
+    end
+    
+    track = animator:LoadAnimation(anim)
+    
+    -- تنظیم اولویت روی بالاترین حد ممکن تا موقع راه رفتن متوقف نشه
+    track.Priority = Enum.AnimationPriority.Action4
+    
+    track:Play()
+    track:AdjustSpeed(0) -- فریز کردن انیمیشن در فریم اول
+    
+    TweenService:Create(weight, TweenInfo.new(0.8), {Value = 1}):Play()
+    
+    weight.Changed:Connect(function()
+        pcall(function() track:AdjustWeight(weight.Value) end)
+    end)
+    
+    print("✅ Head Down Animation is now ON for " .. rigType.Name)
+end
+
+-- ================== RIG CHECK ==================
+local function CheckAndRun(character)
+    local humanoid = character:WaitForChild("Humanoid", 10)
+    if not humanoid then return end
+
+    task.wait(1.5) -- کمی صبر میکنیم تا کاراکتر کامل لود بشه
+    LoadAndPlay(character, humanoid.RigType)
+end
+
+-- ================== AUTO RE-EXECUTE SAAT RESET ==================
+player.CharacterAdded:Connect(function(newCharacter)
+    print("Character Respawned - Running Script...")
+    task.wait(2)
+    CheckAndRun(newCharacter)
+end)
+
+-- ================== JALANKAN SEKARANG ==================
+if player.Character then
+    task.spawn(function()
+        task.wait(1)
+        CheckAndRun(player.Character)
+    end)
+end
+
+-- Anti re-execute spam
+if not getgenv().HeadDownFinal then
+    getgenv().HeadDownFinal = true
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "HeadLess",
+        Text = "Script Loaded\nAuto execute on reset (R6 & R15)",
+        Duration = 5
+    })
+end
+
+print("Head Down Script Loaded - R6 & R15 Version")
