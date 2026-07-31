@@ -1,1 +1,1107 @@
-hmmmm
+		function BurningEff(part)
+local eff1 = Instance.new("ParticleEmitter",part)
+eff1.Size = NumberSequence.new(.1)
+eff1.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(.2,0),NumberSequenceKeypoint.new(1,1)})
+eff1.LightEmission = 1
+eff1.Lifetime = NumberRange.new(1)
+eff1.Speed = NumberRange.new(0)
+eff1.Rate = 100
+eff1.Texture = "rbxassetid://347504241"
+eff1.Acceleration = Vector3.new(0,10,0)
+eff1.Color = ColorSequence.new(Color3.new(1,0,0))
+local eff2 = Instance.new("ParticleEmitter",part)
+eff2.Size = NumberSequence.new(.1)
+eff2.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(.2,0),NumberSequenceKeypoint.new(1,1)})
+eff2.LightEmission = 1
+eff2.Lifetime = NumberRange.new(1)
+eff2.Speed = NumberRange.new(0)
+eff2.Rate = 100
+eff2.Texture = "rbxassetid://347504259"
+eff2.Acceleration = Vector3.new(0,10,0)
+eff2.Color = ColorSequence.new(Color3.new(1,0,0))
+local eff3 = Instance.new("ParticleEmitter",part)
+eff3.Size = NumberSequence.new(1)
+eff3.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(1,1)})
+eff3.LightEmission = 1
+eff3.Lifetime = NumberRange.new(1)
+eff3.Speed = NumberRange.new(0)
+eff3.Rate = 100
+eff3.Texture = "rbxasset://textures/particles/fire_main.dds"
+eff3.Acceleration = Vector3.new(0,10,0)
+eff3.Color = ColorSequence.new(Color3.new(1,0,0))
+end
+
+
+local player = game.Players.LocalPlayer
+    local char = player.Character
+    local tool
+    for i,v in player:GetDescendants() do
+        if v.Name == "SyncAPI" then
+            tool = v.Parent
+        end
+    end
+    for i,v in game.ReplicatedStorage:GetDescendants() do
+        if v.Name == "SyncAPI" then
+            tool = v.Parent
+        end
+    end
+   
+    remote = tool.SyncAPI.ServerEndpoint
+    function _(args)
+        remote:InvokeServer(unpack(args))
+    end
+blak=Color3.new(0,0,0)
+
+local function Color(part, color)
+	local args = {
+		"SyncColor",
+		{
+			{
+				Part = part,
+				Color = color,
+				UnionColoring = false
+			}
+		}
+	}
+	_(args)
+end
+   function DestroyPart(part)
+        local args = {
+            [1] = "Remove",
+            [2] = {
+                [1] = part
+            }
+        }
+        _(args)
+    end
+    function MoveVector(part,vector)
+        local args = {
+            [1] = "SyncMesh",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Offset"] = vector
+                }
+            }
+        }
+        _(args)
+    end
+function AddMesh(part)
+        local args = {
+            [1] = "CreateMeshes",
+            [2] = {
+                [1] = {
+                    ["Part"] = part
+                }
+            }
+        }
+        _(args)
+    end
+    function SetMesh(part,meshid)
+        local args = {
+            [1] = "SyncMesh",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["MeshId"] = "rbxassetid://"..meshid
+                }
+            }
+        }
+        _(args)
+    end
+  function SetTrans(part,int)
+        local args = {
+            [1] = "SyncMaterial",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Transparency"] = int
+                }
+            }
+        }
+        _(args)
+    end
+local function applyDecorationToPart(part) 
+    local argsCreate = {
+        [1] = "CreateDecorations",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["DecorationType"] = "Fire"
+            }
+        }
+    }
+    local argsSync = {
+        [1] = "SyncDecorate",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["DecorationType"] = "Fire",
+                ["Size"] = 3,
+                ["Heat"] = 25,
+                ["Color"] = Color3.fromRGB(255, 0, 0), 
+                ["SecondaryColor"] = Color3.fromRGB(255, 0, 0) 
+            } 
+        } 
+    }
+    _(argsCreate)
+    _(argsSync)
+end
+
+function eyePart(part) 
+    
+    local argsCreate = {
+        [1] = "CreateDecorations",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["DecorationType"] = "Fire"
+            }
+        }
+    }
+    local argsSync = {
+        [1] = "SyncDecorate",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["DecorationType"] = "Fire",
+                ["Size"] = 1,
+                ["Heat"] = 12,
+                ["Color"] = Color3.fromRGB(155, 0, 0), 
+                ["SecondaryColor"] = Color3.fromRGB(255, 0, 0) 
+            } 
+        } 
+    }
+   
+    _(argsCreate)
+    _(argsSync)
+end
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Players = game:GetService("Players")
+
+local UserInputService = game:GetService("UserInputService")
+
+local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+
+--kill thingy
+function thekille(target)
+if target and target.Character then
+    for i,v in target.Character:GetDescendants() do
+        if v:IsA("BasePart") then
+            RequestCommand:InvokeServer(";paint "..target.Name.." black")
+            spawn(function()
+            Color(v,blak)
+            end)
+            spawn(function()
+            SetTrans(v,0.1)
+            end)
+            wait(0.5)
+            spawn(function()
+            SetTrans(v,0.2)
+            end)
+            wait(0.5)
+            spawn(function()
+            SetTrans(v,0.3)
+            end)
+            wait(0.5)
+            spawn(function()
+            SetTrans(v,0.4)
+            end)
+            wait(0.5)
+            spawn(function()
+            SetTrans(v,0.5)
+            end)
+            wait(0.5)
+            spawn(function()
+            SetTrans(v,0.6)
+            end)
+            wait(0.5)
+            spawn(function()
+            SetTrans(v,0.7)
+            end)
+            wait(0.5)
+            spawn(function()
+            SetTrans(v,0.8)
+            end)
+            wait(0.5)
+            spawn(function()
+            SetTrans(v,0.9)
+            end)
+            wait(0.5)
+            spawn(function()
+            SetTrans(v,1)
+            end)
+            wait(3)
+            spawn(function()
+            DestroyPart(v)
+            end)
+        end
+    end
+end
+end
+wait(0.1)
+
+local kill = Instance.new("Sound",char)
+kill.SoundId = "rbxassetid://28144425"
+kill.Pitch = 0.6
+kill.Volume = 3
+
+local at = kill:Clone()
+at.SoundId="rbxassetid://82500396906354"
+at.Parent = char
+at.Volume = 0.5
+
+local player = Players.LocalPlayer
+local character = char
+
+
+RequestCommand:InvokeServer(";titlebk me ᴊᴏʜɴ ᴅᴏᴇ")
+RequestCommand:InvokeServer(";removeaccessories")
+wait(1.5)
+RequestCommand:InvokeServer(";hat me 18196403126")
+wait(0.6)
+ RequestCommand:InvokeServer(";shirt me 100276101149100")
+wait(0.9)
+ RequestCommand:InvokeServer(";pants me 109662040845019")
+wait(0.5)
+RequestCommand:InvokeServer(";head me 0")
+wait(0.7)
+RequestCommand:InvokeServer(";face me 144075659")
+wait(0.3)
+local eye = char:FindFirstChild("Accessory (JohnEye)").Handle
+local arm = char:FindFirstChild("Right Arm")
+local tor = char:FindFirstChild("Torso")
+local ar2 = char:FindFirstChild("Left Arm")
+
+local RLeg = char:FindFirstChild("Right Leg")
+local head = char:FindFirstChild("Head")
+local LLeg = char:FindFirstChild("Left Leg")
+task.spawn(function()
+applyDecorationToPart(arm)
+end)
+task.spawn(function()
+applyDecorationToPart(ar2)
+end)
+task.spawn(function()
+eyePart(eye)
+end)
+RequestCommand:InvokeServer(";music 17717379222 ;pitch 0.2 ;volume inf")
+task.spawn(function()
+Color(arm, Color3.fromRGB(0,0,0))
+end)
+task.spawn(function()
+Color(ar2, Color3.fromRGB(252, 255, 150))
+end)
+task.spawn(function()
+Color(head, Color3.fromRGB(252, 255, 150))
+end)
+task.spawn(function()
+Color(tor, Color3.fromRGB(255, 255, 0))
+end)
+task.spawn(function()
+Color(RLeg, Color3.fromRGB(0, 200, 255))
+end)
+task.spawn(function()
+Color(LLeg, Color3.fromRGB(0, 200, 255))
+end)
+task.spawn(function()
+AddMesh(arm)
+end)
+task.spawn(function()
+SetMesh(arm,"94818190090394")
+end)
+task.spawn(function()
+MoveVector(arm,Vector3.new(0.37, -0.6, 0))
+end)
+
+local arm = character:FindFirstChild("Right Arm") 
+local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+local isDead = false
+humanoid.Died:Connect(function()
+	isDead = true
+end)
+
+local animator = humanoid:FindFirstChildOfClass("Animator")
+
+local attackAnim = Instance.new("Animation")
+attackAnim.AnimationId = "rbxassetid://186934658"
+local attackTrack = animator:LoadAnimation(attackAnim)
+function attack()
+    attackTrack:Play() 
+    local hitPlayer = nil
+    local touchedConnection
+
+    local function onTouch(other)
+        local otherPlayer = Players:GetPlayerFromCharacter(other.Parent)
+        if otherPlayer and otherPlayer ~= player then
+            hitPlayer = otherPlayer
+        end
+    end
+
+    touchedConnection = arm.Touched:Connect(onTouch)
+    task.wait(0.5)
+    if touchedConnection then
+        touchedConnection:Disconnect()
+    end
+    if hitPlayer then
+d = at:Clone()
+d:Play()
+d.Parent = char
+spawn(function()
+wait(5)
+d:Destroy()
+end)
+task.spawn(DestroyPart,hitPlayer.Character.Head)
+    else
+d = kill:Clone()
+d:Play()
+d.Parent = char
+wait(5)
+d:Destroy()
+    end
+end
+
+
+
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if isDead then return end 
+    attack()
+end)
+
+
+
+local backpack = player.Backpack
+
+local function getf3x()
+	for _, v in ipairs(backpack:GetChildren()) do
+		if v:FindFirstChild("SyncAPI") then
+			return v
+		end
+	end
+	for _, v in ipairs(char:GetChildren()) do
+		if v:FindFirstChild("SyncAPI") then
+			return v
+		end
+	end
+	return nil
+end
+
+local f3x = getf3x()
+if not f3x then
+	warn("you dont have f3x skid")
+end
+
+local syncapi = f3x.SyncAPI
+local serverendpoint = syncapi.ServerEndpoint
+local function fire(part) 
+    
+    local argsCreate = {
+        [1] = "CreateDecorations",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["DecorationType"] = "Fire"
+            }
+        }
+    }
+
+   
+    local argsSync = {
+        [1] = "SyncDecorate",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["DecorationType"] = "Fire",
+                ["Size"] = 10,
+                ["Heat"] = 0,
+                ["Color"] = Color3.fromRGB(255, 0, 0), 
+                ["SecondaryColor"] = Color3.fromRGB(255, 0, 0) 
+            } 
+        } 
+    }
+
+    
+    _(argsCreate)
+    _(argsSync)
+end
+			function delete(part)
+				local args = {
+					[1] = "Remove",
+					[2] = {
+						[1] = part
+					}
+				}
+				_(args)
+			end
+function MovePart(part, cf)
+    local args = {
+        "SyncMove",
+        {
+            {
+                Part = part,
+                CFrame = cf
+            }
+        }
+    }
+    _(args)
+end
+
+local function resize(part, size, cf)
+	local args = {
+		"SyncResize",
+		{
+			{
+				Part = part,
+				CFrame = cf,
+				Size = size
+			}
+		}
+	}
+	_(args)
+end
+
+local function syncmaterial(part, mate)
+	local args = {
+		"SyncMaterial",
+		{
+			{
+				Part = part,
+				Material = mate
+			}
+		}
+	}
+	_(args)
+end
+
+local function transparency(part, trans)
+	local args = {
+		"SyncMaterial",
+		{
+			{
+				Part = part,
+				Transparency = trans
+			}
+		}
+	}
+	_(args)
+end
+
+local function color(part, color)
+	local args = {
+		"SyncColor",
+		{
+			{
+				Part = part,
+				Color = color,
+				UnionColoring = false
+			}
+		}
+	}
+	_(args)
+end
+
+local function syncmeshid(part, id)
+	local args = {
+		"SyncMesh",
+		{
+			{
+				Part = part,
+				MeshId = "rbxassetid://" .. id
+			}
+		}
+	}
+	_(args)
+end
+function destroy(part)
+				local args = {
+					[1] = "Remove",
+					[2] = {
+						[1] = part
+					}
+				}
+				_(args)
+			end
+local function makemesh(part)
+	local args = {
+		"CreateMeshes",
+		{
+			{
+				Part = part
+			}
+		}
+	}
+	_(args)
+end
+
+local function syncmeshsize(part, vectora)
+	local args = {
+		"SyncMesh",
+		{
+			{
+				Part = part,
+				Scale = vectora
+			}
+		}
+	}
+	_(args)
+end
+
+local function syncmeshtexture(part, id)
+	local args = {
+		"SyncMesh",
+		{
+			{
+				Part = part,
+				TextureId = "rbxassetid://" .. id
+			}
+		}
+	}
+	_(args)
+end
+
+local function name(part, stringa)
+	local args = {
+		"SetName",
+		{ part },
+		stringa
+	}
+	_(args)
+end
+
+local function lock(part, boolean)
+	local args = {
+		"SetLocked",
+		{ part },
+		boolean
+	}
+	_(args)
+end
+
+local function setcollision(part, booleana)
+	local args = {
+		"SyncCollision",
+		{
+			{
+				Part = part,
+				CanCollide = booleana
+			}
+		}
+	}
+	_(args)
+end
+
+local function setanchor(part, boolean)
+	local args = {
+		"SyncAnchor",
+		{
+			{
+				Part = part,
+				Anchored = boolean
+			}
+		}
+	}
+	_(args)
+end
+
+local function createdecal(part, side)
+	local args = {
+		"CreateTextures",
+		{
+			{
+				Part = part,
+				Face = side,
+				TextureType = "Decal"
+			}
+		}
+	}
+	_(args)
+end
+
+local function setdecal(part, asset, side)
+	local args = {
+		"SyncTexture",
+		{
+			{
+				Part = part,
+				Face = side,
+				TextureType = "Decal",
+				Texture = "rbxassetid://" .. asset
+			}
+		}
+	}
+	_(args)
+end
+task.spawn(function()
+while task.wait(0.02) do
+			task.spawn(function()
+				local hrp = char.HumanoidRootPart
+				local pos = hrp.CFrame * CFrame.new(0, -3, 0)
+				local trail = serverendpoint:InvokeServer("CreatePart", "Normal", CFrame.new(0,0,0), char)
+        task.spawn(function()
+				setcollision(trail, false)
+        end)
+        task.spawn(function()
+				syncmaterial(trail, Enum.Material.Granite)
+        end)
+        task.spawn(function()
+				color(trail, Color3.new(0, 0, 0))
+        end)
+        task.spawn(function()
+				resize(trail, Vector3.new(10,0,10), pos)
+        end)
+        task.spawn(function()
+        fire(trail)
+        end)
+BurningEff(trail)
+				task.wait(1)
+				delete(trail)
+			end)
+		end
+end)
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local rq = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+local RunService = game:GetService("RunService")
+local rotatetypeshii = Vector3.new(0, 1, 0).Unit
+local skypartrotation = 0
+local player = game.Players.LocalPlayer
+    local char = player.Character
+    local tool
+    for i,v in player:GetDescendants() do
+        if v.Name == "SyncAPI" then
+            tool = v.Parent
+        end
+    end
+    for i,v in game.ReplicatedStorage:GetDescendants() do
+        if v.Name == "SyncAPI" then
+            tool = v.Parent
+        end
+    end
+    --craaa
+    remote = tool.SyncAPI.ServerEndpoint
+    function _(args)
+        remote:InvokeServer(unpack(args))
+    end
+    function SetCollision(part,boolean)
+        local args = {
+            [1] = "SyncCollision",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["CanCollide"] = boolean
+                }
+            }
+        }
+        _(args)
+    end
+    function SetAnchor(boolean,part)
+        local args = {
+            [1] = "SyncAnchor",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Anchored"] = boolean
+                }
+            }
+        }
+        _(args)
+    end
+    function CreatePart(cf,parent)
+        local args = {
+            [1] = "CreatePart",
+            [2] = "Normal",
+            [3] = cf,
+            [4] = parent
+        }
+        _(args)
+    end
+    function DestroyPart(part)
+        local args = {
+            [1] = "Remove",
+            [2] = {
+                [1] = part
+            }
+        }
+        _(args)
+    end
+    function MovePart(part,cf)
+        local args = {
+            [1] = "SyncMove",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["CFrame"] = cf
+                }
+            }
+        }
+        _(args)
+    end
+    function Resize(part,size,cf)
+        local args = {
+            [1] = "SyncResize",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["CFrame"] = cf,
+                    ["Size"] = size
+                }
+            }
+        }
+        _(args)
+    end
+    function AddMesh(part)
+        local args = {
+            [1] = "CreateMeshes",
+            [2] = {
+                [1] = {
+                    ["Part"] = part
+                }
+            }
+        }
+        _(args)
+    end
+    function reflect(part,int)
+        local args = {
+            [1] = "SyncMaterial",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Reflectance"] = int
+                }
+            }
+        }
+        _(args)
+    end
+    function SetMesh(part,meshid)
+        local args = {
+            [1] = "SyncMesh",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["MeshId"] = "rbxassetid://"..meshid
+                }
+            }
+        }
+        _(args)
+    end
+    function SetTexture(part, texid)
+        local args = {
+            [1] = "SyncMesh",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["TextureId"] = "rbxassetid://"..texid
+                }
+            }
+        }
+        _(args)
+    end
+    function SetName(part, stringg)
+        local args = {
+            [1] = "SetName",
+            [2] = {
+                [1] = part
+            },
+            [3] = stringg
+        }
+
+        _(args)
+    end
+    function MeshResize(part,size)
+        local args = {
+            [1] = "SyncMesh",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Scale"] = size
+                }
+            }
+        }
+        _(args)
+    end
+function MeshColor(part,color)
+local args = {
+	"SyncMesh",
+	{
+		{
+			Part = part,
+			VertexColor = color 
+		}
+	}
+}
+_(args)
+    end
+    function Weld(part1, part2,lead)
+        local args = {
+            [1] = "CreateWelds",
+            [2] = {
+                [1] = part1,
+                [2] = part2
+            },
+            [3] = lead
+        }
+        _(args)
+
+    end
+    function SetLocked(part,boolean)
+        local args = {
+            [1] = "SetLocked",
+            [2] = {
+                [1] = part
+            },
+            [3] = boolean
+        }
+        _(args)
+    end
+
+    function SetTrans(part,int)
+        local args = {
+            [1] = "SyncMaterial",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Transparency"] = int
+                }
+            }
+        }
+        _(args)
+    end
+function Setmate(part,int)
+        local args = {
+            [1] = "SyncMaterial",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Material"] = int
+                }
+            }
+        }
+        _(args)
+    end
+    function CreateSpotlight(part)
+        local args = {
+            [1] = "CreateLights",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["LightType"] = "SpotLight"
+                }
+            }
+        }
+        _(args)
+    end
+    function SyncLighting(part,brightness)
+        local args = {
+            [1] = "SyncLighting",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["LightType"] = "SpotLight",
+                    ["Brightness"] = brightness
+                }
+            }
+        }
+        _(args)
+    end
+    function Color(part,color)
+        local args = {
+            [1] = "SyncColor",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Color"] = color --[[Color3]],
+                    ["UnionColoring"] = false
+                }
+            }
+        }
+        _(args)
+    end
+    function SpawnDecal(part,side)
+        local args = {
+            [1] = "CreateTextures",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Face"] = side,
+                    ["TextureType"] = "Decal"
+                }
+            }
+        }
+
+        _(args)
+    end
+    function AddDecal(part,asset,side)
+        local args = {
+            [1] = "SyncTexture",
+            [2] = {
+                [1] = {
+                    ["Part"] = part,
+                    ["Face"] = side,
+                    ["TextureType"] = "Decal",
+                    ["Texture"] = "rbxassetid://".. asset
+                }
+            }
+        }
+        _(args)
+    end
+function ClonePart(part,parent)
+       		 local args = {
+           [1] = "Clone",
+           [2] = {
+           [1] = part
+          },
+           [3] = parent
+        }
+
+    return remote:InvokeServer(unpack(args))
+end
+    function Sky(id)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local RequestCommandSilent = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+    
+    
+
+local function findBuildingTools()
+    local player = game:GetService("Players").LocalPlayer
+
+    for _, item in ipairs(player.Character:GetChildren()) do
+        if item:IsA("Tool") and item:FindFirstChild("SyncAPI") then
+            return item
+        end
+    end
+
+    for _, item in ipairs(player.Backpack:GetChildren()) do
+        if item:IsA("Tool") and item:FindFirstChild("SyncAPI") then
+            return item
+        end
+    end
+
+    return nil
+end
+
+local buildingTools = findBuildingTools()
+if not buildingTools then
+    warn("btools not found")
+    return
+end
+
+local syncAPI        = buildingTools:FindFirstChild("SyncAPI")
+local serverEndpoint = syncAPI and syncAPI:FindFirstChild("ServerEndpoint")
+
+if not serverEndpoint then
+    warn("btools not found")
+    return
+end
+
+local skyInstance = workspace.Terrain:FindFirstChild("Sky") or workspace:FindFirstChild("Sky")
+if not skyInstance then
+
+print"ok"
+end
+spawn(function()
+DestroyPart(skyInstance)
+end)
+local success, result
+if serverEndpoint:IsA("RemoteFunction") then
+    success, result = pcall(function()
+        return serverEndpoint:InvokeServer(unpack(args))
+    end)
+else
+
+    serverEndpoint:FireServer(unpack(args))
+    success = true
+end
+
+if success then
+    
+print"yay"
+    
+end
+        e = char.HumanoidRootPart.CFrame.x
+        f = char.HumanoidRootPart.CFrame.y
+        g = char.HumanoidRootPart.CFrame.z
+                mhm = CFrame.new(math.floor(e),math.floor(f),math.floor(g)) + Vector3.new(0,-5,0)
+                v = remote:InvokeServer("CreatePart","Normal",mhm,char)
+                task.spawn(function()
+                SetName(v,"johnbeep")
+                end)
+                task.spawn(function()
+                AddMesh(v)
+                end)
+                task.spawn(function()
+                rq:InvokeServer(";time 0")
+                end)
+                task.spawn(function()
+                Resize(v,Vector3.new(0,0,0),v.CFrame)
+                end)
+                task.spawn(function()
+                SetMesh(v,"1527559")
+                end)
+                task.spawn(function()
+                MeshColor(v,vector.create(2,0,0))
+                end)
+                task.spawn(function()
+                SetTexture(v,id)
+                end)
+                task.spawn(function()
+           MeshResize(v,Vector3.new(-3000,-1000,-3000))
+                end)
+                task.spawn(function()
+                SetLocked(v,true)
+                end)
+
+local rotationAngle = 5
+    local rotationSpeed = math.rad(20)
+    RunService.Heartbeat:Connect(function(deltaTime)
+        rotationAngle = rotationAngle + rotationSpeed * deltaTime
+        local rotation = CFrame.Angles(0, rotationAngle, 0)
+        local cf = CFrame.new(v.Position) * rotation
+        
+        task.spawn(function()
+            MovePart(v, cf)
+        end)
+    end)
+
+            end
+Sky("1529455")
+
+while true do
+	wait(0.1)
+		if character:FindFirstChildOfClass("Humanoid").Health <= 0 then
+			RequestCommand:InvokeServer(";titler me BAD CHOICE")
+
+ClonePart(character.Head,workspace.Terrain)
+wait(0.1)
+local bg = workspace.Terrain.Head
+task.spawn(function()
+DestroyPart(bg.face)
+end)
+task.spawn(function()
+SetTrans(bg,1)
+end)
+ClonePart(character.johnbeep,workspace.Terrain)
+                spawn(function()
+MeshColor(workspace.Terrain.johnbeep,vector.create(0,0,0))
+                end)
+task.spawn(function()
+MeshResize(workspace.Terrain.johnbeep,Vector3.new(-50000,-50000,-50000))
+                end)
+RequestCommand:InvokeServer(";explode others")
+RequestCommand:InvokeServer(";music 17717379222")
+RequestCommand:InvokeServer(";volume 10")
+wait(4)
+			RequestCommand:InvokeServer(";music 19094700")
+			RequestCommand:InvokeServer(";pitch 0.5")
+			RequestCommand:InvokeServer(";volume 3")
+      wait(0.8)
+      RequestCommand:InvokeServer(";fogcolor black")
+RequestCommand:InvokeServer(";fog 3000")
+			break
+		end
+	end
