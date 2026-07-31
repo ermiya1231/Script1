@@ -1,0 +1,298 @@
+local function Script_F3X_Goner()
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local humanoid = char:WaitForChild("Humanoid")
+
+    -- 1. بررسی شرط R6 بودن کاراکتر
+    if humanoid.RigType ~= Enum.HumanoidRigType.R6 then
+        warn("این اسکریپت فقط برای کاراکترهای R6 اجرا می‌شود!")
+        return
+    end
+
+    local tool
+    for _, v in player:GetDescendants() do 
+        if v.Name == "SyncAPI" then 
+            tool = v.Parent 
+            break 
+        end 
+    end
+    
+    if not tool then
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            for _, v in backpack:GetDescendants() do 
+                if v.Name == "SyncAPI" then 
+                    tool = v.Parent 
+                    break 
+                end 
+            end
+        end
+    end
+    
+    if not tool then
+        warn("BTools (F3X) یافت نشد! لطفاً اول بی‌تولز را بگیرید.")
+        return
+    end
+
+    local mouse = player:GetMouse()
+    local RunService = game:GetService("RunService")
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    
+    local remote = tool.SyncAPI.ServerEndpoint
+    local function _(args) remote:InvokeServer(unpack(args)) end
+
+    -- محاسبه موقعیت اولیه و نقطه ساخت پارت‌ها (۵۰ استود پایین‌تر)
+    local startCF = hrp.CFrame
+    local spawnCF = startCF * CFrame.new(0, -200, 0)
+
+    local function CreateGPart(size, color)
+        local p = remote:InvokeServer("CreatePart", "Normal", spawnCF, workspace)
+        _({"SyncResize", {{["Part"] = p, ["CFrame"] = spawnCF, ["Size"] = size}}})
+        _({"SyncColor", {{["Part"] = p, ["Color"] = color or Color3.new(0, 0, 0)}}})
+        _({"SyncMaterial", {{["Part"] = p, ["Material"] = Enum.Material.Slate}}})
+        _({"SyncCollision", {{["Part"] = p, ["CanCollide"] = false}}})
+        return p
+    end
+
+    -- ساخت پارت‌ها در ۵0 استود پایین‌تر بدون تغییر دوربین یا موقعیت شما
+    local gTorso = CreateGPart(Vector3.new(2.2, 2.2, 1.2))
+    local gHead = CreateGPart(Vector3.new(1, 1, 1)) 
+    local gRArm = CreateGPart(Vector3.new(1.2, 2.2, 1.2))
+    local gLArm = CreateGPart(Vector3.new(1.2, 2.2, 1.2))
+    local gRLeg = CreateGPart(Vector3.new(1.2, 2.2, 1.2))
+    local gLLeg = CreateGPart(Vector3.new(1.2, 2.2, 1.2))
+    local gScythe = CreateGPart(Vector3.new(2, 5.925, 0.25))
+    local gHat = CreateGPart(Vector3.new(1.4972800, 0.8923652, 1.7846))
+
+    local eyeL = CreateGPart(Vector3.new(0.25, 0.25, 0.25), Color3.new(1, 0, 0))
+    local eyeR = CreateGPart(Vector3.new(0.25, 0.25, 0.25), Color3.new(1, 0, 0))
+    
+    _({"SyncMaterial", {
+        {["Part"] = eyeL, ["Material"] = Enum.Material.Neon},
+        {["Part"] = eyeR, ["Material"] = Enum.Material.Neon},
+        {["Part"] = gHead, ["Material"] = Enum.Material.Slate},
+        {["Part"] = gHat, ["Material"] = Enum.Material.Slate}
+    }})
+    
+    _({"CreateMeshes", {
+        {["Part"] = eyeL}, {["Part"] = eyeR}, {["Part"] = gHead}, 
+        {["Part"] = gScythe}, {["Part"] = gHat}
+    }})
+    
+    _({"SyncMesh", {
+        {["Part"] = eyeL, ["MeshType"] = Enum.MeshType.Cylinder, ["Scale"] = Vector3.new(0.6, 0.6, 0.6)},
+        {["Part"] = eyeR, ["MeshType"] = Enum.MeshType.Cylinder, ["Scale"] = Vector3.new(0.6, 0.6, 0.6)},
+        {["Part"] = gHead, ["MeshType"] = Enum.MeshType.Head, ["Scale"] = Vector3.new(1.4, 1.4, 1.4)},
+        {["Part"] = gHat, ["MeshId"] = "rbxassetid://116073490", ["Scale"] = Vector3.new(1, 1, 1)},
+        {["Part"] = gScythe, ["MeshId"] = "rbxassetid://500489601", ["Scale"] = Vector3.new(0.01, 0.01, 0.01)}
+    }})
+
+    _({"CreateDecorations", {{["Part"] = gTorso, ["DecorationType"] = "Fire"}}})
+    _({"SyncDecorate", {{["Part"] = gTorso, ["DecorationType"] = "Fire", ["Size"] = 10, ["Heat"] = 5, ["Color"] = Color3.new(0, 0, 0), ["SecondaryColor"] = Color3.new(0, 0, 0)}}})
+
+    ---------------------------------------------------------
+    -- عملیات جابه‌جایی پس از ساخت کامل پارت‌ها
+    ---------------------------------------------------------
+
+    -- ۱. انتقال کاراکتر شما به جای پارت‌ها (۵۰ استود پایین)
+    hrp.CFrame = spawnCF
+
+    -- ۲. تنظیم افست نمایش (پارت‌ها جای قبلی شما روی زمین می‌آیند)
+    local OFFSET = 200
+    local FOOT_ADJUSTMENT = -0.6 
+    local visualOffset = CFrame.new(0, OFFSET + FOOT_ADJUSTMENT, 0)
+
+    -- ۳. تنظیم دوربین روی پارت کاراکتر جدید
+    local camPart = Instance.new("Part")
+    camPart.Transparency = 1
+    camPart.CanCollide = false
+    camPart.Anchored = true
+    camPart.CFrame = startCF * CFrame.new(0, 1.5, 0)
+    camPart.Parent = workspace
+    workspace.CurrentCamera.CameraSubject = camPart
+
+    -- ۴. ساخت زمین نامرئی زیر پای کاراکتر منتقل‌شده
+    local base = Instance.new("Part")
+    base.Size = Vector3.new(2048, 5, 2048)
+    base.Transparency = 1
+    base.Anchored = true
+    base.CanCollide = true
+    base.Position = Vector3.new(hrp.Position.X, hrp.Position.Y - 3.5, hrp.Position.Z)
+    base.Parent = workspace
+
+    local active = true
+    local isAttacking = false
+    local slashProgress = 0
+    
+    local targetSlashX = 90
+    local targetSlashY = -90
+    local targetSlashZ = 25
+
+    local slashSound = Instance.new("Sound")
+    slashSound.SoundId = "rbxassetid://211059653"
+    slashSound.PlaybackSpeed = 0.67 
+    slashSound.Volume = 1
+    slashSound.Parent = workspace 
+
+    local tor = char:FindFirstChild("Torso")
+    local rArm = char:FindFirstChild("Right Arm")
+    local rShoulder = tor:FindFirstChild("Right Shoulder")
+    local oldC0 = rShoulder.C0
+
+    local lastTicTime = 0
+    local headTwitch = CFrame.new()
+
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        if not active or not gTorso or not gTorso.Parent then 
+            rShoulder.C0 = oldC0
+            if camPart then camPart:Destroy() end
+            if base then base:Destroy() end
+            if slashSound then slashSound:Destroy() end
+            workspace.CurrentCamera.CameraSubject = humanoid
+            connection:Disconnect() 
+            return 
+        end
+
+        local torCF = visualOffset * tor.CFrame
+        local rArmCF = visualOffset * rArm.CFrame
+        local headCF = visualOffset * char.Head.CFrame
+
+        local rayParams = RaycastParams.new()
+        rayParams.FilterType = Enum.RaycastFilterType.Exclude
+        rayParams.FilterDescendantsInstances = {char, gTorso, gHead, gRArm, gLArm, gRLeg, gLLeg, gScythe, gHat, eyeL, eyeR, base, camPart}
+
+        local downRayOrigin = torCF.Position + Vector3.new(0, 5, 0)
+        local groundRay = workspace:Raycast(downRayOrigin, Vector3.new(0, -50, 0), rayParams)
+
+        if base and base.Parent then
+            if groundRay then
+                local actualGroundY = groundRay.Position.Y
+                local targetY = actualGroundY - OFFSET - 1.5 - FOOT_ADJUSTMENT
+                
+                local dist = (Vector3.new(base.Position.X, 0, base.Position.Z) - Vector3.new(hrp.Position.X, 0, hrp.Position.Z)).Magnitude
+                if math.abs(base.Position.Y - targetY) > 0.5 or dist > 500 then
+                    base.CFrame = CFrame.new(hrp.Position.X, targetY, hrp.Position.Z)
+                end
+            else
+                local targetY = hrp.Position.Y - 3.5
+                local dist = (Vector3.new(base.Position.X, 0, base.Position.Z) - Vector3.new(hrp.Position.X, 0, hrp.Position.Z)).Magnitude
+                if dist > 500 then
+                    base.CFrame = CFrame.new(hrp.Position.X, targetY, hrp.Position.Z)
+                end
+            end
+        end
+
+        local moveVel = hrp.Velocity * Vector3.new(1, 0, 1)
+        if moveVel.Magnitude > 0.2 then
+            local rayOrigin = torCF.Position
+            local moveDir = moveVel.Unit
+            
+            local rayResult = workspace:Raycast(rayOrigin, moveDir * 2.5, rayParams)
+            if rayResult and rayResult.Instance and rayResult.Instance.CanCollide then
+                hrp.CFrame = hrp.CFrame - Vector3.new(moveDir.X, 0, moveDir.Z) * 0.4
+            end
+        end
+
+        if tick() - lastTicTime > 0.07 then
+            lastTicTime = tick()
+            if math.random(1, 3) == 1 then
+                headTwitch = CFrame.Angles(
+                    math.rad(math.random(-12, 12)),
+                    math.rad(math.random(-20, 20)),
+                    math.rad(math.random(-8, 8))
+                )
+            else
+                headTwitch = CFrame.new()
+            end
+        end
+
+        if camPart then camPart.CFrame = headCF end
+
+        local hitPos = mouse.Hit.p
+        local jointPos = torCF:PointToWorldSpace(oldC0.p)
+        local direction = (hitPos - jointPos).Unit
+        local angle = math.asin(direction.Y)
+        
+        local speed = hrp.Velocity.Magnitude
+        local moveWalk = 0
+        local armForwardAngle = 0
+        
+        if speed > 0.5 then
+            moveWalk = math.sin(tick() * 5) * 0.08 
+            armForwardAngle = math.rad(65) 
+        end
+
+        local slashAnim = CFrame.new()
+        if isAttacking then
+            slashProgress = slashProgress + 0.03
+            local s = math.sin(slashProgress * math.pi)
+            
+            slashAnim = CFrame.Angles(
+                math.rad(targetSlashX * s), 
+                math.rad(targetSlashY * s), 
+                math.rad(targetSlashZ * s)
+            )
+            
+            if slashProgress >= 1 then 
+                isAttacking = false 
+                slashProgress = 0 
+            end
+        end
+
+        rShoulder.C0 = oldC0 
+            * CFrame.new(0, moveWalk, 0) 
+            * CFrame.Angles(armForwardAngle, 0, math.rad(35)) 
+            * CFrame.Angles(angle * 0.5, 0, 0) 
+            * slashAnim
+
+        local handCF = rArmCF * CFrame.new(0, -1.2, 0) * CFrame.Angles(math.rad(90), 0, 0)
+        local scytheCF = handCF * CFrame.new(0, 0, 1) * CFrame.Angles(math.rad(90), math.rad(180), 0)
+
+        task.spawn(function()
+            _({"SyncMove", {
+                {["Part"] = gTorso, ["CFrame"] = torCF},
+                {["Part"] = gHead, ["CFrame"] = headCF * headTwitch * CFrame.new(0, 0.15, 0)}, 
+                {["Part"] = gHat, ["CFrame"] = headCF * headTwitch * CFrame.new(0, 0.8, 0)},  
+                {["Part"] = gLArm, ["CFrame"] = visualOffset * char["Left Arm"].CFrame},
+                {["Part"] = gRArm, ["CFrame"] = rArmCF},
+                {["Part"] = gRLeg, ["CFrame"] = visualOffset * char["Right Leg"].CFrame},
+                {["Part"] = gLLeg, ["CFrame"] = visualOffset * char["Left Leg"].CFrame},
+                {["Part"] = gScythe, ["CFrame"] = scytheCF},
+                {["Part"] = eyeL, ["CFrame"] = headCF * headTwitch * CFrame.new(-0.28, 0.22, -0.58) * CFrame.Angles(0, math.rad(90), 0)},
+                {["Part"] = eyeR, ["CFrame"] = headCF * headTwitch * CFrame.new(0.28, 0.22, -0.58) * CFrame.Angles(0, math.rad(90), 0)}
+            }})
+        end)
+
+        local region = workspace:GetPartBoundsInRadius(scytheCF.Position, 3)
+        for _, p in pairs(region) do
+            local m = p.Parent
+            if m:IsA("Model") and m:FindFirstChild("Humanoid") and m ~= char then
+                local targetHead = m:FindFirstChild("Head")
+                if targetHead then
+                    task.spawn(function()
+                        remote:InvokeServer("Remove", {targetHead})
+                    end)
+                end
+            end
+        end
+    end)
+
+-- کد جدید و اصلاح‌شده:
+local mouseConn
+mouseConn = mouse.Button1Down:Connect(function()
+    -- بررسی می‌کند که اسکریپت فعال باشد و پارت‌های موجود نابود نشده باشند
+    if active and gTorso and gTorso.Parent and not isAttacking then 
+        isAttacking = true 
+        slashProgress = 0 
+        
+        targetSlashX = math.random(80, 105)   
+        targetSlashY = math.random(-105, -80) 
+        targetSlashZ = math.random(15, 35)    
+        
+        slashSound:Play()
+    end
+end)
+end
+
+Script_F3X_Goner()
