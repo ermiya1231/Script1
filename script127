@@ -1,0 +1,1043 @@
+local Players = game:GetService("Players")
+local Debris = game:GetService("Debris")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local BLOOD_ASSET = "rbxassetid://5069307706"
+local NECK_SNAP_ID = "rbxassetid://114303647099968"
+local GRAB_ANIM_ID = "rbxassetid://243663079"
+local THROW_ANIM_ID = "rbxassetid://218504594"
+local THROW_START_TIME = 0.5
+local THROW_EARLY_RATIO = 0.7
+
+local ACCENT = Color3.fromRGB(0, 255, 140)
+local BG = Color3.fromRGB(8, 8, 8)
+local BG2 = Color3.fromRGB(14, 14, 14)
+local TEXT = Color3.fromRGB(220, 220, 220)
+local DIM = Color3.fromRGB(100, 100, 100)
+local RED = Color3.fromRGB(255, 80, 80)
+local WHITE = Color3.fromRGB(255, 255, 255)
+
+local CODE_ACTIONS = {
+	dismantle = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script167",
+	mega = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script311",
+}
+
+local spinnerChars = {"|", "/", "-", "\\"}
+
+local GUI_NAMES = {
+	"Grab_Intro",
+	"Grab_LoadingGui",
+	"Grab_ModalGui",
+	"Grab_Popup",
+	"Grab_ChoiceGui",
+	"Grab_KillNotify",
+	"Grab_CodeGui",
+	"Grab_CodeButton",
+}
+
+local function isPlayerCharacter(model)
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p.Character == model then return true end
+	end
+	return false
+end
+
+local function safeParentGui(gui)
+	local ok, core = pcall(function() return game:GetService("CoreGui") end)
+	if ok and core then
+		local suc = pcall(function() gui.Parent = core end)
+		if suc then return gui end
+	end
+	gui.Parent = playerGui
+	return gui
+end
+
+local function cleanupGuis()
+	for _, name in ipairs(GUI_NAMES) do
+		pcall(function()
+			local g = game:GetService("CoreGui"):FindFirstChild(name)
+			if g then g:Destroy() end
+		end)
+		pcall(function()
+			local g = playerGui:FindFirstChild(name)
+			if g then g:Destroy() end
+		end)
+	end
+end
+
+local function addCorner(parent, radius)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, radius or 2)
+	c.Parent = parent
+	return c
+end
+
+local function addStroke(parent, color, thickness)
+	local s = Instance.new("UIStroke")
+	s.Color = color or ACCENT
+	s.Thickness = thickness or 1
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	s.Parent = parent
+	return s
+end
+
+local function popupNotification(text, duration, textColor, bgColor)
+	duration = duration or 2
+	textColor = textColor or ACCENT
+	bgColor = bgColor or BG
+
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "Grab_Popup"
+	gui.ResetOnSpawn = false
+	safeParentGui(gui)
+
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0, 380, 0, 48)
+	frame.Position = UDim2.new(0.5, -190, 0, -60)
+	frame.BackgroundColor3 = bgColor
+	frame.BorderSizePixel = 0
+	frame.Parent = gui
+	addCorner(frame, 2)
+	addStroke(frame, textColor, 1)
+
+	local prefix = Instance.new("TextLabel")
+	prefix.Size = UDim2.new(0, 28, 1, 0)
+	prefix.Position = UDim2.new(0, 10, 0, 0)
+	prefix.BackgroundTransparency = 1
+	prefix.Font = Enum.Font.Code
+	prefix.TextSize = 14
+	prefix.TextColor3 = textColor
+	prefix.Text = ">_"
+	prefix.TextXAlignment = Enum.TextXAlignment.Left
+	prefix.Parent = frame
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -50, 1, 0)
+	label.Position = UDim2.new(0, 38, 0, 0)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.Code
+	label.TextSize = 14
+	label.TextColor3 = TEXT
+	label.TextWrapped = true
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextYAlignment = Enum.TextYAlignment.Center
+	label.Text = text
+	label.Parent = frame
+
+	TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, -190, 0, 12)
+	}):Play()
+
+	task.delay(duration, function()
+		local t = TweenService:Create(frame, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+			Position = UDim2.new(0.5, -190, 0, -60)
+		})
+		t:Play()
+		t.Completed:Connect(function()
+			if gui and gui.Parent then gui:Destroy() end
+		end)
+	end)
+end
+
+local function setModelCollisions(model, canCollide)
+	for _, d in ipairs(model:GetDescendants()) do
+		if d:IsA("BasePart") then
+			pcall(function() d.CanCollide = canCollide end)
+		end
+	end
+end
+
+local animFlags = {}
+local function animateWords(label, fullText, wordDelay)
+	if not label or not label.Parent then return end
+	animFlags[label] = (animFlags[label] or 0) + 1
+	local token = animFlags[label]
+	local words = {}
+	for w in fullText:gmatch("%S+") do table.insert(words, w) end
+	label.Text = ""
+	task.spawn(function()
+		for i, w in ipairs(words) do
+			if animFlags[label] ~= token then return end
+			label.Text = i == 1 and w or label.Text .. " " .. w
+			task.wait(wordDelay or 0.10)
+		end
+		if animFlags[label] == token then animFlags[label] = nil end
+	end)
+end
+
+local bloodTemplateType, bloodEmitterTemplate, bloodModelTemplate
+local function preloadBlood()
+	local ok, objects = pcall(function() return game:GetObjects(BLOOD_ASSET) end)
+	if not ok or not objects or #objects == 0 then return end
+	local root = objects[1]
+	local foundEmitter
+	for _, d in ipairs(root:GetDescendants()) do
+		if d:IsA("ParticleEmitter") then foundEmitter = d break end
+	end
+	if foundEmitter then
+		bloodEmitterTemplate = foundEmitter:Clone()
+		bloodTemplateType = "emitter"
+	else
+		for _, p in ipairs(root:GetDescendants()) do
+			if p:IsA("BasePart") then p.CanCollide = false p.Massless = true end
+		end
+		root.Parent = nil
+		bloodModelTemplate = root
+		bloodTemplateType = "model"
+	end
+end
+
+local function makeLoadingGui()
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "Grab_LoadingGui"
+	gui.ResetOnSpawn = false
+
+	local frame = Instance.new("Frame")
+	frame.AnchorPoint = Vector2.new(1, 1)
+	frame.Position = UDim2.new(1, -12, 1, -12)
+	frame.Size = UDim2.new(0, 280, 0, 68)
+	frame.BackgroundColor3 = BG
+	frame.BorderSizePixel = 0
+	frame.Parent = gui
+	addCorner(frame, 2)
+	addStroke(frame, ACCENT, 1)
+
+	local topBar = Instance.new("Frame")
+	topBar.Size = UDim2.new(1, 0, 0, 2)
+	topBar.BackgroundColor3 = ACCENT
+	topBar.BorderSizePixel = 0
+	topBar.Parent = frame
+
+	local title = Instance.new("TextLabel")
+	title.Name = "Title"
+	title.Size = UDim2.new(1, -12, 0, 26)
+	title.Position = UDim2.new(0, 10, 0, 6)
+	title.BackgroundTransparency = 1
+	title.Font = Enum.Font.Code
+	title.TextSize = 13
+	title.TextColor3 = ACCENT
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.Text = "[ GRAB ] initializing..."
+	title.Parent = frame
+
+	local details = Instance.new("TextLabel")
+	details.Name = "Details"
+	details.Size = UDim2.new(1, -12, 0, 26)
+	details.Position = UDim2.new(0, 10, 0, 34)
+	details.BackgroundTransparency = 1
+	details.Font = Enum.Font.Code
+	details.TextSize = 12
+	details.TextColor3 = DIM
+	details.TextWrapped = true
+	details.TextXAlignment = Enum.TextXAlignment.Left
+	details.Text = ""
+	details.Parent = frame
+
+	return gui, title, details
+end
+
+local function showIntroBanner(duration)
+	duration = duration or 1.6
+	pcall(function() game:GetService("CoreGui"):FindFirstChild("Grab_Intro"):Destroy() end)
+	pcall(function() playerGui:FindFirstChild("Grab_Intro"):Destroy() end)
+
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "Grab_Intro"
+	gui.ResetOnSpawn = false
+
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0, 440, 0, 42)
+	frame.Position = UDim2.new(0.5, -220, 0, -60)
+	frame.AnchorPoint = Vector2.new(0.5, 0)
+	frame.BackgroundColor3 = BG
+	frame.BorderSizePixel = 0
+	frame.Parent = gui
+	addCorner(frame, 2)
+	addStroke(frame, ACCENT, 1)
+
+	local bar = Instance.new("Frame")
+	bar.Size = UDim2.new(0, 3, 1, -8)
+	bar.Position = UDim2.new(0, 8, 0, 4)
+	bar.BackgroundColor3 = ACCENT
+	bar.BorderSizePixel = 0
+	bar.Parent = frame
+	addCorner(bar, 1)
+
+	local label = Instance.new("TextLabel")
+	label.Name = "IntroLabel"
+	label.Size = UDim2.new(1, -60, 1, 0)
+	label.Position = UDim2.new(0, 20, 0, 0)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.Code
+	label.TextSize = 15
+	label.TextColor3 = TEXT
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = frame
+
+	local spinLabel = Instance.new("TextLabel")
+	spinLabel.Name = "IntroSpin"
+	spinLabel.Size = UDim2.new(0, 36, 1, 0)
+	spinLabel.Position = UDim2.new(1, -40, 0, 0)
+	spinLabel.BackgroundTransparency = 1
+	spinLabel.Font = Enum.Font.Code
+	spinLabel.TextSize = 15
+	spinLabel.TextColor3 = ACCENT
+	spinLabel.Text = "|"
+	spinLabel.Parent = frame
+
+	safeParentGui(gui)
+
+	TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, -220, 0, 10)
+	}):Play()
+
+	animateWords(label, "grab.lua  --  by GUI (@noli_0.)", 0.10)
+
+	local running = true
+	spawn(function()
+		local idx = 1
+		while running do
+			spinLabel.Text = spinnerChars[idx]
+			idx = idx % #spinnerChars + 1
+			task.wait(0.08)
+		end
+	end)
+
+	task.delay(duration, function()
+		running = false
+		TweenService:Create(frame, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut), {
+			Position = UDim2.new(1, -200, 1, -52),
+			Size = UDim2.new(0, 188, 0, 28)
+		}):Play()
+		TweenService:Create(label, TweenInfo.new(0.35), {TextSize = 11}):Play()
+		TweenService:Create(spinLabel, TweenInfo.new(0.35), {TextSize = 11}):Play()
+	end)
+end
+
+local function runPreloadsAndShowLoading()
+	pcall(function() game:GetService("CoreGui"):FindFirstChild("Grab_LoadingGui"):Destroy() end)
+	pcall(function() playerGui:FindFirstChild("Grab_LoadingGui"):Destroy() end)
+
+	local loadingGui, loadingTitle, loadingDetails = makeLoadingGui()
+	safeParentGui(loadingGui)
+
+	local spinnerRunning = true
+	spawn(function()
+		local idx = 1
+		while spinnerRunning do
+			loadingTitle.Text = "[ GRAB ] " .. spinnerChars[idx] .. " initializing..."
+			idx = idx % #spinnerChars + 1
+			task.wait(0.10)
+		end
+	end)
+
+	local steps = {
+		"loading particles",
+		"loading GUI modules",
+		"loading animations",
+		"loading audio",
+		"loading blood asset",
+		"finalizing...",
+	}
+
+	for _, step in ipairs(steps) do
+		loadingDetails.Text = ""
+		animateWords(loadingDetails, "> " .. step, 0.08)
+		if step == "loading audio" then
+			local s = Instance.new("Sound")
+			s.SoundId = NECK_SNAP_ID
+			s.Parent = loadingGui
+			Debris:AddItem(s, 1.0)
+			task.wait(0.18)
+		elseif step == "loading blood asset" then
+			preloadBlood()
+			task.wait(0.25)
+		else
+			task.wait(0.15)
+		end
+	end
+
+	spinnerRunning = false
+	loadingTitle.Text = "[ GRAB ] ready."
+	loadingDetails.Text = "> done"
+	task.wait(0.5)
+	if loadingGui and loadingGui.Parent then loadingGui:Destroy() end
+end
+
+local function showKillNotification(killerName, targetName, duration)
+	duration = duration or 2.4
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "Grab_KillNotify"
+	gui.ResetOnSpawn = false
+	safeParentGui(gui)
+
+	local frame = Instance.new("Frame")
+	frame.Name = "KillFrame"
+	frame.Size = UDim2.new(0, 240, 0, 26)
+	frame.Position = UDim2.new(1, 10, 0.5, -13)
+	frame.AnchorPoint = Vector2.new(1, 0.5)
+	frame.BackgroundColor3 = BG
+	frame.BorderSizePixel = 0
+	frame.Parent = gui
+	addCorner(frame, 2)
+	addStroke(frame, RED, 1)
+
+	local dot = Instance.new("Frame")
+	dot.Size = UDim2.new(0, 6, 0, 6)
+	dot.Position = UDim2.new(0, 8, 0.5, -3)
+	dot.BackgroundColor3 = RED
+	dot.BorderSizePixel = 0
+	dot.Parent = frame
+	addCorner(dot, 3)
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -26, 1, 0)
+	label.Position = UDim2.new(0, 22, 0, 0)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.Code
+	label.TextSize = 12
+	label.TextColor3 = TEXT
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextYAlignment = Enum.TextYAlignment.Center
+	label.Text = killerName .. "  killed  " .. targetName
+	label.Parent = frame
+
+	TweenService:Create(frame, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+		Position = UDim2.new(1, -10, 0.5, -13)
+	}):Play()
+
+	task.delay(duration, function()
+		local t = TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+			Position = UDim2.new(1, 10, 0.5, -13)
+		})
+		t:Play()
+		t.Completed:Connect(function()
+			if gui and gui.Parent then gui:Destroy() end
+		end)
+	end)
+end
+
+local function sanitizeCode(s)
+	s = tostring(s or "")
+	s = s:match("^%s*(.-)%s*$") or s
+	return s:lower()
+end
+
+local function cleanupCodeGui()
+	pcall(function() local g = game:GetService("CoreGui"):FindFirstChild("Grab_CodeGui"); if g then g:Destroy() end end)
+	pcall(function() local b = game:GetService("CoreGui"):FindFirstChild("Grab_CodeButton"); if b then b:Destroy() end end)
+	pcall(function() local g = playerGui:FindFirstChild("Grab_CodeGui"); if g then g:Destroy() end end)
+	pcall(function() local b = playerGui:FindFirstChild("Grab_CodeButton"); if b then b:Destroy() end end)
+end
+
+local function createCodeUI(tool)
+	cleanupCodeGui()
+
+	local btnGui = Instance.new("ScreenGui")
+	btnGui.Name = "Grab_CodeButton"
+	btnGui.ResetOnSpawn = false
+	local parentToCore = false
+	local ok, core = pcall(function() return game:GetService("CoreGui") end)
+	if ok and core then
+		local suc = pcall(function() btnGui.Parent = core end)
+		if suc then parentToCore = true end
+	end
+	if not parentToCore then btnGui.Parent = playerGui end
+
+	local btnFrame = Instance.new("Frame")
+	btnFrame.Name = "ButtonFrame"
+	btnFrame.Size = UDim2.new(0, 54, 0, 22)
+	btnFrame.Position = UDim2.new(0, 10, 0.5, 8)
+	btnFrame.BackgroundColor3 = BG
+	btnFrame.BorderSizePixel = 0
+	btnFrame.Parent = btnGui
+	addCorner(btnFrame, 2)
+	addStroke(btnFrame, ACCENT, 1)
+
+	local openBtn = Instance.new("TextButton")
+	openBtn.Size = UDim2.new(1, 0, 1, 0)
+	openBtn.BackgroundTransparency = 1
+	openBtn.Font = Enum.Font.Code
+	openBtn.TextSize = 12
+	openBtn.Text = "> code"
+	openBtn.TextColor3 = ACCENT
+	openBtn.Parent = btnFrame
+
+	local panelGui = Instance.new("ScreenGui")
+	panelGui.Name = "Grab_CodeGui"
+	panelGui.ResetOnSpawn = false
+	if parentToCore then panelGui.Parent = core else panelGui.Parent = playerGui end
+
+	local panelFrame = Instance.new("Frame")
+	panelFrame.Name = "Panel"
+	panelFrame.Size = UDim2.new(0, 360, 0, 196)
+	panelFrame.Position = UDim2.new(0, -380, 0.5, -98)
+	panelFrame.AnchorPoint = Vector2.new(0, 0.5)
+	panelFrame.BackgroundColor3 = BG
+	panelFrame.BorderSizePixel = 0
+	panelFrame.Parent = panelGui
+	addCorner(panelFrame, 2)
+	addStroke(panelFrame, ACCENT, 1)
+
+	local headerBar = Instance.new("Frame")
+	headerBar.Size = UDim2.new(1, 0, 0, 32)
+	headerBar.BackgroundColor3 = BG2
+	headerBar.BorderSizePixel = 0
+	headerBar.Parent = panelFrame
+	addCorner(headerBar, 2)
+
+	local headerFix = Instance.new("Frame")
+	headerFix.Size = UDim2.new(1, 0, 0.5, 0)
+	headerFix.Position = UDim2.new(0, 0, 0.5, 0)
+	headerFix.BackgroundColor3 = BG2
+	headerFix.BorderSizePixel = 0
+	headerFix.Parent = headerBar
+
+	local titleDot = Instance.new("Frame")
+	titleDot.Size = UDim2.new(0, 6, 0, 6)
+	titleDot.Position = UDim2.new(0, 12, 0.5, -3)
+	titleDot.BackgroundColor3 = ACCENT
+	titleDot.BorderSizePixel = 0
+	titleDot.Parent = headerBar
+	addCorner(titleDot, 3)
+
+	local panelTitle = Instance.new("TextLabel")
+	panelTitle.Size = UDim2.new(1, -60, 1, 0)
+	panelTitle.Position = UDim2.new(0, 26, 0, 0)
+	panelTitle.BackgroundTransparency = 1
+	panelTitle.Font = Enum.Font.Code
+	panelTitle.TextSize = 13
+	panelTitle.TextColor3 = ACCENT
+	panelTitle.TextXAlignment = Enum.TextXAlignment.Left
+	panelTitle.Text = "grab.lua  //  code input"
+	panelTitle.Parent = headerBar
+
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Size = UDim2.new(0, 32, 0, 32)
+	closeBtn.Position = UDim2.new(1, -32, 0, 0)
+	closeBtn.BackgroundTransparency = 1
+	closeBtn.Font = Enum.Font.Code
+	closeBtn.TextSize = 14
+	closeBtn.TextColor3 = DIM
+	closeBtn.Text = "[ x ]"
+	closeBtn.Parent = headerBar
+
+	local desc = Instance.new("TextLabel")
+	desc.Size = UDim2.new(1, -24, 0, 36)
+	desc.Position = UDim2.new(0, 12, 0, 40)
+	desc.BackgroundTransparency = 1
+	desc.Font = Enum.Font.Code
+	desc.TextSize = 12
+	desc.TextColor3 = DIM
+	desc.TextWrapped = true
+	desc.Text = "-- enter a code on the textbox\n-- you can get the code by going to mzscripts"
+	desc.TextXAlignment = Enum.TextXAlignment.Left
+	desc.Parent = panelFrame
+
+	local codeBox = Instance.new("TextBox")
+	codeBox.Size = UDim2.new(1, -24, 0, 34)
+	codeBox.Position = UDim2.new(0, 12, 0, 84)
+	codeBox.ClearTextOnFocus = false
+	codeBox.Font = Enum.Font.Code
+	codeBox.PlaceholderText = "> type code here..."
+	codeBox.Text = ""
+	codeBox.TextSize = 14
+	codeBox.TextColor3 = ACCENT
+	codeBox.BackgroundColor3 = BG2
+	codeBox.BorderSizePixel = 0
+	codeBox.Parent = panelFrame
+	addCorner(codeBox, 2)
+	addStroke(codeBox, DIM, 1)
+
+	local confirmBtn = Instance.new("TextButton")
+	confirmBtn.Size = UDim2.new(1, -24, 0, 34)
+	confirmBtn.Position = UDim2.new(0, 12, 0, 128)
+	confirmBtn.BackgroundColor3 = ACCENT
+	confirmBtn.Font = Enum.Font.Code
+	confirmBtn.TextSize = 14
+	confirmBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+	confirmBtn.Text = "[ run code ]"
+	confirmBtn.Parent = panelFrame
+	addCorner(confirmBtn, 2)
+
+	local statusBar = Instance.new("TextLabel")
+	statusBar.Size = UDim2.new(1, -24, 0, 20)
+	statusBar.Position = UDim2.new(0, 12, 1, -26)
+	statusBar.BackgroundTransparency = 1
+	statusBar.Font = Enum.Font.Code
+	statusBar.TextSize = 11
+	statusBar.TextColor3 = DIM
+	statusBar.TextXAlignment = Enum.TextXAlignment.Left
+	statusBar.Text = "status: idle"
+	statusBar.Parent = panelFrame
+
+	local panelVisible = false
+	local function showPanel()
+		if panelVisible then return end
+		panelVisible = true
+		TweenService:Create(panelFrame, TweenInfo.new(0.32, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+			Position = UDim2.new(0, 10, 0.5, -98)
+		}):Play()
+	end
+	local function hidePanel()
+		if not panelVisible then return end
+		panelVisible = false
+		TweenService:Create(panelFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+			Position = UDim2.new(0, -380, 0.5, -98)
+		}):Play()
+	end
+
+	openBtn.MouseButton1Click:Connect(function()
+		if panelVisible then hidePanel() else showPanel() end
+	end)
+	closeBtn.MouseButton1Click:Connect(hidePanel)
+
+	confirmBtn.MouseButton1Click:Connect(function()
+		local raw = sanitizeCode(codeBox.Text)
+		if raw == "" then
+			statusBar.Text = "status: error -- no code entered"
+			popupNotification("enter a code first.", 1.6, RED)
+			return
+		end
+
+		local action = CODE_ACTIONS[raw]
+		if not action then
+			statusBar.Text = "status: error -- code not recognised"
+			popupNotification("code not found.", 2, RED)
+			return
+		end
+
+		confirmBtn.Text = "[ running... ]"
+		confirmBtn.AutoButtonColor = false
+		confirmBtn.Active = false
+		statusBar.Text = "status: executing..."
+
+		if type(action) == "string" then
+			local ok, err = pcall(function()
+				local chunk = game:HttpGet(action)
+				local f = loadstring(chunk)
+				if type(f) == "function" then f() else error("loadstring did not return a function") end
+			end)
+			if ok then
+				statusBar.Text = "status: ok -- code ran successfully"
+				popupNotification("code ran successfully.", 2, ACCENT)
+			else
+				statusBar.Text = "status: error -- " .. tostring(err):sub(1, 40)
+				popupNotification("code failed: " .. tostring(err), 3, RED)
+			end
+		elseif type(action) == "function" then
+			local ok, err = pcall(action)
+			if ok then
+				statusBar.Text = "status: ok -- action completed"
+				popupNotification("action completed.", 2, ACCENT)
+			else
+				statusBar.Text = "status: error -- " .. tostring(err):sub(1, 40)
+				popupNotification("action error: " .. tostring(err), 3, RED)
+			end
+		else
+			statusBar.Text = "status: error -- unsupported action type"
+			popupNotification("unsupported action type.", 2, RED)
+		end
+
+		confirmBtn.Text = "[ run code ]"
+		confirmBtn.Active = true
+		confirmBtn.AutoButtonColor = true
+		hidePanel()
+	end)
+end
+
+local function createGrabTool(useThrow, useBlood)
+	local tool = Instance.new("Tool")
+	tool.Name = "Grab"
+	tool.RequiresHandle = false
+
+	local grabAnim = Instance.new("Animation"); grabAnim.AnimationId = GRAB_ANIM_ID
+	local throwAnim = Instance.new("Animation"); throwAnim.AnimationId = THROW_ANIM_ID
+
+	local busy = false
+
+	tool.Activated:Connect(function()
+		if busy then return end
+		busy = true
+
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if not humanoid then busy = false return end
+
+		local mouse = player:GetMouse()
+		local target = mouse.Target
+		if not target or not target.Parent then busy = false return end
+
+		local model = target:FindFirstAncestorOfClass("Model")
+		if not model then busy = false return end
+
+		if isPlayerCharacter(model) then
+			popupNotification("cannot grab players.", 1.8, RED)
+			busy = false
+			return
+		end
+
+		local targetHum = model:FindFirstChildOfClass("Humanoid")
+		local targetHead = model:FindFirstChild("Head")
+		if not targetHum or not targetHead then busy = false return end
+		if targetHum.Health <= 0 then busy = false return end
+
+		local charRoot = character:FindFirstChild("HumanoidRootPart")
+		if not charRoot then busy = false return end
+		if (charRoot.Position - targetHead.Position).Magnitude > 20 then busy = false return end
+
+		local oldWalk, oldJump = humanoid.WalkSpeed, humanoid.JumpPower
+		humanoid.WalkSpeed = 0
+		humanoid.JumpPower = 0
+
+		local grabTrack = humanoid:LoadAnimation(grabAnim)
+		grabTrack:Play()
+		grabTrack:AdjustSpeed(0.8)
+		task.spawn(function()
+			task.wait(math.max(0, grabTrack.Length / 0.8 - 0.3))
+			grabTrack:AdjustSpeed(0)
+		end)
+
+		local bp = Instance.new("BodyPosition")
+		bp.MaxForce = Vector3.new(300000,300000,300000)
+		bp.P = 9000
+		bp.D = 300
+		bp.Parent = targetHead
+
+		local bg = Instance.new("BodyGyro")
+		bg.MaxTorque = Vector3.new(300000,300000,300000)
+		bg.P = 8000
+		bg.D = 200
+		bg.Parent = targetHead
+
+		setModelCollisions(model, false)
+
+		local rightArm = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
+		local dragging = true
+		task.spawn(function()
+			while dragging and targetHum.Health > 0 do
+				if not rightArm or not targetHead then break end
+				local forwardDir = charRoot.CFrame.LookVector
+				local armTip = rightArm.Position + (forwardDir * 1.05) + Vector3.new(0, 1, 0)
+				bp.Position = armTip
+				bg.CFrame = CFrame.new(targetHead.Position, Vector3.new(charRoot.Position.X, targetHead.Position.Y, charRoot.Position.Z))
+				task.wait(0.05)
+			end
+		end)
+
+		local shakeStart = tick()
+		task.spawn(function()
+			while tick() - shakeStart < 3 and targetHum.Health > 0 do
+				targetHum.Health = math.max(0, targetHum.Health - 2)
+				if targetHead then
+					targetHead.CFrame *= CFrame.Angles(
+						math.rad(math.random(-8,8)),
+						math.rad(math.random(-8,8)),
+						math.rad(math.random(-8,8))
+					)
+				end
+				task.wait(0.05)
+			end
+			if targetHum.Health > 0 then targetHum.Health = 0 end
+		end)
+
+		repeat task.wait() until targetHum.Health <= 0
+
+		if targetHead and targetHead.Parent then
+			local snap = Instance.new("Sound")
+			snap.SoundId = NECK_SNAP_ID
+			snap.Volume = 1
+			snap.Parent = targetHead
+			pcall(function() snap:Play() end)
+			Debris:AddItem(snap, 4)
+		end
+
+		local targetName = (model and model.Name) or "NPC"
+		pcall(function() showKillNotification(player.Name, targetName, 2.4) end)
+
+		if useBlood and targetHead and targetHead.Parent then
+			local existing = targetHead:FindFirstChild("___BloodAttachment")
+			if not existing then
+				local attach = Instance.new("Attachment")
+				attach.Name = "___BloodAttachment"
+				attach.Position = Vector3.new(0, -0.45, 0)
+				attach.Parent = targetHead
+
+				if bloodTemplateType == "emitter" and bloodEmitterTemplate then
+					local e = bloodEmitterTemplate:Clone()
+					e.Name = "BloodEmitter"
+					e.Parent = attach
+				elseif bloodTemplateType == "model" and bloodModelTemplate then
+					local cloneModel = bloodModelTemplate:Clone()
+					for _, p in ipairs(cloneModel:GetDescendants()) do
+						if p:IsA("BasePart") then
+							p.CanCollide = false
+							p.Massless = true
+						end
+					end
+					cloneModel.Parent = model
+					local primary = cloneModel.PrimaryPart or cloneModel:FindFirstChildWhichIsA("BasePart")
+					if primary then
+						primary.CFrame = targetHead.CFrame * CFrame.new(0, -0.45, 0)
+						local weld = Instance.new("WeldConstraint")
+						weld.Part0 = primary
+						weld.Part1 = targetHead
+						weld.Parent = primary
+					end
+				end
+			end
+		end
+
+		dragging = false
+		grabTrack:AdjustSpeed(0.5)
+		task.wait(0.25)
+		grabTrack:Stop()
+
+		if useThrow then
+			local throwTrack = humanoid:LoadAnimation(throwAnim)
+			throwTrack:Play(0.2)
+			throwTrack:AdjustSpeed(1)
+
+			task.wait(0.05)
+			local startTime = THROW_START_TIME
+			if throwTrack.Length and startTime > throwTrack.Length then
+				startTime = math.max(0, throwTrack.Length - 0.01)
+			end
+			throwTrack.TimePosition = startTime
+
+			local remaining = math.max(0, throwTrack.Length - startTime)
+			task.spawn(function()
+				task.wait(remaining * THROW_EARLY_RATIO)
+				if targetHead and targetHead.Parent then
+					if bp and bp.Parent then bp:Destroy() end
+					if bg and bg.Parent then bg:Destroy() end
+
+					local bv = Instance.new("BodyVelocity")
+					bv.Velocity = charRoot.CFrame.RightVector * 100 + Vector3.new(0, 40, 0)
+					bv.MaxForce = Vector3.new(300000,300000,300000)
+					bv.P = 5000
+					bv.Parent = targetHead
+					Debris:AddItem(bv, 0.35)
+
+					task.delay(0.6, function()
+						if model and model.Parent then setModelCollisions(model, true) end
+					end)
+				end
+			end)
+
+			throwTrack.Stopped:Connect(function()
+				humanoid.WalkSpeed = oldWalk
+				humanoid.JumpPower = oldJump
+				busy = false
+			end)
+		else
+			if bp and bp.Parent then bp:Destroy() end
+			if bg and bg.Parent then bg:Destroy() end
+			task.delay(0.2, function() if model and model.Parent then setModelCollisions(model, true) end end)
+			humanoid.WalkSpeed = oldWalk
+			humanoid.JumpPower = oldJump
+			busy = false
+		end
+	end)
+
+	return tool
+end
+
+local function makeChoiceFrame(parent, labelText, yesText, noText, yesColor, noColor, callback)
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0, 360, 0, 148)
+	frame.Position = UDim2.new(0.5, -180, 0.5, -74)
+	frame.BackgroundColor3 = BG
+	frame.BorderSizePixel = 0
+	frame.Parent = parent
+	addCorner(frame, 2)
+	addStroke(frame, ACCENT, 1)
+
+	local hBar = Instance.new("Frame")
+	hBar.Size = UDim2.new(1, 0, 0, 30)
+	hBar.BackgroundColor3 = BG2
+	hBar.BorderSizePixel = 0
+	hBar.Parent = frame
+	addCorner(hBar, 2)
+
+	local hFix = Instance.new("Frame")
+	hFix.Size = UDim2.new(1, 0, 0.5, 0)
+	hFix.Position = UDim2.new(0, 0, 0.5, 0)
+	hFix.BackgroundColor3 = BG2
+	hFix.BorderSizePixel = 0
+	hFix.Parent = hBar
+
+	local hDot = Instance.new("Frame")
+	hDot.Size = UDim2.new(0, 6, 0, 6)
+	hDot.Position = UDim2.new(0, 10, 0.5, -3)
+	hDot.BackgroundColor3 = ACCENT
+	hDot.BorderSizePixel = 0
+	hDot.Parent = hBar
+	addCorner(hDot, 3)
+
+	local hLabel = Instance.new("TextLabel")
+	hLabel.Size = UDim2.new(1, -24, 1, 0)
+	hLabel.Position = UDim2.new(0, 24, 0, 0)
+	hLabel.BackgroundTransparency = 1
+	hLabel.Font = Enum.Font.Code
+	hLabel.TextSize = 12
+	hLabel.TextColor3 = ACCENT
+	hLabel.TextXAlignment = Enum.TextXAlignment.Left
+	hLabel.Text = "grab.lua  //  configuration"
+	hLabel.Parent = hBar
+
+	local question = Instance.new("TextLabel")
+	question.Size = UDim2.new(1, -24, 0, 36)
+	question.Position = UDim2.new(0, 12, 0, 36)
+	question.BackgroundTransparency = 1
+	question.Font = Enum.Font.Code
+	question.TextSize = 14
+	question.TextColor3 = TEXT
+	question.TextWrapped = true
+	question.TextXAlignment = Enum.TextXAlignment.Left
+	question.Parent = frame
+	animateWords(question, labelText, 0.09)
+
+	local yBtn = Instance.new("TextButton")
+	yBtn.Size = UDim2.new(0, 160, 0, 34)
+	yBtn.Position = UDim2.new(0, 12, 1, -46)
+	yBtn.BackgroundColor3 = yesColor or ACCENT
+	yBtn.Font = Enum.Font.Code
+	yBtn.TextSize = 13
+	yBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+	yBtn.Text = yesText
+	yBtn.Parent = frame
+	addCorner(yBtn, 2)
+
+	local nBtn = Instance.new("TextButton")
+	nBtn.Size = UDim2.new(0, 160, 0, 34)
+	nBtn.Position = UDim2.new(1, -172, 1, -46)
+	nBtn.BackgroundColor3 = BG2
+	nBtn.Font = Enum.Font.Code
+	nBtn.TextSize = 13
+	nBtn.TextColor3 = TEXT
+	nBtn.Text = noText
+	nBtn.Parent = frame
+	addCorner(nBtn, 2)
+	addStroke(nBtn, DIM, 1)
+
+	yBtn.MouseButton1Click:Connect(function() callback(true) end)
+	nBtn.MouseButton1Click:Connect(function() callback(false) end)
+
+	return frame
+end
+
+local function showModalFlowAndGiveTool()
+	local modalGui = Instance.new("ScreenGui")
+	modalGui.Name = "Grab_ModalGui"
+	modalGui.ResetOnSpawn = false
+	safeParentGui(modalGui)
+
+	makeChoiceFrame(
+		modalGui,
+		"-- do NPCs / bots use ragdoll physics?",
+		"yes  --  ragdoll",
+		"no  --  no ragdoll",
+		ACCENT, nil,
+		function(useThrow)
+			if modalGui and modalGui.Parent then modalGui:Destroy() end
+
+			local bloodGui = Instance.new("ScreenGui")
+			bloodGui.Name = "Grab_ChoiceGui"
+			bloodGui.ResetOnSpawn = false
+			safeParentGui(bloodGui)
+
+			makeChoiceFrame(
+				bloodGui,
+				"-- attach blood effect to NPC on kill?",
+				"yes  --  blood on",
+				"no  --  blood off",
+				RED, nil,
+				function(useBlood)
+					if bloodGui and bloodGui.Parent then bloodGui:Destroy() end
+					local t = createGrabTool(useThrow, useBlood)
+					t.Parent = player:WaitForChild("Backpack")
+					local ragStr = useThrow and "ragdoll" or "no ragdoll"
+					local bloStr = useBlood and "blood" or "no blood"
+					popupNotification("tool granted  --  " .. ragStr .. "  /  " .. bloStr, 2.5)
+					createCodeUI(t)
+				end
+			)
+		end
+	)
+end
+
+local claimedNPCs = {}
+
+local function claimNPC(model)
+	if not model:IsA("Model") then return end
+	if claimedNPCs[model] then return end
+	if isPlayerCharacter(model) then return end
+
+	local humanoid = model:FindFirstChildWhichIsA("Humanoid")
+		or model:WaitForChild("Humanoid", 3)
+
+	if not humanoid then return end
+
+	claimedNPCs[model] = true
+
+	for _, part in ipairs(model:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part:SetAttribute("ClaimedBy", player.Name)
+			part:SetAttribute("Priority", 1)
+		end
+	end
+
+	model.AncestryChanged:Connect(function()
+		if not model:IsDescendantOf(Workspace) then
+			claimedNPCs[model] = nil
+		end
+	end)
+end
+
+local function startSequence()
+	cleanupGuis()
+	showIntroBanner(1.4)
+	runPreloadsAndShowLoading()
+
+	task.spawn(function()
+		for _, obj in ipairs(Workspace:GetDescendants()) do
+			if obj:IsA("Model") then
+				task.spawn(claimNPC, obj)
+			end
+		end
+		pcall(function()
+			StarterGui:SetCore("SendNotification", {
+				Title = "PartClaim",
+				Text = "All existing NPCs claimed.",
+				Duration = 4,
+			})
+		end)
+	end)
+
+	Workspace.DescendantAdded:Connect(function(obj)
+		if obj:IsA("Model") then
+			task.spawn(claimNPC, obj)
+		end
+	end)
+
+	showModalFlowAndGiveTool()
+end
+
+startSequence()
+
+player.CharacterAdded:Connect(function()
+	cleanupGuis()
+	task.wait(0.35)
+	startSequence()
+end)
+
+player.AncestryChanged:Connect(function()
+	if not player:IsDescendantOf(game) then cleanupGuis() end
+end)
