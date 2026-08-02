@@ -123,9 +123,10 @@ local function getHumanoidSafe()
     return hum
 end
 
--- تابع ساخت دکمه‌ها با Toggle و انیمیشن
-local function createToggleButton(name, animationId, speed)
+-- تابع ساخت دکمه‌ها با پشتیبانی از چند انیمیشن همزمان
+local function createToggleButton(name, animationData, speed)
     toggles[name] = false
+    animationTracks[name] = {} -- آرایه‌ای برای ذخیره ترک‌های این دکمه
 
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -6, 0, buttonHeight)
@@ -155,26 +156,31 @@ local function createToggleButton(name, animationId, speed)
 
         local humanoid = getHumanoidSafe()
 
-        -- اگر Track قبلی وجود دارد، متوقفش کن
-        if animationTracks[name] then
-            animationTracks[name]:Stop()
+        -- متوقف کردن تمام ترک‌های قبلی این دکمه
+        for _, track in ipairs(animationTracks[name]) do
+            track:Stop()
         end
-
-        -- یک Track جدید بساز و اگر دکمه روشن است، اجرا کن
-        local anim = Instance.new("Animation")
-        anim.AnimationId = animationId
-        local track = humanoid:LoadAnimation(anim)
-        track.Looped = true
-        animationTracks[name] = track
+        animationTracks[name] = {} -- پاکسازی لیست
 
         if toggles[name] then
-            track:Play()
-            track:AdjustSpeed(speed)
+            -- تشخیص اینکه آیدی یک دانه است یا یک جدول از آیدی‌ها
+            local ids = type(animationData) == "table" and animationData or {animationData}
+
+            -- لود و اجرای تمام انیمیشن‌ها
+            for _, id in ipairs(ids) do
+                local anim = Instance.new("Animation")
+                anim.AnimationId = id
+                local track = humanoid:LoadAnimation(anim)
+                track.Looped = true
+                table.insert(animationTracks[name], track)
+                track:Play()
+                track:AdjustSpeed(speed)
+            end
         end
     end)
 end
 
--- پیکربندی دکمه‌ها: نام، AnimationId و سرعت
+-- پیکربندی دکمه‌ها: نام، AnimationId (می‌تونه جدول باشه) و سرعت
 local buttonConfigs = {
     {Name="رقص", AnimId="rbxassetid://75202452138001", Speed=1.6},
     {Name="هکر", AnimId="rbxassetid://33796059", Speed=99},
@@ -188,11 +194,13 @@ local buttonConfigs = {
     {Name="Slap", AnimId="rbxassetid://243827693", Speed=10},
     {Name="خنده", AnimId="rbxassetid://129423131", Speed=1.25},
     {Name="احترام نظامی", AnimId="rbxassetid://79094862", Speed=1},
-    {Name="Dia Delicia", AnimId="rbxassetid://115314801778772", Speed=1}
+    {Name="Dia Delicia", AnimId="rbxassetid://115314801778772", Speed=1},
+    -- دکمه جدید با دو انیمیشن همزمان
+    {Name="Aura Crouch", AnimId={"rbxassetid://287325678", "rbxassetid://70439247"}, Speed=1}
 }
 
--- افزایش CanvasSize ScrollFrame
-scroll.CanvasSize = UDim2.new(0,0,0,#buttonConfigs*(buttonHeight+4))
+-- افزایش CanvasSize ScrollFrame بر اساس تعداد دکمه‌ها
+scroll.CanvasSize = UDim2.new(0, 0, 0, #buttonConfigs * (buttonHeight + 4))
 
 -- ساخت دکمه‌ها
 for _, config in ipairs(buttonConfigs) do
