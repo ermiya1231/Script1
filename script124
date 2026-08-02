@@ -1,0 +1,191 @@
+local blacklist={"vuInerablilty","gorferss"}--     <───┬────────> users to not target
+local split=true--               <─────────────────────┼────────> multiple people at once?
+local maxtargets=3--             <─────────────────────┼────────> how many targets while splitting
+local rotationspeed=2--                <───────────────┴─────> How many seconds per player
+local plrs=game:GetService("Players")
+local rs=game:GetService("RunService")
+local uis=game:GetService("UserInputService")
+local lplr=plrs.LocalPlayer
+
+if not getgenv().Network then
+    getgenv().Network={
+        bp={},
+        Velocity=Vector3.new((math.pi*4.6)+(math.sqrt(25)/2)-(math.cos(2.4)*3.1),(math.pi*4.6)+(math.sqrt(25)/2)-(math.cos(2.4)*3.1),(math.pi*4.6)+(math.sqrt(25)/2)-(math.cos(2.4)*3.1))
+    }
+    Network.Retain=function(p)
+        if typeof(p)=="Instance"and p:IsA("BasePart") and p:IsDescendantOf(workspace) then
+            table.insert(Network.bp,p)
+            p.CustomPhysicalProperties=PhysicalProperties.new(0,0,0,0,0)
+            p.CanCollide=false
+        end
+    end
+    local function epc()
+        lplr.ReplicationFocus=workspace
+        rs.Heartbeat:Connect(function()
+            sethiddenproperty(lplr,"SimulationRadius",math.huge)
+            for _,p in pairs(Network.bp) do
+                if p:IsDescendantOf(workspace) then
+                    p.Velocity=Network.Velocity
+                end
+            end
+        end)
+    end
+    epc()
+end
+
+--retainment
+local enabled=false
+local function checkPart(p)
+    if p:IsA("BasePart") and not p.Anchored and p:IsDescendantOf(workspace) then
+        if p.Parent==lplr.Character or p:IsDescendantOf(lplr.Character) then return false end
+        p.CustomPhysicalProperties=PhysicalProperties.new(0,0,0,0,0)
+        p.CanCollide=false
+        return true
+    end
+    return false
+end
+
+--adding&removing
+local parts={}
+local function ap(p)
+    if checkPart(p) and not table.find(parts,p) then
+        table.insert(parts,p)
+    end
+end
+local function remPart(p)
+    local i=table.find(parts,p)
+    if i then
+        table.remove(parts,i)
+    end
+end
+
+for _,p in pairs(workspace:GetDescendants()) do ap(p) end
+workspace.DescendantAdded:Connect(ap)
+workspace.DescendantRemoving:Connect(remPart)
+
+local function getAllPlayers()
+    local allPlayers={}
+    for _,p in pairs(plrs:GetPlayers()) do
+        if p~=lplr and p.Character and not table.find(blacklist,p.Name) then
+            local troot=p.Character:FindFirstChild("HumanoidRootPart")
+            if troot then
+                table.insert(allPlayers,p)
+            end
+        end
+    end
+    return allPlayers
+end
+
+local currentTargetIndex=1
+local lastRotation=0
+
+local connection=nil
+local function start()
+    if connection then return end
+    connection=rs.Heartbeat:Connect(function()
+        local currentTime=tick()
+        local allPlayers=getAllPlayers()
+        
+        if #allPlayers>0 then
+            if currentTime-lastRotation>=rotationspeed then
+                currentTargetIndex=currentTargetIndex+1
+                if currentTargetIndex>#allPlayers then
+                    currentTargetIndex=1
+                end
+                lastRotation=currentTime
+            end
+            
+            if split then
+                local numTargets=math.min(maxtargets,#allPlayers)
+                local targets={}
+                
+                for i=1,numTargets do
+                    local idx=((currentTargetIndex+i-2)%#allPlayers)+1
+                    local t=allPlayers[idx]
+                    if t and t.Character then
+                        local root=t.Character:FindFirstChild("HumanoidRootPart")
+                        if root then
+                            table.insert(targets,root)
+                        end
+                    end
+                end
+                
+                for i,p in pairs(parts) do
+                    if p.Parent and not p.Anchored and #targets>0 then
+                        local targetIdx=((i-1)%#targets)+1
+                        local center=targets[targetIdx].Position
+                        
+                        local pos=p.Position
+                        local ang=math.atan2(pos.Z-center.Z,pos.X-center.X)
+                        local nang=ang+math.rad(10)
+                        local tpos=Vector3.new(
+                            center.X +math.cos(nang)*10,
+                            center.Y +(0.1*(math.abs(math.sin((pos.Y-center.Y)/0.1)))),
+                            center.Z +math.sin(nang)*10
+                        )
+                        p.Velocity=(tpos-p.Position).unit*1000
+                    end
+                end
+            else
+                local t=allPlayers[currentTargetIndex]
+                if t and t.Character then
+                    local root=t.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        local center=root.Position
+                        for _,p in pairs(parts) do
+                            if p.Parent and not p.Anchored then
+                                local pos=p.Position
+                                local ang=math.atan2(pos.Z-center.Z,pos.X-center.X)
+                                local nang=ang+math.rad(10)
+                                local tpos=Vector3.new(
+                                    center.X +math.cos(nang)*10,
+                                    center.Y +(0.1*(math.abs(math.sin((pos.Y-center.Y)/0.1)))),
+                                    center.Z +math.sin(nang)*10
+                                )
+                                p.Velocity=(tpos-p.Position).unit*1000
+                            end
+                        end 
+                    end 
+                end
+            end
+        end
+    end)
+    print("[] | [neo] FEka Enabled")
+end
+
+local function stop()
+    if connection then
+        connection:Disconnect()
+        connection=nil
+        currentTargetIndex=1
+        lastRotation=0
+    end
+    print("[] | [neo] FEka Disabled")
+end
+
+local function toggle()
+    enabled=not enabled
+    if enabled then
+        start()
+    else
+        stop()
+    end
+end
+
+uis.InputBegan:Connect(function(input,gpe) 
+    if not gpe and input.KeyCode==Enum.KeyCode.F4 then
+        toggle()
+    end
+end)
+
+local s, b, UICorner = Instance.new("ScreenGui"), Instance.new("TextButton"), Instance.new("UICorner")
+s.Name, s.Parent, s.ZIndexBehavior = "s", game.CoreGui, Enum.ZIndexBehavior.Sibling
+b.Name, b.Parent, b.Text, b.Font = "b", s, "+", Enum.Font.SourceSans
+b.Size, b.Position = UDim2.new(0, 50, 0, 50), UDim2.new(0.1959, 0, 0.3771, 0)
+b.BackgroundColor3, b.BackgroundTransparency = Color3.fromRGB(109, 109, 109), 0.4
+b.TextColor3, b.TextSize, b.TextWrapped = Color3.fromRGB(255, 255, 255), 34, true
+b.BorderSizePixel, b.Active, b.Draggable = 0, true, true
+UICorner.CornerRadius, UICorner.Parent = UDim.new(0, 5), b
+b.MouseButton1Click:Connect(function()
+    toggle()
+end)
