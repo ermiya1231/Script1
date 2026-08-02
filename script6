@@ -187,7 +187,8 @@ local buttonConfigs = {
     {Name="راه رفتن", AnimId="rbxassetid://180426354", Speed=1},
     {Name="Slap", AnimId="rbxassetid://243827693", Speed=10},
     {Name="خنده", AnimId="rbxassetid://129423131", Speed=1.25},
-    {Name="احترام نظامی", AnimId="rbxassetid://79094862", Speed=1}
+    {Name="احترام نظامی", AnimId="rbxassetid://79094862", Speed=1},
+    {Name="Dia Delicia", AnimId="rbxassetid://115314801778772", Speed=1}
 }
 
 -- افزایش CanvasSize ScrollFrame
