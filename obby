@@ -1,0 +1,102 @@
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- 🎨 تابع اختصاصی برای نمایش اعلان مدرن و خفن
+local function showGUIAlert(message, isSuccess)
+    local playerGui = player:WaitForChild("PlayerGui")
+    
+    -- ساخت یا یافتن Container اصلی
+    local screenGui = playerGui:FindFirstChild("CustomAlertGui")
+    if not screenGui then
+        screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "CustomAlertGui"
+        screenGui.ResetOnSpawn = false
+        screenGui.Parent = playerGui
+    end
+
+    -- ساخت فریم پیام
+    local alertFrame = Instance.new("Frame")
+    alertFrame.Size = UDim2.new(0, 300, 0, 55)
+    -- شروع موقعیت از خارج صفحه (سمت راست) برای انیمیشن ورود
+    alertFrame.Position = UDim2.new(1, 20, 0.15, 0)
+    alertFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+    alertFrame.BorderSizePixel = 0
+    alertFrame.Parent = screenGui
+
+    -- گرد کردن گوشه‌های کارت
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = alertFrame
+
+    -- نوار رنگی وضعیت (سبز برای موفقیت، قرمز برای خطا)
+    local statusAccent = Instance.new("Frame")
+    statusAccent.Size = UDim2.new(0, 5, 1, 0)
+    statusAccent.Position = UDim2.new(0, 0, 0, 0)
+    statusAccent.BackgroundColor3 = isSuccess and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(231, 76, 60)
+    statusAccent.BorderSizePixel = 0
+    statusAccent.Parent = alertFrame
+
+    local accentCorner = Instance.new("UICorner")
+    accentCorner.CornerRadius = UDim.new(0, 10)
+    accentCorner.Parent = statusAccent
+
+    -- افکت خط دور (Glow/Stroke)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = isSuccess and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(231, 76, 60)
+    stroke.Transparency = 0.7
+    stroke.Thickness = 1.5
+    stroke.Parent = alertFrame
+
+    -- متن پیام
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, -25, 1, 0)
+    textLabel.Position = UDim2.new(0, 15, 0, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = message
+    textLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+    textLabel.TextSize = 13
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel.TextWrapped = true
+    textLabel.Parent = alertFrame
+
+    -- 🚀 انیمیشن سُر خوردن به داخل صفحه (Slide In)
+    local targetPos = UDim2.new(1, -320, 0.15, 0)
+    local tweenIn = TweenService:Create(alertFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = targetPos})
+    tweenIn:Play()
+
+    -- ⏳ حذف خودکار بعد از ۳.۵ ثانیه با انیمیشن خروج (Slide Out)
+    task.delay(3.5, function()
+        local tweenOut = TweenService:Create(alertFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, 20, 0.15, 0)})
+        tweenOut:Play()
+        tweenOut.Completed:Connect(function()
+            alertFrame:Destroy()
+        end)
+    end)
+end
+
+-- -------------------------------------------------------------
+-- ⚙️ منطق اصلی اسکریپت شما
+-- -------------------------------------------------------------
+
+local adminobbyFolder = workspace:FindFirstChild("adminobby")
+
+if adminobbyFolder then
+    local pad = adminobbyFolder:FindFirstChild("pad")
+    if pad then
+        local admingiver = pad:FindFirstChild("admingiver")
+        if admingiver then
+            character:MoveTo(admingiver.Position)
+            showGUIAlert("تله‌پورت با موفقیت انجام شد! ⚡", true)
+        else
+            showGUIAlert("خطا: بخش admingiver داخل pad پیدا نشد!", false)
+        end
+    else
+        showGUIAlert("خطا: مدل pad داخل پوشه adminobby پیدا نشد!", false)
+    end
+else
+    showGUIAlert("خطا: پوشه adminobby در Workspace پیدا نشد!", false)
+end
