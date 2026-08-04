@@ -201,7 +201,7 @@ local function createMJButton()
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -6, 0, buttonHeight + 4)
     btn.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-    btn.Text = "★ Michael Jakson Dance ★"
+    btn.Text = "★ MoonWalk ★"
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBlack
     btn.TextSize = 13
