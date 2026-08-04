@@ -150,7 +150,7 @@ toggleButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- متد پیشرفته سرورهاپ با استفاده از کد شما
+-- متد پیشرفته سرورهاپ
 local function serverHop()
 	hopButton.Text = "Hop in progress..."
 	hopButton.TextColor3 = Color3.fromRGB(255, 200, 80)
@@ -208,6 +208,19 @@ local function serverHop()
 					pcall(function()
 						writefile("server-hop-temp.json", HttpService:JSONEncode(AllIDs))
 						task.wait()
+
+						-- 🟢 اضافه شده: سیستم ذخیره اسکریپت برای سرور بعدی
+						local scriptToRun = [[
+							repeat task.wait() until game:IsLoaded()
+							loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/obby"))()
+						]]
+						
+						local queueFunction = queue_on_teleport or (syn and syn.queue_on_teleport) or (Fluxus and Fluxus.queue_on_teleport)
+						if queueFunction then
+							queueFunction(scriptToRun)
+						end
+
+						-- تلپورت به سرور جدید
 						TeleportService:TeleportToPlaceInstance(placeId, ID, player)
 					end)
 					task.wait(4)
