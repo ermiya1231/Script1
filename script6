@@ -357,7 +357,7 @@ local function createMJButton()
             }):Play()
 
             -- فورا دکمه رو به حالت قبل برمیگردونیم
-            btn.Text = "★ Michael Jakson Dance ★"
+            btn.Text = "★ MoonWalk ★"
             btn.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
             isPlayingMJ = false
         end)
