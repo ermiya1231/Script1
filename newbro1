@@ -1,9 +1,3 @@
--- Discord server for working games: https://discord.gg/9w7R9HsBvJ
-
--- Made by Cynatica
-
--- QuirkyCMD on Top!
-
 local genv = (getgenv and (getgenv() ~= getfenv()) and getgenv()) or _G
 local cloneref = cloneref or function(a) return a end
 local coreGui = cloneref(game:GetService("CoreGui"))
@@ -982,27 +976,6 @@ end
 table.insert(genv.connections, localPlayer.CharacterAdded:Connect(function(char)
 	character = char
 end))
-
---Discord Invite
-local TweenService = game:GetService("TweenService")
-local Lighting = game:GetService("Lighting")
-
-local visible = false
-local hasPlayedSound = false
-local hasBlurred = false
-local notificationDismissed = false
-
-local appearSoundId = "rbxassetid://88591874532589" -- you can change this to your desired sound with an id. cool right?
-local discordInvite = "https://discord.gg/9w7R9HsBvJ"-- same goes for this link, but i'd prefer if you keep it as quirky ;)
-
-local function playAppearSound()
-	local sound = Instance.new("Sound")
-	sound.SoundId = appearSoundId
-	sound.Volume = 0.7
-	sound.PlayOnRemove = true
-	sound.Parent = workspace
-	sound:Destroy()
-end
 
 local function addFirstTimeBlur()
 	local blur = Instance.new("BlurEffect")
