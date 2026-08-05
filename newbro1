@@ -1218,7 +1218,7 @@ if not genv.foundRemote then
 end
 
 if not genv.foundRemote then 
-	remotePath.Text = "game isn't supported, closing..."
+	remotePath.Text = "Admin Hack Failed Closing..."
 	task.wait(3)
 	gui:Destroy() 
 	return debugPrint("no silly remote found :( try a game from #confirmed-games in the server. Invite: https://discord.gg/9w7R9HsBvJ") 
