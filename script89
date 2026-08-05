@@ -1,22 +1,44 @@
+local LIGHT_ALL_PARTS = true 
+local GLOBAL_LIGHT_RANGE = 5     -- رنج پایین و ملایم
+local GLOBAL_LIGHT_BRIGHT = 1     -- عدد 1 تا سرور F3X بدون مشکل بخونه و کار کنه
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 
--- متغیرهای سراسری برای سیستم هوشمند اسپاون‌پوینت
-local OriginalSpawnPoint = nil
-local TargetSpawnCFrame = nil
-local TargetSpawnSize = nil
-
--- پیدا کردن هوشمند ابزار F3X
+-- پیدا کردن سریع ابزار F3X
 local tool
 for _, v in ipairs(Player:GetDescendants()) do if v.Name == "SyncAPI" then tool = v.Parent break end end
-if not tool then for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do if v.Name == "SyncAPI" then tool = v.Parent break end end end
-if not tool or not tool:FindFirstChild("SyncAPI") then warn("F3X Tool not found!") return end
+if not tool then for _, v in ipairs(ReplicatedStorage:GetDescendants()) do if v.Name == "SyncAPI" then tool = v.Parent break end end end
+if not tool or not tool:FindFirstChild("SyncAPI") then warn("خطا: ابزار F3X پیدا نشد!") return end
 
 local remote = tool.SyncAPI.ServerEndpoint
-local function SendF3X(args) return remote:InvokeServer(unpack(args)) end
 
-tool.Parent = ReplicatedStorage
+-- [حذف کامل چانک‌بندی: ارسال یکجای تمام دیتا به صورت بمبی]
+local function FireMassivePayload(action, dataArray, extraArg)
+    if not dataArray or #dataArray == 0 then return end
+    -- از آنجایی که InvokeServer منتظر جواب سرور می‌ماند، این کار تضمین می‌کند 
+    -- تا سرور این مرحله را تمام نکرده، اسکریپت سراغ مرحله بعد نمی‌رود.
+    pcall(function()
+        if extraArg ~= nil then 
+            remote:InvokeServer(action, dataArray, extraArg)
+        else 
+            remote:InvokeServer(action, dataArray) 
+        end
+    end)
+end
+
+local function safeNum(val, default) return tonumber(val) or default or 0 end
+
+-- سیستم فریز کردن پلیر
+local function SetFreeze(state)
+    local char = Player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.Anchored = state
+    end
+end
+
 ---------------------------------------------------------
 -- [کدهای خام خود را در کادر زیر کپی کن] ------------------
 ---------------------------------------------------------
@@ -30197,264 +30219,179 @@ Part 3352:
 ]]
 ---------------------------------------------------------
 
-local function RescueOriginalSpawn()
-    print("مرحله ۰: ردیابی و مخفی‌سازی اسپاون‌پوینت اصلی...")
-    for _, v in ipairs(workspace:GetDescendants()) do
-        if v:IsA("SpawnLocation") then
-            OriginalSpawnPoint = v
-            break
-        end
-    end
-    
-    if OriginalSpawnPoint then
-        print("اسپاون‌پوینت پیدا شد! در حال انتقال به مکان امن...")
-        local safeCFrame = CFrame.new(0, -50000, 0)
-        SendF3X({"SyncResize", {{Part = OriginalSpawnPoint, CFrame = safeCFrame, Size = OriginalSpawnPoint.Size}}})
-        
-        -- پیدا کردن و حذف لوگوی روی اسپاون‌پوینت اصلی
-        local decalsToRemove = {}
-        for _, child in ipairs(OriginalSpawnPoint:GetDescendants()) do
-            if child:IsA("Decal") or child:IsA("Texture") then
-                table.insert(decalsToRemove, child)
-            end
-        end
-        if #decalsToRemove > 0 then
-            print("در حال حذف لوگوهای پیش‌فرض اسپاون‌پوینت...")
-            SendF3X({"Remove", decalsToRemove})
-        end
-        
-        task.wait(0.2)
-    else
-        warn("هیچ SpawnLocation پیش‌فرضی در مپ یافت نشد!")
-    end
-end
-
--- ۱. اولویت اول: فریز کردن شما و حذف فیزیکی بقیه بازیکنان
+-- ۱. حذف سریع بقیه پلیرها
 local function RemoveAllPlayers()
-    print("مرحله ۱: فریز کردن شما و حذف فیزیکی بقیه بازیکنان...")
-    if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-        Player.Character.HumanoidRootPart.Anchored = true
-    end
-    
+    print("مرحله ۱: پاکسازی سریع پلیرها...")
     local playerParts = {}
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= Player then 
-            if p.Character then
-                for _, child in ipairs(p.Character:GetDescendants()) do
-                    if child:IsA("BasePart") then
-                        table.insert(playerParts, child)
-                    end
-                end
+        if p ~= Player and p.Character then
+            for _, child in ipairs(p.Character:GetDescendants()) do
+                if child:IsA("BasePart") then table.insert(playerParts, child) end
             end
         end
     end
-    
-    if #playerParts > 0 then
-        SendF3X({"SetLocked", playerParts, false})
-        SendF3X({"Remove", playerParts})
-        task.wait(0.5)
-    end
+    -- ارسال بدون چانک
+    FireMassivePayload("SetLocked", playerParts, false)
+    FireMassivePayload("Remove", playerParts)
 end
 
--- ۲. اولویت دوم: پاکسازی کامل مپ قبلی (با فیلتر اسپاون‌پوینت اصلی)
-local function ClearRemainingMap()
-    print("مرحله ۲: پاکسازی کامل محیط ورک‌پیس...")
+-- ۲. پاکسازی آنی مپ
+local function FastClearMap()
+    print("مرحله ۲: پاکسازی مپ...")
     local mapParts = {}
-    
     for _, v in ipairs(workspace:GetDescendants()) do
         if (v:IsA("BasePart") or v:IsA("UnionOperation")) and v.Name ~= "Terrain" then
-            if not v:IsDescendantOf(Player.Character) and v ~= OriginalSpawnPoint then
+            if not (Player.Character and v:IsDescendantOf(Player.Character)) then
                 table.insert(mapParts, v)
             end
         end
     end
-    
-    if #mapParts > 0 then
-        SendF3X({"SetLocked", mapParts, false})
-        SendF3X({"Remove", mapParts})
-        
-        local timeout = 0
-        while mapParts[1] and mapParts[1].Parent ~= nil and timeout < 40 do
-            task.wait(0.1)
-            timeout = timeout + 1
-        end
-    end
-    task.wait(0.3)
+    FireMassivePayload("SetLocked", mapParts, false)
+    FireMassivePayload("Remove", mapParts)
 end
 
--- ۳. اولویت سوم: لود مپ جدید
+-- ۳. لودینگ با حداکثر توان (Unthrottled)
 local function BuildAndVerifyMap(data)
-    print("مرحله ۳: آنالیز مپ جدید و آماده‌سازی بسته‌های اطلاعاتی...")
+    print("مرحله ۳: ساخت پارت‌ها (بدون هیچ محدودیتی)...")
     local partsToBuild = {}
-    TargetSpawnCFrame = nil
-    TargetSpawnSize = nil
     
     local cleanData = data:gsub("Part %d+:", "|||")
     for partBlock in cleanData:gmatch("([^|]+)") do
         local x, y, z = partBlock:match("Position:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
-        local rx, ry, rz = partBlock:match("Rotation:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
-        local shape = partBlock:match("Shape:%s*([%a%d]+)")
-        local sx, sy, sz = partBlock:match("Size:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
-        local r, g, b = partBlock:match("Color:%s*([^,]+),%s*([^,]+),%s*([^%s\r\n]+)")
-        local mat = partBlock:match("Material:%s*([%a%d]+)")
-        local trans = partBlock:match("Transparency:%s*([%d%.]+)")
-        local decalFace, decalId = partBlock:match("Decal%.(%a+)%s*=%s*(%d+)")
-        local meshId = partBlock:match("MeshId:%s*(%S+)")
-        local textureId = partBlock:match("TextureId:%s*(%S+)")
-        
-        local isSpawnPoint = partBlock:match("SpawnPoint:%s*[Tt]rue") and true or false
-        local canCollideStr = partBlock:match("CanCollide:%s*([%a%d]+)")
-        local canCollide = true
-        if canCollideStr and canCollideStr:lower() == "false" then
-            canCollide = false
-        end
-        
-        local f3xShape = "Normal"
-        if shape == "Cylinder" then f3xShape = "Cylinder"
-        elseif shape == "Ball" or shape == "Sphere" then f3xShape = "Ball"
-        elseif shape == "Wedge" then f3xShape = "Wedge" end
-        
-        if x and sx then
+        if x and y and z then
+            local rx, ry, rz = partBlock:match("Rotation:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+            local sx, sy, sz = partBlock:match("Size:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+            local shape = partBlock:match("Shape:%s*([%a%d]+)")
+            local r, g, b = partBlock:match("Color:%s*([^,]+),%s*([^,]+),%s*([^%s\r\n]+)")
+            local mat = partBlock:match("Material:%s*([%a%d]+)")
+            local trans = partBlock:match("Transparency:%s*([%d%.]+)")
+            local decalFace, decalId = partBlock:match("Decal%.(%a+)%s*=%s*(%d+)")
+            local meshId = partBlock:match("MeshId:%s*(%S+)")
+            local textureId = partBlock:match("TextureId:%s*(%S+)")
+            local hasLight = partBlock:match("Light:%s*[Tt]rue") and true or false
+            
+            local f3xShape = "Normal"
+            if partBlock:match("SpawnPoint:%s*[Tt]rue") then f3xShape = "Spawn"
+            elseif shape == "Cylinder" then f3xShape = "Cylinder"
+            elseif shape == "Ball" or shape == "Sphere" then f3xShape = "Ball"
+            elseif shape == "Wedge" then f3xShape = "Wedge" end
+            
+            local pColor = Color3.new(1, 1, 1)
+            if r and g and b then
+                local rn, gn, bn = safeNum(r), safeNum(g), safeNum(b)
+                if rn > 1 or gn > 1 or bn > 1 then pColor = Color3.fromRGB(rn, gn, bn)
+                else pColor = Color3.new(rn, gn, bn) end
+            end
+            
             table.insert(partsToBuild, {
-                pos = Vector3.new(tonumber(x), tonumber(y), tonumber(z)),
-                rot = rx and Vector3.new(tonumber(rx), tonumber(ry), tonumber(rz)) or Vector3.new(0, 0, 0),
-                shape = f3xShape,
-                size = Vector3.new(tonumber(sx), tonumber(sy), tonumber(sz)),
-                color = r and Color3.new(tonumber(r), tonumber(g), tonumber(b)) or Color3.new(1, 1, 1),
-                material = mat or "Plastic",
-                transparency = trans and tonumber(trans) or 0,
-                decalFace = decalFace,
-                decalId = decalId,
-                meshId = meshId,
-                textureId = textureId,
-                isSpawn = isSpawnPoint,
-                collision = canCollide
+                pos = Vector3.new(safeNum(x), safeNum(y), safeNum(z)),
+                rot = Vector3.new(safeNum(rx), safeNum(ry), safeNum(rz)),
+                shape = f3xShape, size = Vector3.new(safeNum(sx,1), safeNum(sy,1), safeNum(sz,1)),
+                color = pColor, material = mat or "Plastic", transparency = safeNum(trans),
+                decalFace = decalFace, decalId = decalId, meshId = meshId, textureId = textureId,
+                hasLight = hasLight, collision = not (partBlock:match("CanCollide:%s*[Ff]alse"))
             })
         end
     end
     
     local totalParts = #partsToBuild
-    if totalParts == 0 then warn("خطا: هیچ پارتی شناسایی نشد!") return end
+    if totalParts == 0 then warn("خطا: پارتی یافت نشد!") return end
     
     local batches = {
         resize = {}, color = {}, material = {}, anchor = {}, collision = {},
-        meshCreate = {}, meshSync = {}, decalCreate = {}, decalSync = {}
+        meshCreate = {}, meshSync = {}, decalCreate = {}, decalSync = {},
+        lightCreate = {}, lightSync = {}
     }
     
-    local activeThreads = 0
+    local completed = 0
     
-    for i, pData in ipairs(partsToBuild) do
-        activeThreads = activeThreads + 1
+    -- شلیک تمام درخواست‌های ساخت در یک لحظه بدون صف و محدودیت!
+    for _, pData in ipairs(partsToBuild) do
         task.spawn(function()
-            local baseCFrame = CFrame.new(pData.pos) * CFrame.fromOrientation(math.rad(pData.rot.X), math.rad(pData.rot.Y), math.rad(pData.rot.Z))
+            local success, p = pcall(function()
+                local baseCFrame = CFrame.new(pData.pos) * CFrame.fromOrientation(math.rad(pData.rot.X), math.rad(pData.rot.Y), math.rad(pData.rot.Z))
+                return remote:InvokeServer("CreatePart", pData.shape, baseCFrame, workspace)
+            end)
             
-            if pData.isSpawn then
-                TargetSpawnCFrame = baseCFrame
-                TargetSpawnSize = pData.size
-            end
-            
-            local p = SendF3X({"CreatePart", pData.shape, baseCFrame, workspace})
-            
-            if p then
-                table.insert(batches.resize, {Part = p, CFrame = baseCFrame, Size = pData.size})
-                table.insert(batches.color, {Part = p, Color = pData.color, UnionColoring = false})
+            if success and p and typeof(p) == "Instance" then
+                table.insert(batches.resize, {Part = p, CFrame = p.CFrame, Size = pData.size})
+                table.insert(batches.color, {Part = p, Color = pData.color})
                 table.insert(batches.anchor, {Part = p, Anchored = true})
                 table.insert(batches.collision, {Part = p, CanCollide = pData.collision})
                 
-                -- [بروزرسانی مهم بر اساس کد شما]: ادغام Material و Transparency در یک درخواست
-                local matInfo = {Part = p, Transparency = pData.transparency}
-                local matSuccess, matEnum = pcall(function() return Enum.Material[pData.material] end)
-                if matSuccess and matEnum then
-                    matInfo.Material = matEnum
+                local matSuccess, matEnum = pcall(function() return Enum.Material[pData.material:gsub("%s+", "")] end)
+                table.insert(batches.material, {Part = p, Material = matSuccess and matEnum or Enum.Material.Plastic, Transparency = pData.transparency})
+                
+                if pData.hasLight then
+                    table.insert(batches.lightCreate, {Part = p, LightType = "PointLight"})
+                    table.insert(batches.lightSync, {Part = p, LightType = "PointLight", Range = 60, Brightness = 3})
+                elseif LIGHT_ALL_PARTS then
+                    table.insert(batches.lightCreate, {Part = p, LightType = "PointLight"})
+                    table.insert(batches.lightSync, {Part = p, LightType = "PointLight", Range = GLOBAL_LIGHT_RANGE, Brightness = GLOBAL_LIGHT_BRIGHT})
                 end
-                table.insert(batches.material, matInfo)
                 
                 if pData.meshId then
-                    local numMeshId = pData.meshId:match("%d+")
-                    local numTexId = pData.textureId and pData.textureId:match("%d+")
-                    local cleanMeshId = numMeshId and ("rbxassetid://" .. numMeshId) or pData.meshId
-                    local cleanTextureId = numTexId and ("rbxassetid://" .. numTexId) or ""
-                    table.insert(batches.meshCreate, {Part = p, MeshType = Enum.MeshType.FileMesh})
-                    table.insert(batches.meshSync, {Part = p, MeshId = cleanMeshId, TextureId = cleanTextureId, Scale = Vector3.new(1, 1, 1), Offset = Vector3.new(0, 0, 0)})
+                    local mId = pData.meshId:match("%d+")
+                    if mId then
+                        table.insert(batches.meshCreate, {Part = p, MeshType = Enum.MeshType.FileMesh})
+                        table.insert(batches.meshSync, {Part = p, MeshId = "rbxassetid://"..mId, TextureId = pData.textureId and ("rbxassetid://"..pData.textureId:match("%d+")) or "", Scale = Vector3.new(1, 1, 1), Offset = Vector3.new(0, 0, 0)})
+                    end
                 end
                 
-                if pData.decalFace and pData.decalId then
+                if pData.decalFace and pData.decalId and pData.decalId:match("%d+") then
                     local formattedFace = pData.decalFace:sub(1,1):upper() .. pData.decalFace:sub(2):lower()
-                    local success, faceEnum = pcall(function() return Enum.NormalId[formattedFace] end)
-                    if success and faceEnum then
+                    local faceSuccess, faceEnum = pcall(function() return Enum.NormalId[formattedFace] end)
+                    if faceSuccess and faceEnum then
                         table.insert(batches.decalCreate, {Part = p, Face = faceEnum, TextureType = "Decal"})
-                        table.insert(batches.decalSync, {Part = p, Face = faceEnum, TextureType = "Decal", Texture = "rbxassetid://" .. pData.decalId})
+                        table.insert(batches.decalSync, {Part = p, Face = faceEnum, TextureType = "Decal", Texture = "rbxassetid://"..pData.decalId:match("%d+")})
                     end
                 end
             end
-            activeThreads = activeThreads - 1
+            completed = completed + 1
         end)
-        
-        if i % 10 == 0 then task.wait() end
     end
     
-    while activeThreads > 0 do task.wait(0.05) end
+    -- مکث فقط تا زمانی که تمام دستورات CreatePart پاسخ بدهند
+    while completed < totalParts do RunService.Heartbeat:Wait() end
+    print("پایه‌ها ایجاد شدند! تزریق یکجای تمامی استایل‌ها...")
     
-    if #batches.resize > 0 then SendF3X({"SyncResize", batches.resize}) end
-    if #batches.color > 0 then SendF3X({"SyncColor", batches.color}) end
-    -- ارسال گروهی Material و Transparency با متد صحیح
-    if #batches.material > 0 then SendF3X({"SyncMaterial", batches.material}) end
-    if #batches.anchor > 0 then SendF3X({"SyncAnchor", batches.anchor}) end
-    if #batches.collision > 0 then SendF3X({"SyncCollision", batches.collision}) end
-    if #batches.meshCreate > 0 then SendF3X({"CreateMeshes", batches.meshCreate}) SendF3X({"SyncMesh", batches.meshSync}) end
-    if #batches.decalCreate > 0 then SendF3X({"CreateTextures", batches.decalCreate}) SendF3X({"SyncTexture", batches.decalSync}) end
+    -- اعمال تمام استایل‌ها به صورت کپسولی و پشت سر هم
+    FireMassivePayload("SyncResize", batches.resize)
+    FireMassivePayload("SyncColor", batches.color)
+    FireMassivePayload("SyncMaterial", batches.material)
+    FireMassivePayload("SyncAnchor", batches.anchor)
+    FireMassivePayload("SyncCollision", batches.collision)
     
-    print("مپ کاملا لود شد!")
-    task.wait(1)
-end
-
--- مرحله ۳.۵: همگام‌سازی نهایی اسپاون‌پوینت دزدیده‌شده
-local function SetupNewSpawn()
-    if OriginalSpawnPoint and TargetSpawnCFrame and TargetSpawnSize then
-        print("در حال فیکس کردن نهایی اسپاون‌پوینت نامرئی روی مپ...")
-        
-        SendF3X({"SyncResize", {{
-            Part = OriginalSpawnPoint, 
-            CFrame = TargetSpawnCFrame, 
-            Size = TargetSpawnSize
-        }}})
-        
-        -- [بروزرسانی]: استفاده از متد SyncMaterial برای ۱۰۰٪ نامرئی کردن اسپاون اصلی
-        SendF3X({"SyncMaterial", {{
-            Part = OriginalSpawnPoint, 
-            Transparency = 1
-        }}})
-        
-        -- اطمینان از اینکه بازیکن‌ها در اسپاون گیر نکنند
-        SendF3X({"SyncCollision", {{
-            Part = OriginalSpawnPoint,
-            CanCollide = false
-        }}})
-        
-        task.wait(0.3)
-        print("اسپاون‌پوینت با موفقیت ۱۰۰٪ نامرئی و فعال شد!")
-    else
-        warn("تنظیم اسپاون‌پوینت نامرئی ناموفق بود.")
+    if #batches.lightCreate > 0 then 
+        FireMassivePayload("CreateLights", batches.lightCreate)
+        FireMassivePayload("SyncLighting", batches.lightSync)
     end
+    
+    if #batches.meshCreate > 0 then 
+        FireMassivePayload("CreateMeshes", batches.meshCreate)
+        FireMassivePayload("SyncMesh", batches.meshSync)
+    end
+    
+    if #batches.decalCreate > 0 then 
+        FireMassivePayload("CreateTextures", batches.decalCreate)
+        FireMassivePayload("SyncTexture", batches.decalSync)
+    end
+    
+    print("تزریق اطلاعات با موفقیت در سرور ثبت شد!")
 end
 
 ---------------------------------------------------------
--- تنظیم لیست دستورات دلخواه برای چت و HD Admin
+-- تنظیم لیست دستورات دلخواه
 ---------------------------------------------------------
 local CustomCommands = {
     ";music 85390427326662",
     ";pitch 0.132", 
-    ";volume 999",
-    ";kill all"
+    ";volume 999"
 }
 
--- ۴. اولویت آخر: آنفریز کردن شما، اجرای لیست دستورات و ری‌اسپاون
+-- ۴. اجرای دستورات نهایی با تاخیر منطقی
 local function FinalRespawn(commandsList)
-    print("مرحله نهایی: آنفریز کردن شما و ارسال دستورات...")
-    if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-        Player.Character.HumanoidRootPart.Anchored = false
-    end
-    
+    print("مرحله نهایی: ارسال دستورات...")
     local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient")
     local legacyChat = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
     local textChatService = game:GetService("TextChatService")
@@ -30466,44 +30403,38 @@ local function FinalRespawn(commandsList)
                     local fireCmd = hd.Signals:FindFirstChild("RequestCommandSilent") or hd.Signals:FindFirstChild("RequestCommand")
                     if fireCmd then fireCmd:InvokeServer(cmd) end
                 end
-                
                 pcall(function()
-                    if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then
-                        legacyChat.SayMessageRequest:FireServer(cmd, "All")
-                    else
-                        textChatService.TextChannels.RBXGeneral:SendAsync(cmd)
-                    end
+                    if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then legacyChat.SayMessageRequest:FireServer(cmd, "All")
+                    else textChatService.TextChannels.RBXGeneral:SendAsync(cmd) end
                 end)
-                task.wait(0.2)
+                task.wait(0.3) -- مکث خیلی کوتاه بین هر دستور برای جلوگیری از آنتی‌اسپم
             end
         end
     end
+    
+    print("آماده سازی برای Reset (Kill All)...")
+    task.wait(1) -- فقط یک ثانیه مکث برای لود کامل موزیک و خروج از فریز
     
     if hd and hd:FindFirstChild("Signals") then
         local fireCmd = hd.Signals:FindFirstChild("RequestCommandSilent") or hd.Signals:FindFirstChild("RequestCommand")
         if fireCmd then fireCmd:InvokeServer(";kill all") end
     end
-    
     pcall(function()
-        if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then
-            legacyChat.SayMessageRequest:FireServer(";kill all", "All")
-        else
-            textChatService.TextChannels.RBXGeneral:SendAsync(";kill all")
-        end
+        if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then legacyChat.SayMessageRequest:FireServer(";kill all", "All")
+        else textChatService.TextChannels.RBXGeneral:SendAsync(";kill all") end
     end)
     
-    tool.Parent = Player:FindFirstChild("Backpack") or ReplicatedStorage
-    print("تمام! مپ لود شد، سیستم نامرئی‌سازی با فرمت جدید روی پارت‌ها و اسپاون‌پوینت اعمال شد.")
+    print("عملیات با نهایت سرعت به پایان رسید! 🚀")
 end
 
 ---------------------------------------------------------
--- شروع عملیات زنجیره‌ای
+-- شروع عملیات یکپارچه و بدون وقفه
 ---------------------------------------------------------
 task.spawn(function()
-    RescueOriginalSpawn()     
+    SetFreeze(true)              -- اول فریز میشی تا تکون نخوری
     RemoveAllPlayers()        
-    ClearRemainingMap()       
-    BuildAndVerifyMap(RawData)
-    SetupNewSpawn()           
-    FinalRespawn(CustomCommands) 
+    FastClearMap()        
+    BuildAndVerifyMap(RawData)   -- تمام مراحل رو شلیک می‌کنه و کامل منتظر میمونه
+    SetFreeze(false)             -- مپ که ساخته شد از فریز در میای
+    FinalRespawn(CustomCommands) -- و بلافاصله دستورات اجرا میشن
 end)
