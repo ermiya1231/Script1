@@ -1,6 +1,16 @@
-local LIGHT_ALL_PARTS = true 
-local GLOBAL_LIGHT_RANGE = 5     -- رنج پایین و ملایم
-local GLOBAL_LIGHT_BRIGHT = 1     -- عدد 1 تا سرور F3X بدون مشکل بخونه و کار کنه
+-- CanCollide: False
+-- SpawnPoint: True
+-- Decal.Top,Right... = ID
+-- Light: True
+-- Fire: True
+-- Texture: ID
+-- Mesh: ID
+-- MeshType: FileMesh (یا Head, Sphere, Brick و غیره)
+-- MeshScale: 1.5, 2, 1.5 (با پرانتز یا بدون پرانتز)
+
+local LIGHT_ALL_PARTS = true
+local GLOBAL_LIGHT_RANGE = 20      -- شعاع نور
+local GLOBAL_LIGHT_BRIGHTNESS = 0.011   -- روشنایی
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,17 +25,21 @@ if not tool or not tool:FindFirstChild("SyncAPI") then warn("خطا: ابزار 
 
 local remote = tool.SyncAPI.ServerEndpoint
 
--- [حذف کامل چانک‌بندی: ارسال یکجای تمام دیتا به صورت بمبی]
-local function FireMassivePayload(action, dataArray, extraArg)
+-- ردیاب سبک برای اطمینان از پایان کار سرور (بدون افت سرعت)
+local ActiveSyncs = 0
+
+local function FireMassiveSync(action, dataArray, extraArg)
     if not dataArray or #dataArray == 0 then return end
-    -- از آنجایی که InvokeServer منتظر جواب سرور می‌ماند، این کار تضمین می‌کند 
-    -- تا سرور این مرحله را تمام نکرده، اسکریپت سراغ مرحله بعد نمی‌رود.
-    pcall(function()
-        if extraArg ~= nil then 
-            remote:InvokeServer(action, dataArray, extraArg)
-        else 
-            remote:InvokeServer(action, dataArray) 
-        end
+    ActiveSyncs = ActiveSyncs + 1
+    task.spawn(function()
+        pcall(function()
+            if extraArg ~= nil then 
+                remote:InvokeServer(action, dataArray, extraArg)
+            else 
+                remote:InvokeServer(action, dataArray) 
+            end
+        end)
+        ActiveSyncs = ActiveSyncs - 1
     end)
 end
 
@@ -141,6 +155,7 @@ Part 11:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 12:
  Position: (-470.11, 42.09, 301.90)
@@ -348,6 +363,7 @@ Part 34:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 35:
  Position: (-455.29, 49.40, 275.24)
@@ -1860,6 +1876,9 @@ Part 202:
  Color: 0.956863, 0.803922, 0.184314
  Material: Plastic
  Transparency: 0.00
+ MeshType: FileMesh
+ Mesh: 51226819
+ MeshScale: 3, 3, 3
 
 Part 203:
  Position: (-354.55, 1.30, 219.11)
@@ -1914,6 +1933,7 @@ Part 208:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 209:
  Position: (-402.15, 1.30, 219.01)
@@ -3516,6 +3536,7 @@ Part 386:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 387:
  Position: (-397.86, 12.30, 267.63)
@@ -4776,6 +4797,9 @@ Part 526:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+ MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 527:
  Position: (-365.59, 11.76, 246.85)
@@ -5100,6 +5124,9 @@ Part 562:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+ MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 563:
  Position: (-362.94, 2.30, 221.87)
@@ -6279,6 +6306,9 @@ Part 693:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 694:
  Position: (-366.83, 11.85, 221.83)
@@ -6360,6 +6390,9 @@ Part 702:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 703:
  Position: (-366.86, 13.29, 221.83)
@@ -7737,6 +7770,9 @@ Part 855:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+ MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 856:
  Position: (-397.86, 13.29, 221.83)
@@ -7863,6 +7899,9 @@ Part 869:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+ MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 870:
  Position: (-397.86, 13.91, 221.83)
@@ -9330,6 +9369,9 @@ Part 1032:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 1033:
  Position: (-397.86, 18.20, 196.83)
@@ -9546,6 +9588,9 @@ Part 1056:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 1057:
  Position: (-363.56, 21.54, 196.98)
@@ -10806,6 +10851,9 @@ Part 1196:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 1197:
  Position: (-366.86, 13.29, 196.83)
@@ -10896,6 +10944,9 @@ Part 1206:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 1207:
  Position: (-366.86, 14.70, 196.83)
@@ -11292,6 +11343,9 @@ Part 1250:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
  Part 1251:
  Position: (-397.86, 13.29, 267.63)
@@ -11571,6 +11625,9 @@ Part 1281:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 1282:
  Position: (-397.86, 13.50, 267.63)
@@ -12948,6 +13005,9 @@ Part 1434:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+ MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 1435:
  Position: (-397.86, 15.74, 246.83)
@@ -13128,6 +13188,9 @@ Part 1454:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+ MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 1455:
  Position: (-397.86, 17.42, 246.83)
@@ -14487,6 +14550,9 @@ Part 1605:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 1606:
  Position: (-366.86, 13.70, 267.63)
@@ -14541,6 +14607,9 @@ Part 1611:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 1612:
  Position: (-366.86, 15.95, 267.63)
@@ -16044,6 +16113,9 @@ Part 1778:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 1779:
  Position: (-397.86, 13.29, 133.03)
@@ -16251,6 +16323,9 @@ Part 1800:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 1802:
  Position: (-366.66, 11.82, 133.03)
@@ -17439,6 +17514,9 @@ Part 1933:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 1934:
  Position: (-366.86, 13.70, 133.03)
@@ -17547,6 +17625,9 @@ Part 1945:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 1946:
  Position: (-362.91, 21.40, 133.10)
@@ -19896,6 +19977,9 @@ Part 2206:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 2207:
  Position: (-393.72, 11.76, 171.85)
@@ -20103,6 +20187,9 @@ Part 2229:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+ MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 2230:
  Position: (-366.86, 12.30, 171.83)
@@ -21273,6 +21360,9 @@ Part 2359:
  Color: 0.972549, 0.972549, 0.972549
  Material: Plastic
  Transparency: 0.00
+  MeshType: File
+ Mesh: 3270017
+ MeshScale: 1, 1, 1
 
 Part 2360:
  Position: (-366.86, 13.29, 171.83)
@@ -21606,6 +21696,9 @@ Part 2396:
  Color: 0.0509804, 0.411765, 0.67451
  Material: Plastic
  Transparency: 0.00
+ MeshType: File
+ Mesh: 51226819
+ Texture: 72279740
 
 Part 2397:
  Position: (-366.86, 17.83, 171.83)
@@ -22875,6 +22968,10 @@ Part 2537:
  Color: 0, 1, 1
  Material: Plastic
  Transparency: 0.00
+ MeshType: File
+ Mesh: 145815862
+ Texture: 145815901
+ MeshScale: 1, 1, 1
 
 Part 2538:
  Position: (-412.39, 55.05, 126.37)
@@ -22920,6 +23017,9 @@ Part 2542:
  Color: 0.894118, 0.894118, 0.87451
  Material: Plastic
  Transparency: 0.00
+ Decal.Top = 140924547
+ MeshType: Block
+ MeshScale: 0.75, 0.1, 1
 
 Part 2543:
  Position: (-297.77, 74.06, 325.50)
@@ -23280,6 +23380,7 @@ Part 2582:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 2583:
  Position: (-298.05, 13.30, 176.40)
@@ -24495,6 +24596,7 @@ Part 2717:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 2718:
  Position: (-423.97, 39.62, 354.17)
@@ -24540,6 +24642,7 @@ Part 2722:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 2723:
  Position: (-473.76, 86.60, 242.59)
@@ -24558,6 +24661,9 @@ Part 2724:
  Color: 0.956863, 0.803922, 0.184314
  Material: Plastic
  Transparency: 0.00
+ MeshType: FileMesh
+ Mesh: 3270017
+ MeshScale: 10, 10, 2
 
 Part 2725:
  Position: (-281.96, 86.60, 242.60)
@@ -24621,6 +24727,8 @@ Part 2731:
  Color: 0.956863, 0.803922, 0.184314
  Material: Plastic
  Transparency: 0.00
+ MeshType: Block
+ MeshScale: 1, 1, 1
 
 Part 2732:
  Position: (-378.05, 70.45, 338.80)
@@ -24873,6 +24981,7 @@ Part 2759:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 2760:
  Position: (-282.20, 52.30, 311.84)
@@ -24981,6 +25090,7 @@ Part 2771:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 2772:
  Position: (-285.43, 39.62, 297.63)
@@ -25287,6 +25397,7 @@ Part 2805:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 2806:
  Position: (-457.69, 35.09, 156.64)
@@ -25926,6 +26037,7 @@ Part 2876:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 2877:
  Position: (-457.70, 35.09, 138.37)
@@ -25998,6 +26110,7 @@ Part 2884:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 2885:
  Position: (-285.62, 40.30, 133.62)
@@ -28474,6 +28587,7 @@ Part 3159:
  Material: Plastic
  Transparency: 1.00
  CanCollide: False
+ SpawnPoint: True
 
 Part 3160:
  Position: (-403.91, 57.88, 126.37)
@@ -28998,25 +29112,21 @@ Part 3217:
  Transparency: 0.00
 
 Part 3218:
- Position: (-378.69, 33.90, 342.50)
+ Position: (-378.69, -999999, 342.50)
  Rotation: (0.00, 0.00, 0.00)
  Shape: Block
  Size: (6.00, 1.00, 6.00)
  Color: 0.458824, 0, 0
  Material: Plastic
  Transparency: 1.00
- SpawnPoint: True
- CanCollide: False
 
 Part 3219:
- Position: (-378.69, 36.90, 342.50)
+ Position: (-378.69, -999999, 342.50)
  Rotation: (0.00, 0.00, 0.00)
  Shape: Block
  Size: (6.00, 1.00, 6.00)
  Color: 0.458824, 0, 0
  Material: Plastic
- Transparency: 1.00
- CanCollide: False
 
 Part 3220:
  Position: (-378.45, 56.40, 125.90)
@@ -29062,6 +29172,7 @@ Part 3224:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 3225:
  Position: (-328.95, 40.70, 353.84)
@@ -29397,24 +29508,20 @@ Part 3261:
  Transparency: 0.00
 
 Part 3262:
- Position: (-378.69, 34.90, 342.50)
+ Position: (-378.69, -999999, 342.50)
  Rotation: (0.00, 0.00, 0.00)
  Shape: Block
  Size: (6.00, 1.00, 6.00)
  Color: 0.458824, 0, 0
  Material: Plastic
- Transparency: 1.00
- CanCollide: False
 
 Part 3263:
- Position: (-378.69, 35.90, 342.50)
+ Position: (-378.69, -999999, 342.50)
  Rotation: (0.00, 0.00, 0.00)
  Shape: Block
  Size: (6.00, 1.00, 6.00)
  Color: 0.458824, 0, 0
  Material: Plastic
- Transparency: 1.00
- CanCollide: False
 
 Part 3264:
  Position: (-373.95, 44.10, 357.80)
@@ -29469,6 +29576,7 @@ Part 3269:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 3270:
  Position: (-365.97, 39.18, 354.37)
@@ -29676,6 +29784,7 @@ Part 3292:
  Color: 0.0666667, 0.0666667, 0.0666667
  Material: Plastic
  Transparency: 0.00
+ Decal.Top = 681193414
 
 Part 3293:
  Position: (-390.85, 15.72, 357.80)
@@ -30108,6 +30217,7 @@ Part 3340:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ Fire: True
 
 Part 3341:
  Position: (-390.77, 39.20, 354.37)
@@ -30216,7 +30326,7 @@ Part 3352:
  Color: 0.101961, 0.164706, 0.203922
  Material: Fabric
  Transparency: 0.00
-]]
+ ]]
 ---------------------------------------------------------
 
 -- ۱. حذف سریع بقیه پلیرها
@@ -30230,9 +30340,8 @@ local function RemoveAllPlayers()
             end
         end
     end
-    -- ارسال بدون چانک
-    FireMassivePayload("SetLocked", playerParts, false)
-    FireMassivePayload("Remove", playerParts)
+    FireMassiveSync("SetLocked", playerParts, false)
+    FireMassiveSync("Remove", playerParts)
 end
 
 -- ۲. پاکسازی آنی مپ
@@ -30246,13 +30355,13 @@ local function FastClearMap()
             end
         end
     end
-    FireMassivePayload("SetLocked", mapParts, false)
-    FireMassivePayload("Remove", mapParts)
+    FireMassiveSync("SetLocked", mapParts, false)
+    FireMassiveSync("Remove", mapParts)
 end
 
--- ۳. لودینگ با حداکثر توان (Unthrottled)
+-- ۳. لودینگ بمبی با حداکثر توان F3X
 local function BuildAndVerifyMap(data)
-    print("مرحله ۳: ساخت پارت‌ها (بدون هیچ محدودیتی)...")
+    print("مرحله ۳: ساخت آنی پارت‌ها (بدون لیمیت)...")
     local partsToBuild = {}
     
     local cleanData = data:gsub("Part %d+:", "|||")
@@ -30266,9 +30375,20 @@ local function BuildAndVerifyMap(data)
             local mat = partBlock:match("Material:%s*([%a%d]+)")
             local trans = partBlock:match("Transparency:%s*([%d%.]+)")
             local decalFace, decalId = partBlock:match("Decal%.(%a+)%s*=%s*(%d+)")
-            local meshId = partBlock:match("MeshId:%s*(%S+)")
-            local textureId = partBlock:match("TextureId:%s*(%S+)")
+            
+            local meshType = partBlock:match("MeshType:%s*(%a+)")
+            local meshId = partBlock:match("MeshId:%s*(%S+)") or partBlock:match("Mesh:%s*(%S+)")
+            local textureId = partBlock:match("TextureId:%s*(%S+)") or partBlock:match("Texture:%s*(%S+)")
+            
+            local msStr = partBlock:match("MeshScale:%s*([^\n\r]+)")
+            local msX, msY, msZ = 1, 1, 1
+            if msStr then
+                local ex, ey, ez = msStr:match("([%d%.]+)%s*,%s*([%d%.]+)%s*,%s*([%d%.]+)")
+                if ex and ey and ez then msX, msY, msZ = ex, ey, ez end
+            end
+            
             local hasLight = partBlock:match("Light:%s*[Tt]rue") and true or false
+            local hasFire = partBlock:match("Fire:%s*[Tt]rue") and true or false
             
             local f3xShape = "Normal"
             if partBlock:match("SpawnPoint:%s*[Tt]rue") then f3xShape = "Spawn"
@@ -30288,24 +30408,25 @@ local function BuildAndVerifyMap(data)
                 rot = Vector3.new(safeNum(rx), safeNum(ry), safeNum(rz)),
                 shape = f3xShape, size = Vector3.new(safeNum(sx,1), safeNum(sy,1), safeNum(sz,1)),
                 color = pColor, material = mat or "Plastic", transparency = safeNum(trans),
-                decalFace = decalFace, decalId = decalId, meshId = meshId, textureId = textureId,
-                hasLight = hasLight, collision = not (partBlock:match("CanCollide:%s*[Ff]alse"))
+                decalFace = decalFace, decalId = decalId, 
+                meshType = meshType, meshId = meshId, textureId = textureId, 
+                meshScale = Vector3.new(safeNum(msX, 1), safeNum(msY, 1), safeNum(msZ, 1)),
+                hasLight = hasLight, hasFire = hasFire, collision = not (partBlock:match("CanCollide:%s*[Ff]alse"))
             })
         end
     end
     
     local totalParts = #partsToBuild
     if totalParts == 0 then warn("خطا: پارتی یافت نشد!") return end
-    
+
     local batches = {
         resize = {}, color = {}, material = {}, anchor = {}, collision = {},
         meshCreate = {}, meshSync = {}, decalCreate = {}, decalSync = {},
-        lightCreate = {}, lightSync = {}
+        lightCreate = {}, lightSync = {}, decorationCreate = {}
     }
     
     local completed = 0
-    
-    -- شلیک تمام درخواست‌های ساخت در یک لحظه بدون صف و محدودیت!
+
     for _, pData in ipairs(partsToBuild) do
         task.spawn(function()
             local success, p = pcall(function()
@@ -30322,20 +30443,47 @@ local function BuildAndVerifyMap(data)
                 local matSuccess, matEnum = pcall(function() return Enum.Material[pData.material:gsub("%s+", "")] end)
                 table.insert(batches.material, {Part = p, Material = matSuccess and matEnum or Enum.Material.Plastic, Transparency = pData.transparency})
                 
-                if pData.hasLight then
+                if pData.hasLight or LIGHT_ALL_PARTS then
+                    local targetRange = pData.hasLight and 60 or tonumber(GLOBAL_LIGHT_RANGE) or 15
+                    local targetBright = pData.hasLight and 3 or tonumber(GLOBAL_LIGHT_BRIGHTNESS) or 3
+                    
                     table.insert(batches.lightCreate, {Part = p, LightType = "PointLight"})
-                    table.insert(batches.lightSync, {Part = p, LightType = "PointLight", Range = 60, Brightness = 3})
-                elseif LIGHT_ALL_PARTS then
-                    table.insert(batches.lightCreate, {Part = p, LightType = "PointLight"})
-                    table.insert(batches.lightSync, {Part = p, LightType = "PointLight", Range = GLOBAL_LIGHT_RANGE, Brightness = GLOBAL_LIGHT_BRIGHT})
+                    table.insert(batches.lightSync, {
+                        Part = p, 
+                        LightType = "PointLight", 
+                        Range = targetRange, 
+                        Brightness = targetBright,
+                        Color = Color3.new(1, 1, 1),
+                        Shadows = false
+                    })
                 end
                 
-                if pData.meshId then
-                    local mId = pData.meshId:match("%d+")
-                    if mId then
-                        table.insert(batches.meshCreate, {Part = p, MeshType = Enum.MeshType.FileMesh})
-                        table.insert(batches.meshSync, {Part = p, MeshId = "rbxassetid://"..mId, TextureId = pData.textureId and ("rbxassetid://"..pData.textureId:match("%d+")) or "", Scale = Vector3.new(1, 1, 1), Offset = Vector3.new(0, 0, 0)})
+                -- اعمال آتش به پارت
+                if pData.hasFire then
+                    table.insert(batches.decorationCreate, {Part = p, DecorationType = "Fire"})
+                end
+                
+                if pData.meshId or pData.meshType then
+                    table.insert(batches.meshCreate, {Part = p})
+                    local mTypeEnum = Enum.MeshType.FileMesh
+                    if pData.meshType then
+                        local meshTypeMap = {
+                            File = "FileMesh", FileMesh = "FileMesh", Block = "Brick", Brick = "Brick",
+                            Head = "Head", Sphere = "Sphere", Wedge = "Wedge", Cylinder = "Cylinder"
+                        }
+                        local mappedType = meshTypeMap[pData.meshType] or pData.meshType
+                        local typeSuccess, typeEnum = pcall(function() return Enum.MeshType[mappedType] end)
+                        if typeSuccess and typeEnum then mTypeEnum = typeEnum end
                     end
+                    
+                    local mId, tId = "", ""
+                    if pData.meshId then local x = pData.meshId:match("%d+") if x then mId = "rbxassetid://"..x end end
+                    if pData.textureId then local x = pData.textureId:match("%d+") if x then tId = "rbxassetid://"..x end end
+                    
+                    table.insert(batches.meshSync, {
+                        Part = p, MeshType = mTypeEnum, MeshId = mId, 
+                        TextureId = tId, Scale = pData.meshScale, Offset = Vector3.new(0, 0, 0)
+                    })
                 end
                 
                 if pData.decalFace and pData.decalId and pData.decalId:match("%d+") then
@@ -30351,90 +30499,79 @@ local function BuildAndVerifyMap(data)
         end)
     end
     
-    -- مکث فقط تا زمانی که تمام دستورات CreatePart پاسخ بدهند
+    -- انتظار برای ساخته شدن استخوان‌بندی مپ (سریع)
     while completed < totalParts do RunService.Heartbeat:Wait() end
     print("پایه‌ها ایجاد شدند! تزریق یکجای تمامی استایل‌ها...")
     
-    -- اعمال تمام استایل‌ها به صورت کپسولی و پشت سر هم
-    FireMassivePayload("SyncResize", batches.resize)
-    FireMassivePayload("SyncColor", batches.color)
-    FireMassivePayload("SyncMaterial", batches.material)
-    FireMassivePayload("SyncAnchor", batches.anchor)
-    FireMassivePayload("SyncCollision", batches.collision)
+    -- ارسال گروهی به صورت بمبی (بدون کند کردن سرور)
+-- ارسال گروهی به صورت بمبی (بدون کند کردن سرور)
+    FireMassiveSync("SyncResize", batches.resize)
+    FireMassiveSync("SyncColor", batches.color)
+    FireMassiveSync("SyncMaterial", batches.material)
+    FireMassiveSync("SyncAnchor", batches.anchor)
+    FireMassiveSync("SyncCollision", batches.collision)
     
+    -- حل مشکل لایت‌ها: اجرای پشت سر هم (Sequential) به جای همزمان
     if #batches.lightCreate > 0 then 
-        FireMassivePayload("CreateLights", batches.lightCreate)
-        FireMassivePayload("SyncLighting", batches.lightSync)
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function() remote:InvokeServer("CreateLights", batches.lightCreate) end)
+            -- اینجا اسکریپت صبر میکنه تا سرور نورها رو بسازه، بعد دستور بعدی رو میده:
+            pcall(function() remote:InvokeServer("SyncLighting", batches.lightSync) end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
     end
     
+    -- همگام‌سازی آتش با سرور
+    if #batches.decorationCreate > 0 then
+        FireMassiveSync("CreateDecorations", batches.decorationCreate)
+    end
+    
+    -- حل مشکل مشابه برای مش‌ها
     if #batches.meshCreate > 0 then 
-        FireMassivePayload("CreateMeshes", batches.meshCreate)
-        FireMassivePayload("SyncMesh", batches.meshSync)
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function() remote:InvokeServer("CreateMeshes", batches.meshCreate) end)
+            pcall(function() remote:InvokeServer("SyncMesh", batches.meshSync) end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
     end
-    
+
+    -- حل مشکل مشابه برای تکسچرها/دکال‌ها
     if #batches.decalCreate > 0 then 
-        FireMassivePayload("CreateTextures", batches.decalCreate)
-        FireMassivePayload("SyncTexture", batches.decalSync)
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function() remote:InvokeServer("CreateTextures", batches.decalCreate) end)
+            pcall(function() remote:InvokeServer("SyncTexture", batches.decalSync) end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
+    end
+
+    -- ردیاب هوشمند: فقط صبر می‌کند تا سرور دیتای استایل‌ها را هضم کند
+    print("در حال هماهنگی با سرور...")
+    while ActiveSyncs > 0 do 
+        RunService.Heartbeat:Wait() 
     end
     
     print("تزریق اطلاعات با موفقیت در سرور ثبت شد!")
 end
 
 ---------------------------------------------------------
--- تنظیم لیست دستورات دلخواه
----------------------------------------------------------
-local CustomCommands = {
-    ";music 85390427326662",
-    ";pitch 0.132", 
-    ";volume 999"
-}
-
--- ۴. اجرای دستورات نهایی با تاخیر منطقی
-local function FinalRespawn(commandsList)
-    print("مرحله نهایی: ارسال دستورات...")
-    local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient")
-    local legacyChat = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-    local textChatService = game:GetService("TextChatService")
-    
-    if commandsList and #commandsList > 0 then
-        for _, cmd in ipairs(commandsList) do
-            if cmd and cmd ~= "" then
-                if hd and hd:FindFirstChild("Signals") then
-                    local fireCmd = hd.Signals:FindFirstChild("RequestCommandSilent") or hd.Signals:FindFirstChild("RequestCommand")
-                    if fireCmd then fireCmd:InvokeServer(cmd) end
-                end
-                pcall(function()
-                    if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then legacyChat.SayMessageRequest:FireServer(cmd, "All")
-                    else textChatService.TextChannels.RBXGeneral:SendAsync(cmd) end
-                end)
-                task.wait(0.3) -- مکث خیلی کوتاه بین هر دستور برای جلوگیری از آنتی‌اسپم
-            end
-        end
-    end
-    
-    print("آماده سازی برای Reset (Kill All)...")
-    task.wait(1) -- فقط یک ثانیه مکث برای لود کامل موزیک و خروج از فریز
-    
-    if hd and hd:FindFirstChild("Signals") then
-        local fireCmd = hd.Signals:FindFirstChild("RequestCommandSilent") or hd.Signals:FindFirstChild("RequestCommand")
-        if fireCmd then fireCmd:InvokeServer(";kill all") end
-    end
-    pcall(function()
-        if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then legacyChat.SayMessageRequest:FireServer(";kill all", "All")
-        else textChatService.TextChannels.RBXGeneral:SendAsync(";kill all") end
-    end)
-    
-    print("عملیات با نهایت سرعت به پایان رسید! 🚀")
-end
-
----------------------------------------------------------
--- شروع عملیات یکپارچه و بدون وقفه
+-- شروع عملیات یکپارچه و کنترل‌شده
 ---------------------------------------------------------
 task.spawn(function()
-    SetFreeze(true)              -- اول فریز میشی تا تکون نخوری
+    SetFreeze(true)             
+    
     RemoveAllPlayers()        
-    FastClearMap()        
-    BuildAndVerifyMap(RawData)   -- تمام مراحل رو شلیک می‌کنه و کامل منتظر میمونه
-    SetFreeze(false)             -- مپ که ساخته شد از فریز در میای
-    FinalRespawn(CustomCommands) -- و بلافاصله دستورات اجرا میشن
+    FastClearMap()
+    
+    -- منتظر می‌مانیم پاکسازی اولیه تمام شود
+    while ActiveSyncs > 0 do RunService.Heartbeat:Wait() end
+            
+    BuildAndVerifyMap(RawData)
+    
+    -- لود کامل استایل‌ها انجام شده، آزاد کردن پلیر
+    SetFreeze(false)             
+    
+    print("عملیات با نهایت سرعت و بدون هیچ پیامی به پایان رسید! 🚀")
 end)
