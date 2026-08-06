@@ -1,15 +1,17 @@
 -- کامند های دستی
-
 -- CanCollide: False
 -- SpawnPoint: True
 -- Decal.Top,Right... = ID
 -- Light: True
+-- Fire: True
 -- Texture: ID
 -- Mesh: ID
+-- MeshType: FileMesh (یا Head, Sphere, Brick و غیره)
+-- MeshScale: 1.5, 2, 1.5 (با پرانتز یا بدون پرانتز)
 
 local LIGHT_ALL_PARTS = false
-local GLOBAL_LIGHT_RANGE = 10     -- رنج پایین و ملایم
-local GLOBAL_LIGHT_BRIGHT = 1     -- عدد 1 تا سرور F3X بدون مشکل بخونه و کار کنه
+local GLOBAL_LIGHT_RANGE = 20      -- شعاع نور
+local GLOBAL_LIGHT_BRIGHTNESS = 0.011   -- روشنایی
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -24,15 +26,21 @@ if not tool or not tool:FindFirstChild("SyncAPI") then warn("خطا: ابزار 
 
 local remote = tool.SyncAPI.ServerEndpoint
 
--- [حذف کامل چانک‌بندی: ارسال یکجای تمام دیتا به صورت بمبی]
-local function FireMassivePayload(action, dataArray, extraArg)
+-- ردیاب سبک برای اطمینان از پایان کار سرور (بدون افت سرعت)
+local ActiveSyncs = 0
+
+local function FireMassiveSync(action, dataArray, extraArg)
     if not dataArray or #dataArray == 0 then return end
-    pcall(function()
-        if extraArg ~= nil then 
-            remote:InvokeServer(action, dataArray, extraArg)
-        else 
-            remote:InvokeServer(action, dataArray) 
-        end
+    ActiveSyncs = ActiveSyncs + 1
+    task.spawn(function()
+        pcall(function()
+            if extraArg ~= nil then 
+                remote:InvokeServer(action, dataArray, extraArg)
+            else 
+                remote:InvokeServer(action, dataArray) 
+            end
+        end)
+        ActiveSyncs = ActiveSyncs - 1
     end)
 end
 
@@ -58,6 +66,8 @@ Part 1:
  Color: 0.639216, 0.635294, 0.647059
  Material: Plastic
  Transparency: 0.00
+ MeshType: Cylinder
+ MeshScale: 1, 1, 1
 
 Part 2:
  Position: (-176.00, 170.00, 165.00)
@@ -67,6 +77,8 @@ Part 2:
  Color: 0.803922, 0.803922, 0.803922
  Material: Plastic
  Transparency: 0.50
+ MeshType: Cylinder
+ MeshScale: 1, 1, 1
 
 Part 3:
  Position: (-51.00, 11.00, -448.50)
@@ -9806,8 +9818,8 @@ local function RemoveAllPlayers()
             end
         end
     end
-    FireMassivePayload("SetLocked", playerParts, false)
-    FireMassivePayload("Remove", playerParts)
+    FireMassiveSync("SetLocked", playerParts, false)
+    FireMassiveSync("Remove", playerParts)
 end
 
 -- ۲. پاکسازی آنی مپ
@@ -9821,13 +9833,13 @@ local function FastClearMap()
             end
         end
     end
-    FireMassivePayload("SetLocked", mapParts, false)
-    FireMassivePayload("Remove", mapParts)
+    FireMassiveSync("SetLocked", mapParts, false)
+    FireMassiveSync("Remove", mapParts)
 end
 
--- ۳. لودینگ با حداکثر توان (Unthrottled)
+-- ۳. لودینگ بمبی با حداکثر توان F3X
 local function BuildAndVerifyMap(data)
-    print("مرحله ۳: ساخت پارت‌ها (بدون هیچ محدودیتی)...")
+    print("مرحله ۳: ساخت آنی پارت‌ها (بدون لیمیت)...")
     local partsToBuild = {}
     
     local cleanData = data:gsub("Part %d+:", "|||")
@@ -9842,11 +9854,19 @@ local function BuildAndVerifyMap(data)
             local trans = partBlock:match("Transparency:%s*([%d%.]+)")
             local decalFace, decalId = partBlock:match("Decal%.(%a+)%s*=%s*(%d+)")
             
-            -- پشتیبانی از MeshId و Mesh معمولی + Texture
-            local meshId = partBlock:match("MeshId:%s*(%S+)") or partBlock:match("Mesh:%s*(%d+)")
-            local textureId = partBlock:match("TextureId:%s*(%S+)") or partBlock:match("Texture:%s*(%d+)")
+            local meshType = partBlock:match("MeshType:%s*(%a+)")
+            local meshId = partBlock:match("MeshId:%s*(%S+)") or partBlock:match("Mesh:%s*(%S+)")
+            local textureId = partBlock:match("TextureId:%s*(%S+)") or partBlock:match("Texture:%s*(%S+)")
+            
+            local msStr = partBlock:match("MeshScale:%s*([^\n\r]+)")
+            local msX, msY, msZ = 1, 1, 1
+            if msStr then
+                local ex, ey, ez = msStr:match("([%d%.]+)%s*,%s*([%d%.]+)%s*,%s*([%d%.]+)")
+                if ex and ey and ez then msX, msY, msZ = ex, ey, ez end
+            end
             
             local hasLight = partBlock:match("Light:%s*[Tt]rue") and true or false
+            local hasFire = partBlock:match("Fire:%s*[Tt]rue") and true or false
             
             local f3xShape = "Normal"
             if partBlock:match("SpawnPoint:%s*[Tt]rue") then f3xShape = "Spawn"
@@ -9866,27 +9886,41 @@ local function BuildAndVerifyMap(data)
                 rot = Vector3.new(safeNum(rx), safeNum(ry), safeNum(rz)),
                 shape = f3xShape, size = Vector3.new(safeNum(sx,1), safeNum(sy,1), safeNum(sz,1)),
                 color = pColor, material = mat or "Plastic", transparency = safeNum(trans),
-                decalFace = decalFace, decalId = decalId, meshId = meshId, textureId = textureId,
-                hasLight = hasLight, collision = not (partBlock:match("CanCollide:%s*[Ff]alse"))
+                decalFace = decalFace, decalId = decalId, 
+                meshType = meshType, meshId = meshId, textureId = textureId, 
+                meshScale = Vector3.new(safeNum(msX, 1), safeNum(msY, 1), safeNum(msZ, 1)),
+                hasLight = hasLight, hasFire = hasFire, collision = not (partBlock:match("CanCollide:%s*[Ff]alse"))
             })
         end
     end
     
     local totalParts = #partsToBuild
     if totalParts == 0 then warn("خطا: پارتی یافت نشد!") return end
-    
+
     local batches = {
         resize = {}, color = {}, material = {}, anchor = {}, collision = {},
         meshCreate = {}, meshSync = {}, decalCreate = {}, decalSync = {},
-        lightCreate = {}, lightSync = {}
+        lightCreate = {}, lightSync = {}, decorationCreate = {}
     }
     
     local completed = 0
-    
+
     for _, pData in ipairs(partsToBuild) do
         task.spawn(function()
             local success, p = pcall(function()
                 local baseCFrame = CFrame.new(pData.pos) * CFrame.fromOrientation(math.rad(pData.rot.X), math.rad(pData.rot.Y), math.rad(pData.rot.Z))
+                
+                -- ====== فیکس مربوط به 90 درجه کج بودن MeshType: Cylinder ======
+                if pData.meshType == "Cylinder" then
+                    -- چرخش ۹۰ درجه حول محور Z برای تراز شدن با محور X
+                    baseCFrame = baseCFrame * CFrame.Angles(0, 0, math.rad(90))
+                    
+                    -- جابجایی سایزهای X و Y برای حفظ اندازه و فیزیک درست پارت
+                    pData.size = Vector3.new(pData.size.Y, pData.size.X, pData.size.Z)
+                    pData.meshScale = Vector3.new(pData.meshScale.Y, pData.meshScale.X, pData.meshScale.Z)
+                end
+                -- =============================================================
+                
                 return remote:InvokeServer("CreatePart", pData.shape, baseCFrame, workspace)
             end)
             
@@ -9899,35 +9933,47 @@ local function BuildAndVerifyMap(data)
                 local matSuccess, matEnum = pcall(function() return Enum.Material[pData.material:gsub("%s+", "")] end)
                 table.insert(batches.material, {Part = p, Material = matSuccess and matEnum or Enum.Material.Plastic, Transparency = pData.transparency})
                 
-                if pData.hasLight then
+                if pData.hasLight or LIGHT_ALL_PARTS then
+                    local targetRange = pData.hasLight and 60 or tonumber(GLOBAL_LIGHT_RANGE) or 15
+                    local targetBright = pData.hasLight and 3 or tonumber(GLOBAL_LIGHT_BRIGHTNESS) or 3
+                    
                     table.insert(batches.lightCreate, {Part = p, LightType = "PointLight"})
-                    table.insert(batches.lightSync, {Part = p, LightType = "PointLight", Range = 60, Brightness = 3})
-                elseif LIGHT_ALL_PARTS then
-                    table.insert(batches.lightCreate, {Part = p, LightType = "PointLight"})
-                    table.insert(batches.lightSync, {Part = p, LightType = "PointLight", Range = GLOBAL_LIGHT_RANGE, Brightness = GLOBAL_LIGHT_BRIGHT})
+                    table.insert(batches.lightSync, {
+                        Part = p, 
+                        LightType = "PointLight", 
+                        Range = targetRange, 
+                        Brightness = targetBright,
+                        Color = Color3.new(1, 1, 1),
+                        Shadows = false
+                    })
                 end
                 
-                -- سیستم هوشمند ساخت Mesh
-                if pData.meshId then
-                    local mId = pData.meshId:match("%d+")
-                    if mId then
-                        table.insert(batches.meshCreate, {Part = p, MeshType = Enum.MeshType.FileMesh})
-                        
-                        -- بررسی اینکه تکسچر هم داره یا نه
-                        local tId = ""
-                        if pData.textureId then
-                            local extractedTid = pData.textureId:match("%d+")
-                            if extractedTid then tId = "rbxassetid://" .. extractedTid end
-                        end
-                        
-                        table.insert(batches.meshSync, {
-                            Part = p, 
-                            MeshId = "rbxassetid://"..mId, 
-                            TextureId = tId, 
-                            Scale = Vector3.new(1, 1, 1), 
-                            Offset = Vector3.new(0, 0, 0)
-                        })
+                -- اعمال آتش به پارت
+                if pData.hasFire then
+                    table.insert(batches.decorationCreate, {Part = p, DecorationType = "Fire"})
+                end
+                
+                if pData.meshId or pData.meshType then
+                    table.insert(batches.meshCreate, {Part = p})
+                    local mTypeEnum = Enum.MeshType.FileMesh
+                    if pData.meshType then
+                        local meshTypeMap = {
+                            File = "FileMesh", FileMesh = "FileMesh", Block = "Brick", Brick = "Brick",
+                            Head = "Head", Sphere = "Sphere", Wedge = "Wedge", Cylinder = "Cylinder"
+                        }
+                        local mappedType = meshTypeMap[pData.meshType] or pData.meshType
+                        local typeSuccess, typeEnum = pcall(function() return Enum.MeshType[mappedType] end)
+                        if typeSuccess and typeEnum then mTypeEnum = typeEnum end
                     end
+                    
+                    local mId, tId = "", ""
+                    if pData.meshId then local x = pData.meshId:match("%d+") if x then mId = "rbxassetid://"..x end end
+                    if pData.textureId then local x = pData.textureId:match("%d+") if x then tId = "rbxassetid://"..x end end
+                    
+                    table.insert(batches.meshSync, {
+                        Part = p, MeshType = mTypeEnum, MeshId = mId, 
+                        TextureId = tId, Scale = pData.meshScale, Offset = Vector3.new(0, 0, 0)
+                    })
                 end
                 
                 if pData.decalFace and pData.decalId and pData.decalId:match("%d+") then
@@ -9943,88 +9989,78 @@ local function BuildAndVerifyMap(data)
         end)
     end
     
+    -- انتظار برای ساخته شدن استخوان‌بندی مپ (سریع)
     while completed < totalParts do RunService.Heartbeat:Wait() end
     print("پایه‌ها ایجاد شدند! تزریق یکجای تمامی استایل‌ها...")
     
-    FireMassivePayload("SyncResize", batches.resize)
-    FireMassivePayload("SyncColor", batches.color)
-    FireMassivePayload("SyncMaterial", batches.material)
-    FireMassivePayload("SyncAnchor", batches.anchor)
-    FireMassivePayload("SyncCollision", batches.collision)
+    -- ارسال گروهی به صورت بمبی (بدون کند کردن سرور)
+    FireMassiveSync("SyncResize", batches.resize)
+    FireMassiveSync("SyncColor", batches.color)
+    FireMassiveSync("SyncMaterial", batches.material)
+    FireMassiveSync("SyncAnchor", batches.anchor)
+    FireMassiveSync("SyncCollision", batches.collision)
     
+    -- حل مشکل لایت‌ها: اجرای پشت سر هم (Sequential) به جای همزمان
     if #batches.lightCreate > 0 then 
-        FireMassivePayload("CreateLights", batches.lightCreate)
-        FireMassivePayload("SyncLighting", batches.lightSync)
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function() remote:InvokeServer("CreateLights", batches.lightCreate) end)
+            -- اینجا اسکریپت صبر میکنه تا سرور نورها رو بسازه، بعد دستور بعدی رو میده:
+            pcall(function() remote:InvokeServer("SyncLighting", batches.lightSync) end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
     end
     
+    -- همگام‌سازی آتش با سرور
+    if #batches.decorationCreate > 0 then
+        FireMassiveSync("CreateDecorations", batches.decorationCreate)
+    end
+    
+    -- حل مشکل مشابه برای مش‌ها
     if #batches.meshCreate > 0 then 
-        FireMassivePayload("CreateMeshes", batches.meshCreate)
-        FireMassivePayload("SyncMesh", batches.meshSync)
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function() remote:InvokeServer("CreateMeshes", batches.meshCreate) end)
+            pcall(function() remote:InvokeServer("SyncMesh", batches.meshSync) end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
     end
-    
+
+    -- حل مشکل مشابه برای تکسچرها/دکال‌ها
     if #batches.decalCreate > 0 then 
-        FireMassivePayload("CreateTextures", batches.decalCreate)
-        FireMassivePayload("SyncTexture", batches.decalSync)
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function() remote:InvokeServer("CreateTextures", batches.decalCreate) end)
+            pcall(function() remote:InvokeServer("SyncTexture", batches.decalSync) end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
+    end
+
+    -- ردیاب هوشمند: فقط صبر می‌کند تا سرور دیتای استایل‌ها را هضم کند
+    print("در حال هماهنگی با سرور...")
+    while ActiveSyncs > 0 do 
+        RunService.Heartbeat:Wait() 
     end
     
     print("تزریق اطلاعات با موفقیت در سرور ثبت شد!")
 end
 
 ---------------------------------------------------------
--- تنظیم لیست دستورات دلخواه
----------------------------------------------------------
-local CustomCommands = {
-    ";music 85390427326662",
-    ";pitch 0.132", 
-    ";volume 999"
-}
-
--- ۴. اجرای دستورات نهایی با تاخیر منطقی
-local function FinalRespawn(commandsList)
-    print("مرحله نهایی: ارسال دستورات...")
-    local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient")
-    local legacyChat = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-    local textChatService = game:GetService("TextChatService")
-    
-    if commandsList and #commandsList > 0 then
-        for _, cmd in ipairs(commandsList) do
-            if cmd and cmd ~= "" then
-                if hd and hd:FindFirstChild("Signals") then
-                    local fireCmd = hd.Signals:FindFirstChild("RequestCommandSilent") or hd.Signals:FindFirstChild("RequestCommand")
-                    if fireCmd then fireCmd:InvokeServer(cmd) end
-                end
-                pcall(function()
-                    if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then legacyChat.SayMessageRequest:FireServer(cmd, "All")
-                    else textChatService.TextChannels.RBXGeneral:SendAsync(cmd) end
-                end)
-                task.wait(0.3)
-            end
-        end
-    end
-    
-    print("آماده سازی برای Reset (Kill All)...")
-    task.wait(1) 
-    
-    if hd and hd:FindFirstChild("Signals") then
-        local fireCmd = hd.Signals:FindFirstChild("RequestCommandSilent") or hd.Signals:FindFirstChild("RequestCommand")
-        if fireCmd then fireCmd:InvokeServer(";kill all") end
-    end
-    pcall(function()
-        if legacyChat and legacyChat:FindFirstChild("SayMessageRequest") then legacyChat.SayMessageRequest:FireServer(";kill all", "All")
-        else textChatService.TextChannels.RBXGeneral:SendAsync(";kill all") end
-    end)
-    
-    print("عملیات با نهایت سرعت به پایان رسید! 🚀")
-end
-
----------------------------------------------------------
--- شروع عملیات یکپارچه و بدون وقفه
+-- شروع عملیات یکپارچه و کنترل‌شده
 ---------------------------------------------------------
 task.spawn(function()
     SetFreeze(true)             
+    
     RemoveAllPlayers()        
-    FastClearMap()        
-    BuildAndVerifyMap(RawData)   
+    FastClearMap()
+    
+    -- منتظر می‌مانیم پاکسازی اولیه تمام شود
+    while ActiveSyncs > 0 do RunService.Heartbeat:Wait() end
+            
+    BuildAndVerifyMap(RawData)
+    
+    -- لود کامل استایل‌ها انجام شده، آزاد کردن پلیر
     SetFreeze(false)             
-    FinalRespawn(CustomCommands) 
+    
+    print("عملیات با نهایت سرعت و بدون هیچ پیامی به پایان رسید! 🚀")
 end)
