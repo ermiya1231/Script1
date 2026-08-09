@@ -1,0 +1,164 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+-- تشخیص اینکه آیا بازیکن روی موبایل/تبلت است یا خیر
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+
+-- ساخت GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AutoEquipGUI"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true 
+
+-- تلاش برای قرار دادن توی CoreGui
+local success, _ = pcall(function()
+    screenGui.Parent = CoreGui
+end)
+if not success then
+    screenGui.Parent = player:WaitForChild("PlayerGui")
+end
+
+-- ساخت بدنه اصلی
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 200, 0, 75)
+frame.Position = UDim2.new(0.5, -100, 0.8, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+local uiCorner = Instance.new("UICorner", frame)
+
+-- ساخت تایتل بار
+local titleBar = Instance.new("TextLabel", frame)
+titleBar.Size = UDim2.new(1, 0, 0, 25)
+titleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+titleBar.Text = "OP Tool Activator"
+titleBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleBar.Font = Enum.Font.GothamBold
+titleBar.TextSize = 12
+local titleCorner = Instance.new("UICorner", titleBar)
+
+-- ساخت دکمه
+local toggleBtn = Instance.new("TextButton", frame)
+toggleBtn.Size = UDim2.new(1, 0, 1, -25)
+toggleBtn.Position = UDim2.new(0, 0, 0, 25)
+toggleBtn.BackgroundTransparency = 1
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.Text = "OFF"
+toggleBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+toggleBtn.TextSize = 16
+
+-- سیستم Drag (سازگار با تاچ موبایل)
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- تابع تشخیص قرارگیری ماوس/لمس روی منو
+local function isMouseOverFrame()
+    local mx, my = mouse.X, mouse.Y
+    local pos = frame.AbsolutePosition
+    local size = frame.AbsoluteSize
+    
+    return (mx >= pos.X and mx <= pos.X + size.X) and (my >= pos.Y and my <= pos.Y + size.Y)
+end
+
+local isLooping = false
+
+-- تابع اصلی اتوکلیک
+local function loopTools()
+    while isLooping do
+        local character = player.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                local tools = {}
+                for _, item in ipairs(player.Backpack:GetChildren()) do
+                    if item:IsA("Tool") then table.insert(tools, item) end
+                end
+                for _, item in ipairs(character:GetChildren()) do
+                    if item:IsA("Tool") then table.insert(tools, item) end
+                end
+
+                for _, tool in ipairs(tools) do
+                    if not isLooping then break end
+
+                    humanoid:EquipTool(tool)
+                    task.wait(0.0125) 
+                    
+                    -- متد اول: بهترین و سازگارترین روش برای موبایل
+                    pcall(function() tool:Activate() end)
+                    
+                    -- برای شبیه‌ساز کلیک بررسی می‌کنیم که آیا ماوس/لمس روی پنل نباشد
+                    if not isMouseOverFrame() then
+                        -- اگر بازیکن در موبایل باشد، متدهای پایین (mouse1click) معمولا نیازی نیستند یا پشتیبانی نمی‌شوند
+                        -- اما VIM روی موبایل هم کار می‌کند (شبیه‌سازی تپ در نقطه تاچ شده)
+                        VirtualInputManager:SendMouseButtonEvent(mouse.X, mouse.Y, 0, true, game, 1)
+                        task.wait(0.0025)
+                        VirtualInputManager:SendMouseButtonEvent(mouse.X, mouse.Y, 0, false, game, 1)
+                        
+                        -- اجرا فقط در صورت پشتیبانی اگزکیوتور (بیشتر مخصوص PC)
+                        if mouse1click then
+                            pcall(mouse1click)
+                        elseif mouse1press and mouse1release then
+                            pcall(mouse1press)
+                            task.wait(0.0025)
+                            pcall(mouse1release)
+                        end
+                    end
+                    
+                    task.wait(0.0125) 
+                end
+            end
+        end
+        task.wait(0.025)
+    end
+end
+
+-- سیستم روشن و خاموش کردن با استفاده از Activated (بهترین گزینه برای لمس موبایل)
+toggleBtn.Activated:Connect(function()
+    isLooping = not isLooping
+    
+    if isLooping then
+        toggleBtn.Text = "ON"
+        toggleBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
+        task.spawn(loopTools)
+    else
+        toggleBtn.Text = "OFF"
+        toggleBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
