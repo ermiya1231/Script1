@@ -423,12 +423,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
                 lastAppliedMode = "Enlarge Tool"
                 lastTool = s
 
-                -- هل دادن ابزار به جلو برای جلوگیری از فرو رفتن در بدن
-                if not originalProperties[s] then
-                    originalProperties[s] = { Grip = s.Grip }
-                end
-                s.Grip = originalProperties[s].Grip * CFrame.new(0, 0, -(reach / 2.5))
-
                 -- محاسبه ضریب سایز
                 if not originalProperties[handle] then
                     local mesh = handle:FindFirstChildOfClass("SpecialMesh")
