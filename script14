@@ -2,7 +2,6 @@ local active = true
 local trueActive = true
 local reachType = "Sphere"
 local currentMode = "Fake Signal"
-local dmgEnabled = true
 local visualizerEnabled = true
 
 local visualizer = Instance.new("Part")
@@ -10,7 +9,8 @@ visualizer.BrickColor = BrickColor.Blue()
 visualizer.Transparency = 0.6
 visualizer.Anchored = true
 visualizer.CanCollide = false
-visualizer.Size = Vector3.new(0.5,0.5,0.5)
+visualizer.Size = Vector3.new(0.5, 0.5, 0.5)
+visualizer.Material = Enum.Material.Neon -- افکت نئون برای جذابیت بیشتر
 visualizer.BottomSurface = Enum.SurfaceType.Smooth
 visualizer.TopSurface = Enum.SurfaceType.Smooth
 
@@ -28,9 +28,6 @@ local ShapeLabel = Instance.new("TextLabel")
 local ShapeBtn = Instance.new("TextButton")
 local ModeLabel = Instance.new("TextLabel")
 local ModeBtn = Instance.new("TextButton")
-local DmgLabel = Instance.new("TextLabel")
-local DmgOuter = Instance.new("Frame")
-local DmgInner = Instance.new("Frame")
 local VisLabel = Instance.new("TextLabel")
 local VisOuter = Instance.new("Frame")
 local VisInner = Instance.new("Frame")
@@ -44,7 +41,8 @@ ScreenGui.ResetOnSpawn = false
 MainFrame.Parent = ScreenGui
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.Size = UDim2.new(0, 300, 0, 280) 
+-- ارتفاع فرم کمتر شد چون دکمه Damage حذف شد
+MainFrame.Size = UDim2.new(0, 300, 0, 240) 
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.BorderSizePixel = 2
 
@@ -141,31 +139,8 @@ ModeBtn.TextSize = 16
 ModeBtn.Font = Enum.Font.SourceSansBold
 ModeBtn.TextXAlignment = Enum.TextXAlignment.Right
 
-DmgLabel.Parent = MainFrame
-DmgLabel.Position = UDim2.new(0, 15, 0, 185)
-DmgLabel.Size = UDim2.new(0, 100, 0, 30)
-DmgLabel.BackgroundTransparency = 1
-DmgLabel.Text = "Damage:"
-DmgLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-DmgLabel.TextSize = 16
-DmgLabel.Font = Enum.Font.SourceSansBold
-DmgLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-DmgOuter.Parent = MainFrame
-DmgOuter.Position = UDim2.new(0, 260, 0, 190)
-DmgOuter.Size = UDim2.new(0, 22, 0, 22)
-DmgOuter.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
-DmgOuter.BorderSizePixel = 0
-
-DmgInner.Parent = DmgOuter
-DmgInner.AnchorPoint = Vector2.new(0.5, 0.5)
-DmgInner.Position = UDim2.new(0.5, 0, 0.5, 0)
-DmgInner.Size = UDim2.new(1, 0, 1, 0)
-DmgInner.BackgroundColor3 = Color3.fromRGB(255, 76, 76)
-DmgInner.BorderSizePixel = 0
-
 VisLabel.Parent = MainFrame
-VisLabel.Position = UDim2.new(0, 15, 0, 225)
+VisLabel.Position = UDim2.new(0, 15, 0, 185) -- دکمه رفت بالا به جای دمیج
 VisLabel.Size = UDim2.new(0, 100, 0, 30)
 VisLabel.BackgroundTransparency = 1
 VisLabel.Text = "Visualizer:"
@@ -175,7 +150,7 @@ VisLabel.Font = Enum.Font.SourceSansBold
 VisLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 VisOuter.Parent = MainFrame
-VisOuter.Position = UDim2.new(0, 260, 0, 230)
+VisOuter.Position = UDim2.new(0, 260, 0, 190)
 VisOuter.Size = UDim2.new(0, 22, 0, 22)
 VisOuter.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
 VisOuter.BorderSizePixel = 0
@@ -188,8 +163,8 @@ VisInner.BackgroundColor3 = Color3.fromRGB(255, 76, 76)
 VisInner.BorderSizePixel = 0
 
 -- [ RGB Effect ] --
-spawn(function()
-    while wait() do
+task.spawn(function()
+    while task.wait() do
         local hue = tick() % 4 / 4
         local color = Color3.fromHSV(hue, 1, 1)
         MainFrame.BorderColor3 = color
@@ -270,13 +245,6 @@ end)
 
 -- [ Buttons Logic ] --
 local ts = game:GetService("TweenService")
-DmgOuter.InputBegan:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 then
-        dmgEnabled = not dmgEnabled
-        local goal = dmgEnabled and {Size = UDim2.new(1,0,1,0)} or {Size = UDim2.new(0,0,0,0)}
-        ts:Create(DmgInner, TweenInfo.new(0.12), goal):Play()
-    end
-end)
 
 VisOuter.InputBegan:Connect(function(inp)
     if inp.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -289,10 +257,7 @@ end)
 local shapes = {"Sphere", "Line", "Cube"}
 local currentShapeIdx = 1
 
--- ذخیره‌سازی ابعاد و مشخصات اولیه
 local originalProperties = {}
-
--- متغیرهای کنترلی برای جلوگیری از گلیچ و اجرای تکراری
 local lastAppliedReach = -1
 local lastAppliedMode = ""
 local lastTool = nil
@@ -311,7 +276,7 @@ local function restoreObject(obj)
                 mesh.Scale = props.MeshScale
             end
         elseif obj:IsA("Tool") then
-            obj.Grip = props.Grip -- بازگردانی جایگاه اصلی ابزار در دست
+            obj.Grip = props.Grip
         elseif obj:IsA("Weld") or obj:IsA("Motor6D") or obj:IsA("ManualWeld") then
             obj.C0 = props.C0
             obj.C1 = props.C1
@@ -344,7 +309,7 @@ ModeBtn.MouseButton1Click:Connect(function()
         ShapeBtn.Text = reachType
         ShapeBtn.TextColor3 = Color3.fromRGB(255, 76, 76)
         restoreAll()
-        lastAppliedReach = -1 -- ریست کردن وضعیت
+        lastAppliedReach = -1
     end
     ModeBtn.Text = currentMode
 end)
@@ -361,27 +326,21 @@ local plr = game.Players.LocalPlayer
 local hitCooldowns = {}
 setmetatable(hitCooldowns, {__mode = "k"})
 
-local function onHit(hit, handle)
-    local char = hit.Parent
+local function onHit(hitPart, handle)
+    if not hitPart or not hitPart.Parent then return end
+    local char = hitPart.Parent
     local victim = char:FindFirstChildOfClass("Humanoid")
     
-    if victim and char.Name ~= plr.Name then
-        if hitCooldowns[char] and (tick() - hitCooldowns[char]) < 0.1 then
+    if victim and victim.Health > 0 and char.Name ~= plr.Name then
+        local currentTime = tick()
+        if hitCooldowns[char] and (currentTime - hitCooldowns[char]) < 0.1 then
             return 
         end
-        hitCooldowns[char] = tick()
+        hitCooldowns[char] = currentTime
 
-        if dmgEnabled then
-            for _,v in pairs(char:GetChildren()) do
-                if v:IsA("Part") or v:IsA("MeshPart") then
-                    firetouchinterest(v, handle, 0)
-                    firetouchinterest(v, handle, 1)
-                end
-            end
-        else
-            firetouchinterest(hit, handle, 0)
-            firetouchinterest(hit, handle, 1)
-        end
+        -- سیستم دمیج امن بدون لوپ‌های سنگین
+        firetouchinterest(hitPart, handle, 0)
+        firetouchinterest(hitPart, handle, 1)
     end
 end
 
@@ -389,8 +348,8 @@ local function getWhiteList()
     local wl = {}
     for _,v in pairs(game.Players:GetPlayers()) do
         if v ~= plr and v.Character then
-            for _,q in pairs(v.Character:GetChildren()) do
-                if q:IsA("Part") then table.insert(wl, q) end
+            for _,q in pairs(v.Character:GetDescendants()) do
+                if q:IsA("BasePart") then table.insert(wl, q) end
             end
         end
     end
@@ -417,13 +376,11 @@ game:GetService("RunService").RenderStepped:Connect(function()
         if currentMode == "Enlarge Tool" then
             visualizer.Parent = nil 
 
-            -- فقط زمانی تغییرات اعمال می‌شود که اسلایدر جابجا شده باشد (جلوگیری از گلیچ فریم)
             if reach ~= lastAppliedReach or lastAppliedMode ~= "Enlarge Tool" or lastTool ~= s then
                 lastAppliedReach = reach
                 lastAppliedMode = "Enlarge Tool"
                 lastTool = s
 
-                -- محاسبه ضریب سایز
                 if not originalProperties[handle] then
                     local mesh = handle:FindFirstChildOfClass("SpecialMesh")
                     originalProperties[handle] = {
@@ -440,7 +397,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
                 if maxDim == 0 then maxDim = 1 end
                 local scaleFactor = reach / maxDim
 
-                -- بزرگ‌نمایی تمام قطعات داخلی ابزار
                 for _, part in pairs(s:GetDescendants()) do
                     if part:IsA("BasePart") then
                         if not originalProperties[part] then
@@ -465,7 +421,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
                         end
                         
                     elseif part:IsA("Weld") or part:IsA("Motor6D") or part:IsA("ManualWeld") then
-                        -- حل مشکل Character: فقط اتصالاتی که هر دو سر آن‌ها داخل خود شمشیر است تغییر می‌کنند!
                         if part.Part0 and part.Part1 and part.Part0:IsDescendantOf(s) and part.Part1:IsDescendantOf(s) then
                             if not originalProperties[part] then
                                 originalProperties[part] = { C0 = part.C0, C1 = part.C1 }
@@ -473,7 +428,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
                             local origC0 = originalProperties[part].C0
                             local origC1 = originalProperties[part].C1
                             
-                            -- فاصله قطعات شمشیر از هم به نسبت سایز بزرگ می‌شود
                             part.C0 = CFrame.new(origC0.Position * scaleFactor) * origC0.Rotation
                             part.C1 = CFrame.new(origC1.Position * scaleFactor) * origC1.Rotation
                         end
@@ -482,7 +436,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
             end
 
         else
-            -- حالت Fake Signal
+            -- حالت Fake Signal (رفع باگ هیت‌باکس‌ها)
             if lastAppliedMode == "Enlarge Tool" then
                 restoreAll()
                 lastAppliedReach = -1
@@ -495,26 +449,29 @@ game:GetService("RunService").RenderStepped:Connect(function()
                 visualizer.Shape = Enum.PartType.Ball
                 visualizer.Size = Vector3.new(reach, reach, reach)
                 visualizer.CFrame = handle.CFrame
+                
                 for _,v in pairs(game.Players:GetPlayers()) do
                     local hrp = v.Character and v.Character:FindFirstChild("HumanoidRootPart")
-                    if hrp and handle and (hrp.Position - handle.Position).Magnitude <= reach then
+                    -- فیکس اصلی اینجاست: شعاع کره باید تقسیم بر 2 بشه تا کاملاً مچ بشه با سایز ویژوالایزر
+                    if hrp and handle and (hrp.Position - handle.Position).Magnitude <= (reach / 2) then
                         onHit(hrp, handle)
                     end
                 end
                 
             elseif reachType == "Line" then
-                local origin = (handle.CFrame * CFrame.new(0, 0, -2)).p
-                local ray = Ray.new(origin, handle.CFrame.lookVector * -reach)
+                -- فیکس اساسی برای لاین: هم‌مسیر کردن Ray و Visualizer
+                local origin = handle.CFrame.Position
+                local direction = handle.CFrame.lookVector * reach
+                
+                local ray = Ray.new(origin, direction)
                 local p, pos = workspace:FindPartOnRayWithWhitelist(ray, getWhiteList())
+                
                 visualizer.Shape = Enum.PartType.Block
-                visualizer.Size = Vector3.new(1, 0.8, reach)
-                visualizer.CFrame = handle.CFrame * CFrame.new(0, 0, (reach/2) + 2)
+                visualizer.Size = Vector3.new(0.5, 0.5, reach)
+                visualizer.CFrame = CFrame.new(origin + direction/2, origin + direction)
+                
                 if p then
                     onHit(p, handle)
-                else
-                    for _,v in pairs(handle:GetTouchingParts()) do
-                        onHit(v, handle)
-                    end
                 end
                 
             elseif reachType == "Cube" then
