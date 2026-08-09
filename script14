@@ -1,10 +1,3 @@
---[[
-    Customized Reach Script (Updated - V4)
-    Features: Draggable, RGB, Slider with Knob, Centered, Black Theme
-    Shapes: Sphere, Line, Cube (Locked on Enlarge Tool)
-    Modes: Fake Signal (firetouchinterest), Enlarge Tool (Mesh Preserved, Trans. 0.7)
-]]
-
 local active = true
 local trueActive = true
 local reachType = "Sphere"
@@ -59,7 +52,7 @@ Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
-Title.Text = "RGB REACH GUI"
+Title.Text = "C00LREACH Panel"
 Title.TextSize = 18
 
 ReachLabel.Parent = MainFrame
