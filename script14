@@ -289,33 +289,45 @@ end)
 local shapes = {"Sphere", "Line", "Cube"}
 local currentShapeIdx = 1
 
--- ذخیره‌سازی ابعاد و مشخصات اولیه ابزارها
+-- ذخیره‌سازی ابعاد و مشخصات اولیه
 local originalProperties = {}
 
-local function restoreHandle(handle)
-    if handle and originalProperties[handle] then
-        local props = originalProperties[handle]
-        handle.Size = props.Size
-        handle.Transparency = props.Transparency
-        handle.Massless = props.Massless
-        handle.CanCollide = props.CanCollide
-        
-        local mesh = handle:FindFirstChildOfClass("SpecialMesh")
-        if mesh and props.MeshScale then
-            mesh.Scale = props.MeshScale
+-- متغیرهای کنترلی برای جلوگیری از گلیچ و اجرای تکراری
+local lastAppliedReach = -1
+local lastAppliedMode = ""
+local lastTool = nil
+
+local function restoreObject(obj)
+    if obj and originalProperties[obj] then
+        local props = originalProperties[obj]
+        if obj:IsA("BasePart") then
+            obj.Size = props.Size
+            obj.Transparency = props.Transparency
+            obj.Massless = props.Massless
+            obj.CanCollide = props.CanCollide
+            
+            local mesh = obj:FindFirstChildOfClass("SpecialMesh")
+            if mesh and props.MeshScale then
+                mesh.Scale = props.MeshScale
+            end
+        elseif obj:IsA("Tool") then
+            obj.Grip = props.Grip -- بازگردانی جایگاه اصلی ابزار در دست
+        elseif obj:IsA("Weld") or obj:IsA("Motor6D") or obj:IsA("ManualWeld") then
+            obj.C0 = props.C0
+            obj.C1 = props.C1
         end
-        originalProperties[handle] = nil
+        originalProperties[obj] = nil
     end
 end
 
-local function restoreAllHandles()
-    for handle, _ in pairs(originalProperties) do
-        restoreHandle(handle)
+local function restoreAll()
+    for obj, _ in pairs(originalProperties) do
+        restoreObject(obj)
     end
 end
 
 ShapeBtn.MouseButton1Click:Connect(function()
-    if currentMode == "Enlarge Tool" then return end -- غیرفعال بودن تغییر Shape در این حالت
+    if currentMode == "Enlarge Tool" then return end 
     currentShapeIdx = currentShapeIdx + 1
     if currentShapeIdx > #shapes then currentShapeIdx = 1 end
     reachType = shapes[currentShapeIdx]
@@ -331,7 +343,8 @@ ModeBtn.MouseButton1Click:Connect(function()
         currentMode = "Fake Signal"
         ShapeBtn.Text = reachType
         ShapeBtn.TextColor3 = Color3.fromRGB(255, 76, 76)
-        restoreAllHandles()
+        restoreAll()
+        lastAppliedReach = -1 -- ریست کردن وضعیت
     end
     ModeBtn.Text = currentMode
 end)
@@ -345,20 +358,18 @@ end)
 
 -- [ Core Reach Logic ] --
 local plr = game.Players.LocalPlayer
-
 local hitCooldowns = {}
-setmetatable(hitCooldowns, {__mode = "k"}) -- جلوگیری از پر شدن مموری
+setmetatable(hitCooldowns, {__mode = "k"})
 
 local function onHit(hit, handle)
     local char = hit.Parent
     local victim = char:FindFirstChildOfClass("Humanoid")
     
     if victim and char.Name ~= plr.Name then
-        -- بررسی کول‌داون (فقط اجازه میده هر 0.1 ثانیه یکبار برای این کاراکتر سیگنال بره)
         if hitCooldowns[char] and (tick() - hitCooldowns[char]) < 0.1 then
             return 
         end
-        hitCooldowns[char] = tick() -- ثبت زمان آخرین اتک
+        hitCooldowns[char] = tick()
 
         if dmgEnabled then
             for _,v in pairs(char:GetChildren()) do
@@ -390,68 +401,101 @@ game:GetService("RunService").RenderStepped:Connect(function()
     if not active or not trueActive then return end
     local s = plr.Character and plr.Character:FindFirstChildOfClass("Tool")
     
-    -- اگر ابزار دست بازیکن نبود، ویژوالایزر یا تغییرات قبلی پاک می‌شوند
     if not s then 
         visualizer.Parent = nil
-        restoreAllHandles()
+        restoreAll()
+        lastAppliedReach = -1
+        lastTool = nil
         return
     end
 
-    -- پیدا کردن Handle اصلی برای مرکزیت و محاسبه ضریب
-    local mainHandle = s:FindFirstChild("Handle") or s:FindFirstChildOfClass("Part")
-    
-    if mainHandle then
+    local handle = s:FindFirstChild("Handle") or s:FindFirstChildOfClass("Part")
+    if handle then
         local reach = tonumber(TextBox.Text)
         if not reach then return end
 
         if currentMode == "Enlarge Tool" then
-            -- ویژوالایزر مجزا خاموش می‌شود
             visualizer.Parent = nil 
 
-            -- محاسبه ضریب بزرگ‌نمایی بر اساس پارت اصلی (برای حفظ تناسب کل سلاح)
-            local baseMaxDim = math.max(mainHandle.Size.X, mainHandle.Size.Y, mainHandle.Size.Z)
-            if baseMaxDim == 0 then baseMaxDim = 1 end
-            local scaleFactor = reach / baseMaxDim
+            -- فقط زمانی تغییرات اعمال می‌شود که اسلایدر جابجا شده باشد (جلوگیری از گلیچ فریم)
+            if reach ~= lastAppliedReach or lastAppliedMode ~= "Enlarge Tool" or lastTool ~= s then
+                lastAppliedReach = reach
+                lastAppliedMode = "Enlarge Tool"
+                lastTool = s
 
-            -- حلقه برای پیدا کردن و بزرگ کردن تمام پارت‌های Tool
-            for _, obj in pairs(s:GetDescendants()) do
-                if obj:IsA("BasePart") then
-                    -- ذخیره مشخصات اولیه هر پارت به صورت جداگانه
-                    if not originalProperties[obj] then
-                        local mesh = obj:FindFirstChildOfClass("SpecialMesh")
-                        originalProperties[obj] = {
-                            Size = obj.Size,
-                            Transparency = obj.Transparency,
-                            Massless = obj.Massless,
-                            CanCollide = obj.CanCollide,
-                            MeshScale = mesh and mesh.Scale or nil
-                        }
-                    end
+                -- هل دادن ابزار به جلو برای جلوگیری از فرو رفتن در بدن
+                if not originalProperties[s] then
+                    originalProperties[s] = { Grip = s.Grip }
+                end
+                s.Grip = originalProperties[s].Grip * CFrame.new(0, 0, -(reach / 2.5))
 
-                    local origSize = originalProperties[obj].Size
-                    
-                    -- اعمال بزرگ‌نمایی و تنظیمات روی همه پارت‌ها
-                    obj.Size = origSize * scaleFactor
-                    obj.Transparency = 0.7 
-                    obj.Massless = true
-                    obj.CanCollide = false
+                -- محاسبه ضریب سایز
+                if not originalProperties[handle] then
+                    local mesh = handle:FindFirstChildOfClass("SpecialMesh")
+                    originalProperties[handle] = {
+                        Size = handle.Size,
+                        Transparency = handle.Transparency,
+                        Massless = handle.Massless,
+                        CanCollide = handle.CanCollide,
+                        MeshScale = mesh and mesh.Scale or nil
+                    }
+                end
+                
+                local origSize = originalProperties[handle].Size
+                local maxDim = math.max(origSize.X, origSize.Y, origSize.Z)
+                if maxDim == 0 then maxDim = 1 end
+                local scaleFactor = reach / maxDim
 
-                    -- بزرگ کردن Mesh (در صورت وجود)
-                    local mesh = obj:FindFirstChildOfClass("SpecialMesh")
-                    if mesh and originalProperties[obj].MeshScale then
-                        mesh.Scale = originalProperties[obj].MeshScale * scaleFactor
+                -- بزرگ‌نمایی تمام قطعات داخلی ابزار
+                for _, part in pairs(s:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        if not originalProperties[part] then
+                            local mesh = part:FindFirstChildOfClass("SpecialMesh")
+                            originalProperties[part] = {
+                                Size = part.Size,
+                                Transparency = part.Transparency,
+                                Massless = part.Massless,
+                                CanCollide = part.CanCollide,
+                                MeshScale = mesh and mesh.Scale or nil
+                            }
+                        end
+                        
+                        part.Size = originalProperties[part].Size * scaleFactor
+                        part.Transparency = 0.7
+                        part.Massless = true
+                        part.CanCollide = false
+
+                        local mesh = part:FindFirstChildOfClass("SpecialMesh")
+                        if mesh and originalProperties[part].MeshScale then
+                            mesh.Scale = originalProperties[part].MeshScale * scaleFactor
+                        end
+                        
+                    elseif part:IsA("Weld") or part:IsA("Motor6D") or part:IsA("ManualWeld") then
+                        -- حل مشکل Character: فقط اتصالاتی که هر دو سر آن‌ها داخل خود شمشیر است تغییر می‌کنند!
+                        if part.Part0 and part.Part1 and part.Part0:IsDescendantOf(s) and part.Part1:IsDescendantOf(s) then
+                            if not originalProperties[part] then
+                                originalProperties[part] = { C0 = part.C0, C1 = part.C1 }
+                            end
+                            local origC0 = originalProperties[part].C0
+                            local origC1 = originalProperties[part].C1
+                            
+                            -- فاصله قطعات شمشیر از هم به نسبت سایز بزرگ می‌شود
+                            part.C0 = CFrame.new(origC0.Position * scaleFactor) * origC0.Rotation
+                            part.C1 = CFrame.new(origC1.Position * scaleFactor) * origC1.Rotation
+                        end
                     end
                 end
             end
 
         else
-            -- بازگرداندن تمام پارت‌های ابزار به حالت اول در صورت سوییچ به Fake Signal
-            restoreAllHandles()
+            -- حالت Fake Signal
+            if lastAppliedMode == "Enlarge Tool" then
+                restoreAll()
+                lastAppliedReach = -1
+                lastAppliedMode = "Fake Signal"
+            end
 
-            -- کنترل ویژوالایزر در حالت Fake Signal
             visualizer.Parent = visualizerEnabled and workspace or nil
-            
-            local handle = mainHandle -- استفاده از پارت اصلی به عنوان مرکز سیگنال
 
             if reachType == "Sphere" then
                 visualizer.Shape = Enum.PartType.Ball
