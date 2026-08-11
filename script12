@@ -1,5 +1,5 @@
 -- ==========================================
--- ELITE ANTI SLAP (FLAWLESS PHYSICS) - NO ANTI VOID
+-- NUCLEAR ANTI SLAP (ABSOLUTE IMMUNITY - NO HOOKS)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -9,14 +9,15 @@ local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 local Enabled = false
-local RenderConnection = nil
-local MoverConnection = nil
+local Connection = nil
+
+local MoverName = "GOD_MOVER_ANTISLAP"
 
 ------------------------------------------
--- 1. ساخت GUI مدرن و شیک (Anti Slap)
+-- 1. ساخت GUI 
 ------------------------------------------
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "AntiSlap_UI"
+ScreenGui.Name = "NuclearAntiSlap_UI"
 ScreenGui.ResetOnSpawn = false
 pcall(function() ScreenGui.Parent = CoreGui end)
 if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
@@ -25,7 +26,7 @@ local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 170, 0, 80)
 MainFrame.Position = UDim2.new(0.45, 0, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -36,8 +37,8 @@ FrameCorner.CornerRadius = UDim.new(0, 10)
 FrameCorner.Parent = MainFrame
 
 local FrameStroke = Instance.new("UIStroke")
-FrameStroke.Color = Color3.fromRGB(255, 60, 60)
-FrameStroke.Thickness = 1.5
+FrameStroke.Color = Color3.fromRGB(255, 30, 30)
+FrameStroke.Thickness = 2
 FrameStroke.Parent = MainFrame
 
 local Title = Instance.new("TextLabel")
@@ -45,7 +46,7 @@ Title.Name = "Title"
 Title.Size = UDim2.new(1, 0, 0.4, 0)
 Title.Position = UDim2.new(0, 0, 0.05, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "Anti Slap"
+Title.Text = "GOD Anti Slap"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
@@ -55,7 +56,7 @@ local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "ToggleBtn"
 ToggleBtn.Size = UDim2.new(0.85, 0, 0.42, 0)
 ToggleBtn.Position = UDim2.new(0.075, 0, 0.48, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 ToggleBtn.Text = "OFF"
 ToggleBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
 ToggleBtn.TextSize = 14
@@ -72,38 +73,54 @@ BtnStroke.Thickness = 1
 BtnStroke.Parent = ToggleBtn
 
 ------------------------------------------
--- 2. توابع امنیتی (بدون سپر محافظ)
+-- 2. پاک‌کننده فورس‌های سرور
 ------------------------------------------
-local function SetupProtections(char)
-    if not Enabled then return end
-    
-    local root = char:WaitForChild("HumanoidRootPart", 5)
-    local hum = char:WaitForChild("Humanoid", 5)
-    if not root or not hum then return end
-    
-    hum:GetPropertyChangedSignal("PlatformStand"):Connect(function()
-        if Enabled and hum.PlatformStand then hum.PlatformStand = false end
-    end)
-    hum:GetPropertyChangedSignal("Sit"):Connect(function()
-        if Enabled and hum.Sit then hum.Sit = false end
-    end)
-    
-    if MoverConnection then MoverConnection:Disconnect() end
-    MoverConnection = char.DescendantAdded:Connect(function(obj)
-        if not Enabled then return end
-        if obj:IsA("BodyMover") or obj:IsA("LinearVelocity") or obj:IsA("AngularVelocity") or obj:IsA("AlignPosition") or obj:IsA("VectorForce") or obj:IsA("Torque") then
-            pcall(function() obj:Destroy() end)
+local function KillForeignMovers(char)
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BodyMover") or part:IsA("BodyVelocity") or part:IsA("BodyForce") 
+        or part:IsA("BodyPosition") or part:IsA("BodyThrust") or part:IsA("VectorForce") 
+        or part:IsA("AlignPosition") or part:IsA("LinearVelocity") or part:IsA("AngularVelocity") then
+            -- پاک کردن همه فورس‌ها به جز موتور خودمون
+            if part.Name ~= MoverName then
+                pcall(function() part:Destroy() end)
+            end
         end
-    end)
+    end
 end
 
 ------------------------------------------
--- 3. گارد حرکتی
+-- 3. نصب موتور فیزیک شخصی (Infinite Force)
 ------------------------------------------
-local function StartSmartGuard()
-    if RenderConnection then RenderConnection:Disconnect() end
+local function SetupGodMode(char)
+    local root = char:WaitForChild("HumanoidRootPart", 5)
+    if not root then return end
     
-    RenderConnection = RunService.RenderStepped:Connect(function()
+    -- پاکسازی موتورهای قبلی در صورت وجود
+    if root:FindFirstChild(MoverName) then root[MoverName]:Destroy() end
+    if root:FindFirstChild("AntiSlapAttachment") then root.AntiSlapAttachment:Destroy() end
+
+    -- ساخت اتچمنت
+    local attach = Instance.new("Attachment", root)
+    attach.Name = "AntiSlapAttachment"
+
+    -- ساخت موتور با نیروی بینهایت
+    local lv = Instance.new("LinearVelocity", root)
+    lv.Name = MoverName
+    lv.Attachment0 = attach
+    lv.ForceLimitMode = Enum.ForceLimitMode.PerAxis
+    -- قفل کردن کامل محور X و Z (هیچکس نمیتونه پرتت کنه چپ/راست/جلو/عقب)
+    lv.MaxAxesForce = Vector3.new(math.huge, 0, math.huge) 
+    lv.RelativeTo = Enum.ActuatorRelativeTo.World
+    lv.VectorVelocity = Vector3.zero
+end
+
+------------------------------------------
+-- 4. لوپ اصلی (حفاظت در هر میلی‌ثانیه)
+------------------------------------------
+local function StartGodGuard()
+    if Connection then Connection:Disconnect() end
+    
+    Connection = RunService.Heartbeat:Connect(function()
         if not Enabled then return end
         
         local char = LocalPlayer.Character
@@ -112,77 +129,87 @@ local function StartSmartGuard()
         local root = char:FindFirstChild("HumanoidRootPart")
         local hum = char:FindFirstChildOfClass("Humanoid")
         
-        -- غیرفعال کردن برخورد با سایر پلیرها
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                for _, part in ipairs(player.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end
-        
         if hum and root then
-            -- جلوگیری از استیت‌های خطرناک
+            -- 1. کشتن هر نیرویی که سرور روت میندازه
+            KillForeignMovers(char)
+            
+            -- 2. غیرفعال کردن استیت‌های سقوط و پرت شدن
             hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
             hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
             hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
             
-            local currentVel = root.AssemblyLinearVelocity
-            local horizontalVel = Vector3.new(currentVel.X, 0, currentVel.Z)
-            local maxWalkSpeed = hum.WalkSpeed + 5
+            local isMoving = hum.MoveDirection.Magnitude > 0
+            local isOnGround = hum.FloorMaterial ~= Enum.Material.Air
+            local isJumping = hum.Jump
             
-            -- فیلتر سرعت افقی (پرتاب شدن به اطراف)
-            if horizontalVel.Magnitude > maxWalkSpeed then
-                root.AssemblyLinearVelocity = Vector3.new(0, currentVel.Y, 0)
+            -- 3. سیستم لنگر خودکار (Auto-Anchor)
+            -- اگر دستت به WASD نیست و روی زمینی، کاملا لنگر میشی (هیچکس تو بازی نمیتونه تکونت بده)
+            if not isMoving and isOnGround and not isJumping then
+                root.Anchored = true
+                root.AssemblyLinearVelocity = Vector3.zero
+            else
+                root.Anchored = false
             end
             
-            -- فیلتر پرتاب شدن به بالا
-            if currentVel.Y > 70 then
-                root.AssemblyLinearVelocity = Vector3.new(currentVel.X, 0, currentVel.Z)
+            -- 4. کنترل جهت با موتور شخصی (مقاومت بی‌نهایت)
+            local lv = root:FindFirstChild(MoverName)
+            if lv then
+                -- سرعت موتور رو برابر با دکمه‌های WASD قرار میدیم
+                lv.VectorVelocity = hum.MoveDirection * hum.WalkSpeed
             end
             
-            -- فیلتر چرخش‌های غیرطبیعی
-            if root.AssemblyAngularVelocity.Magnitude > 25 then
-                root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            -- 5. ضد آپرکات (Anti-Uppercut)
+            -- اگر سرور تورو با قدرت پرتاب کرد بالا، درجا سرعت یقه رو صفر میکنه
+            if root.AssemblyLinearVelocity.Y > hum.JumpPower + 2 then
+                root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             end
+            
+            -- 6. ضد چرخیدن
+            root.AssemblyAngularVelocity = Vector3.zero
         end
     end)
 end
 
 ------------------------------------------
--- 4. عملکرد دکمه ON/OFF
+-- 5. دکمه فعال/غیرفعال
 ------------------------------------------
 ToggleBtn.MouseButton1Click:Connect(function()
     Enabled = not Enabled
     if Enabled then
         ToggleBtn.Text = "ON"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
         ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        BtnStroke.Color = Color3.fromRGB(0, 220, 110)
-        FrameStroke.Color = Color3.fromRGB(0, 220, 110)
+        BtnStroke.Color = Color3.fromRGB(0, 255, 120)
+        FrameStroke.Color = Color3.fromRGB(0, 255, 120)
         
         if LocalPlayer.Character then
-            SetupProtections(LocalPlayer.Character)
+            SetupGodMode(LocalPlayer.Character)
         end
-        StartSmartGuard()
+        StartGodGuard()
     else
         ToggleBtn.Text = "OFF"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
         ToggleBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
         BtnStroke.Color = Color3.fromRGB(60, 60, 65)
-        FrameStroke.Color = Color3.fromRGB(255, 60, 60)
+        FrameStroke.Color = Color3.fromRGB(255, 30, 30)
         
-        if RenderConnection then RenderConnection:Disconnect() end
-        if MoverConnection then MoverConnection:Disconnect() end
+        if Connection then Connection:Disconnect() end
+        
+        -- برگرداندن به حالت عادی
+        if LocalPlayer.Character then
+            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                root.Anchored = false
+                if root:FindFirstChild(MoverName) then root[MoverName]:Destroy() end
+                if root:FindFirstChild("AntiSlapAttachment") then root.AntiSlapAttachment:Destroy() end
+            end
+        end
     end
 end)
 
 LocalPlayer.CharacterAdded:Connect(function(newChar)
     if Enabled then
-        SetupProtections(newChar)
+        task.wait(0.5) -- صبر میکنیم تا کاراکتر کامل لود بشه
+        SetupGodMode(newChar)
     end
 end)
