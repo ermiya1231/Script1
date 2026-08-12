@@ -1,5 +1,79 @@
---Invisible function isnt mainly mine but i modified 100% (fixes + lag efficency + bad value changes + etc) of it everything else is mine
---credits: secment (aka respectfilteringenabled on discord), creator of invisible function is unknown
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ۱. ساخت ScreenGui پایه
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CoolModeGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- ۲. ساخت پنل اصلی (Frame)
+local frame = Instance.new("Frame")
+frame.Name = "NotifyFrame"
+-- استفاده از Scale برای تناسب اولیه
+frame.Size = UDim2.new(0.3, 0, 0.1, 0)
+-- قرار دادن فریم بیرون از صفحه (سمت راست) برای شروع انیمیشن
+frame.Position = UDim2.new(1.5, 0, 1, -20) 
+frame.AnchorPoint = Vector2.new(1, 1)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25) -- پس‌زمینه تیره و مدرن
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+-- گرد کردن گوشه‌های پنل
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = frame
+
+-- اضافه کردن یک خط دور (Stroke) نئونی و جذاب
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(0, 255, 128) -- رنگ سبز نئونی
+stroke.Thickness = 2
+stroke.Parent = frame
+
+-- ۳. محدودکننده سایز (راز اصلی برای یکسان بودن در PC و موبایل)
+local sizeConstraint = Instance.new("UISizeConstraint")
+sizeConstraint.MaxSize = Vector2.new(300, 65)
+sizeConstraint.MinSize = Vector2.new(200, 50)
+sizeConstraint.Parent = frame
+
+-- ۴. ساخت متن
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Anti Kick Enabled"
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.Font = Enum.Font.GothamBold -- فونت شیک و خوانا
+textLabel.TextScaled = true
+textLabel.Parent = frame
+
+-- محدودکننده سایز متن برای جلوگیری از به‌هم‌ریختگی
+local textConstraint = Instance.new("UITextSizeConstraint")
+textConstraint.MaxTextSize = 22
+textConstraint.MinTextSize = 12
+textConstraint.Parent = textLabel
+
+-- ۵. تنظیمات انیمیشن (Tween)
+-- انیمیشن ورود (نرم و سریع)
+local slideInInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+local slideIn = TweenService:Create(frame, slideInInfo, {Position = UDim2.new(1, -20, 1, -20)})
+
+-- انیمیشن خروج (نرم به سمت بیرون)
+local slideOutInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+local slideOut = TweenService:Create(frame, slideOutInfo, {Position = UDim2.new(1.5, 0, 1, -20)})
+
+-- ۶. اجرای اسکریپت
+-- آوردن نوتیفیکیشن به داخل صفحه
+slideIn:Play()
+
+-- صبر کردن به مدت ۳ ثانیه، سپس خروج و حذف کامل
+task.delay(3, function()
+	slideOut:Play()
+	slideOut.Completed:Wait() -- صبر می‌کند تا انیمیشن خروج تمام شود
+	screenGui:Destroy() -- پاک کردن GUI برای جلوگیری از لگ
+end)
 BetterLc=true --better localplayer cloning
 FFTime=true --if set to true it will be the spawn location's duration if a spawnlocation exists else it will be 10 seconds if set to false will always be 10 seconds
 --[[Untested]]
