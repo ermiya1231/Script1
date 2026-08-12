@@ -1,11 +1,10 @@
 -- ==========================================
--- NUCLEAR ANTI SLAP (ABSOLUTE IMMUNITY - NO HOOKS)
+-- NUCLEAR ANTI SLAP (ABSOLUTE IMMUNITY - FIXED SINKING & JUMP)
 -- ==========================================
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
-local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 local Enabled = false
@@ -80,7 +79,6 @@ local function KillForeignMovers(char)
         if part:IsA("BodyMover") or part:IsA("BodyVelocity") or part:IsA("BodyForce") 
         or part:IsA("BodyPosition") or part:IsA("BodyThrust") or part:IsA("VectorForce") 
         or part:IsA("AlignPosition") or part:IsA("LinearVelocity") or part:IsA("AngularVelocity") then
-            -- پاک کردن همه فورس‌ها به جز موتور خودمون
             if part.Name ~= MoverName then
                 pcall(function() part:Destroy() end)
             end
@@ -89,33 +87,29 @@ local function KillForeignMovers(char)
 end
 
 ------------------------------------------
--- 3. نصب موتور فیزیک شخصی (Infinite Force)
+-- 3. نصب موتور فیزیک شخصی
 ------------------------------------------
 local function SetupGodMode(char)
     local root = char:WaitForChild("HumanoidRootPart", 5)
     if not root then return end
     
-    -- پاکسازی موتورهای قبلی در صورت وجود
     if root:FindFirstChild(MoverName) then root[MoverName]:Destroy() end
     if root:FindFirstChild("AntiSlapAttachment") then root.AntiSlapAttachment:Destroy() end
 
-    -- ساخت اتچمنت
     local attach = Instance.new("Attachment", root)
     attach.Name = "AntiSlapAttachment"
 
-    -- ساخت موتور با نیروی بینهایت
     local lv = Instance.new("LinearVelocity", root)
     lv.Name = MoverName
     lv.Attachment0 = attach
     lv.ForceLimitMode = Enum.ForceLimitMode.PerAxis
-    -- قفل کردن کامل محور X و Z (هیچکس نمیتونه پرتت کنه چپ/راست/جلو/عقب)
     lv.MaxAxesForce = Vector3.new(math.huge, 0, math.huge) 
     lv.RelativeTo = Enum.ActuatorRelativeTo.World
     lv.VectorVelocity = Vector3.zero
 end
 
 ------------------------------------------
--- 4. لوپ اصلی (حفاظت در هر میلی‌ثانیه)
+-- 4. لوپ اصلی (محافظت کامل در برابر فرو رفتن)
 ------------------------------------------
 local function StartGodGuard()
     if Connection then Connection:Disconnect() end
@@ -130,41 +124,58 @@ local function StartGodGuard()
         local hum = char:FindFirstChildOfClass("Humanoid")
         
         if hum and root then
-            -- 1. کشتن هر نیرویی که سرور روت میندازه
             KillForeignMovers(char)
             
-            -- 2. غیرفعال کردن استیت‌های سقوط و پرت شدن
+            -- ۱. جلوگیری از زمین‌گیر شدن و افتادن
+            hum.PlatformStand = false
+            hum.Sit = false
+            
+            -- ۲. غیرفعال کردن استیت‌های راگ‌دال و فیزیک
             hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
             hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
             hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+            hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+            
+            -- اگر بازی سعی کرد استیت را راگ‌دال کند، بلافاصله ایستاده‌اش می‌کنیم
+            local currentState = hum:GetState()
+            if currentState == Enum.HumanoidStateType.Ragdoll or currentState == Enum.HumanoidStateType.Physics or currentState == Enum.HumanoidStateType.FallingDown then
+                hum:ChangeState(Enum.HumanoidStateType.Running)
+            end
+            
+            -- ۳. اجبار برخورد با زمین (جلوگیری ۱۰۰٪ از فرو رفتن در زمین)
+            root.CanCollide = true
+            if char:FindFirstChild("Torso") then char.Torso.CanCollide = true end
+            if char:FindFirstChild("UpperTorso") then char.UpperTorso.CanCollide = true end
+            if char:FindFirstChild("LowerTorso") then char.LowerTorso.CanCollide = true end
             
             local isMoving = hum.MoveDirection.Magnitude > 0
-            local isOnGround = hum.FloorMaterial ~= Enum.Material.Air
-            local isJumping = hum.Jump
             
-            -- 3. سیستم لنگر خودکار (Auto-Anchor)
-            -- اگر دستت به WASD نیست و روی زمینی، کاملا لنگر میشی (هیچکس تو بازی نمیتونه تکونت بده)
-            if not isMoving and isOnGround and not isJumping then
+            -- تشخیص دقیق وضعیت پرش
+            local isJumpingOrFalling = (currentState == Enum.HumanoidStateType.Jumping) 
+                or (currentState == Enum.HumanoidStateType.Freefall) 
+                or (hum.FloorMaterial == Enum.Material.Air)
+                or (math.abs(root.AssemblyLinearVelocity.Y) > 1)
+                or hum.Jump
+            
+            -- ۴. لنگر هوشمند (فقط موقع ایستادن روی زمین)
+            if not isMoving and not isJumpingOrFalling then
                 root.Anchored = true
                 root.AssemblyLinearVelocity = Vector3.zero
             else
                 root.Anchored = false
             end
             
-            -- 4. کنترل جهت با موتور شخصی (مقاومت بی‌نهایت)
+            -- ۵. کنترل حرکت
             local lv = root:FindFirstChild(MoverName)
             if lv then
-                -- سرعت موتور رو برابر با دکمه‌های WASD قرار میدیم
                 lv.VectorVelocity = hum.MoveDirection * hum.WalkSpeed
             end
             
-            -- 5. ضد آپرکات (Anti-Uppercut)
-            -- اگر سرور تورو با قدرت پرتاب کرد بالا، درجا سرعت یقه رو صفر میکنه
-            if root.AssemblyLinearVelocity.Y > hum.JumpPower + 2 then
-                root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            -- ۶. ضد آپرکات شدید
+            if root.AssemblyLinearVelocity.Y > 110 then
+                root.AssemblyLinearVelocity = Vector3.new(root.AssemblyLinearVelocity.X, 0, root.AssemblyLinearVelocity.Z)
             end
             
-            -- 6. ضد چرخیدن
             root.AssemblyAngularVelocity = Vector3.zero
         end
     end)
@@ -195,7 +206,6 @@ ToggleBtn.MouseButton1Click:Connect(function()
         
         if Connection then Connection:Disconnect() end
         
-        -- برگرداندن به حالت عادی
         if LocalPlayer.Character then
             local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if root then
@@ -209,7 +219,7 @@ end)
 
 LocalPlayer.CharacterAdded:Connect(function(newChar)
     if Enabled then
-        task.wait(0.5) -- صبر میکنیم تا کاراکتر کامل لود بشه
+        task.wait(0.5)
         SetupGodMode(newChar)
     end
 end)
