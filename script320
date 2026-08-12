@@ -1,0 +1,4538 @@
+
+
+-- Instances: 98 | Scripts: 25 | Modules: 0 | Tags: 0 (gui2lua)
+local G2L = {};
+
+-- StarterGui.urban1's universal GUI
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"]["IgnoreGuiInset"] = true;
+G2L["1"]["ScreenInsets"] = Enum.ScreenInsets.None;
+G2L["1"]["Name"] = [[urban1's universal GUI]];
+G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+G2L["1"]["ResetOnSpawn"] = false;
+
+
+-- StarterGui.urban1's universal GUI.SimulationRadius
+G2L["2"] = Instance.new("LocalScript", G2L["1"]);
+G2L["2"]["Name"] = [[SimulationRadius]];
+
+
+-- StarterGui.urban1's universal GUI.plug the discord
+G2L["3"] = Instance.new("LocalScript", G2L["1"]);
+G2L["3"]["Name"] = [[plug the discord]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar
+G2L["4"] = Instance.new("Frame", G2L["1"]);
+G2L["4"]["ZIndex"] = 5;
+G2L["4"]["BorderSizePixel"] = 3;
+G2L["4"]["BackgroundColor3"] = Color3.fromRGB(41, 51, 64);
+G2L["4"]["Size"] = UDim2.new(0, 377, 0, 41);
+G2L["4"]["Position"] = UDim2.new(0.4, 0, 0.1, 1);
+G2L["4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4"]["Name"] = [[TopBar]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.Smooth GUI Dragging
+G2L["5"] = Instance.new("LocalScript", G2L["4"]);
+G2L["5"]["Name"] = [[Smooth GUI Dragging]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.Title
+G2L["6"] = Instance.new("TextLabel", G2L["4"]);
+G2L["6"]["TextWrapped"] = true;
+G2L["6"]["ZIndex"] = 3;
+G2L["6"]["BorderSizePixel"] = 0;
+G2L["6"]["TextSize"] = 54;
+G2L["6"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["6"]["TextScaled"] = true;
+G2L["6"]["BackgroundColor3"] = Color3.fromRGB(168, 235, 255);
+G2L["6"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["6"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["6"]["BackgroundTransparency"] = 1;
+G2L["6"]["Size"] = UDim2.new(0, 274, 0, 28);
+G2L["6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["6"]["Text"] = [[urban1's universal GUI]];
+G2L["6"]["Name"] = [[Title]];
+G2L["6"]["Position"] = UDim2.new(0.00289, 0, 0.14848, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MinimizeZindexFix
+G2L["7"] = Instance.new("Frame", G2L["4"]);
+G2L["7"]["ZIndex"] = 2;
+G2L["7"]["BorderSizePixel"] = 0;
+G2L["7"]["BackgroundColor3"] = Color3.fromRGB(41, 51, 64);
+G2L["7"]["Size"] = UDim2.new(0, 377, 0, 38);
+G2L["7"]["Position"] = UDim2.new(-0.00131, 0, 0.02653, 0);
+G2L["7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["7"]["Name"] = [[MinimizeZindexFix]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MinimizeZindexFix.UICorner
+G2L["8"] = Instance.new("UICorner", G2L["7"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.Minimize
+G2L["9"] = Instance.new("TextButton", G2L["4"]);
+G2L["9"]["TextWrapped"] = true;
+G2L["9"]["BorderSizePixel"] = 0;
+G2L["9"]["TextSize"] = 44;
+G2L["9"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["9"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["9"]["ZIndex"] = 2;
+G2L["9"]["Size"] = UDim2.new(0, 90, 0, 37);
+G2L["9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9"]["Text"] = [[]];
+G2L["9"]["Name"] = [[Minimize]];
+G2L["9"]["Position"] = UDim2.new(0.75862, 0, 0.02653, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.Minimize.LocalScript
+G2L["a"] = Instance.new("LocalScript", G2L["9"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.Minimize.UICorner
+G2L["b"] = Instance.new("UICorner", G2L["9"]);
+G2L["b"]["CornerRadius"] = UDim.new(100, 100);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame
+G2L["c"] = Instance.new("Frame", G2L["4"]);
+G2L["c"]["BorderSizePixel"] = 3;
+G2L["c"]["BackgroundColor3"] = Color3.fromRGB(41, 51, 64);
+G2L["c"]["Size"] = UDim2.new(0, 377, 0, 260);
+G2L["c"]["Position"] = UDim2.new(-0.00131, 0, -0.00592, 0);
+G2L["c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["c"]["Name"] = [[MainFrame]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.UICorner
+G2L["d"] = Instance.new("UICorner", G2L["c"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.Glow3
+G2L["e"] = Instance.new("UIStroke", G2L["c"]);
+G2L["e"]["Transparency"] = 0.7;
+G2L["e"]["Thickness"] = 15;
+G2L["e"]["Color"] = Color3.fromRGB(41, 51, 64);
+G2L["e"]["Name"] = [[Glow3]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.Glow2
+G2L["f"] = Instance.new("UIStroke", G2L["c"]);
+G2L["f"]["ZIndex"] = 2;
+G2L["f"]["Transparency"] = 0.6;
+G2L["f"]["Thickness"] = 11;
+G2L["f"]["Color"] = Color3.fromRGB(41, 51, 64);
+G2L["f"]["Name"] = [[Glow2]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.Outline
+G2L["10"] = Instance.new("UIStroke", G2L["c"]);
+G2L["10"]["ZIndex"] = 4;
+G2L["10"]["Thickness"] = 1.7;
+G2L["10"]["Name"] = [[Outline]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain
+G2L["11"] = Instance.new("ScrollingFrame", G2L["c"]);
+G2L["11"]["Active"] = true;
+G2L["11"]["BorderSizePixel"] = 0;
+G2L["11"]["CanvasSize"] = UDim2.new(0, 0, 3.5, 0);
+G2L["11"]["CanvasPosition"] = Vector2.new(0, 200);
+-- [ERROR] cannot convert TopImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["11"]["TopImage"] = [[]];
+G2L["11"]["Name"] = [[ScrollingMain]];
+G2L["11"]["BackgroundColor3"] = Color3.fromRGB(41, 51, 64);
+G2L["11"]["MidImage"] = [[]];
+-- [ERROR] cannot convert MidImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+-- [ERROR] cannot convert BottomImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["11"]["BottomImage"] = [[]];
+G2L["11"]["Size"] = UDim2.new(0, 377, 0, 218);
+G2L["11"]["ScrollBarImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["11"]["Position"] = UDim2.new(0, 0, 0.16, 0);
+G2L["11"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["11"]["BackgroundTransparency"] = 1;
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.ForceJump
+G2L["12"] = Instance.new("TextButton", G2L["11"]);
+G2L["12"]["TextWrapped"] = true;
+G2L["12"]["BorderSizePixel"] = 0;
+G2L["12"]["TextSize"] = 28;
+G2L["12"]["TextScaled"] = true;
+G2L["12"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["12"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["12"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["12"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["12"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["12"]["Text"] = [[Jump]];
+G2L["12"]["Name"] = [[ForceJump]];
+G2L["12"]["Position"] = UDim2.new(0.036, 0, 0.692, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.ForceJump.Forcejump
+G2L["13"] = Instance.new("LocalScript", G2L["12"]);
+G2L["13"]["Name"] = [[Forcejump]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.ForceJump.UICorner
+G2L["14"] = Instance.new("UICorner", G2L["12"]);
+G2L["14"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Version
+G2L["15"] = Instance.new("TextLabel", G2L["11"]);
+G2L["15"]["TextWrapped"] = true;
+G2L["15"]["ZIndex"] = 2;
+G2L["15"]["BorderSizePixel"] = 0;
+G2L["15"]["TextSize"] = 54;
+G2L["15"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["15"]["TextScaled"] = true;
+G2L["15"]["BackgroundColor3"] = Color3.fromRGB(168, 235, 255);
+G2L["15"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["15"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["15"]["BackgroundTransparency"] = 1;
+G2L["15"]["Size"] = UDim2.new(0, 47, 0, 17);
+G2L["15"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["15"]["Text"] = [[v 0.2.1]];
+G2L["15"]["Name"] = [[Version]];
+G2L["15"]["Position"] = UDim2.new(0.035, 0, 0.97, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Credits
+G2L["16"] = Instance.new("TextLabel", G2L["11"]);
+G2L["16"]["TextWrapped"] = true;
+G2L["16"]["ZIndex"] = 2;
+G2L["16"]["BorderSizePixel"] = 0;
+G2L["16"]["TextSize"] = 54;
+G2L["16"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["16"]["TextScaled"] = true;
+G2L["16"]["BackgroundColor3"] = Color3.fromRGB(168, 235, 255);
+G2L["16"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["16"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["16"]["BackgroundTransparency"] = 1;
+G2L["16"]["Size"] = UDim2.new(0, 139, 0, 23);
+G2L["16"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["16"]["Text"] = [[by urban1 AKA pwnmaster99]];
+G2L["16"]["Name"] = [[Credits]];
+G2L["16"]["Position"] = UDim2.new(0.032, 0, 0.954, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InfoToggle
+G2L["17"] = Instance.new("TextButton", G2L["11"]);
+G2L["17"]["TextWrapped"] = true;
+G2L["17"]["BorderSizePixel"] = 0;
+G2L["17"]["TextSize"] = 34;
+G2L["17"]["TextScaled"] = true;
+G2L["17"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["17"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["17"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["17"]["Size"] = UDim2.new(0, 21, 0, 21);
+G2L["17"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["17"]["Text"] = [[i]];
+G2L["17"]["Name"] = [[InfoToggle]];
+G2L["17"]["Position"] = UDim2.new(0.41934, 0, 0.00392, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InfoToggle.Size
+G2L["18"] = Instance.new("LocalScript", G2L["17"]);
+G2L["18"]["Name"] = [[Size]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InfoToggle.UICorner
+G2L["19"] = Instance.new("UICorner", G2L["17"]);
+G2L["19"]["CornerRadius"] = UDim.new(1, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InfoToggle.Info
+G2L["1a"] = Instance.new("TextLabel", G2L["17"]);
+G2L["1a"]["TextWrapped"] = true;
+G2L["1a"]["BorderSizePixel"] = 0;
+G2L["1a"]["TextSize"] = 1;
+G2L["1a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["1a"]["TextYAlignment"] = Enum.TextYAlignment.Top;
+G2L["1a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1a"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["1a"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1a"]["BackgroundTransparency"] = 1;
+G2L["1a"]["Size"] = UDim2.new(0, 185, 0, 77);
+G2L["1a"]["Visible"] = false;
+G2L["1a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1a"]["Text"] = [[Weld abuse lets you move another person on the serverside. These scripts are MUCH more stable if the target is either in shiftlock or holding a tool!]];
+G2L["1a"]["Name"] = [[Info]];
+G2L["1a"]["Position"] = UDim2.new(1.23267, 0, -0.01477, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.SplitThing
+G2L["1b"] = Instance.new("TextLabel", G2L["11"]);
+G2L["1b"]["BorderSizePixel"] = 0;
+G2L["1b"]["TextSize"] = 1;
+G2L["1b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1b"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["1b"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1b"]["Size"] = UDim2.new(0, 168, 0, 2);
+G2L["1b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1b"]["Text"] = [[ ]];
+G2L["1b"]["Name"] = [[SplitThing]];
+G2L["1b"]["Position"] = UDim2.new(0.03183, 0, 0.03162, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Title
+G2L["1c"] = Instance.new("TextLabel", G2L["11"]);
+G2L["1c"]["TextWrapped"] = true;
+G2L["1c"]["BorderSizePixel"] = 0;
+G2L["1c"]["TextSize"] = 34;
+G2L["1c"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["1c"]["TextScaled"] = true;
+G2L["1c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1c"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["1c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1c"]["BackgroundTransparency"] = 1;
+G2L["1c"]["Size"] = UDim2.new(0, 154, 0, 31);
+G2L["1c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1c"]["Text"] = [[Weld abuse]];
+G2L["1c"]["Name"] = [[Title]];
+G2L["1c"]["Position"] = UDim2.new(0.02966, 0, -0.00154, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Target
+G2L["1d"] = Instance.new("TextLabel", G2L["11"]);
+G2L["1d"]["TextWrapped"] = true;
+G2L["1d"]["BorderSizePixel"] = 0;
+G2L["1d"]["TextSize"] = 34;
+G2L["1d"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["1d"]["TextScaled"] = true;
+G2L["1d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1d"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["1d"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1d"]["BackgroundTransparency"] = 1;
+G2L["1d"]["Size"] = UDim2.new(0, 75, 0, 30);
+G2L["1d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1d"]["Text"] = [[target:]];
+G2L["1d"]["Name"] = [[Target]];
+G2L["1d"]["Position"] = UDim2.new(0.03, 0, 0.045, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.TargetName
+G2L["1e"] = Instance.new("TextBox", G2L["11"]);
+G2L["1e"]["Name"] = [[TargetName]];
+G2L["1e"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["1e"]["BorderSizePixel"] = 0;
+G2L["1e"]["TextSize"] = 34;
+G2L["1e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1e"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["1e"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["1e"]["ClipsDescendants"] = true;
+G2L["1e"]["Size"] = UDim2.new(0, 98, 0, 30);
+G2L["1e"]["Position"] = UDim2.new(0.21, 0, 0.045, 0);
+G2L["1e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1e"]["Text"] = [[]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.TargetName.UICorner
+G2L["1f"] = Instance.new("UICorner", G2L["1e"]);
+G2L["1f"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.NoJump
+G2L["20"] = Instance.new("TextButton", G2L["11"]);
+G2L["20"]["TextWrapped"] = true;
+G2L["20"]["BorderSizePixel"] = 0;
+G2L["20"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["20"]["TextSize"] = 28;
+G2L["20"]["TextScaled"] = true;
+G2L["20"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["20"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["20"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["20"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["20"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["20"]["Text"] = [[NoJump                              OFF]];
+G2L["20"]["Name"] = [[NoJump]];
+G2L["20"]["Position"] = UDim2.new(0.031, 0, 0.203, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.NoJump.NoJump
+G2L["21"] = Instance.new("LocalScript", G2L["20"]);
+G2L["21"]["Name"] = [[NoJump]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.NoJump.UICorner
+G2L["22"] = Instance.new("UICorner", G2L["20"]);
+G2L["22"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.UIStroke
+G2L["23"] = Instance.new("UIStroke", G2L["11"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.UICorner
+G2L["24"] = Instance.new("UICorner", G2L["11"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Elevator
+G2L["25"] = Instance.new("TextButton", G2L["11"]);
+G2L["25"]["TextWrapped"] = true;
+G2L["25"]["BorderSizePixel"] = 0;
+G2L["25"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["25"]["TextSize"] = 28;
+G2L["25"]["TextScaled"] = true;
+G2L["25"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["25"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["25"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["25"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["25"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["25"]["Text"] = [[Elevator                              OFF]];
+G2L["25"]["Name"] = [[Elevator]];
+G2L["25"]["Position"] = UDim2.new(0.031, 0, 0.252, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Elevator.Elevator
+G2L["26"] = Instance.new("LocalScript", G2L["25"]);
+G2L["26"]["Name"] = [[Elevator]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Elevator.UICorner
+G2L["27"] = Instance.new("UICorner", G2L["25"]);
+G2L["27"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InfiniteJump
+G2L["28"] = Instance.new("TextButton", G2L["11"]);
+G2L["28"]["TextWrapped"] = true;
+G2L["28"]["BorderSizePixel"] = 0;
+G2L["28"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["28"]["TextSize"] = 28;
+G2L["28"]["TextScaled"] = true;
+G2L["28"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["28"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["28"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["28"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["28"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["28"]["Text"] = [[InfJump                              OFF]];
+G2L["28"]["Name"] = [[InfiniteJump]];
+G2L["28"]["Position"] = UDim2.new(0.031, 0, 0.302, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InfiniteJump.InfJump
+G2L["29"] = Instance.new("LocalScript", G2L["28"]);
+G2L["29"]["Name"] = [[InfJump]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InfiniteJump.UICorner
+G2L["2a"] = Instance.new("UICorner", G2L["28"]);
+G2L["2a"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Magic Carpet
+G2L["2b"] = Instance.new("TextButton", G2L["11"]);
+G2L["2b"]["TextWrapped"] = true;
+G2L["2b"]["BorderSizePixel"] = 0;
+G2L["2b"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["2b"]["TextSize"] = 28;
+G2L["2b"]["TextScaled"] = true;
+G2L["2b"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2b"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["2b"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["2b"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["2b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2b"]["Text"] = [[Magic Carpet                              OFF]];
+G2L["2b"]["Name"] = [[Magic Carpet]];
+G2L["2b"]["Position"] = UDim2.new(0.031, 0, 0.351, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Magic Carpet.MagicCarpet
+G2L["2c"] = Instance.new("LocalScript", G2L["2b"]);
+G2L["2c"]["Name"] = [[MagicCarpet]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Magic Carpet.UICorner
+G2L["2d"] = Instance.new("UICorner", G2L["2b"]);
+G2L["2d"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.HeadSit
+G2L["2e"] = Instance.new("TextButton", G2L["11"]);
+G2L["2e"]["TextWrapped"] = true;
+G2L["2e"]["BorderSizePixel"] = 0;
+G2L["2e"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["2e"]["TextSize"] = 28;
+G2L["2e"]["TextScaled"] = true;
+G2L["2e"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2e"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["2e"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["2e"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["2e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2e"]["Text"] = [[HeadSit                              OFF]];
+G2L["2e"]["Name"] = [[HeadSit]];
+G2L["2e"]["Position"] = UDim2.new(0.031, 0, 0.401, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.HeadSit.Headsit
+G2L["2f"] = Instance.new("LocalScript", G2L["2e"]);
+G2L["2f"]["Name"] = [[Headsit]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.HeadSit.UICorner
+G2L["30"] = Instance.new("UICorner", G2L["2e"]);
+G2L["30"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Platform
+G2L["31"] = Instance.new("TextButton", G2L["11"]);
+G2L["31"]["TextWrapped"] = true;
+G2L["31"]["BorderSizePixel"] = 0;
+G2L["31"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["31"]["TextSize"] = 28;
+G2L["31"]["TextScaled"] = true;
+G2L["31"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["31"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["31"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["31"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["31"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["31"]["Text"] = [[Platform Fly                              OFF]];
+G2L["31"]["Name"] = [[Platform]];
+G2L["31"]["Position"] = UDim2.new(0.029, 0, 0.45, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Platform.LocalScript
+G2L["32"] = Instance.new("LocalScript", G2L["31"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Platform.UICorner
+G2L["33"] = Instance.new("UICorner", G2L["31"]);
+G2L["33"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Jumpscare
+G2L["34"] = Instance.new("TextButton", G2L["11"]);
+G2L["34"]["TextWrapped"] = true;
+G2L["34"]["BorderSizePixel"] = 0;
+G2L["34"]["TextSize"] = 28;
+G2L["34"]["TextScaled"] = true;
+G2L["34"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["34"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["34"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["34"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["34"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["34"]["Text"] = [[Jumpscare (first person only)]];
+G2L["34"]["Name"] = [[Jumpscare]];
+G2L["34"]["Position"] = UDim2.new(0.036, 0, 0.84, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Jumpscare.Jumpscare
+G2L["35"] = Instance.new("LocalScript", G2L["34"]);
+G2L["35"]["Name"] = [[Jumpscare]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Jumpscare.UICorner
+G2L["36"] = Instance.new("UICorner", G2L["34"]);
+G2L["36"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Speed
+G2L["37"] = Instance.new("TextBox", G2L["11"]);
+G2L["37"]["Name"] = [[Speed]];
+G2L["37"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["37"]["BorderSizePixel"] = 0;
+G2L["37"]["TextSize"] = 34;
+G2L["37"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["37"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["37"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["37"]["Size"] = UDim2.new(0, 91, 0, 30);
+G2L["37"]["Position"] = UDim2.new(0.231, 0, 0.559, 0);
+G2L["37"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["37"]["Text"] = [[]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Speed.UICorner
+G2L["38"] = Instance.new("UICorner", G2L["37"]);
+G2L["38"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Speed
+G2L["39"] = Instance.new("TextLabel", G2L["11"]);
+G2L["39"]["TextWrapped"] = true;
+G2L["39"]["BorderSizePixel"] = 0;
+G2L["39"]["TextSize"] = 34;
+G2L["39"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["39"]["TextScaled"] = true;
+G2L["39"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["39"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["39"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["39"]["BackgroundTransparency"] = 1;
+G2L["39"]["Size"] = UDim2.new(0, 75, 0, 30);
+G2L["39"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["39"]["Text"] = [[Speed:]];
+G2L["39"]["Name"] = [[Speed]];
+G2L["39"]["Position"] = UDim2.new(0.035, 0, 0.559, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.SpeedBoost
+G2L["3a"] = Instance.new("TextButton", G2L["11"]);
+G2L["3a"]["TextWrapped"] = true;
+G2L["3a"]["BorderSizePixel"] = 0;
+G2L["3a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["3a"]["TextSize"] = 28;
+G2L["3a"]["TextScaled"] = true;
+G2L["3a"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3a"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["3a"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["3a"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["3a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3a"]["Text"] = [[SpeedBoost                              OFF]];
+G2L["3a"]["Name"] = [[SpeedBoost]];
+G2L["3a"]["Position"] = UDim2.new(0.036, 0, 0.593, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.SpeedBoost.LocalScript
+G2L["3b"] = Instance.new("LocalScript", G2L["3a"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.SpeedBoost.UICorner
+G2L["3c"] = Instance.new("UICorner", G2L["3a"]);
+G2L["3c"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InvertMovement
+G2L["3d"] = Instance.new("TextButton", G2L["11"]);
+G2L["3d"]["TextWrapped"] = true;
+G2L["3d"]["BorderSizePixel"] = 0;
+G2L["3d"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["3d"]["TextSize"] = 28;
+G2L["3d"]["TextScaled"] = true;
+G2L["3d"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3d"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["3d"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["3d"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["3d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3d"]["Text"] = [[Invert Movement                              OFF]];
+G2L["3d"]["Name"] = [[InvertMovement]];
+G2L["3d"]["Position"] = UDim2.new(0.036, 0, 0.642, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InvertMovement.InvertMovement
+G2L["3e"] = Instance.new("LocalScript", G2L["3d"]);
+G2L["3e"]["Name"] = [[InvertMovement]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InvertMovement.UICorner
+G2L["3f"] = Instance.new("UICorner", G2L["3d"]);
+G2L["3f"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Rocket
+G2L["40"] = Instance.new("TextButton", G2L["11"]);
+G2L["40"]["TextWrapped"] = true;
+G2L["40"]["BorderSizePixel"] = 0;
+G2L["40"]["TextSize"] = 28;
+G2L["40"]["TextScaled"] = true;
+G2L["40"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["40"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["40"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["40"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["40"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["40"]["Text"] = [[Rocket]];
+G2L["40"]["Name"] = [[Rocket]];
+G2L["40"]["Position"] = UDim2.new(0.036, 0, 0.741, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Rocket.Rocket
+G2L["41"] = Instance.new("LocalScript", G2L["40"]);
+G2L["41"]["Name"] = [[Rocket]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Rocket.UICorner
+G2L["42"] = Instance.new("UICorner", G2L["40"]);
+G2L["42"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Bang
+G2L["43"] = Instance.new("TextButton", G2L["11"]);
+G2L["43"]["TextWrapped"] = true;
+G2L["43"]["BorderSizePixel"] = 0;
+G2L["43"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["43"]["TextSize"] = 28;
+G2L["43"]["TextScaled"] = true;
+G2L["43"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["43"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["43"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["43"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["43"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["43"]["Text"] = [[Bang                                OFF]];
+G2L["43"]["Name"] = [[Bang]];
+G2L["43"]["Position"] = UDim2.new(0.029, 0, 0.5, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Bang.Banglol
+G2L["44"] = Instance.new("LocalScript", G2L["43"]);
+G2L["44"]["Name"] = [[Banglol]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Bang.UICorner
+G2L["45"] = Instance.new("UICorner", G2L["43"]);
+G2L["45"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Jumpscare All
+G2L["46"] = Instance.new("TextButton", G2L["11"]);
+G2L["46"]["TextWrapped"] = true;
+G2L["46"]["BorderSizePixel"] = 0;
+G2L["46"]["TextSize"] = 28;
+G2L["46"]["TextScaled"] = true;
+G2L["46"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["46"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["46"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["46"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["46"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["46"]["Text"] = [[Jumpscare All]];
+G2L["46"]["Name"] = [[Jumpscare All]];
+G2L["46"]["Position"] = UDim2.new(0.036, 0, 0.89, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Jumpscare All.JumpscareAll
+G2L["47"] = Instance.new("LocalScript", G2L["46"]);
+G2L["47"]["Name"] = [[JumpscareAll]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Jumpscare All.UICorner
+G2L["48"] = Instance.new("UICorner", G2L["46"]);
+G2L["48"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Slam
+G2L["49"] = Instance.new("TextButton", G2L["11"]);
+G2L["49"]["TextWrapped"] = true;
+G2L["49"]["BorderSizePixel"] = 0;
+G2L["49"]["TextSize"] = 28;
+G2L["49"]["TextScaled"] = true;
+G2L["49"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["49"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["49"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["49"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["49"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["49"]["Text"] = [[Slam]];
+G2L["49"]["Name"] = [[Slam]];
+G2L["49"]["Position"] = UDim2.new(0.036, 0, 0.791, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Slam.SendToHell
+G2L["4a"] = Instance.new("LocalScript", G2L["49"]);
+G2L["4a"]["Name"] = [[SendToHell]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Slam.UICorner
+G2L["4b"] = Instance.new("UICorner", G2L["49"]);
+G2L["4b"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.SplitThing
+G2L["4c"] = Instance.new("TextLabel", G2L["11"]);
+G2L["4c"]["BorderSizePixel"] = 0;
+G2L["4c"]["TextSize"] = 1;
+G2L["4c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4c"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["4c"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4c"]["Size"] = UDim2.new(0, 168, 0, 2);
+G2L["4c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4c"]["Text"] = [[ ]];
+G2L["4c"]["Name"] = [[SplitThing]];
+G2L["4c"]["Position"] = UDim2.new(0.49867, 0, 0.09536, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Title
+G2L["4d"] = Instance.new("TextLabel", G2L["11"]);
+G2L["4d"]["TextWrapped"] = true;
+G2L["4d"]["BorderSizePixel"] = 0;
+G2L["4d"]["TextSize"] = 34;
+G2L["4d"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["4d"]["TextScaled"] = true;
+G2L["4d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4d"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["4d"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4d"]["BackgroundTransparency"] = 1;
+G2L["4d"]["Size"] = UDim2.new(0, 178, 0, 31);
+G2L["4d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4d"]["Text"] = [[Control Player (PC)]];
+G2L["4d"]["Name"] = [[Title]];
+G2L["4d"]["Position"] = UDim2.new(0.4965, 0, 0.10285, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Control
+G2L["4e"] = Instance.new("TextButton", G2L["11"]);
+G2L["4e"]["TextWrapped"] = true;
+G2L["4e"]["BorderSizePixel"] = 0;
+G2L["4e"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["4e"]["TextSize"] = 28;
+G2L["4e"]["TextScaled"] = true;
+G2L["4e"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4e"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["4e"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["4e"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["4e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4e"]["Text"] = [[OFF]];
+G2L["4e"]["Name"] = [[Control]];
+G2L["4e"]["Position"] = UDim2.new(0.49787, 0, 0.14474, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Control.Control
+G2L["4f"] = Instance.new("LocalScript", G2L["4e"]);
+G2L["4f"]["Name"] = [[Control]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Control.UICorner
+G2L["50"] = Instance.new("UICorner", G2L["4e"]);
+G2L["50"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.SplitThing
+G2L["51"] = Instance.new("TextLabel", G2L["11"]);
+G2L["51"]["BorderSizePixel"] = 0;
+G2L["51"]["TextSize"] = 1;
+G2L["51"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["51"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["51"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["51"]["Size"] = UDim2.new(0, 168, 0, 2);
+G2L["51"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["51"]["Text"] = [[ ]];
+G2L["51"]["Name"] = [[SplitThing]];
+G2L["51"]["Position"] = UDim2.new(0.49867, 0, 0.20964, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Title
+G2L["52"] = Instance.new("TextLabel", G2L["11"]);
+G2L["52"]["TextWrapped"] = true;
+G2L["52"]["BorderSizePixel"] = 0;
+G2L["52"]["TextSize"] = 34;
+G2L["52"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["52"]["TextScaled"] = true;
+G2L["52"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["52"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["52"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["52"]["BackgroundTransparency"] = 1;
+G2L["52"]["Size"] = UDim2.new(0, 154, 0, 31);
+G2L["52"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["52"]["Text"] = [[NaNflinging]];
+G2L["52"]["Name"] = [[Title]];
+G2L["52"]["Position"] = UDim2.new(0.4965, 0, 0.21604, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Fling Target
+G2L["53"] = Instance.new("TextButton", G2L["11"]);
+G2L["53"]["TextWrapped"] = true;
+G2L["53"]["BorderSizePixel"] = 0;
+G2L["53"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["53"]["TextSize"] = 28;
+G2L["53"]["TextScaled"] = true;
+G2L["53"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["53"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["53"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["53"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["53"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["53"]["Text"] = [[Fling Target]];
+G2L["53"]["Name"] = [[Fling Target]];
+G2L["53"]["Position"] = UDim2.new(0.49519, 0, 0.25685, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Fling Target.LocalScript
+G2L["54"] = Instance.new("LocalScript", G2L["53"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Fling Target.UICorner
+G2L["55"] = Instance.new("UICorner", G2L["53"]);
+G2L["55"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.ClickPlayer
+G2L["56"] = Instance.new("TextButton", G2L["11"]);
+G2L["56"]["TextWrapped"] = true;
+G2L["56"]["BorderSizePixel"] = 0;
+G2L["56"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["56"]["TextSize"] = 28;
+G2L["56"]["TextScaled"] = true;
+G2L["56"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["56"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["56"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["56"]["Size"] = UDim2.new(0, 166, 0, 22);
+G2L["56"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["56"]["Text"] = [[(E) Select...]];
+G2L["56"]["Name"] = [[ClickPlayer]];
+G2L["56"]["Position"] = UDim2.new(0.031, 0, 0.079, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.ClickPlayer.ClickPlayer
+G2L["57"] = Instance.new("LocalScript", G2L["56"]);
+G2L["57"]["Name"] = [[ClickPlayer]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.ClickPlayer.UICorner
+G2L["58"] = Instance.new("UICorner", G2L["56"]);
+G2L["58"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.TextButton
+G2L["59"] = Instance.new("TextButton", G2L["11"]);
+G2L["59"]["TextWrapped"] = true;
+G2L["59"]["BorderSizePixel"] = 0;
+G2L["59"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["59"]["TextSize"] = 14;
+G2L["59"]["TextScaled"] = true;
+G2L["59"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["59"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["59"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["59"]["BackgroundTransparency"] = 1;
+G2L["59"]["Size"] = UDim2.new(0, 139, 0, 23);
+G2L["59"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["59"]["Text"] = [[discord.gg/RB5aZ6pxjy]];
+G2L["59"]["Position"] = UDim2.new(0.6, 0, 0.965, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.TextButton.LocalScript
+G2L["5a"] = Instance.new("LocalScript", G2L["59"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Annoy
+G2L["5b"] = Instance.new("TextButton", G2L["11"]);
+G2L["5b"]["TextWrapped"] = true;
+G2L["5b"]["BorderSizePixel"] = 0;
+G2L["5b"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["5b"]["TextSize"] = 28;
+G2L["5b"]["TextScaled"] = true;
+G2L["5b"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5b"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["5b"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["5b"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["5b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5b"]["Text"] = [[Annoy                              OFF]];
+G2L["5b"]["Name"] = [[Annoy]];
+G2L["5b"]["Position"] = UDim2.new(0.031, 0, 0.153, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Annoy.Annoy
+G2L["5c"] = Instance.new("LocalScript", G2L["5b"]);
+G2L["5c"]["Name"] = [[Annoy]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Annoy.UICorner
+G2L["5d"] = Instance.new("UICorner", G2L["5b"]);
+G2L["5d"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Fling all
+G2L["5e"] = Instance.new("TextButton", G2L["11"]);
+G2L["5e"]["TextWrapped"] = true;
+G2L["5e"]["BorderSizePixel"] = 0;
+G2L["5e"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["5e"]["TextSize"] = 28;
+G2L["5e"]["TextScaled"] = true;
+G2L["5e"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5e"]["BackgroundColor3"] = Color3.fromRGB(66, 83, 103);
+G2L["5e"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Light, Enum.FontStyle.Normal);
+G2L["5e"]["Size"] = UDim2.new(0, 166, 0, 44);
+G2L["5e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5e"]["Text"] = [[Fling All]];
+G2L["5e"]["Name"] = [[Fling all]];
+G2L["5e"]["Position"] = UDim2.new(0.49519, 0, 0.3063, 0);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Fling all.LocalScript
+G2L["5f"] = Instance.new("LocalScript", G2L["5e"]);
+
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Fling all.UICorner
+G2L["60"] = Instance.new("UICorner", G2L["5e"]);
+G2L["60"]["CornerRadius"] = UDim.new(0, 4);
+
+
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.Glow1
+G2L["61"] = Instance.new("UIStroke", G2L["c"]);
+G2L["61"]["ZIndex"] = 3;
+G2L["61"]["Transparency"] = 0.5;
+G2L["61"]["Thickness"] = 7;
+G2L["61"]["Color"] = Color3.fromRGB(41, 51, 64);
+G2L["61"]["Name"] = [[Glow1]];
+
+
+-- StarterGui.urban1's universal GUI.TopBar.UICorner
+G2L["62"] = Instance.new("UICorner", G2L["4"]);
+
+
+
+-- StarterGui.urban1's universal GUI.SimulationRadius
+local function C_2()
+local script = G2L["2"];
+	local Players = game:GetService("Players")
+	local Player = Players.LocalPlayer
+	
+	Player.SimulationRadius = 99999
+	Player.MaximumSimulationRadius = 99999
+	
+	
+	pcall(function()
+		setsimulationradius(99999)
+	end)
+	
+	
+	game:GetService("RunService").Heartbeat:Connect(function()
+		Player.SimulationRadius = 99999
+		Player.MaximumSimulationRadius = 99999
+	end)
+	
+	
+end;
+task.spawn(C_2);
+-- StarterGui.urban1's universal GUI.plug the discord
+local function C_3()
+local script = G2L["3"];
+	pcall(function()
+
+		game:GetService("StarterGui"):SetCore("SendNotification", {
+			Title = "notification";
+			Text = "This will be patched (eventually) so have fun while it lasts!";
+			Duration = 45;
+		})
+
+		game:GetService("StarterGui"):SetCore("SendNotification", {
+			Title = "The discord";
+			Text = "discord.gg/dd4XXRMz8b";
+			Duration = 45;
+		})
+	
+		game:GetService("StarterGui"):SetCore("SendNotification", {
+			Title = "Notification";
+			Text = "by urban1";
+			Duration = 45;
+		})
+	end)
+end;
+task.spawn(C_3);
+-- StarterGui.urban1's universal GUI.TopBar.Smooth GUI Dragging
+local function C_5()
+local script = G2L["5"];
+	local UserInputService = game:GetService("UserInputService")
+	local runService = (game:GetService("RunService"));
+	
+	local gui = script.Parent
+	
+	local dragging
+	local dragInput
+	local dragStart
+	local startPos
+	
+	function Lerp(a, b, m)
+		return a + (b - a) * m
+	end;
+	
+	local lastMousePos
+	local lastGoalPos
+	local DRAG_SPEED = (8); -- // The speed of the UI darg.
+	function Update(dt)
+		if not (startPos) then return end;
+		if not (dragging) and (lastGoalPos) then
+			gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, lastGoalPos.X.Offset, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, lastGoalPos.Y.Offset, dt * DRAG_SPEED))
+			return 
+		end;
+	
+		local delta = (lastMousePos - UserInputService:GetMouseLocation())
+		local xGoal = (startPos.X.Offset - delta.X);
+		local yGoal = (startPos.Y.Offset - delta.Y);
+		lastGoalPos = UDim2.new(startPos.X.Scale, xGoal, startPos.Y.Scale, yGoal)
+		gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, xGoal, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, yGoal, dt * DRAG_SPEED))
+	end;
+	
+	gui.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = gui.Position
+			lastMousePos = UserInputService:GetMouseLocation()
+	
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+	
+	gui.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+	
+	runService.Heartbeat:Connect(Update)
+	
+end;
+task.spawn(C_5);
+-- StarterGui.urban1's universal GUI.TopBar.Minimize.LocalScript
+local function C_a()
+local script = G2L["a"];
+	local b = script.Parent
+	local mini = false
+	local RunService = game:GetService("RunService")
+	
+	local side = Instance.new("Frame")
+	side.Name = "side"
+	side.Size = UDim2.new(0.3, 0, 0, 2)
+	side.Position = UDim2.new(0.5, 0, 0.5, 0)
+	side.AnchorPoint = Vector2.new(0.5, 0.5)
+	side.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	side.BorderSizePixel = 0
+	side.Parent = b
+	
+	local otherside = Instance.new("Frame")
+	otherside.Name = "otherside"
+	otherside.Size = UDim2.new(0, 2, 0.7, 0)
+	otherside.Position = UDim2.new(0.5, 0, 0.5, 0)
+	otherside.AnchorPoint = Vector2.new(0.5, 0.5)
+	otherside.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	otherside.BorderSizePixel = 0
+	otherside.Parent = b
+	otherside.Rotation = 90
+	
+	b.MouseButton1Click:Connect(function()
+		mini = not mini
+		task.spawn(function()
+			local startTime = os.clock()
+			local duration = 0.25
+			if not mini then
+				b.Parent.Parent.TopBar.MainFrame.ScrollingMain.Visible = true
+			end
+			local startmainsize = b.Parent.Parent.TopBar.MainFrame.Size
+			local startSize = b.Parent.Parent.TopBar.MainFrame.ScrollingMain.Size
+			local startscrollpos = b.Parent.Parent.TopBar.MainFrame.ScrollingMain.Position
+			local tgetsize = mini and UDim2.new(0, 377, 0, 39) or UDim2.new(0, 377, 0, 260)
+			local tgetscrollsize = mini and UDim2.new(0, 377, 0, 0) or UDim2.new(0, 377, 0, 218)
+			local tgetscrollpos = mini and UDim2.new(0, 0, 0.12, 0) or UDim2.new(0, 0, 0.16, 0)
+			local startRot = otherside.Rotation
+			local targetRot = mini and 0 or 90
+			while true do
+				local elapsed = os.clock() - startTime
+				local a = math.min(elapsed / duration, 1)
+				local eased = math.sin(a * math.pi / 2)
+				b.Parent.Parent.TopBar.MainFrame.Size = startmainsize:Lerp(tgetsize, eased)
+				b.Parent.Parent.TopBar.MainFrame.ScrollingMain.Size = startSize:Lerp(tgetscrollsize, eased)
+				b.Parent.Parent.TopBar.MainFrame.ScrollingMain.Position = startscrollpos:Lerp(tgetscrollpos, eased)
+				otherside.Rotation = startRot + (targetRot - startRot) * eased
+				if a >= 1 then
+					break
+				end
+				RunService.Heartbeat:Wait()
+			end
+			if mini then
+				b.Parent.Parent.TopBar.MainFrame.ScrollingMain.Visible = false
+			end
+		end)
+	end)
+end;
+task.spawn(C_a);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.ForceJump.Forcejump
+local function C_13()
+local script = G2L["13"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local TIME = 0.25
+	
+	local PO = Vector3.new(0, -3, 0)
+	local RO = CFrame.Angles(math.rad(90), 0, math.rad(-69))
+	
+	local TP = nil 
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	local isOn = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	-- Initial character
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Stop()
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+	
+		pcall(function()
+			sethiddenproperty(root, "PhysicsRepRootPart", nil)
+		end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	local function Start()
+		if db then return end
+		db = true
+	
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then
+			button.Text = "Jump"
+			db = false
+			return
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:FindFirstChild("HumanoidRootPart") or tChar:WaitForChild("HumanoidRootPart", 0.2)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local targetCFrame = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = targetCFrame
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		-- Auto stop after TIME seconds
+		task.delay(TIME, function()
+			if isOn then
+				isOn = false
+				button.Text = "Jump"
+				Stop()
+			end
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	
+		db = false
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "Jump"
+			Start()
+		else
+			button.Text = "Jump"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_13);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InfoToggle.Size
+local function C_18()
+local script = G2L["18"];
+	-- hi so feel free to change the info, I dont have a really good way of explaining it in less than 10 sentances
+	
+	local button = script.Parent
+	local infoLabel = button:WaitForChild("Info")
+	
+	local Open = false
+	local animating = false
+	
+	button.MouseButton1Click:Connect(function()
+		if animating then return end
+		animating = true
+	
+		Open = not Open
+	
+		if Open then
+			infoLabel.Visible = true
+	
+			for i = 0, 15 do
+				infoLabel.TextSize = i
+				task.wait()
+			end
+		else
+			for i = 15, 0, -1 do
+				infoLabel.TextSize = i
+				task.wait()
+			end
+	
+			infoLabel.Visible = false
+		end
+	
+		animating = false
+	end)
+end;
+task.spawn(C_18);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.NoJump.NoJump
+local function C_21()
+local script = G2L["21"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local PO = Vector3.new(0, 3.5, 0)
+	local RO = CFrame.Angles(math.rad(-90), 0, 0)
+	
+	local TP = nil 
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	-- Initial character
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Start()
+		if db then return end
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then 
+			button.Text = "Target not found!                              ..."
+			task.delay(2, function()
+				if button.Text == "Target not found!                              ..." then
+					button.Text = "NoJump                              OFF"
+				end
+			end)
+			return 
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = nil
+	
+		if tChar then
+			tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		end
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:WaitForChild("HumanoidRootPart", 0.5)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local saved = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = saved
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	end
+	
+	local function Stop()
+		if con then 
+			con:Disconnect()
+			con = nil
+		end
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	local isOn = false
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "NoJump                              ON"
+			Start()
+		else
+			button.Text = "NoJump                              OFF"
+			Stop()
+		end
+	end)
+	
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_21);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Elevator.Elevator
+local function C_26()
+local script = G2L["26"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local PO = Vector3.new(0, -3, 0)
+	local RO = CFrame.Angles(math.rad(-90), 0, math.rad(3.34))
+	
+	local TP = nil 
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	-- Initial character
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Start()
+		if db then return end
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then 
+			button.Text = "Target not found!                              ..."
+			task.delay(2, function()
+				if button.Text == "Target not found!                              ..." then
+					button.Text = "Elevator                              OFF"
+				end
+			end)
+			return 
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = nil
+	
+		if tChar then
+			tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		end
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:WaitForChild("HumanoidRootPart", 0.5)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local saved = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = saved
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	end
+	
+	local function Stop()
+		if con then 
+			con:Disconnect()
+			con = nil
+		end
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	local isOn = false
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "Elevator                              ON"
+			Start()
+		else
+			button.Text = "Elevator                              OFF"
+			Stop()
+		end
+	end)
+	
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_26);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InfiniteJump.InfJump
+local function C_29()
+local script = G2L["29"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local PO = Vector3.new(0, -5.75, 0)
+	local RO = CFrame.Angles(0, 0, 0)
+	
+	local TP = nil 
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	-- Initial character
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Start()
+		if db then return end
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then 
+			button.Text = "Target not found!                              ..."
+			task.delay(2, function()
+				if button.Text == "Target not found!                              ..." then
+					button.Text = "InfJump                              OFF"
+				end
+			end)
+			return 
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = nil
+	
+		if tChar then
+			tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		end
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:WaitForChild("HumanoidRootPart", 0.5)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local saved = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = saved
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	end
+	
+	local function Stop()
+		if con then 
+			con:Disconnect()
+			con = nil
+		end
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	local isOn = false
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "InfJump                              ON"
+			Start()
+		else
+			button.Text = "InfJump                              OFF"
+			Stop()
+		end
+	end)
+	
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_29);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Magic Carpet.MagicCarpet
+local function C_2c()
+local script = G2L["2c"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local PO = Vector3.new(0, -3.6, 0)
+	local RO = CFrame.Angles(math.rad(-90), 0, 0)
+	
+	local TP = nil 
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	-- Initial character
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Start()
+		if db then return end
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then 
+			button.Text = "Target not found!                              ..."
+			task.delay(2, function()
+				if button.Text == "Target not found!                              ..." then
+					button.Text = "MagicCarpet                              OFF"
+				end
+			end)
+			return 
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = nil
+	
+		if tChar then
+			tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		end
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:WaitForChild("HumanoidRootPart", 0.5)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local saved = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = saved
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	end
+	
+	local function Stop()
+		if con then 
+			con:Disconnect()
+			con = nil
+		end
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	local isOn = false
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "MagicCarpet                              ON"
+			Start()
+		else
+			button.Text = "MagicCarpet                              OFF"
+			Stop()
+		end
+	end)
+	
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_2c);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.HeadSit.Headsit
+local function C_2f()
+local script = G2L["2f"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local PO = Vector3.new(0, 3, 0.9)
+	local RO = CFrame.Angles(0, 0, 0)
+	
+	local TP = nil 
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	-- Initial character
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Start()
+		if db then return end
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then 
+			button.Text = "Target not found!                              ..."
+			task.delay(2, function()
+				if button.Text == "Target not found!                              ..." then
+					button.Text = "HeadSit                              OFF"
+				end
+			end)
+			return 
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = nil
+	
+		if tChar then
+			tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		end
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:WaitForChild("HumanoidRootPart", 0.5)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local saved = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = saved
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+			
+			humanoid.Sit = true
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	end
+	
+	local function Stop()
+		if con then 
+			con:Disconnect()
+			con = nil
+		end
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+			
+			humanoid.Sit = false
+		end
+		savedpos = nil
+	end
+	
+	local isOn = false
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "HeadSit                              ON"
+			Start()
+		else
+			button.Text = "HeadSit                              OFF"
+			Stop()
+		end
+	end)
+	
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_2f);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Platform.LocalScript
+local function C_32()
+local script = G2L["32"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local PO = Vector3.new(0, -4, 0)
+	local RO = CFrame.Angles(math.rad(-90), 0, 0)
+	
+	local TP = nil 
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	-- Initial character
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Start()
+		if db then return end
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then 
+			button.Text = "Target not found!                              ..."
+			task.delay(2, function()
+				if button.Text == "Target not found!                              ..." then
+					button.Text = "Platform Fly                              OFF"
+				end
+			end)
+			return 
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = nil
+	
+		if tChar then
+			tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		end
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:WaitForChild("HumanoidRootPart", 0.5)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local saved = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = saved
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+			
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	end
+	
+	local function Stop()
+		if con then 
+			con:Disconnect()
+			con = nil
+		end
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+			
+		end
+		savedpos = nil
+	end
+	
+	local isOn = false
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "Platform Fly                              ON"
+			Start()
+		else
+			button.Text = "Platform Fly                              OFF"
+			Stop()
+		end
+	end)
+	
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_32);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Jumpscare.Jumpscare
+local function C_35()
+local script = G2L["35"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	local TIME = 2
+	
+	local PO = Vector3.new(0, 1.5, -0.8)
+	local RO = CFrame.Angles(0, math.rad(180), 0)
+	
+	local TP = nil
+	local con = nil
+	local savedpos = nil
+	local character, humanoid, root = nil, nil, nil
+	
+	local db = false
+	local isOn = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Stop()
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+	
+		pcall(function()
+			sethiddenproperty(root, "PhysicsRepRootPart", nil)
+		end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+	
+		savedpos = nil
+	end
+	
+	local function Start()
+		if db then return end
+		db = true
+	
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then
+			button.Text = "Jumpscare (first person only)"
+			db = false
+			return
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:FindFirstChild("HumanoidRootPart") or tChar:WaitForChild("HumanoidRootPart", 0.2)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local targetCFrame = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = targetCFrame
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		task.delay(TIME, function()
+			if isOn then
+				isOn = false
+				button.Text = "Jumpscare (first person only)"
+				Stop()
+			end
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	
+		db = false
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "Jumpscare (first person only)"
+			Start()
+		else
+			button.Text = "Jumpscare (first person only)"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_35);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.SpeedBoost.LocalScript
+local function C_3b()
+local script = G2L["3b"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	local speedTextBox = script.Parent.Parent:WaitForChild("Speed")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local PO = Vector3.new(0, 0.7, 0.5)
+	local RO = CFrame.Angles(0, 0, 0)
+	
+	local TP = nil 
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	
+	local function ULocalChar(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	
+	if player.Character then
+		ULocalChar(player.Character)
+	end
+	
+	
+	local function gzoffset(speed)
+		speed = tonumber(speed)
+		if not speed then 
+			warn("must be a number")
+			return nil 
+		end
+	
+		if speed <= 1 then
+			return 1.0
+		elseif speed >= 10 then
+			return 0.35
+		else
+			local t = (speed - 1) / (10 - 1) -- beep boop boot vibecoding detected
+			t = 1 - (1 - t) * (1 - t)
+			return 1.0 - (1.0 - 0.35) * t
+		end
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Start()
+		if db then return end
+		if con then con:Disconnect() end
+		con = nil
+	
+	
+		local speedValue = speedTextBox.Text
+		local zOffset = gzoffset(speedValue)
+	
+		if not zOffset then
+			button.Text = "Must be a number!                              ..."
+			task.delay(2, function()
+				if button.Text == "Must be a number!                              ..." then
+					button.Text = "SpeedBoost                              OFF"
+				end
+			end)
+			return
+		end
+	
+	
+		PO = Vector3.new(0, 0.7, zOffset)
+	
+		TP = GetTarget()
+		if not TP then 
+			button.Text = "Target not found!                              ..."
+			task.delay(2, function()
+				if button.Text == "Target not found!                              ..." then
+					button.Text = "SpeedBoost                              OFF"
+				end
+			end)
+			return 
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = nil
+	
+		if tChar then
+			tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		end
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:WaitForChild("HumanoidRootPart", 0.5)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local saved = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = saved
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	end
+	
+	local function Stop()
+		if con then 
+			con:Disconnect()
+			con = nil
+		end
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	local isOn = false
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "SpeedBoost                              ON"
+			Start()
+		else
+			button.Text = "SpeedBoost                              OFF"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		ULocalChar(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_3b);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.InvertMovement.InvertMovement
+local function C_3e()
+local script = G2L["3e"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local PO = Vector3.new(0, 0.7, -0.8)
+	local RO = CFrame.Angles(0, 0, 0)
+	
+	local TP = nil
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	-- Initial character
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Start()
+		if db then return end
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then
+			button.Text = "Target not found!                              ..."
+			task.delay(2, function()
+				if button.Text == "Target not found!                              ..." then
+					button.Text = "Invert Movement                              OFF"
+				end
+			end)
+			return
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = nil
+		if tChar then
+			tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		end
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:WaitForChild("HumanoidRootPart", 0.5)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local saved = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = saved
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	end
+	
+	local function Stop()
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+	
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	local isOn = false
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "Invert Movement                              ON"
+			Start()
+		else
+			button.Text = "Invert Movement                              OFF"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_3e);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Rocket.Rocket
+local function C_41()
+local script = G2L["41"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	local TIME = 0.55
+	
+	local PO = Vector3.new(0, -3, 0)
+	local RO = CFrame.Angles(math.rad(90), 0, math.rad(-69))
+	
+	local TP = nil
+	local con = nil
+	local savedpos = nil
+	local character, humanoid, root = nil, nil, nil
+	
+	local db = false
+	local isOn = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Stop()
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+	
+		pcall(function()
+			sethiddenproperty(root, "PhysicsRepRootPart", nil)
+		end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+	
+		savedpos = nil
+	end
+	
+	local function Start()
+		if db then return end
+		db = true
+	
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then
+			button.Text = "Rocket"
+			db = false
+			return
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:FindFirstChild("HumanoidRootPart") or tChar:WaitForChild("HumanoidRootPart", 0.2)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local targetCFrame = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = targetCFrame
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		task.delay(TIME, function()
+			if isOn then
+				isOn = false
+				button.Text = "Rocket"
+				Stop()
+			end
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	
+		db = false
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "Rocket"
+			Start()
+		else
+			button.Text = "Rocket"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_41);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Bang.Banglol
+local function C_44()
+local script = G2L["44"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local PO = Vector3.new(0, 0, 1.1)
+	local RO = CFrame.Angles(0, 0, 0)
+	
+	local TP = nil 
+	local con = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	
+	local animTrack1 = nil
+	local animTrack2 = nil
+	local currentAnim = 1
+	local animLoop = nil
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function PlayNextAnimation()
+		if not humanoid then return end
+	
+		currentAnim = (currentAnim == 1) and 2 or 1
+	
+		if currentAnim == 1 then
+			if animTrack2 then animTrack2:Stop() end
+			if not animTrack1 then
+				local anim1 = Instance.new("Animation")
+				anim1.AnimationId = "rbxassetid://215262147"
+				animTrack1 = humanoid:LoadAnimation(anim1)
+			end
+			animTrack1:Play()
+		else
+			if animTrack1 then animTrack1:Stop() end
+			if not animTrack2 then
+				local anim2 = Instance.new("Animation")
+				anim2.AnimationId = "rbxassetid://185299570"
+				animTrack2 = humanoid:LoadAnimation(anim2)
+			end
+			animTrack2:Play()
+		end
+	end
+	
+	local function StartAnimationLoop()
+		PlayNextAnimation()
+	
+		animLoop = task.delay(0.5, function()
+			StartAnimationLoop()
+		end)
+	end
+	
+	local function StopAnimations()
+		if animLoop then
+			task.cancel(animLoop)
+			animLoop = nil
+		end
+	
+		if animTrack1 then
+			animTrack1:Stop()
+			animTrack1 = nil
+		end
+		if animTrack2 then
+			animTrack2:Stop()
+			animTrack2 = nil
+		end
+	end
+	
+	local function Start()
+		if db then return end
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then 
+			button.Text = "Target not found!                              ..."
+			task.delay(2, function()
+				if button.Text == "Target not found!                              ..." then
+					button.Text = "Bang                                OFF"
+				end
+			end)
+			return 
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = nil
+	
+		if tChar then
+			tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		end
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:WaitForChild("HumanoidRootPart", 0.5)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local saved = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = saved
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		StartAnimationLoop()
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	end
+	
+	local function Stop()
+		if con then 
+			con:Disconnect()
+			con = nil
+		end
+	
+		StopAnimations()
+	
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	local isOn = false
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "Bang                                ON"
+			Start()
+		else
+			button.Text = "Bang                                OFF"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+		StopAnimations()
+	end)
+end;
+task.spawn(C_44);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Jumpscare All.JumpscareAll
+local function C_47()
+local script = G2L["47"];
+	local button = script.Parent
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local player = Players.LocalPlayer
+	local character, humanoid, root = nil, nil, nil
+	
+	local PO = Vector3.new(0, 1.5, -0.8)
+	local RO = CFrame.Angles(0, math.rad(180), 0)
+	
+	local TPList = {}
+	local doneSet = {}
+	local currentIndex = 1
+	local tChar = nil
+	local tRoot = nil
+	local con = nil
+	local isOn = false
+	local sessionActive = false
+	local savedPos = nil
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	local function restorePosition()
+		if savedPos and root and root.Parent then
+			root.CFrame = savedPos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedPos = nil
+	end
+	
+	local function hardStop()
+		sessionActive = false
+		if con then con:Disconnect() con = nil end
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		restorePosition()
+		isOn = false
+		button.Text = "Jumpscare All"
+	end
+	
+	local function updateTargetCharacter()
+		local tp = TPList[currentIndex]
+		if tp and tp.Parent then
+			tChar = tp.Character
+			tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart") or nil
+		else
+			tChar = nil
+			tRoot = nil
+		end
+	end
+	
+	local function allDone()
+		for _, p in ipairs(TPList) do
+			if not doneSet[p] then return false end
+		end
+		return true
+	end
+	
+	local function advanceToNext()
+		local startIdx = currentIndex
+		local count = #TPList
+		for i = 1, count do
+			local idx = (startIdx - 1 + i) % count + 1
+			local p = TPList[idx]
+			if p and p.Parent and not doneSet[p] then
+				local c = p.Character
+				local r = c and c:FindFirstChild("HumanoidRootPart")
+				if c and r and r:IsDescendantOf(workspace) then
+					currentIndex = idx
+					tChar = c
+					tRoot = r
+					return true
+				end
+			end
+		end
+		return false
+	end
+	
+	local function Start()
+		if con then con:Disconnect() con = nil end
+	
+		TPList = {}
+		doneSet = {}
+		for _, p in Players:GetPlayers() do
+			if p ~= player then
+				table.insert(TPList, p)
+			end
+		end
+	
+		if #TPList == 0 then
+			button.Text = "No players found!"
+			task.delay(2, function()
+				if button.Text == "No players found!" then
+					button.Text = "Jumpscare All"
+				end
+			end)
+			return
+		end
+	
+		if root and root.Parent then
+			savedPos = root.CFrame
+		end
+	
+		currentIndex = 1
+		sessionActive = true
+		updateTargetCharacter()
+	
+		if not tRoot then
+			if not advanceToNext() then
+				button.Text = "No players found!"
+				sessionActive = false
+				savedPos = nil
+				return
+			end
+		end
+	
+		local timeOnTarget = tick()
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not sessionActive then
+				if con then con:Disconnect() con = nil end
+				return
+			end
+	
+			local lr = root
+			local lh = humanoid
+			if not lr or not lr.Parent or not lh or not lh.Parent or lh.Health <= 0 then
+				pcall(function() sethiddenproperty(lr, "PhysicsRepRootPart", nil) end)
+				hardStop()
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				local tp = TPList[currentIndex]
+				if tp and tp.Parent and not doneSet[tp] then
+					updateTargetCharacter()
+				end
+				if not tRoot then
+					if not advanceToNext() then
+						if allDone() then hardStop() end
+					end
+				end
+				return
+			end
+	
+			if tick() - timeOnTarget >= 1 then
+				local tp = TPList[currentIndex]
+				if tp then doneSet[tp] = true end
+				pcall(function() sethiddenproperty(lr, "PhysicsRepRootPart", nil) end)
+	
+				if allDone() then
+					hardStop()
+					return
+				end
+	
+				if not advanceToNext() then
+					return
+				end
+				timeOnTarget = tick()
+			end
+	
+			local targetCFrame = tRoot.CFrame * CFrame.new(PO) * RO
+			pcall(function() sethiddenproperty(lr, "PhysicsRepRootPart", tRoot) end)
+			lr.CFrame = targetCFrame
+			lr.Velocity = Vector3.new()
+			lr.AssemblyLinearVelocity = Vector3.new()
+			lr.AssemblyAngularVelocity = Vector3.new()
+			lr.RotVelocity = Vector3.new()
+		end)
+	end
+	
+	local function Stop()
+		hardStop()
+	end
+	
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		isOn = not isOn
+		if isOn then
+			button.Text = "Jumpscare All"
+			Start()
+		else
+			button.Text = "Jumpscare All"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+		if isOn then
+			task.wait(0.5)
+			if isOn then Start() end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() con = nil end
+		sessionActive = false
+		savedPos = nil
+	end)
+	
+	Players.PlayerAdded:Connect(function(p)
+		if p ~= player and isOn then
+			table.insert(TPList, p)
+		end
+	end)
+	
+	Players.PlayerRemoving:Connect(function(p)
+		if not isOn then return end
+		doneSet[p] = nil
+		for i, tp in ipairs(TPList) do
+			if tp == p then
+				table.remove(TPList, i)
+				if currentIndex > #TPList then currentIndex = 1 end
+				updateTargetCharacter()
+				break
+			end
+		end
+	end)
+	
+	for _, p in Players:GetPlayers() do
+		if p ~= player then
+			p.CharacterAdded:Connect(function()
+				if isOn and p == TPList[currentIndex] then
+					updateTargetCharacter()
+				end
+			end)
+		end
+	end
+end;
+task.spawn(C_47);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Slam.SendToHell
+local function C_4a()
+local script = G2L["4a"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	local TIME = 4
+	
+	local PO = Vector3.new(0, 0.35, 0)
+	local RO = CFrame.Angles(0, 0, 0)
+	
+	local TP = nil
+	local con = nil
+	local savedpos = nil
+	local character, humanoid, root = nil, nil, nil
+	
+	local db = false
+	local isOn = false
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Stop()
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+	
+		pcall(function()
+			sethiddenproperty(root, "PhysicsRepRootPart", nil)
+		end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+	
+		savedpos = nil
+	end
+	
+	local function Start()
+		if db then return end
+		db = true
+	
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then
+			button.Text = "Slam"
+			db = false
+			return
+		end
+	
+		savedpos = root.CFrame
+	
+		local tChar = TP.Character
+		local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:FindFirstChild("HumanoidRootPart") or tChar:WaitForChild("HumanoidRootPart", 0.2)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local targetCFrame = tRoot.CFrame * CFrame.new(PO) * RO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = targetCFrame
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		task.delay(TIME, function()
+			if isOn then
+				isOn = false
+				button.Text = "Slam"
+				Stop()
+			end
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	
+		db = false
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+	
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "Slam"
+			Start()
+		else
+			button.Text = "Slam"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_4a);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Control.Control
+local function C_4f()
+local script = G2L["4f"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local UserInputService = game:GetService("UserInputService")
+	
+	local player = Players.LocalPlayer
+	
+	local DefaultOffset = Vector3.new(0, -20, 0) -- beep boop GROK ALERT 🚨🚨🚨🚨🚨🚨🚨
+	local Offset_W = Vector3.new(0, 0.7, 0.5)
+	local Offset_A = Vector3.new(1.7, 0.7, 0)
+	local Offset_S = Vector3.new(0, 0.7, -0.5)
+	local Offset_D = Vector3.new(-1.7, 0.7, 0)
+	local Offset_Space = Vector3.new(0, -3, 0)
+	
+	local TP = nil
+	local con = nil
+	local inputBeganConn = nil
+	local inputEndedConn = nil
+	local savedpos = nil
+	
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	local isOn = false
+	local held = {}
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Stop()
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+		if inputBeganConn then
+			inputBeganConn:Disconnect()
+			inputBeganConn = nil
+		end
+		if inputEndedConn then
+			inputEndedConn:Disconnect()
+			inputEndedConn = nil
+		end
+	
+		local camera = workspace.CurrentCamera
+		if player.Character and player.Character:FindFirstChild("Humanoid") then
+			camera.CameraSubject = player.Character.Humanoid
+		end
+	
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+	
+		savedpos = nil
+		held = {}
+	end
+	
+	local function Start()
+		if db then return end
+		db = true
+	
+		if con then con:Disconnect() end
+		con = nil
+	
+		TP = GetTarget()
+		if not TP then
+			button.Text = "Target not found! ..."
+			task.delay(2, function()
+				if button.Text == "Target not found! ..." then
+					button.Text = "OFF"
+					isOn = false
+				end
+			end)
+			db = false
+			return
+		end
+	
+		savedpos = root.CFrame
+	
+		local camera = workspace.CurrentCamera
+		if TP.Character and TP.Character:FindFirstChild("Humanoid") then
+			camera.CameraSubject = TP.Character.Humanoid
+		end
+	
+		held = {}
+	
+		inputBeganConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+			if gameProcessed then return end
+			if input.UserInputType == Enum.UserInputType.Keyboard then
+				held[input.KeyCode] = true
+			end
+		end)
+	
+		inputEndedConn = UserInputService.InputEnded:Connect(function(input, gameProcessed)
+			if gameProcessed then return end
+			if input.UserInputType == Enum.UserInputType.Keyboard then
+				held[input.KeyCode] = nil
+			end
+		end)
+	
+		local tChar = TP.Character
+		local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:FindFirstChild("HumanoidRootPart") or tChar:WaitForChild("HumanoidRootPart", 0.2)
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+			local currentPO = DefaultOffset
+			if held[Enum.KeyCode.W] then
+				currentPO = Offset_W
+			elseif held[Enum.KeyCode.A] then
+				currentPO = Offset_A
+			elseif held[Enum.KeyCode.S] then
+				currentPO = Offset_S
+			elseif held[Enum.KeyCode.D] then
+				currentPO = Offset_D
+			elseif held[Enum.KeyCode.Space] then
+				currentPO = Offset_Space
+			end
+	
+			local currentRO = CFrame.Angles(0, 0, 0)
+			if held[Enum.KeyCode.Space] then
+				currentRO = CFrame.Angles(math.rad(-90), 0, 0)
+			end
+	
+			local targetCFrame = tRoot.CFrame * CFrame.new(currentPO) * currentRO
+	
+			pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+	
+			root.CFrame = targetCFrame
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	
+		db = false
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+		isOn = not isOn
+		if isOn then
+			button.Text = "ON"
+			Start()
+		else
+			button.Text = "OFF"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_4f);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Fling Target.LocalScript
+local function C_54()
+local script = G2L["54"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local player = Players.LocalPlayer
+	local TIME = 1
+	local PO = Vector3.new(0, 0, 0)
+	local RO = CFrame.Angles(0, 0, 0)
+	local TP = nil
+	local con = nil
+	local savedpos = nil
+	local character, humanoid, root = nil, nil, nil
+	local db = false
+	local isOn = false
+	
+	local function hardStop()
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+		isOn = false
+		button.Text = "Fling Target"
+	end
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+		return nil
+	end
+	
+	local function Stop()
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+		pcall(function()
+			sethiddenproperty(root, "PhysicsRepRootPart", nil)
+		end)
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	local function Start()
+		if db then return end
+		db = true
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+	
+		TP = GetTarget()
+		if not TP then
+			button.Text = "Fling Target"
+			db = false
+			return
+		end
+	
+	
+		if not root or not root.Parent or not humanoid or not humanoid.Parent then
+			button.Text = "Fling Target"
+			db = false
+			return
+		end
+	
+		savedpos = root.CFrame
+		local tChar = TP.Character
+		local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+		local sessionActive = true
+	
+		con = RunService.Heartbeat:Connect(function()
+	
+			if not sessionActive then
+				if con then con:Disconnect() con = nil end
+				return
+			end
+	
+	
+			local localRoot = root
+			local localHumanoid = humanoid
+			if not localRoot
+				or not localRoot.Parent
+				or not localHumanoid
+				or not localHumanoid.Parent
+				or localHumanoid.Health <= 0
+			then
+				pcall(function() sethiddenproperty(localRoot, "PhysicsRepRootPart", nil) end)
+				sessionActive = false
+				hardStop()
+				return
+			end
+	
+	
+			if not TP or not TP.Parent then
+				pcall(function() sethiddenproperty(localRoot, "PhysicsRepRootPart", nil) end)
+				sessionActive = false
+				hardStop()
+				return
+			end
+	
+			-- Refresh target root if needed
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:FindFirstChild("HumanoidRootPart")
+				else
+					tRoot = nil
+				end
+				if not tRoot then return end
+			end
+	
+	
+			pcall(function()
+				sethiddenproperty(localHumanoid, "MoveDirectionInternal", Vector3.new(0/0, 0/0, 0/0))
+			end)
+	
+			local targetCFrame = tRoot.CFrame * CFrame.new(PO) * RO
+			pcall(function() sethiddenproperty(localRoot, "PhysicsRepRootPart", tRoot) end)
+			localRoot.CFrame = targetCFrame
+			localRoot.Velocity = Vector3.new()
+			localRoot.AssemblyLinearVelocity = Vector3.new()
+			localRoot.AssemblyAngularVelocity = Vector3.new()
+			localRoot.RotVelocity = Vector3.new()
+		end)
+	
+	
+		task.delay(TIME, function()
+			sessionActive = false
+			if isOn then
+				Stop()
+				isOn = false
+				button.Text = "Fling Target"
+			end
+		end)
+	
+		TP.CharacterAdded:Connect(function(newChar)
+			if not sessionActive then return end
+			tChar = newChar
+			tRoot = newChar:WaitForChild("HumanoidRootPart")
+		end)
+	
+		db = false
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		if db then return end
+		isOn = not isOn
+		if isOn then
+			button.Text = "Fling Target"
+			Start()
+		else
+			button.Text = "Fling Target"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+		if isOn then
+			db = true
+			task.wait(0.5)
+			db = false
+			if isOn then
+				Start()
+			end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+	end)
+end;
+task.spawn(C_54);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.ClickPlayer.ClickPlayer
+local function C_57()
+local script = G2L["57"];
+	local button = script.Parent
+	local NameBox = script.Parent.Parent:WaitForChild("TargetName")
+	local Players = game:GetService("Players")
+	local UIS = game:GetService("UserInputService")
+	local player = Players.LocalPlayer
+	
+	local selecting = false
+	local connection
+	
+	local function startSelecting()
+		if selecting then return end
+		selecting = true
+		button.Text = "Selecting..."
+	
+		connection = UIS.InputBegan:Connect(function(input, gameProcessed)
+			if gameProcessed then return end
+	
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				local mouse = player:GetMouse()
+				local target = mouse.Target
+	
+				if target then
+					local character = target:FindFirstAncestorWhichIsA("Model")
+					if character then
+						local humanoid = character:FindFirstChild("Humanoid")
+						if humanoid then
+							local targetPlayer = Players:GetPlayerFromCharacter(character)
+							if targetPlayer and targetPlayer ~= player then
+								NameBox.Text = targetPlayer.Name
+								button.Text = "Target Set."
+	
+								task.delay(1.5, function()
+									if button.Text == "Target Set." then
+										button.Text = "(E) Select..."
+									end
+								end)
+	
+								connection:Disconnect()
+								selecting = false
+								return
+							end
+						end
+					end
+				end
+	
+				button.Text = "Noone Found!"
+				task.delay(1.5, function()
+					if button.Text == "Noone Found!" then
+						button.Text = "(E) Select..."
+					end
+				end)
+	
+				connection:Disconnect()
+				selecting = false
+			end
+		end)
+	
+		task.delay(10, function()
+			if selecting then
+				connection:Disconnect()
+				selecting = false
+				button.Text = "(E) Select..."
+			end
+		end)
+	end
+	
+	button.MouseButton1Click:Connect(startSelecting)
+	
+	UIS.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		if input.KeyCode == Enum.KeyCode.E then
+			startSelecting()
+		end
+	end)
+end;
+task.spawn(C_57);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.TextButton.LocalScript
+local function C_5a()
+local script = G2L["5a"];
+	local button = script.Parent
+	local link = button.Text
+	button.MouseButton1Click:Connect(function()
+		setclipboard(link)
+		button.Text = "Link copied!"
+		task.wait(1.5)
+		button.Text = link
+	end)
+	
+	
+end;
+task.spawn(C_5a);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Annoy.Annoy
+local function C_5c()
+local script = G2L["5c"];
+	local button = script.Parent
+	local targetTextBox = script.Parent.Parent:WaitForChild("TargetName")
+	
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local character, humanoid, root = nil, nil, nil
+	local con = nil
+	local isOn = false
+	local savedpos = nil
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	local function GetTarget()
+		local targetName = targetTextBox.Text:lower():gsub("%s+", "")
+		if targetName == "" then return nil end
+	
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p == player then continue end
+			local name = p.Name:lower()
+			local display = (p.DisplayName or ""):lower()
+	
+			if name:find(targetName) or display:find(targetName) then
+				return p
+			end
+		end
+	
+		return nil
+	end
+	
+	local function Start()
+		if con then con:Disconnect() end
+	
+		local TP = GetTarget()
+		if not TP then
+			button.Text = "Annoy                              OFF"
+			task.delay(2, function()
+				if not isOn then
+					button.Text = "Annoy                              OFF"
+				end
+			end)
+			return
+		end
+	
+		local tChar = TP.Character
+		if not tChar then return end
+	
+		local tRoot = tChar:FindFirstChild("HumanoidRootPart")
+		if not tRoot then return end
+	
+		savedpos = root.CFrame
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not isOn then return end
+	
+			if not root or not root.Parent or humanoid.Health <= 0 then
+				pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+				if con then con:Disconnect() end
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				tChar = TP.Character
+				if tChar then
+					tRoot = tChar:FindFirstChild("HumanoidRootPart")
+				end
+				if not tRoot then return end
+			end
+	
+			local dir = Vector3.new(
+				math.random(-1000, 1000) / 100,
+				math.random(-1000, 1000) / 100,
+				math.random(-1000, 1000) / 100
+			).Unit
+	
+			local dist = math.random(50, 100) / 100
+			local offset = dir * dist
+	
+			pcall(function()
+				sethiddenproperty(root, "PhysicsRepRootPart", tRoot)
+			end)
+	
+			root.CFrame = tRoot.CFrame * CFrame.new(offset)
+		end)
+	end
+	
+	local function Stop()
+		if con then
+			con:Disconnect()
+			con = nil
+		end
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+	
+		if savedpos and root and root.Parent then
+			root.CFrame = savedpos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedpos = nil
+	end
+	
+	button.Text = "Annoy                              OFF"
+	
+	button.MouseButton1Click:Connect(function()
+		isOn = not isOn
+	
+		if isOn then
+			button.Text = "Annoy                              ON"
+			Start()
+		else
+			button.Text = "Annoy                              OFF"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		if con then con:Disconnect() end
+	end)
+end;
+task.spawn(C_5c);
+-- StarterGui.urban1's universal GUI.TopBar.MainFrame.ScrollingMain.Fling all.LocalScript
+local function C_5f()
+local script = G2L["5f"];
+	local button = script.Parent
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local player = Players.LocalPlayer
+	local character, humanoid, root = nil, nil, nil
+	
+	local PO = Vector3.new(0, 0, 0)
+	local RO = CFrame.Angles(0, 0, 0)
+	
+	local TPList = {}
+	local doneSet = {}
+	local currentIndex = 1
+	local tChar = nil
+	local tRoot = nil
+	local con = nil
+	local moveDirCon = nil
+	local isOn = false
+	local sessionActive = false
+	local savedPos = nil
+	
+	local function updateLocalCharacter(newChar)
+		character = newChar
+		humanoid = newChar:WaitForChild("Humanoid")
+		root = newChar:WaitForChild("HumanoidRootPart")
+	end
+	
+	local function stopMoveDirection()
+		if moveDirCon then
+			moveDirCon:Disconnect()
+			moveDirCon = nil
+		end
+	end
+	
+	local function restorePosition()
+		if savedPos and root and root.Parent then
+			root.CFrame = savedPos
+			root.Velocity = Vector3.new()
+			root.AssemblyLinearVelocity = Vector3.new()
+			root.AssemblyAngularVelocity = Vector3.new()
+			root.RotVelocity = Vector3.new()
+		end
+		savedPos = nil
+	end
+	
+	local function hardStop()
+		sessionActive = false
+		if con then con:Disconnect() con = nil end
+		stopMoveDirection()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		restorePosition()
+		isOn = false
+		button.Text = "Fling All"
+	end
+	
+	local function updateTargetCharacter()
+		local tp = TPList[currentIndex]
+		if tp and tp.Parent then
+			tChar = tp.Character
+			tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart") or nil
+		else
+			tChar = nil
+			tRoot = nil
+		end
+	end
+	
+	local function allDone()
+		for _, p in ipairs(TPList) do
+			if not doneSet[p] then return false end
+		end
+		return true
+	end
+	
+	local function advanceToNext()
+		local startIdx = currentIndex
+		local count = #TPList
+		for i = 1, count do
+			local idx = (startIdx - 1 + i) % count + 1
+			local p = TPList[idx]
+			if p and p.Parent and not doneSet[p] then
+				local c = p.Character
+				local r = c and c:FindFirstChild("HumanoidRootPart")
+				if c and r and r:IsDescendantOf(workspace) then
+					currentIndex = idx
+					tChar = c
+					tRoot = r
+					return true
+				end
+			end
+		end
+		return false
+	end
+	
+	local function Start()
+		if con then con:Disconnect() con = nil end
+		stopMoveDirection()
+	
+		TPList = {}
+		doneSet = {}
+		for _, p in Players:GetPlayers() do
+			if p ~= player then
+				table.insert(TPList, p)
+			end
+		end
+	
+		if #TPList == 0 then
+			button.Text = "No players found!"
+			task.delay(2, function()
+				if button.Text == "No players found!" then
+					button.Text = "Fling All"
+				end
+			end)
+			return
+		end
+	
+		if root and root.Parent then
+			savedPos = root.CFrame
+		end
+	
+		currentIndex = 1
+		sessionActive = true
+		updateTargetCharacter()
+	
+		if not tRoot then
+			if not advanceToNext() then
+				button.Text = "No players found!"
+				sessionActive = false
+				savedPos = nil
+				return
+			end
+		end
+	
+		local timeOnTarget = tick()
+	
+		moveDirCon = RunService.Heartbeat:Connect(function()
+			if not sessionActive then
+				stopMoveDirection()
+				return
+			end
+			local lh = humanoid
+			local lr = root
+			if not lr or not lr.Parent or not lh or not lh.Parent or lh.Health <= 0 then
+				stopMoveDirection()
+				return
+			end
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then return end
+			pcall(function()
+				sethiddenproperty(lh, "MoveDirectionInternal", Vector3.new(0/0, 0/0, 0/0))
+			end)
+		end)
+	
+		con = RunService.Heartbeat:Connect(function()
+			if not sessionActive then
+				if con then con:Disconnect() con = nil end
+				return
+			end
+	
+			local lr = root
+			local lh = humanoid
+			if not lr or not lr.Parent or not lh or not lh.Parent or lh.Health <= 0 then
+				pcall(function() sethiddenproperty(lr, "PhysicsRepRootPart", nil) end)
+				hardStop()
+				return
+			end
+	
+			if not tRoot or not tRoot:IsDescendantOf(workspace) then
+				local tp = TPList[currentIndex]
+				if tp and tp.Parent and not doneSet[tp] then
+					updateTargetCharacter()
+				end
+				if not tRoot then
+					if not advanceToNext() then
+						if allDone() then hardStop() end
+					end
+				end
+				return
+			end
+	
+			if tick() - timeOnTarget >= 1.5 then
+				local tp = TPList[currentIndex]
+				if tp then doneSet[tp] = true end
+				pcall(function() sethiddenproperty(lr, "PhysicsRepRootPart", nil) end)
+	
+				if allDone() then
+					hardStop()
+					return
+				end
+	
+				if not advanceToNext() then
+					return
+				end
+				timeOnTarget = tick()
+			end
+	
+			local targetCFrame = tRoot.CFrame * CFrame.new(PO) * RO
+			pcall(function() sethiddenproperty(lr, "PhysicsRepRootPart", tRoot) end)
+			lr.CFrame = targetCFrame
+			lr.Velocity = Vector3.new()
+			lr.AssemblyLinearVelocity = Vector3.new()
+			lr.AssemblyAngularVelocity = Vector3.new()
+			lr.RotVelocity = Vector3.new()
+		end)
+	end
+	
+	local function Stop()
+		hardStop()
+	end
+	
+	if player.Character then
+		updateLocalCharacter(player.Character)
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		isOn = not isOn
+		if isOn then
+			button.Text = "Fling All"
+			Start()
+		else
+			button.Text = "Fling All"
+			Stop()
+		end
+	end)
+	
+	player.CharacterAdded:Connect(function(newChar)
+		updateLocalCharacter(newChar)
+		if isOn then
+			task.wait(0.5)
+			if isOn then Start() end
+		end
+	end)
+	
+	player.CharacterRemoving:Connect(function()
+		pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+		stopMoveDirection()
+		if con then con:Disconnect() con = nil end
+		sessionActive = false
+		savedPos = nil
+	end)
+	
+	Players.PlayerAdded:Connect(function(p)
+		if p ~= player and isOn then
+			table.insert(TPList, p)
+		end
+	end)
+	
+	Players.PlayerRemoving:Connect(function(p)
+		if not isOn then return end
+		doneSet[p] = nil
+		for i, tp in ipairs(TPList) do
+			if tp == p then
+				table.remove(TPList, i)
+				if currentIndex > #TPList then currentIndex = 1 end
+				updateTargetCharacter()
+				break
+			end
+		end
+	end)
+	
+	for _, p in Players:GetPlayers() do
+		if p ~= player then
+			p.CharacterAdded:Connect(function()
+				if isOn and p == TPList[currentIndex] then
+					updateTargetCharacter()
+				end
+			end)
+		end
+	end
+end;
+task.spawn(C_5f);
+
+return G2L["1"], require;
