@@ -1004,14 +1004,8 @@ local script = G2L["3"];
 		})
 
 		game:GetService("StarterGui"):SetCore("SendNotification", {
-			Title = "The discord";
-			Text = "discord.gg/dd4XXRMz8b";
-			Duration = 45;
-		})
-	
-		game:GetService("StarterGui"):SetCore("SendNotification", {
 			Title = "Notification";
-			Text = "by urban1";
+			Text = "Skidded By C00LHACK";
 			Duration = 45;
 		})
 	end)
