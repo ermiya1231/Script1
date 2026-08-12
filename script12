@@ -1,5 +1,5 @@
 -- ==========================================
--- NUCLEAR ANTI SLAP (ABSOLUTE IMMUNITY - FIXED SINKING & JUMP)
+-- NUCLEAR ANTI SLAP (ABSOLUTE IMMUNITY - ZERO WALL FRICTION & FIXED CLIMB)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -72,7 +72,7 @@ BtnStroke.Thickness = 1
 BtnStroke.Parent = ToggleBtn
 
 ------------------------------------------
--- 2. پاک‌کننده فورس‌های سرور
+-- 2. توابع کمکی (حذف فورس‌ها و صفر کردن اصطکاک)
 ------------------------------------------
 local function KillForeignMovers(char)
     for _, part in ipairs(char:GetDescendants()) do
@@ -82,6 +82,18 @@ local function KillForeignMovers(char)
             if part.Name ~= MoverName then
                 pcall(function() part:Destroy() end)
             end
+        end
+    end
+end
+
+local function SetZeroFriction(char)
+    -- این تابع باعث میشه کاراکتر به هیچ وجه به دیوارها نچسبه
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            local currentProp = part.CurrentPhysicalProperties
+            local density = currentProp and currentProp.Density or 0.7
+            -- فرمول: (چگالی, اصطکاک، کشسانی، وزن اصطکاک، وزن کشسانی)
+            part.CustomPhysicalProperties = PhysicalProperties.new(density, 0, 0, 100, 100)
         end
     end
 end
@@ -96,6 +108,9 @@ local function SetupGodMode(char)
     if root:FindFirstChild(MoverName) then root[MoverName]:Destroy() end
     if root:FindFirstChild("AntiSlapAttachment") then root.AntiSlapAttachment:Destroy() end
 
+    -- صفر کردن اصطکاک برای جلوگیری از چسبیدن به دیوار
+    SetZeroFriction(char)
+
     local attach = Instance.new("Attachment", root)
     attach.Name = "AntiSlapAttachment"
 
@@ -109,7 +124,7 @@ local function SetupGodMode(char)
 end
 
 ------------------------------------------
--- 4. لوپ اصلی (محافظت کامل در برابر فرو رفتن)
+-- 4. لوپ اصلی
 ------------------------------------------
 local function StartGodGuard()
     if Connection then Connection:Disconnect() end
@@ -126,39 +141,40 @@ local function StartGodGuard()
         if hum and root then
             KillForeignMovers(char)
             
-            -- ۱. جلوگیری از زمین‌گیر شدن و افتادن
+            -- ۱. جلوگیری از زمین‌گیر شدن
             hum.PlatformStand = false
             hum.Sit = false
             
-            -- ۲. غیرفعال کردن استیت‌های راگ‌دال و فیزیک
+            -- ۲. غیرفعال کردن استیت‌های خطرناک
             hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
             hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
             hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
             hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
             
-            -- اگر بازی سعی کرد استیت را راگ‌دال کند، بلافاصله ایستاده‌اش می‌کنیم
             local currentState = hum:GetState()
             if currentState == Enum.HumanoidStateType.Ragdoll or currentState == Enum.HumanoidStateType.Physics or currentState == Enum.HumanoidStateType.FallingDown then
                 hum:ChangeState(Enum.HumanoidStateType.Running)
             end
             
-            -- ۳. اجبار برخورد با زمین (جلوگیری ۱۰۰٪ از فرو رفتن در زمین)
-            root.CanCollide = true
+            -- ۳. مدیریت برخوردها (RootPart نباید برخورد داشته باشه تا به لبه‌ها گیر نکنه)
+            root.CanCollide = false 
             if char:FindFirstChild("Torso") then char.Torso.CanCollide = true end
             if char:FindFirstChild("UpperTorso") then char.UpperTorso.CanCollide = true end
             if char:FindFirstChild("LowerTorso") then char.LowerTorso.CanCollide = true end
+            if char:FindFirstChild("Head") then char.Head.CanCollide = true end
             
             local isMoving = hum.MoveDirection.Magnitude > 0
+            local isClimbing = (currentState == Enum.HumanoidStateType.Climbing)
             
-            -- تشخیص دقیق وضعیت پرش
+            -- تشخیص دقیق پرش و روی هوا بودن
             local isJumpingOrFalling = (currentState == Enum.HumanoidStateType.Jumping) 
                 or (currentState == Enum.HumanoidStateType.Freefall) 
-                or (hum.FloorMaterial == Enum.Material.Air)
-                or (math.abs(root.AssemblyLinearVelocity.Y) > 1)
+                or (hum.FloorMaterial == Enum.Material.Air and not isClimbing)
+                or (math.abs(root.AssemblyLinearVelocity.Y) > 1 and not isClimbing)
                 or hum.Jump
             
-            -- ۴. لنگر هوشمند (فقط موقع ایستادن روی زمین)
-            if not isMoving and not isJumpingOrFalling then
+            -- ۴. لنگر هوشمند
+            if not isMoving and not isJumpingOrFalling and not isClimbing then
                 root.Anchored = true
                 root.AssemblyLinearVelocity = Vector3.zero
             else
@@ -168,7 +184,12 @@ local function StartGodGuard()
             -- ۵. کنترل حرکت
             local lv = root:FindFirstChild(MoverName)
             if lv then
-                lv.VectorVelocity = hum.MoveDirection * hum.WalkSpeed
+                if isClimbing then
+                    lv.Enabled = false -- برای نردبان موتور رو خاموش می‌کنیم تا راحت بالا بره
+                else
+                    lv.Enabled = true
+                    lv.VectorVelocity = hum.MoveDirection * hum.WalkSpeed
+                end
             end
             
             -- ۶. ضد آپرکات شدید
@@ -212,6 +233,13 @@ ToggleBtn.MouseButton1Click:Connect(function()
                 root.Anchored = false
                 if root:FindFirstChild(MoverName) then root[MoverName]:Destroy() end
                 if root:FindFirstChild("AntiSlapAttachment") then root.AntiSlapAttachment:Destroy() end
+            end
+            
+            -- برگرداندن اصطکاک به حالت عادی
+            for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CustomPhysicalProperties = nil
+                end
             end
         end
     end
