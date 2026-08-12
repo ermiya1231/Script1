@@ -1,159 +1,121 @@
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local workspace = game:GetService("Workspace")
+
 local tool = nil
 local remote = nil
 
--- جستجو در کاراکتر و بک‌پک بازیکن
-for _, v in ipairs(player:GetDescendants()) do
-	if v.Name == "SyncAPI" then
-		tool = v.Parent
-		break
-	end
-end
-
--- اگر پیدا نشد، در ReplicatedStorage بگرد
-if not tool then
-	for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
-		if v.Name == "SyncAPI" then
-			tool = v.Parent
-			break
-		end
-	end
-end
-
--- بررسی اینکه آیا تول و ریموت پیدا شده‌اند یا خیر
-if tool and tool:FindFirstChild("SyncAPI") then
-	remote = tool.SyncAPI:FindFirstChild("ServerEndpoint")
-else
-	warn("SyncAPI پیدا نشد! مطمئن شوید که Btools را در اختیار دارید.")
-	return -- توقف اسکریپت برای جلوگیری از ارور
-end
-
-local function _(args)
-	if remote then
-		remote:InvokeServer(unpack(args))
-	end
-end
-
--- (توابع دیگر مانند SetCollision, CreatePart و... دقیقا مثل قبل اینجا قرار می‌گیرند)
--- برای کوتاه شدن کد، فقط توابع مورد نیاز برای اسپم را می‌نویسم:
-
-local function SetLocked(part, boolean)
-	local args = { "SetLocked", { part }, boolean }
-	_(args)
-end
-
-local function SpawnDecal(part, side)
-	local args = { "CreateTextures", { { ["Part"] = part, ["Face"] = side, ["TextureType"] = "Decal" } } }
-	_(args)
-end
-
-local function AddDecal(part, asset, side)
-	local args = { "SyncTexture", { { ["Part"] = part, ["Face"] = side, ["TextureType"] = "Decal", ["Texture"] = "rbxassetid://" .. asset } } }
-	_(args)
-end
-
-local function spam(id)
-	local count = 0
-	for _, v in ipairs(workspace:GetDescendants()) do
-		if v:IsA("BasePart") then
-			task.spawn(function()
-				SetLocked(v, false)
-				local faces = {
-					Enum.NormalId.Front, Enum.NormalId.Back,
-					Enum.NormalId.Right, Enum.NormalId.Left,
-					Enum.NormalId.Bottom, Enum.NormalId.Top
-				}
-				
-				for _, face in ipairs(faces) do
-					SpawnDecal(v, face)
-					AddDecal(v, id, face)
-				end
-			end)
-			
-			count = count + 1
-			-- ایجاد وقفه کوتاه هر 15 پارت برای جلوگیری از کرش شدن کلایِنت و کیک شدن توسط سرور
-			if count % 15 == 0 then
-				task.wait(0.1)
-			end
-		end
-	end
-	print("اسپم عکس به پایان رسید!")
-end
-
-spam("122714132204276")
-
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-
-local tool
+-- 1. پیدا کردن ابزار SyncAPI
 for _, v in ipairs(Player:GetDescendants()) do
     if v.Name == "SyncAPI" then tool = v.Parent break end
 end
 if not tool then
-    for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+    for _, v in ipairs(game:GetService("ReplicatedStorage"):GetDescendants()) do
         if v.Name == "SyncAPI" then tool = v.Parent break end
     end
 end
 
 if not tool or not tool:FindFirstChild("SyncAPI") then
-    warn("SyncAPI found error inside skybox cloud script!")
+    warn("SyncAPI پیدا نشد! مطمئن شوید که Btools را در اختیار دارید.")
     return
 end
 
-local remote = tool.SyncAPI.ServerEndpoint
-local function _(args)
-    remote:InvokeServer(unpack(args))
-end
-
--- تعریف توابع F3X مورد نیاز همین اسکریپت
-local function CreatePart(cf, parent)
-    _({"CreatePart", "Normal", cf, parent})
-end
-local function SetName(part, stringg)
-    _({"SetName", {part}, stringg})
-end
-local function AddMesh(part)
-    _({"CreateMeshes", {{Part = part}}})
-end
-local function SetMesh(part, meshid)
-    _({"SyncMesh", {{Part = part, MeshId = "rbxassetid://" .. meshid}}})
-end
-local function SetTexture(part, texid)
-    _({"SyncMesh", {{Part = part, TextureId = "rbxassetid://" .. texid}}})
-end
-local function MeshResize(part, size)
-    _({"SyncMesh", {{Part = part, Scale = size}}})
-end
-local function SetLocked(part, boolean)
-    _({"SetLocked", {part}, boolean})
-end
-
--- آیدی هدف (میتوانی آیدی پیش‌فرضت را اینجا بگذاری)
-local id = "122714132204276" 
+remote = tool.SyncAPI.ServerEndpoint
+local id = "122714132204276"
 
 ---------------------------------------------------------
--- منطق اصلی اسکای‌باکس تو ----------------------------------
+-- تابع اسپم ۶ وجهی پارت‌ها (با سرعت بالا)
+---------------------------------------------------------
+local function spam_all_faces(imageId)
+    local faces = {
+        Enum.NormalId.Front, Enum.NormalId.Back,
+        Enum.NormalId.Right, Enum.NormalId.Left,
+        Enum.NormalId.Bottom, Enum.NormalId.Top
+    }
+    
+    local allParts = {}
+    for _, v in ipairs(workspace:GetDescendants()) do
+        -- برای اینکه خود اسکای باکس اسپم نشه، اسمش رو فیلتر میکنیم
+        if v:IsA("BasePart") and v.Name ~= "Skybox" then
+            table.insert(allParts, v)
+        end
+    end
+
+    local chunkSize = 100
+    for i = 1, #allParts, chunkSize do
+        local chunk = {}
+        for j = i, math.min(i + chunkSize - 1, #allParts) do
+            table.insert(chunk, allParts[j])
+        end
+
+        remote:InvokeServer("SetLocked", chunk, false)
+
+        for _, face in ipairs(faces) do
+            local decalsToCreate = {}
+            local decalsToSync = {}
+
+            for _, part in ipairs(chunk) do
+                table.insert(decalsToCreate, {Part = part, Face = face, TextureType = "Decal"})
+                table.insert(decalsToSync, {Part = part, Face = face, TextureType = "Decal", Texture = "rbxassetid://" .. imageId})
+            end
+
+            remote:InvokeServer("CreateTextures", decalsToCreate)
+            remote:InvokeServer("SyncTexture", decalsToSync)
+        end
+        task.wait() -- جلوگیری از کرش کلاینت
+    end
+    print("اسپم تمام ۶ وجه با موفقیت به پایان رسید!")
+end
+
+---------------------------------------------------------
+-- اولویت اول: ساخت اسکای‌باکس با جستجوی هوشمند
 ---------------------------------------------------------
 local char = Player.Character
-if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+if char and char:FindFirstChild("HumanoidRootPart") then
+    local hrpPos = char.HumanoidRootPart.Position
+    -- تعیین موقعیت دقیق بالای سر
+    local targetPos = Vector3.new(hrpPos.X, hrpPos.Y + 6, hrpPos.Z)
+    local targetCF = CFrame.new(targetPos)
 
-local e = char.HumanoidRootPart.CFrame.x
-local f = char.HumanoidRootPart.CFrame.y
-local g = char.HumanoidRootPart.CFrame.z
+    -- درخواست ساخت پارت به سرور
+    remote:InvokeServer("CreatePart", "Normal", targetCF, workspace)
+    
+    print("در حال ساخت اسکای باکس...")
+    local skyboxPart = nil
+    
+    -- تلاش برای پیدا کردن پارت ساخته شده (حداکثر 2 ثانیه منتظر میماند)
+    for i = 1, 20 do
+        task.wait(0.1)
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and v.Name == "Part" then
+                -- اگر فاصله پارت تا موقعیت بالای سر کمتر از 3 اِستاد (Stud) بود یعنی همون پارت ماست!
+                if (v.Position - targetPos).Magnitude < 3 then
+                    skyboxPart = v
+                    break
+                end
+            end
+        end
+        if skyboxPart then break end -- اگه پیدا شد از حلقه جستجو خارج شو
+    end
 
-CreatePart(CFrame.new(math.floor(e), math.floor(f), math.floor(g)) + Vector3.new(0, 6, 0), workspace)
-
-task.wait(0.1) -- یک تاخیر بسیار کوتاه برای ساخته شدن پارت در سرور
-
-for _, v in ipairs(workspace:GetDescendants()) do
-    if v:IsA("BasePart") and v.Name == "Part" and v.CFrame.x == math.floor(e) and v.CFrame.z == math.floor(g) then
-        SetName(v, "Skybox")
-        AddMesh(v)
-        SetMesh(v, "111891702759441")
-        SetTexture(v, id)
-        MeshResize(v, Vector3.new(7200, 7200, 7200))
-        _({"SyncCollision", {{Part = v, CanCollide = false}}}) -- غیرفعال کردن برخورد برای آسمان
-        _({"SyncAnchor", {{Part = v, Anchored = true}}})       -- فیکس کردن آسمان در هوا
-        SetLocked(v, true)
+    -- اگر پارت با موفقیت پیدا شد، آن را به اسکای باکس تبدیل کن
+    if skyboxPart then
+        task.spawn(function()
+            remote:InvokeServer("SetName", {skyboxPart}, "Skybox")
+            remote:InvokeServer("CreateMeshes", {{Part = skyboxPart}})
+            remote:InvokeServer("SyncMesh", {{Part = skyboxPart, MeshId = "rbxassetid://111891702759441"}})
+            remote:InvokeServer("SyncMesh", {{Part = skyboxPart, TextureId = "rbxassetid://" .. id}})
+            remote:InvokeServer("SyncMesh", {{Part = skyboxPart, Scale = Vector3.new(7200, 7200, 7200)}})
+            remote:InvokeServer("SyncCollision", {{Part = skyboxPart, CanCollide = false}})
+            remote:InvokeServer("SyncAnchor", {{Part = skyboxPart, Anchored = true}})
+            remote:InvokeServer("SetLocked", {skyboxPart}, true)
+            print("اسکای‌باکس با موفقیت ساخته شد و اعمال گردید!")
+            
+            -- حالا که اسکای باکس ساخته شد، اسپم مپ را شروع کن!
+            print("در حال شروع اسپم مپ...")
+            spam_all_faces(id)
+        end)
+    else
+        warn("خطا: پارت اسکای‌باکس توسط سرور ساخته نشد یا با تاخیر زیاد مواجه شد.")
     end
 end
