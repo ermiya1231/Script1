@@ -7,7 +7,7 @@ local G2L = {};
 G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
 G2L["1"]["IgnoreGuiInset"] = true;
 G2L["1"]["ScreenInsets"] = Enum.ScreenInsets.None;
-G2L["1"]["Name"] = [[urban1's universal GUI]];
+G2L["1"]["Name"] = [[C00LSKIDDED GUI]];
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 G2L["1"]["ResetOnSpawn"] = false;
 
