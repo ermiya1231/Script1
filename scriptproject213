@@ -1,0 +1,342 @@
+-- [[ Matrix Deflect Boss Mode V6 (Absolute Network Ownership & Server Sync) ]] --
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local protectionRadius = 12 -- شعاع جدید به درخواست شما
+
+local isActive = false
+local isDefending = false
+local frozenParts = {}
+local loadedAnim1, loadedAnim2
+local originalPosture = nil
+
+local anim1Id = "rbxassetid://48138189"
+local anim2Id = "rbxassetid://27432686"
+
+-- [[ تکنیک تصاحب Network Ownership سرور ]] --
+-- با بوست کردن شعاع شبیه‌سازی، سرور کنترل فیزیک پارت‌های اطراف را به کلاینت شما می‌دهد
+local function stealNetworkOwnership()
+    if sethiddenproperty then
+        pcall(function()
+            sethiddenproperty(player, "MaximumSimulationRadius", 10000)
+            sethiddenproperty(player, "SimulationRadius", 10000)
+        end)
+    elseif set_simulation_radius then
+        pcall(function() set_simulation_radius(10000) end)
+    end
+end
+
+-- پیدا کردن بهترین مکان برای GUI
+local guiParent
+if gethui then guiParent = gethui()
+elseif pcall(function() local _ = CoreGui.Name end) then guiParent = CoreGui
+else guiParent = player:WaitForChild("PlayerGui") end
+
+-- [[ ساخت GUI حرفه‌ای ]] --
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MatrixDeflectGUI_Premium"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = guiParent
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 220, 0, 100)
+mainFrame.Position = UDim2.new(0.5, -110, 0.8, -50)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+local cornerMain = Instance.new("UICorner")
+cornerMain.CornerRadius = UDim.new(0, 8)
+cornerMain.Parent = mainFrame
+
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local cornerTitle = Instance.new("UICorner")
+cornerTitle.CornerRadius = UDim.new(0, 8)
+cornerTitle.Parent = titleBar
+
+local titleFix = Instance.new("Frame")
+titleFix.Size = UDim2.new(1, 0, 0, 10)
+titleFix.Position = UDim2.new(0, 0, 1, -10)
+titleFix.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+titleFix.BorderSizePixel = 0
+titleFix.Parent = titleBar
+
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, 0, 1, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "☠️ Ammo Catcher V3 ☠️"
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 14
+titleText.Parent = titleBar
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0.8, 0, 0, 40)
+toggleBtn.Position = UDim2.new(0.1, 0, 0, 45)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+toggleBtn.Text = "STATUS: OFF"
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Font = Enum.Font.GothamBlack
+toggleBtn.TextSize = 16
+toggleBtn.AutoButtonColor = true
+toggleBtn.Parent = mainFrame
+
+local cornerBtn = Instance.new("UICorner")
+cornerBtn.CornerRadius = UDim.new(0, 6)
+cornerBtn.Parent = toggleBtn
+
+-- [[ سیستم درگ کردن GUI ]] --
+local dragging, dragInput, dragStart, startPos
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- [[ تنظیم Posture ]] --
+local function setPostureUpright(character, makeStraight)
+    local torso = character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+    if torso then
+        local rootJoint = torso:FindFirstChild("RootJoint") or (character:FindFirstChild("LowerTorso") and character.LowerTorso:FindFirstChild("Root"))
+        if rootJoint then
+            if makeStraight then
+                if not originalPosture then originalPosture = rootJoint.C0 end
+                rootJoint.C0 = CFrame.new(rootJoint.C0.Position) * CFrame.Angles(-math.pi/2, 0, math.pi) 
+            else
+                if originalPosture then 
+                    rootJoint.C0 = originalPosture 
+                    originalPosture = nil
+                end
+            end
+        end
+    end
+end
+
+-- [[ کلیک ایمن دکمه ON/OFF ]] --
+toggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isActive = not isActive
+        local char = player.Character
+        
+        if isActive then
+            toggleBtn.Text = "STATUS: ON"
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+            if char then setPostureUpright(char, true) end
+        else
+            toggleBtn.Text = "STATUS: OFF"
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+            if char then setPostureUpright(char, false) end
+            
+            isDefending = false
+            frozenParts = {}
+            if loadedAnim1 then 
+                loadedAnim1:Stop() 
+                loadedAnim1:AdjustSpeed(1) 
+            end
+            if loadedAnim2 then 
+                loadedAnim2:Stop() 
+                loadedAnim2:AdjustSpeed(1) 
+            end
+        end
+    end
+end)
+
+-- [[ پاکسازی بعد از مردن ]] --
+local function resetCharacterState(char)
+    loadedAnim1 = nil
+    loadedAnim2 = nil
+    isDefending = false
+    frozenParts = {}
+    originalPosture = nil
+    
+    if isActive then
+        task.wait(0.5)
+        setPostureUpright(char, true)
+    end
+end
+
+player.CharacterAdded:Connect(resetCharacterState)
+
+-- [[ سیستم فریز پیشرفته ]] --
+local anim1 = Instance.new("Animation")
+anim1.AnimationId = anim1Id
+local anim2 = Instance.new("Animation")
+anim2.AnimationId = anim2Id
+
+local function freezeProjectile(part)
+    if frozenParts[part] then return end
+    
+    -- ذخیره موقعیت قفل و تعیین زمان ۲ ثانیه برای رهاسازی
+    frozenParts[part] = {
+        lockedCFrame = part.CFrame,
+        expireTime = tick() + 2
+    }
+end
+
+local function isCharacterPart(part)
+    local model = part:FindFirstAncestorOfClass("Model")
+    if model and model:FindFirstChildOfClass("Humanoid") then
+        return true
+    end
+    return false
+end
+
+-- [[ قفل فیزیک سرورساید با همگام‌سازی پیش از شبیه‌سازی ]] --
+local preSimConnection = RunService.PreSimulation or RunService.Stepped
+preSimConnection:Connect(function()
+    if not isActive then return end
+    
+    -- تصاحب مداوم مالکیت شبکه
+    stealNetworkOwnership()
+    
+    for part, data in pairs(frozenParts) do
+        if part and part.Parent then
+            if tick() < data.expireTime then
+                -- صفر کردن مستقیم سرعت‌های خطی و زاویه‌ای فیزیک
+                part.AssemblyLinearVelocity = Vector3.zero
+                part.AssemblyAngularVelocity = Vector3.zero
+                
+                -- اعمال موقعیت قفل‌شده در سرور
+                part.CFrame = data.lockedCFrame
+            else
+                frozenParts[part] = nil
+            end
+        else
+            frozenParts[part] = nil
+        end
+    end
+end)
+
+-- [[ حلقه تشخیص و انیمیشن ]] --
+RunService.Heartbeat:Connect(function()
+    if not isActive then return end
+    
+    local char = player.Character
+    if not char then return end
+    
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    
+    if not hum or not hrp or hum.Health <= 0 then return end
+
+    local animator = hum:FindFirstChildOfClass("Animator") or hum
+
+    if not loadedAnim1 and animator then 
+        loadedAnim1 = animator:LoadAnimation(anim1) 
+        loadedAnim1.Priority = Enum.AnimationPriority.Action4
+        loadedAnim1.Looped = false
+    end
+    if not loadedAnim2 and animator then 
+        loadedAnim2 = animator:LoadAnimation(anim2) 
+        loadedAnim2.Priority = Enum.AnimationPriority.Action4
+        loadedAnim2.Looped = false
+    end
+
+    local activeThreats = 0
+    local overlapParams = OverlapParams.new()
+    overlapParams.FilterType = Enum.RaycastFilterType.Exclude
+    overlapParams.FilterDescendantsInstances = {char}
+
+    -- بررسی پارت‌ها در شعاع جدید ۱۲ متری
+    local partsInRadius = Workspace:GetPartBoundsInRadius(hrp.Position, protectionRadius, overlapParams)
+
+    for _, part in ipairs(partsInRadius) do
+        if part:IsA("BasePart") and not part.Anchored and not isCharacterPart(part) then
+            local velocity = part.AssemblyLinearVelocity
+            local speed = velocity.Magnitude
+            
+            local toPlayer = (hrp.Position - part.Position)
+            local isHeadingTowards = velocity:Dot(toPlayer) > 0
+            
+            if (speed > 1 and isHeadingTowards) or toPlayer.Magnitude <= 12 or frozenParts[part] then
+                activeThreats = activeThreats + 1
+                
+                if not frozenParts[part] then
+                    freezeProjectile(part)
+                end
+            end
+        end
+    end
+
+    -- کنترل انیمیشن ماتریکس
+    if activeThreats > 0 then
+        if not isDefending then
+            isDefending = true
+            
+            if loadedAnim1 then 
+                loadedAnim1:AdjustSpeed(1)
+                loadedAnim1:Play() 
+            end
+            
+            task.delay(0.2, function()
+                if isDefending and loadedAnim2 then
+                    if loadedAnim1 then loadedAnim1:Stop() end 
+                    loadedAnim2:AdjustSpeed(1)
+                    loadedAnim2:Play()
+                    
+                    task.delay(0.25, function()
+                        if isDefending and loadedAnim2 then
+                            loadedAnim2:AdjustSpeed(0) 
+                        end
+                    end)
+                end
+            end)
+        end
+    else
+        if isDefending then
+            local stillFrozen = false
+            for part, _ in pairs(frozenParts) do
+                if part and part.Parent then
+                    stillFrozen = true
+                    break
+                end
+            end
+            
+            if not stillFrozen then
+                isDefending = false
+                if loadedAnim1 then 
+                    loadedAnim1:Stop() 
+                    loadedAnim1:AdjustSpeed(1)
+                end
+                if loadedAnim2 then 
+                    loadedAnim2:Stop() 
+                    loadedAnim2:AdjustSpeed(1)
+                end
+            end
+        end
+    end
+end)
