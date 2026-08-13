@@ -74,6 +74,46 @@ task.delay(3, function()
 	slideOut.Completed:Wait() -- صبر می‌کند تا انیمیشن خروج تمام شود
 	screenGui:Destroy() -- پاک کردن GUI برای جلوگیری از لگ
 end)
+-- Anti-Kick Script for Client/LocalScripts
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Notification / Log helper
+local function logBlock(reason)
+    warn("[Anti-Kick] A LocalScript tried to kick you!")
+    warn("[Anti-Kick] Reason given:", tostring(reason or "No reason specified"))
+end
+
+-- 1. Hooking __namecall to catch method calls like Player:Kick(...)
+if hookmetamethod then
+    local oldNamecall
+    oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
+
+        -- Check if the call is directed at LocalPlayer or Players service with 'Kick' method
+        if (self == LocalPlayer or self == Players) and (method:lower() == "kick") then
+            logBlock(args[1])
+            return nil -- Block execution
+        end
+
+        return oldNamecall(self, ...)
+    end)
+    print("[Anti-Kick] __namecall successfully hooked.")
+end
+
+-- 2. Hooking the Kick function directly as a fallback
+if hookfunction and LocalPlayer and LocalPlayer.Kick then
+    local oldKick
+    oldKick = hookfunction(LocalPlayer.Kick, function(self, ...)
+        local args = {...}
+        logBlock(args[1])
+        return nil -- Block execution
+    end)
+    print("[Anti-Kick] Direct Kick function successfully hooked.")
+end
+
+print("[Anti-Kick] System active! Protection against LocalScript kicks enabled.")
 BetterLc=true --better localplayer cloning
 FFTime=true --if set to true it will be the spawn location's duration if a spawnlocation exists else it will be 10 seconds if set to false will always be 10 seconds
 --[[Untested]]
