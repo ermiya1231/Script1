@@ -5,9 +5,10 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
-local protectionRadius = 12 -- شعاع جدید به درخواست شما
+local protectionRadius = 12 -- شعاع جدید
 
 local isActive = false
 local isDefending = false
@@ -19,7 +20,6 @@ local anim1Id = "rbxassetid://48138189"
 local anim2Id = "rbxassetid://27432686"
 
 -- [[ تکنیک تصاحب Network Ownership سرور ]] --
--- با بوست کردن شعاع شبیه‌سازی، سرور کنترل فیزیک پارت‌های اطراف را به کلاینت شما می‌دهد
 local function stealNetworkOwnership()
     if sethiddenproperty then
         pcall(function()
@@ -49,6 +49,7 @@ mainFrame.Size = UDim2.new(0, 220, 0, 100)
 mainFrame.Position = UDim2.new(0.5, -110, 0.8, -50)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
 mainFrame.Parent = screenGui
 
 local cornerMain = Instance.new("UICorner")
@@ -60,6 +61,7 @@ titleBar.Name = "TitleBar"
 titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 titleBar.BorderSizePixel = 0
+titleBar.Active = true
 titleBar.Parent = mainFrame
 
 local cornerTitle = Instance.new("UICorner")
@@ -97,35 +99,49 @@ local cornerBtn = Instance.new("UICorner")
 cornerBtn.CornerRadius = UDim.new(0, 6)
 cornerBtn.Parent = toggleBtn
 
--- [[ سیستم درگ کردن GUI ]] --
-local dragging, dragInput, dragStart, startPos
+-- [[ سیستم درگ کردن روان (Dragify + TweenService) ]] --
+local function dragify(frameToMove, handleFrame)
+    handleFrame = handleFrame or frameToMove
+    local dragToggle = false
+    local dragInput = nil
+    local dragStart = nil
+    local startPos = nil
 
-titleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-titleBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
+    local function updateInput(input)
         local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        TweenService:Create(frameToMove, TweenInfo.new(0.15), {Position = position}):Play()
     end
-end)
+
+    handleFrame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = frameToMove.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+
+    handleFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then
+            updateInput(input)
+        end
+    end)
+end
+
+-- اعمال سیستم درگ نرم روی TitleBar برای جابه‌جایی MainFrame
+dragify(mainFrame, titleBar)
 
 -- [[ تنظیم Posture ]] --
 local function setPostureUpright(character, makeStraight)
@@ -146,31 +162,29 @@ local function setPostureUpright(character, makeStraight)
     end
 end
 
--- [[ کلیک ایمن دکمه ON/OFF ]] --
-toggleBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isActive = not isActive
-        local char = player.Character
+-- [[ کلیک ایمن دکمه ON/OFF (سازگار با موبایل و PC) ]] --
+toggleBtn.Activated:Connect(function()
+    isActive = not isActive
+    local char = player.Character
+    
+    if isActive then
+        toggleBtn.Text = "STATUS: ON"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        if char then setPostureUpright(char, true) end
+    else
+        toggleBtn.Text = "STATUS: OFF"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        if char then setPostureUpright(char, false) end
         
-        if isActive then
-            toggleBtn.Text = "STATUS: ON"
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-            if char then setPostureUpright(char, true) end
-        else
-            toggleBtn.Text = "STATUS: OFF"
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-            if char then setPostureUpright(char, false) end
-            
-            isDefending = false
-            frozenParts = {}
-            if loadedAnim1 then 
-                loadedAnim1:Stop() 
-                loadedAnim1:AdjustSpeed(1) 
-            end
-            if loadedAnim2 then 
-                loadedAnim2:Stop() 
-                loadedAnim2:AdjustSpeed(1) 
-            end
+        isDefending = false
+        frozenParts = {}
+        if loadedAnim1 then 
+            loadedAnim1:Stop() 
+            loadedAnim1:AdjustSpeed(1) 
+        end
+        if loadedAnim2 then 
+            loadedAnim2:Stop() 
+            loadedAnim2:AdjustSpeed(1) 
         end
     end
 end)
@@ -200,7 +214,6 @@ anim2.AnimationId = anim2Id
 local function freezeProjectile(part)
     if frozenParts[part] then return end
     
-    -- ذخیره موقعیت قفل و تعیین زمان ۲ ثانیه برای رهاسازی
     frozenParts[part] = {
         lockedCFrame = part.CFrame,
         expireTime = tick() + 2
@@ -220,17 +233,13 @@ local preSimConnection = RunService.PreSimulation or RunService.Stepped
 preSimConnection:Connect(function()
     if not isActive then return end
     
-    -- تصاحب مداوم مالکیت شبکه
     stealNetworkOwnership()
     
     for part, data in pairs(frozenParts) do
         if part and part.Parent then
             if tick() < data.expireTime then
-                -- صفر کردن مستقیم سرعت‌های خطی و زاویه‌ای فیزیک
                 part.AssemblyLinearVelocity = Vector3.zero
                 part.AssemblyAngularVelocity = Vector3.zero
-                
-                -- اعمال موقعیت قفل‌شده در سرور
                 part.CFrame = data.lockedCFrame
             else
                 frozenParts[part] = nil
@@ -271,7 +280,6 @@ RunService.Heartbeat:Connect(function()
     overlapParams.FilterType = Enum.RaycastFilterType.Exclude
     overlapParams.FilterDescendantsInstances = {char}
 
-    -- بررسی پارت‌ها در شعاع جدید ۱۲ متری
     local partsInRadius = Workspace:GetPartBoundsInRadius(hrp.Position, protectionRadius, overlapParams)
 
     for _, part in ipairs(partsInRadius) do
