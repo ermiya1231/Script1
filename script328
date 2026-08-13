@@ -1,5 +1,5 @@
 -- ======================================================
--- 🛡️ Ultimate Anti-Kick System (UI + Hooks + Script Nuker)
+-- 🛡️ Ultimate Anti-Kick System (Smart Executor Check)
 -- ======================================================
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
@@ -8,95 +8,113 @@ local LocalPlayer = Players.LocalPlayer
 local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 -- ======================================================
--- 🎨 بخش اول: رابط کاربری (UI) مدرن
+-- 🎨 بخش اول: تابع سازنده رابط کاربری (UI) هوشمند
 -- ======================================================
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "CoolModeGUI"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+local function showNotification(message, strokeColor)
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "CoolModeGUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = playerGui
 
-local frame = Instance.new("Frame")
-frame.Name = "NotifyFrame"
-frame.Size = UDim2.new(0.3, 0, 0.1, 0)
-frame.Position = UDim2.new(1.5, 0, 1, -20) 
-frame.AnchorPoint = Vector2.new(1, 1)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-frame.BorderSizePixel = 0
-frame.Parent = screenGui
+    local frame = Instance.new("Frame")
+    frame.Name = "NotifyFrame"
+    frame.Size = UDim2.new(0.3, 0, 0.1, 0)
+    frame.Position = UDim2.new(1.5, 0, 1, -20) 
+    frame.AnchorPoint = Vector2.new(1, 1)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    frame.BorderSizePixel = 0
+    frame.Parent = screenGui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 8)
-corner.Parent = frame
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = frame
 
-local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(0, 255, 128)
-stroke.Thickness = 2
-stroke.Parent = frame
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = strokeColor -- رنگ حاشیه بر اساس وضعیت تغییر می‌کند
+    stroke.Thickness = 2
+    stroke.Parent = frame
 
-local sizeConstraint = Instance.new("UISizeConstraint")
-sizeConstraint.MaxSize = Vector2.new(300, 65)
-sizeConstraint.MinSize = Vector2.new(200, 50)
-sizeConstraint.Parent = frame
+    local sizeConstraint = Instance.new("UISizeConstraint")
+    sizeConstraint.MaxSize = Vector2.new(300, 65)
+    sizeConstraint.MinSize = Vector2.new(200, 50)
+    sizeConstraint.Parent = frame
 
-local textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(1, 0, 1, 0)
-textLabel.BackgroundTransparency = 1
-textLabel.Text = "Anti-Kick & Nuker Enabled"
-textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-textLabel.Font = Enum.Font.GothamBold
-textLabel.TextScaled = true
-textLabel.Parent = frame
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = message -- متن پیام بر اساس وضعیت تغییر می‌کند
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextScaled = true
+    textLabel.Parent = frame
 
-local textConstraint = Instance.new("UITextSizeConstraint")
-textConstraint.MaxTextSize = 20
-textConstraint.MinTextSize = 12
-textConstraint.Parent = textLabel
+    local textConstraint = Instance.new("UITextSizeConstraint")
+    textConstraint.MaxTextSize = 18
+    textConstraint.MinTextSize = 12
+    textConstraint.Parent = textLabel
 
-local slideInInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-local slideIn = TweenService:Create(frame, slideInInfo, {Position = UDim2.new(1, -20, 1, -20)})
+    local slideInInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    local slideIn = TweenService:Create(frame, slideInInfo, {Position = UDim2.new(1, -20, 1, -20)})
 
-local slideOutInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
-local slideOut = TweenService:Create(frame, slideOutInfo, {Position = UDim2.new(1.5, 0, 1, -20)})
+    local slideOutInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    local slideOut = TweenService:Create(frame, slideOutInfo, {Position = UDim2.new(1.5, 0, 1, -20)})
 
-slideIn:Play()
-task.delay(4, function()
-    slideOut:Play()
-    slideOut.Completed:Wait()
-    screenGui:Destroy()
-end)
+    slideIn:Play()
+    task.delay(4, function()
+        slideOut:Play()
+        slideOut.Completed:Wait()
+        screenGui:Destroy()
+    end)
+end
 
 -- ======================================================
--- 🛡️ بخش دوم: لایه اول آنتی‌کیک (مسدود کردن مستقیم توابع)
+-- ⚙️ بررسی قدرت اگزکتور و اجرای سیستم
+-- ======================================================
+-- چک می‌کند آیا توابع هوک در اگزکتور وجود دارند یا خیر
+local hasHookSupport = (type(hookmetamethod) == "function" or type(hookfunction) == "function")
+
+if hasHookSupport then
+    showNotification("Full Anti-Kick Enabled", Color3.fromRGB(0, 255, 128)) -- سبز نئونی
+else
+    showNotification("No Hook! Using Nuker Only", Color3.fromRGB(255, 50, 50)) -- قرمز (ارور)
+    warn("[System] Executor lacks Hook support. Relying purely on Script Nuker.")
+end
+
+-- ======================================================
+-- 🛡️ بخش دوم: لایه اول (مسدود کردن مستقیم توابع)
 -- ======================================================
 local function logBlock(reason)
     warn("[Anti-Kick] A LocalScript tried to kick you!")
     warn("[Anti-Kick] Reason given:", tostring(reason or "No reason specified"))
 end
 
-if hookmetamethod then
-    local oldNamecall
-    oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-        local method = getnamecallmethod()
-        local args = {...}
-        if (self == LocalPlayer or self == Players) and (method:lower() == "kick") then
+-- کدهای این بخش فقط در صورتی اجرا می‌شوند که اگزکتور پشتیبانی کند
+if hasHookSupport then
+    if hookmetamethod then
+        local oldNamecall
+        oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+            local method = getnamecallmethod()
+            local args = {...}
+            if (self == LocalPlayer or self == Players) and (method:lower() == "kick") then
+                logBlock(args[1])
+                return nil 
+            end
+            return oldNamecall(self, ...)
+        end)
+    end
+
+    if hookfunction and LocalPlayer and LocalPlayer.Kick then
+        local oldKick
+        oldKick = hookfunction(LocalPlayer.Kick, function(self, ...)
+            local args = {...}
             logBlock(args[1])
             return nil 
-        end
-        return oldNamecall(self, ...)
-    end)
-end
-
-if hookfunction and LocalPlayer and LocalPlayer.Kick then
-    local oldKick
-    oldKick = hookfunction(LocalPlayer.Kick, function(self, ...)
-        local args = {...}
-        logBlock(args[1])
-        return nil 
-    end)
+        end)
+    end
 end
 
 -- ======================================================
--- 💥 بخش سوم: لایه دوم آنتی‌کیک (Script Nuker / نابودگر)
+-- 💥 بخش سوم: لایه دوم (Script Nuker / نابودگر)
 -- ======================================================
 local suspiciousKeywords = {
     "anticheat", "anti-cheat", "ac", "anti", "cheat", 
@@ -159,4 +177,4 @@ monitorContainer(playerScripts)
 monitorContainer(playerGui)
 monitorContainer(backpack)
 
-print("[System] Ultimate Anti-Kick and UI Loaded Successfully!")
+print("[System] Anti-Kick System Loaded!")
