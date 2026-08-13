@@ -8,7 +8,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
-local protectionRadius = 12 -- شعاع جدید
+local protectionRadius = 16 -- شعاع جدید
 
 local isActive = false
 local isDefending = false
