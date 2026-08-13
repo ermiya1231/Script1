@@ -1,4 +1,4 @@
--- [[ Matrix Deflect Boss Mode V6 (Absolute Network Ownership & Server Sync) ]] --
+-- [[ Matrix Deflect Boss Mode V6 + Ultra Instinct (Slider Fix) ]] --
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -8,7 +8,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
-local protectionRadius = 16 -- شعاع جدید
+local protectionRadius = 16 
 
 local isActive = false
 local isDefending = false
@@ -18,6 +18,15 @@ local originalPosture = nil
 
 local anim1Id = "rbxassetid://48138189"
 local anim2Id = "rbxassetid://27432686"
+
+-- متغیرهای Ultra Instinct
+local isUIActive = false
+local uiRange = 5
+local minUIRange = 5
+local maxUIRange = 50
+local lastDodgeTime = 0
+local dodgeCooldown = 0.3 -- زمان مکث بین هر جاخالی برای جلوگیری از لگ
+local uiRingPart = nil
 
 -- [[ تکنیک تصاحب Network Ownership سرور ]] --
 local function stealNetworkOwnership()
@@ -45,8 +54,8 @@ screenGui.Parent = guiParent
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 220, 0, 100)
-mainFrame.Position = UDim2.new(0.5, -110, 0.8, -50)
+mainFrame.Size = UDim2.new(0, 220, 0, 210)
+mainFrame.Position = UDim2.new(0.5, -110, 0.8, -100)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -78,20 +87,21 @@ titleFix.Parent = titleBar
 local titleText = Instance.new("TextLabel")
 titleText.Size = UDim2.new(1, 0, 1, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "☠️ Ammo Catcher V3 ☠️"
+titleText.Text = "☠️ Ammo Catcher V4 ☠️"
 titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleText.Font = Enum.Font.GothamBold
 titleText.TextSize = 14
 titleText.Parent = titleBar
 
+-- دکمه ماتریکس
 local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0.8, 0, 0, 40)
-toggleBtn.Position = UDim2.new(0.1, 0, 0, 45)
+toggleBtn.Size = UDim2.new(0.8, 0, 0, 35)
+toggleBtn.Position = UDim2.new(0.1, 0, 0, 40)
 toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-toggleBtn.Text = "STATUS: OFF"
+toggleBtn.Text = "MATRIX AURA: OFF"
 toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleBtn.Font = Enum.Font.GothamBlack
-toggleBtn.TextSize = 16
+toggleBtn.TextSize = 14
 toggleBtn.AutoButtonColor = true
 toggleBtn.Parent = mainFrame
 
@@ -99,7 +109,73 @@ local cornerBtn = Instance.new("UICorner")
 cornerBtn.CornerRadius = UDim.new(0, 6)
 cornerBtn.Parent = toggleBtn
 
--- [[ سیستم درگ کردن روان (Dragify + TweenService) ]] --
+-- دکمه Ultra Instinct
+local uiToggleBtn = Instance.new("TextButton")
+uiToggleBtn.Size = UDim2.new(0.8, 0, 0, 35)
+uiToggleBtn.Position = UDim2.new(0.1, 0, 0, 85)
+uiToggleBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+uiToggleBtn.Text = "ULTRA INSTINCT: OFF"
+uiToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+uiToggleBtn.Font = Enum.Font.GothamBlack
+uiToggleBtn.TextSize = 12
+uiToggleBtn.AutoButtonColor = true
+uiToggleBtn.Parent = mainFrame
+
+local cornerUIBtn = Instance.new("UICorner")
+cornerUIBtn.CornerRadius = UDim.new(0, 6)
+cornerUIBtn.Parent = uiToggleBtn
+
+-- کانتینر اسلایدر 
+local sliderContainer = Instance.new("Frame")
+sliderContainer.Size = UDim2.new(0.9, 0, 0, 60)
+sliderContainer.Position = UDim2.new(0.05, 0, 0, 130)
+sliderContainer.BackgroundTransparency = 1
+sliderContainer.Visible = false
+sliderContainer.Parent = mainFrame
+
+local sliderLabel = Instance.new("TextLabel")
+sliderLabel.Size = UDim2.new(1, 0, 0, 20)
+sliderLabel.Position = UDim2.new(0, 0, 0, 0)
+sliderLabel.BackgroundTransparency = 1
+sliderLabel.Text = "Dodge Range: " .. uiRange
+sliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+sliderLabel.Font = Enum.Font.GothamSemibold
+sliderLabel.TextSize = 12
+sliderLabel.Parent = sliderContainer
+
+local sliderBg = Instance.new("Frame")
+sliderBg.Size = UDim2.new(0.9, 0, 0, 8)
+sliderBg.Position = UDim2.new(0.05, 0, 0.5, 10)
+sliderBg.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+sliderBg.Parent = sliderContainer
+
+local cornerSliderBg = Instance.new("UICorner")
+cornerSliderBg.CornerRadius = UDim.new(1, 0)
+cornerSliderBg.Parent = sliderBg
+
+local sliderFill = Instance.new("Frame")
+sliderFill.Size = UDim2.new(0, 0, 1, 0) 
+sliderFill.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+sliderFill.Parent = sliderBg
+
+local cornerSliderFill = Instance.new("UICorner")
+cornerSliderFill.CornerRadius = UDim.new(1, 0)
+cornerSliderFill.Parent = sliderFill
+
+-- === بخش اصلاح شده ===
+local sliderKnob = Instance.new("TextButton")
+sliderKnob.Size = UDim2.new(0, 16, 0, 16)
+sliderKnob.Position = UDim2.new(1, -8, 0.5, -8) -- عدد 0 به 1 تغییر کرد تا به انتهای خط متصل شود
+sliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+sliderKnob.Text = ""
+sliderKnob.Parent = sliderFill
+-- ====================
+
+local cornerKnob = Instance.new("UICorner")
+cornerKnob.CornerRadius = UDim.new(1, 0)
+cornerKnob.Parent = sliderKnob
+
+-- [[ سیستم درگ کردن پنجره ]] --
 local function dragify(frameToMove, handleFrame)
     handleFrame = handleFrame or frameToMove
     local dragToggle = false
@@ -140,11 +216,110 @@ local function dragify(frameToMove, handleFrame)
     end)
 end
 
--- اعمال سیستم درگ نرم روی TitleBar برای جابه‌جایی MainFrame
 dragify(mainFrame, titleBar)
 
--- [[ تنظیم Posture ]] --
-local function setPostureUpright(character, makeStraight)
+-- [[ سیستم اسلایدر ]] --
+local draggingSlider = false
+
+local function updateSlider(input)
+    local relativeX = math.clamp(input.Position.X - sliderBg.AbsolutePosition.X, 0, sliderBg.AbsoluteSize.X)
+    local percentage = relativeX / sliderBg.AbsoluteSize.X
+    
+    sliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+    uiRange = math.floor(minUIRange + (maxUIRange - minUIRange) * percentage)
+    sliderLabel.Text = "Dodge Range: " .. uiRange
+    
+    if uiRingPart then
+        uiRingPart.Size = Vector3.new(0.2, uiRange * 2, uiRange * 2)
+    end
+end
+
+sliderKnob.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        draggingSlider = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        draggingSlider = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if draggingSlider and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        updateSlider(input)
+    end
+end)
+
+sliderBg.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        updateSlider(input)
+        draggingSlider = true
+    end
+end)
+
+-- [[ ساخت دایره نعونی ]] --
+local function createUIRing()
+    if uiRingPart then uiRingPart:Destroy() end
+    uiRingPart = Instance.new("Part")
+    uiRingPart.Name = "UltraInstinctRing"
+    uiRingPart.Shape = Enum.PartType.Cylinder
+    uiRingPart.Material = Enum.Material.Neon
+    uiRingPart.Color = Color3.fromRGB(255, 0, 0)
+    uiRingPart.Transparency = 0.7
+    uiRingPart.Anchored = true
+    uiRingPart.CanCollide = false
+    uiRingPart.CastShadow = false
+    uiRingPart.Size = Vector3.new(0.2, uiRange * 2, uiRange * 2)
+    uiRingPart.Parent = Workspace
+end
+
+local function removeUIRing()
+    if uiRingPart then
+        uiRingPart:Destroy()
+        uiRingPart = nil
+    end
+end
+
+-- [[ کلیک دکمه‌ها ]] --
+toggleBtn.Activated:Connect(function()
+    isActive = not isActive
+    local char = player.Character
+
+    if isActive then
+        toggleBtn.Text = "MATRIX AURA: ON"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        if char then setPostureUpright(char, true) end
+    else
+        toggleBtn.Text = "MATRIX AURA: OFF"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        if char then setPostureUpright(char, false) end
+
+        isDefending = false
+        frozenParts = {}
+        if loadedAnim1 then loadedAnim1:Stop(); loadedAnim1:AdjustSpeed(1) end
+        if loadedAnim2 then loadedAnim2:Stop(); loadedAnim2:AdjustSpeed(1) end
+    end
+end)
+
+uiToggleBtn.Activated:Connect(function()
+    isUIActive = not isUIActive
+    if isUIActive then
+        uiToggleBtn.Text = "ULTRA INSTINCT: ON"
+        uiToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 50)
+        sliderContainer.Visible = true
+        createUIRing()
+    else
+        uiToggleBtn.Text = "ULTRA INSTINCT: OFF"
+        uiToggleBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        sliderContainer.Visible = false
+        removeUIRing()
+    end
+end)
+
+-- تنظیم Posture
+function setPostureUpright(character, makeStraight)
     local torso = character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
     if torso then
         local rootJoint = torso:FindFirstChild("RootJoint") or (character:FindFirstChild("LowerTorso") and character.LowerTorso:FindFirstChild("Root"))
@@ -162,50 +337,27 @@ local function setPostureUpright(character, makeStraight)
     end
 end
 
--- [[ کلیک ایمن دکمه ON/OFF (سازگار با موبایل و PC) ]] --
-toggleBtn.Activated:Connect(function()
-    isActive = not isActive
-    local char = player.Character
-    
-    if isActive then
-        toggleBtn.Text = "STATUS: ON"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-        if char then setPostureUpright(char, true) end
-    else
-        toggleBtn.Text = "STATUS: OFF"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        if char then setPostureUpright(char, false) end
-        
-        isDefending = false
-        frozenParts = {}
-        if loadedAnim1 then 
-            loadedAnim1:Stop() 
-            loadedAnim1:AdjustSpeed(1) 
-        end
-        if loadedAnim2 then 
-            loadedAnim2:Stop() 
-            loadedAnim2:AdjustSpeed(1) 
-        end
-    end
-end)
-
--- [[ پاکسازی بعد از مردن ]] --
+-- پاکسازی بعد از مردن
 local function resetCharacterState(char)
     loadedAnim1 = nil
     loadedAnim2 = nil
     isDefending = false
     frozenParts = {}
     originalPosture = nil
-    
+
     if isActive then
         task.wait(0.5)
         setPostureUpright(char, true)
     end
+    if isUIActive then
+        removeUIRing()
+        task.wait(0.5)
+        createUIRing()
+    end
 end
-
 player.CharacterAdded:Connect(resetCharacterState)
 
--- [[ سیستم فریز پیشرفته ]] --
+-- توابع فریز
 local anim1 = Instance.new("Animation")
 anim1.AnimationId = anim1Id
 local anim2 = Instance.new("Animation")
@@ -213,7 +365,6 @@ anim2.AnimationId = anim2Id
 
 local function freezeProjectile(part)
     if frozenParts[part] then return end
-    
     frozenParts[part] = {
         lockedCFrame = part.CFrame,
         expireTime = tick() + 2
@@ -228,13 +379,11 @@ local function isCharacterPart(part)
     return false
 end
 
--- [[ قفل فیزیک سرورساید با همگام‌سازی پیش از شبیه‌سازی ]] --
+-- قفل فیزیک سرورساید
 local preSimConnection = RunService.PreSimulation or RunService.Stepped
 preSimConnection:Connect(function()
     if not isActive then return end
-    
     stealNetworkOwnership()
-    
     for part, data in pairs(frozenParts) do
         if part and part.Parent then
             if tick() < data.expireTime then
@@ -250,99 +399,128 @@ preSimConnection:Connect(function()
     end
 end)
 
--- [[ حلقه تشخیص و انیمیشن ]] --
+-- [[ حلقه اصلی Heartbeat برای ماتریکس و Ultra Instinct ]] --
 RunService.Heartbeat:Connect(function()
-    if not isActive then return end
-    
     local char = player.Character
     if not char then return end
-    
+
     local hum = char:FindFirstChildOfClass("Humanoid")
     local hrp = char:FindFirstChild("HumanoidRootPart")
-    
-    if not hum or not hrp or hum.Health <= 0 then return end
 
-    local animator = hum:FindFirstChildOfClass("Animator") or hum
-
-    if not loadedAnim1 and animator then 
-        loadedAnim1 = animator:LoadAnimation(anim1) 
-        loadedAnim1.Priority = Enum.AnimationPriority.Action4
-        loadedAnim1.Looped = false
-    end
-    if not loadedAnim2 and animator then 
-        loadedAnim2 = animator:LoadAnimation(anim2) 
-        loadedAnim2.Priority = Enum.AnimationPriority.Action4
-        loadedAnim2.Looped = false
+    if not hum or not hrp or hum.Health <= 0 then 
+        if uiRingPart then uiRingPart.CFrame = CFrame.new(0,-1000,0) end
+        return 
     end
 
-    local activeThreats = 0
+    -- آپدیت مکان دایره نعونی
+    if isUIActive and uiRingPart then
+        -- چرخش 90 درجه برای اینکه Cylinder روی زمین بخوابه
+        uiRingPart.CFrame = hrp.CFrame * CFrame.new(0, -2.5, 0) * CFrame.Angles(0, 0, math.pi/2)
+    end
+
     local overlapParams = OverlapParams.new()
     overlapParams.FilterType = Enum.RaycastFilterType.Exclude
     overlapParams.FilterDescendantsInstances = {char}
 
-    local partsInRadius = Workspace:GetPartBoundsInRadius(hrp.Position, protectionRadius, overlapParams)
-
-    for _, part in ipairs(partsInRadius) do
-        if part:IsA("BasePart") and not part.Anchored and not isCharacterPart(part) then
-            local velocity = part.AssemblyLinearVelocity
-            local speed = velocity.Magnitude
-            
-            local toPlayer = (hrp.Position - part.Position)
-            local isHeadingTowards = velocity:Dot(toPlayer) > 0
-            
-            if (speed > 1 and isHeadingTowards) or toPlayer.Magnitude <= 12 or frozenParts[part] then
-                activeThreats = activeThreats + 1
+    -- ==============================================
+    -- 1. لاجیک Ultra Instinct (اولویت بالاتر برای فرار)
+    -- ==============================================
+    if isUIActive and (tick() - lastDodgeTime > dodgeCooldown) then
+        local uiPartsInRadius = Workspace:GetPartBoundsInRadius(hrp.Position, uiRange, overlapParams)
+        local shouldDodge = false
+        
+        for _, part in ipairs(uiPartsInRadius) do
+            if part:IsA("BasePart") and not part.Anchored and not isCharacterPart(part) then
+                local velocity = part.AssemblyLinearVelocity
+                local speed = velocity.Magnitude
                 
-                if not frozenParts[part] then
-                    freezeProjectile(part)
+                -- اگه سرعت داشت (Unanchored ثابت رو ایگنور میکنه)
+                if speed > 5 then
+                    local toPlayer = (hrp.Position - part.Position)
+                    local isHeadingTowards = velocity:Dot(toPlayer) > 0
+                    
+                    if isHeadingTowards or toPlayer.Magnitude <= (uiRange * 0.8) then
+                        shouldDodge = true
+                        break
+                    end
                 end
             end
+        end
+
+        if shouldDodge then
+            -- جاخالی دادن به صورت رندوم به راست یا چپ به اندازه 15 استاد
+            local direction = (math.random() > 0.5) and 1 or -1
+            hrp.CFrame = hrp.CFrame * CFrame.new(direction * 15, 0, 0)
+            lastDodgeTime = tick()
+            
+            -- افکت انیمیشنی کوتاه (اختیاری)
+            local dodgeAnim = Instance.new("Animation")
+            dodgeAnim.AnimationId = anim2Id
+            local track = hum:LoadAnimation(dodgeAnim)
+            track.Priority = Enum.AnimationPriority.Action4
+            track:Play(0.1, 1, 2)
+            task.delay(0.2, function() track:Stop() end)
         end
     end
 
-    -- کنترل انیمیشن ماتریکس
-    if activeThreats > 0 then
-        if not isDefending then
-            isDefending = true
-            
-            if loadedAnim1 then 
-                loadedAnim1:AdjustSpeed(1)
-                loadedAnim1:Play() 
-            end
-            
-            task.delay(0.2, function()
-                if isDefending and loadedAnim2 then
-                    if loadedAnim1 then loadedAnim1:Stop() end 
-                    loadedAnim2:AdjustSpeed(1)
-                    loadedAnim2:Play()
-                    
-                    task.delay(0.25, function()
-                        if isDefending and loadedAnim2 then
-                            loadedAnim2:AdjustSpeed(0) 
-                        end
-                    end)
-                end
-            end)
+    -- ==============================================
+    -- 2. لاجیک Matrix Deflect (فریز کردن)
+    -- ==============================================
+    if isActive then
+        local animator = hum:FindFirstChildOfClass("Animator") or hum
+        if not loadedAnim1 and animator then 
+            loadedAnim1 = animator:LoadAnimation(anim1) 
+            loadedAnim1.Priority = Enum.AnimationPriority.Action4
+            loadedAnim1.Looped = false
         end
-    else
-        if isDefending then
-            local stillFrozen = false
-            for part, _ in pairs(frozenParts) do
-                if part and part.Parent then
-                    stillFrozen = true
-                    break
+        if not loadedAnim2 and animator then 
+            loadedAnim2 = animator:LoadAnimation(anim2) 
+            loadedAnim2.Priority = Enum.AnimationPriority.Action4
+            loadedAnim2.Looped = false
+        end
+
+        local activeThreats = 0
+        local partsInRadius = Workspace:GetPartBoundsInRadius(hrp.Position, protectionRadius, overlapParams)
+
+        for _, part in ipairs(partsInRadius) do
+            if part:IsA("BasePart") and not part.Anchored and not isCharacterPart(part) then
+                local velocity = part.AssemblyLinearVelocity
+                local speed = velocity.Magnitude
+                local toPlayer = (hrp.Position - part.Position)
+                local isHeadingTowards = velocity:Dot(toPlayer) > 0
+
+                if (speed > 1 and isHeadingTowards) or toPlayer.Magnitude <= 12 or frozenParts[part] then
+                    activeThreats = activeThreats + 1
+                    if not frozenParts[part] then freezeProjectile(part) end
                 end
             end
-            
-            if not stillFrozen then
-                isDefending = false
-                if loadedAnim1 then 
-                    loadedAnim1:Stop() 
-                    loadedAnim1:AdjustSpeed(1)
+        end
+
+        -- کنترل انیمیشن ماتریکس
+        if activeThreats > 0 then
+            if not isDefending then
+                isDefending = true
+                if loadedAnim1 then loadedAnim1:AdjustSpeed(1); loadedAnim1:Play() end
+                task.delay(0.2, function()
+                    if isDefending and loadedAnim2 then
+                        if loadedAnim1 then loadedAnim1:Stop() end 
+                        loadedAnim2:AdjustSpeed(1); loadedAnim2:Play()
+                        task.delay(0.25, function()
+                            if isDefending and loadedAnim2 then loadedAnim2:AdjustSpeed(0) end
+                        end)
+                    end
+                end)
+            end
+        else
+            if isDefending then
+                local stillFrozen = false
+                for part, _ in pairs(frozenParts) do
+                    if part and part.Parent then stillFrozen = true; break end
                 end
-                if loadedAnim2 then 
-                    loadedAnim2:Stop() 
-                    loadedAnim2:AdjustSpeed(1)
+                if not stillFrozen then
+                    isDefending = false
+                    if loadedAnim1 then loadedAnim1:Stop(); loadedAnim1:AdjustSpeed(1) end
+                    if loadedAnim2 then loadedAnim2:Stop(); loadedAnim2:AdjustSpeed(1) end
                 end
             end
         end
