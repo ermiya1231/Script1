@@ -6877,7 +6877,7 @@ local script = G2L["4"];
 	
 		local function setTitle()
 			pcall(function()
-				RequestCommand:InvokeServer(";titleb me User Nyxes Gui V2")
+				RequestCommand:InvokeServer(";titler me C00LHACK")
 			end)
 		end
 	
