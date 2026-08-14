@@ -1,0 +1,1828 @@
+-- کامند های دستی
+-- CanCollide: False
+-- Unanchored: True
+-- SpawnPoint: True
+-- Decal.Top,Right... = ID
+-- Texture.Top,Right... = ID
+-- Light: True
+-- Fire: True
+-- MeshTexture: ID
+-- Mesh: ID
+-- MeshType: FileMesh (یا Head, Sphere, Brick و غیره)
+-- MeshScale: 1.5, 2, 1.5 (با پرانتز یا بدون پرانتز)
+
+---------------------------------------------------------
+-- تنظیمات اسپاون (این مقادیر را تغییر دهید)
+---------------------------------------------------------
+local SPAWN_DISTANCE = 20        -- فاصله مدل از شما (هرچه عدد بزرگتر باشد، دورتر اسپاون می‌شود)
+local SPAWN_HEIGHT_OFFSET = 2.5  -- تنظیم ارتفاع (2.5 معمولاً هم‌سطح پای پلیر است)
+
+local LIGHT_ALL_PARTS = true
+local GLOBAL_LIGHT_RANGE = 7      -- شعاع نور
+local GLOBAL_LIGHT_BRIGHTNESS = 0.011   -- روشنایی
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Player = Players.LocalPlayer
+
+-- پیدا کردن سریع ابزار F3X
+local tool
+for _, v in ipairs(Player:GetDescendants()) do if v.Name == "SyncAPI" then tool = v.Parent break end end
+if not tool then for _, v in ipairs(ReplicatedStorage:GetDescendants()) do if v.Name == "SyncAPI" then tool = v.Parent break end end end
+if not tool or not tool:FindFirstChild("SyncAPI") then warn("خطا: ابزار F3X پیدا نشد!") return end
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+-- ردیاب سبک برای اطمینان از پایان کار سرور
+local ActiveSyncs = 0
+
+local function FireMassiveSync(action, dataArray, extraArg)
+    if not dataArray or #dataArray == 0 then return end
+    ActiveSyncs = ActiveSyncs + 1
+    task.spawn(function()
+        pcall(function()
+            if extraArg ~= nil then 
+                remote:InvokeServer(action, dataArray, extraArg)
+            else 
+                remote:InvokeServer(action, dataArray) 
+            end
+        end)
+        ActiveSyncs = ActiveSyncs - 1
+    end)
+end
+
+local function safeNum(val, default) return tonumber(val) or default or 0 end
+
+---------------------------------------------------------
+-- [کدهای خام خود را در کادر زیر کپی کن] ------------------
+---------------------------------------------------------
+local RawData = [[
+Part 1:
+ Position: (-163.17, 16.23, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 2:
+ Position: (-159.81, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 3:
+ Position: (-163.17, 12.30, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 4:
+ Position: (-156.65, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 5:
+ Position: (-160.29, 20.00, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.60, 0.20, 0.20)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 6:
+ Position: (-155.24, 13.61, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 7:
+ Position: (-159.24, 15.73, 82.10)
+ Rotation: (0.00, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (12.36, 0.20, 0.36)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 8:
+ Position: (-162.57, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 9:
+ Position: (-155.24, 11.19, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 10:
+ Position: (-155.24, 13.04, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 11:
+ Position: (-156.95, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 12:
+ Position: (-155.24, 16.37, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 13:
+ Position: (-159.07, 14.44, 82.20)
+ Rotation: (0.00, 90.00, 90.00)
+ Shape: Block
+ Size: (0.80, 0.20, 2.00)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Ice
+ Transparency: 0.00
+
+Part 14:
+ Position: (-156.10, 10.35, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 15:
+ Position: (-163.17, 16.92, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 16:
+ Position: (-155.24, 14.65, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 17:
+ Position: (-157.99, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 18:
+ Position: (-158.62, 19.86, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.20, 0.20, 0.60)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 19:
+ Position: (-159.98, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 20:
+ Position: (-160.53, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 21:
+ Position: (-159.22, 20.00, 82.15)
+ Rotation: (90.00, 0.00, 0.00)
+ Shape: Block
+ Size: (4.00, 0.29, 1.79)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Ice
+ Transparency: 0.00
+
+Part 22:
+ Position: (-155.24, 12.24, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 23:
+ Position: (-159.11, 14.34, 82.14)
+ Rotation: (-90.00, 90.00, 0.00)
+ Shape: Cylinder
+ Size: (0.20, 5.60, 12.80)
+ Color: 0.639216, 0.635294, 0.647059
+ Material: Ice
+ Transparency: 0.00
+
+Part 24:
+ Position: (-156.25, 10.35, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 25:
+ Position: (-160.74, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 26:
+ Position: (-155.24, 15.82, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 27:
+ Position: (-163.17, 14.88, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 28:
+ Position: (-163.17, 16.02, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 29:
+ Position: (-159.23, 20.78, 82.22)
+ Rotation: (90.00, 0.00, 0.00)
+ Shape: Block
+ Size: (3.97, 0.20, 0.20)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 30:
+ Position: (-155.24, 11.39, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 31:
+ Position: (-158.19, 20.00, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.60, 0.20, 0.20)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 32:
+ Position: (-159.21, 22.44, 82.10)
+ Rotation: (0.00, 180.00, -90.00)
+ Shape: Block
+ Size: (0.80, 1.40, 0.20)
+ Color: 0.972549, 0.972549, 0.972549
+ Material: Plastic
+ Transparency: 0.00
+MeshType: FileMesh
+Mesh: 3270017
+MeshScale: 1, 1, 1
+
+Part 33:
+ Position: (-155.24, 14.49, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 34:
+ Position: (-156.44, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 35:
+ Position: (-155.89, 10.35, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 36:
+ Position: (-158.37, 15.84, 82.20)
+ Rotation: (90.00, 0.00, 0.00)
+ Shape: Block
+ Size: (2.20, 0.20, 0.80)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Ice
+ Transparency: 0.00
+
+Part 37:
+ Position: (-155.24, 17.62, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 38:
+ Position: (-155.24, 10.55, 82.11)
+ Rotation: (-78.63, 90.01, -90.01)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 39:
+ Position: (-159.25, 0.50, 82.92)
+ Rotation: (0.00, 180.00, 0.00)
+ Shape: Wedge
+ Size: (0.60, 1.00, 1.00)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Marble
+ Transparency: 0.00
+
+Part 40:
+ Position: (-163.17, 17.06, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 41:
+ Position: (-155.24, 17.21, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 42:
+ Position: (-155.24, 12.69, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 43:
+ Position: (-155.24, 10.69, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 44:
+ Position: (-161.74, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 45:
+ Position: (-159.87, 20.14, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.20, 0.20, 0.60)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 46:
+ Position: (-155.24, 15.17, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 47:
+ Position: (-155.24, 15.37, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 48:
+ Position: (-155.24, 16.17, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 49:
+ Position: (-155.24, 16.58, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 50:
+ Position: (-155.24, 16.86, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 51:
+ Position: (-163.17, 14.55, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 52:
+ Position: (-163.17, 15.64, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 53:
+ Position: (-163.17, 13.93, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 54:
+ Position: (-161.12, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 55:
+ Position: (-155.24, 12.83, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 56:
+ Position: (-159.21, 23.30, 82.48)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Block
+ Size: (1.00, 1.00, 1.00)
+ Color: 0.0509804, 0.411765, 0.67451
+ Material: Plastic
+ Transparency: 0.00
+MeshType: FileMesh
+Mesh: 51226819
+MeshTexture: 72279740
+MeshScale: 1, 1, 1
+
+Part 57:
+ Position: (-158.19, 20.00, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.20, 0.20, 1.00)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 58:
+ Position: (-157.77, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 59:
+ Position: (-163.17, 13.30, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 60:
+ Position: (-155.24, 15.74, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 61:
+ Position: (-163.17, 13.67, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 62:
+ Position: (-157.16, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 63:
+ Position: (-162.37, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 64:
+ Position: (-163.17, 10.75, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 65:
+ Position: (-163.17, 14.14, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 66:
+ Position: (-155.24, 17.00, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 67:
+ Position: (-160.15, 19.58, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.60, 0.20, 0.20)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 68:
+ Position: (-161.90, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 69:
+ Position: (-158.89, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 70:
+ Position: (-155.27, 10.39, 82.11)
+ Rotation: (-42.32, 90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 71:
+ Position: (-158.05, 19.58, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.60, 0.20, 0.20)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 72:
+ Position: (-163.17, 17.47, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 73:
+ Position: (-159.25, 0.50, 81.32)
+ Rotation: (0.00, 0.00, 0.00)
+ Shape: Wedge
+ Size: (0.60, 1.00, 1.00)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Marble
+ Transparency: 0.00
+
+Part 74:
+ Position: (-163.17, 12.67, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 75:
+ Position: (-155.24, 11.83, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 76:
+ Position: (-163.17, 11.89, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 77:
+ Position: (-158.40, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 78:
+ Position: (-155.24, 11.69, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 79:
+ Position: (-163.17, 16.80, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 80:
+ Position: (-159.23, 19.21, 82.22)
+ Rotation: (90.00, 0.00, 0.00)
+ Shape: Block
+ Size: (3.97, 0.20, 0.20)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 81:
+ Position: (-155.24, 14.82, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 82:
+ Position: (-155.24, 12.61, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 83:
+ Position: (-155.24, 17.78, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 84:
+ Position: (-163.17, 16.64, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 85:
+ Position: (-163.17, 11.75, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 86:
+ Position: (-157.77, 20.14, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.20, 0.20, 0.60)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 87:
+ Position: (-158.61, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 88:
+ Position: (-159.44, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 89:
+ Position: (-160.29, 20.00, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.20, 0.20, 1.00)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 90:
+ Position: (-163.17, 14.71, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 91:
+ Position: (-162.16, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 92:
+ Position: (-157.67, 13.74, 82.20)
+ Rotation: (0.00, 90.00, 90.00)
+ Shape: Block
+ Size: (2.20, 0.20, 0.80)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Ice
+ Transparency: 0.00
+
+Part 93:
+ Position: (-155.24, 14.96, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 94:
+ Position: (-161.53, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 95:
+ Position: (-163.17, 13.10, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 96:
+ Position: (-159.24, 4.07, 82.10)
+ Rotation: (0.00, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (8.14, 0.20, 0.36)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 97:
+ Position: (-160.90, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 98:
+ Position: (-163.17, 16.43, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 99:
+ Position: (-157.85, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 100:
+ Position: (-163.17, 11.45, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 101:
+ Position: (-163.17, 17.68, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 102:
+ Position: (-163.17, 12.10, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 103:
+ Position: (-155.24, 15.96, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 104:
+ Position: (-155.24, 10.84, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 105:
+ Position: (-155.24, 13.87, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 106:
+ Position: (-155.24, 13.24, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 107:
+ Position: (-159.20, 14.28, 82.10)
+ Rotation: (0.00, -90.00, -90.00)
+ Shape: Block
+ Size: (7.60, 0.20, 7.60)
+ Color: 1, 0, 0
+ Material: Ice
+ Transparency: 0.00
+
+Part 108:
+ Position: (-163.17, 10.90, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 109:
+ Position: (-156.81, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 110:
+ Position: (-163.17, 11.25, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 111:
+ Position: (-160.47, 15.24, 82.20)
+ Rotation: (0.00, 90.00, 90.00)
+ Shape: Block
+ Size: (2.40, 0.20, 0.80)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Ice
+ Transparency: 0.00
+
+Part 112:
+ Position: (-163.17, 17.27, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 113:
+ Position: (-159.87, 13.04, 82.20)
+ Rotation: (90.00, 0.00, 0.00)
+ Shape: Block
+ Size: (2.40, 0.20, 0.80)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Ice
+ Transparency: 0.00
+
+Part 114:
+ Position: (-163.17, 15.43, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 115:
+ Position: (-158.45, 0.50, 82.12)
+ Rotation: (0.00, -90.00, 0.00)
+ Shape: Wedge
+ Size: (0.60, 1.00, 1.00)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Marble
+ Transparency: 0.00
+
+Part 116:
+ Position: (-160.43, 20.43, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.60, 0.20, 0.20)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 117:
+ Position: (-159.24, 8.88, 82.10)
+ Rotation: (0.00, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (1.47, 0.20, 0.36)
+ Color: 0.466667, 0.564706, 0.509804
+ Material: Plastic
+ Transparency: 0.00
+
+Part 118:
+ Position: (-155.24, 12.45, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 119:
+ Position: (-159.65, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 120:
+ Position: (-155.24, 17.41, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 121:
+ Position: (-163.17, 12.51, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 122:
+ Position: (-158.77, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 123:
+ Position: (-155.24, 11.60, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 124:
+ Position: (-163.17, 15.23, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 125:
+ Position: (-161.11, 20.00, 82.22)
+ Rotation: (90.00, 0.00, 0.00)
+ Shape: Block
+ Size: (0.20, 0.20, 1.78)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 126:
+ Position: (-163.17, 10.61, 82.08)
+ Rotation: (-78.61, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 127:
+ Position: (-160.12, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 128:
+ Position: (-162.97, 10.42, 82.08)
+ Rotation: (11.06, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 129:
+ Position: (-162.78, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 130:
+ Position: (-155.56, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 131:
+ Position: (-157.57, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 132:
+ Position: (-159.07, 14.44, 82.20)
+ Rotation: (0.00, 90.00, 90.00)
+ Shape: Block
+ Size: (2.00, 0.20, 0.80)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Ice
+ Transparency: 0.00
+
+Part 133:
+ Position: (-159.25, 18.05, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (8.03, 0.36, 0.36)
+ Color: 1, 0, 0
+ Material: Ice
+ Transparency: 0.00
+
+Part 134:
+ Position: (-155.24, 14.08, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 135:
+ Position: (-163.17, 15.02, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 136:
+ Position: (-159.25, 0.90, 82.12)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Block
+ Size: (0.60, 0.20, 0.60)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Marble
+ Transparency: 0.00
+
+Part 137:
+ Position: (-159.03, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 138:
+ Position: (-155.24, 13.45, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 139:
+ Position: (-163.17, 17.84, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 140:
+ Position: (-163.17, 12.89, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 141:
+ Position: (-163.17, 13.79, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 142:
+ Position: (-159.24, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 143:
+ Position: (-155.44, 10.36, 82.11)
+ Rotation: (11.05, 90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 144:
+ Position: (-160.05, 0.50, 82.12)
+ Rotation: (0.00, 90.00, 0.00)
+ Shape: Wedge
+ Size: (0.60, 1.00, 1.00)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Marble
+ Transparency: 0.00
+
+Part 145:
+ Position: (-155.24, 15.58, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 146:
+ Position: (-160.98, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 147:
+ Position: (-155.24, 10.98, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 148:
+ Position: (-163.17, 14.34, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 149:
+ Position: (-163.17, 13.51, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+
+Part 150:
+ Position: (-157.33, 19.99, 82.22)
+ Rotation: (90.00, 0.00, 0.00)
+ Shape: Block
+ Size: (0.20, 0.20, 1.76)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+ Part 151:
+ Position: (-160.72, 19.86, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.20, 0.20, 0.60)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 152:
+ Position: (-163.17, 11.04, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 153:
+ Position: (-158.33, 20.43, 82.23)
+ Rotation: (-45.00, -90.00, -90.00)
+ Shape: Block
+ Size: (0.60, 0.20, 0.20)
+ Color: 0.87451, 0.87451, 0.866667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 154:
+ Position: (-155.77, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 155:
+ Position: (-155.24, 12.04, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 156:
+ Position: (-160.33, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 157:
+ Position: (-162.02, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 158:
+ Position: (-155.24, 14.28, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 159:
+ Position: (-155.24, 16.74, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 160:
+ Position: (-163.17, 12.75, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 161:
+ Position: (-163.17, 15.88, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 162:
+ Position: (-163.17, 15.80, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 163:
+ Position: (-158.20, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 164:
+ Position: (-157.36, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 165:
+ Position: (-161.33, 10.36, 82.10)
+ Rotation: (-0.03, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 166:
+ Position: (-155.24, 13.73, 82.11)
+ Rotation: (-90.00, 0.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.0666667, 0.0666667, 0.0666667
+ Material: Plastic
+ Transparency: 0.00
+
+Part 167:
+ Position: (-163.17, 11.66, 82.08)
+ Rotation: (-90.00, 180.00, 0.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 1, 0, 0
+ Material: Plastic
+ Transparency: 0.00
+
+Part 168:
+ Position: (-163.14, 10.45, 82.08)
+ Rotation: (-42.31, -90.00, -90.00)
+ Shape: Cylinder
+ Size: (0.36, 0.36, 0.20)
+ Color: 0.929412, 0.913725, 0.913725
+ Material: Plastic
+ Transparency: 0.00
+]]
+---------------------------------------------------------
+
+-- لودینگ بمبی با قرارگیری جلوی پلیر
+local function BuildAndVerifyMap(data)
+    print("شروع ساخت پارت‌ها در جلوی پلیر...")
+    local partsToBuild = {}
+    
+    local cleanData = data:gsub("Part %d+:", "|||")
+    for partBlock in cleanData:gmatch("([^|]+)") do
+        local x, y, z = partBlock:match("Position:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+        if x and y and z then
+            local rx, ry, rz = partBlock:match("Rotation:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+            local sx, sy, sz = partBlock:match("Size:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+            local shape = partBlock:match("Shape:%s*([%a%d]+)")
+            local r, g, b = partBlock:match("Color:%s*([^,]+),%s*([^,]+),%s*([^%s\r\n]+)")
+            local mat = partBlock:match("Material:%s*([%a%d]+)")
+            local trans = partBlock:match("Transparency:%s*([%d%.]+)")
+            
+            local decalFace, decalId = partBlock:match("Decal%.(%a+)%s*=%s*(%d+)")
+            local texFace, texId = partBlock:match("Texture%.(%a+)%s*=%s*(%d+)")
+            
+            local meshType = partBlock:match("MeshType:%s*(%a+)")
+            local meshId = partBlock:match("MeshId:%s*(%S+)") or partBlock:match("Mesh:%s*(%S+)")
+            local meshTextureId = partBlock:match("MeshTextureId:%s*(%S+)") or partBlock:match("MeshTexture:%s*(%S+)")
+            
+            local msStr = partBlock:match("MeshScale:%s*([^\n\r]+)")
+            local msX, msY, msZ = 1, 1, 1
+            if msStr then
+                local ex, ey, ez = msStr:match("([%d%.]+)%s*,%s*([%d%.]+)%s*,%s*([%d%.]+)")
+                if ex and ey and ez then msX, msY, msZ = ex, ey, ez end
+            end
+            
+            local hasLight = partBlock:match("Light:%s*[Tt]rue") and true or false
+            local hasFire = partBlock:match("Fire:%s*[Tt]rue") and true or false
+            local isUnanchored = partBlock:match("Unanchored:%s*[Tt]rue") and true or false
+            
+            local f3xShape = "Normal"
+            if partBlock:match("SpawnPoint:%s*[Tt]rue") then f3xShape = "Spawn"
+            elseif shape == "Cylinder" then f3xShape = "Cylinder"
+            elseif shape == "Ball" or shape == "Sphere" then f3xShape = "Ball"
+            elseif shape == "Wedge" then f3xShape = "Wedge" end
+            
+            local pColor = Color3.new(1, 1, 1)
+            if r and g and b then
+                local rn, gn, bn = safeNum(r), safeNum(g), safeNum(b)
+                if rn > 1 or gn > 1 or bn > 1 then pColor = Color3.fromRGB(rn, gn, bn)
+                else pColor = Color3.new(rn, gn, bn) end
+            end
+            
+            table.insert(partsToBuild, {
+                pos = Vector3.new(safeNum(x), safeNum(y), safeNum(z)),
+                rot = Vector3.new(safeNum(rx), safeNum(ry), safeNum(rz)),
+                shape = f3xShape, size = Vector3.new(safeNum(sx,1), safeNum(sy,1), safeNum(sz,1)),
+                color = pColor, material = mat or "Plastic", transparency = safeNum(trans),
+                decalFace = decalFace, decalId = decalId,
+                texFace = texFace, texId = texId, 
+                meshType = meshType, meshId = meshId, meshTextureId = meshTextureId, 
+                meshScale = Vector3.new(safeNum(msX, 1), safeNum(msY, 1), safeNum(msZ, 1)),
+                hasLight = hasLight, hasFire = hasFire, 
+                collision = not (partBlock:match("CanCollide:%s*[Ff]alse")),
+                isUnanchored = isUnanchored
+            })
+        end
+    end
+    
+    local totalParts = #partsToBuild
+    if totalParts == 0 then warn("خطا: پارتی یافت نشد!") return end
+
+    -- پیدا کردن مرکز و پایین‌ترین نقطه کل مدل برای اسپاون جلوی پلیر
+    local minPos, maxPos
+    for _, p in ipairs(partsToBuild) do
+        if not minPos then
+            minPos = p.pos
+            maxPos = p.pos
+        else
+            minPos = Vector3.new(math.min(minPos.X, p.pos.X), math.min(minPos.Y, p.pos.Y), math.min(minPos.Z, p.pos.Z))
+            maxPos = Vector3.new(math.max(maxPos.X, p.pos.X), math.max(maxPos.Y, p.pos.Y), math.max(maxPos.Z, p.pos.Z))
+        end
+    end
+
+    -- Pivot اصلیِ مدل خام
+    local modelCenter = Vector3.new((minPos.X + maxPos.X) / 2, minPos.Y, (minPos.Z + maxPos.Z) / 2)
+    local modelPivot = CFrame.new(modelCenter)
+
+    -- Pivot مقصد (جلوی پلیر با استفاده از متغیر فاصله)
+    local targetPivot = CFrame.new(0, 0, 0)
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local flatLook = Vector3.new(hrp.CFrame.LookVector.X, 0, hrp.CFrame.LookVector.Z)
+        if flatLook.Magnitude < 0.01 then flatLook = Vector3.new(0, 0, -1) else flatLook = flatLook.Unit end
+        
+        -- استفاده از متغیرهای تنظیم فاصله و ارتفاع که در بالای اسکریپت تعریف شدند
+        local targetPos = hrp.Position + (flatLook * SPAWN_DISTANCE) - Vector3.new(0, SPAWN_HEIGHT_OFFSET, 0)
+        targetPivot = CFrame.lookAt(targetPos, targetPos + flatLook)
+    end
+
+    local batches = {
+        resize = {}, color = {}, material = {}, anchor = {}, collision = {},
+        meshCreate = {}, meshSync = {}, decalCreate = {}, decalSync = {},
+        lightCreate = {}, lightSync = {}, decorationCreate = {}
+    }
+    
+    local completed = 0
+
+    for _, pData in ipairs(partsToBuild) do
+        task.spawn(function()
+            local success, p = pcall(function()
+                -- محاسبه موقعیت جدید و نسبی برای ظاهر شدن جلوی پلیر
+                local originalCFrame = CFrame.new(pData.pos) * CFrame.fromOrientation(math.rad(pData.rot.X), math.rad(pData.rot.Y), math.rad(pData.rot.Z))
+                local relativeCFrame = modelPivot:ToObjectSpace(originalCFrame)
+                local baseCFrame = targetPivot * relativeCFrame
+                
+                -- ====== فیکس مربوط به 90 درجه کج بودن MeshType: Cylinder ======
+                if pData.meshType == "Cylinder" then
+                    baseCFrame = baseCFrame * CFrame.Angles(0, 0, math.rad(90))
+                    pData.size = Vector3.new(pData.size.Y, pData.size.X, pData.size.Z)
+                    pData.meshScale = Vector3.new(pData.meshScale.Y, pData.meshScale.X, pData.meshScale.Z)
+                end
+                -- =============================================================
+                
+                return remote:InvokeServer("CreatePart", pData.shape, baseCFrame, workspace)
+            end)
+            
+            if success and p and typeof(p) == "Instance" then
+                table.insert(batches.resize, {Part = p, CFrame = p.CFrame, Size = pData.size})
+                table.insert(batches.color, {Part = p, Color = pData.color})
+                table.insert(batches.anchor, {Part = p, Anchored = not pData.isUnanchored})
+                table.insert(batches.collision, {Part = p, CanCollide = pData.collision})
+                
+                local matSuccess, matEnum = pcall(function() return Enum.Material[pData.material:gsub("%s+", "")] end)
+                table.insert(batches.material, {Part = p, Material = matSuccess and matEnum or Enum.Material.Plastic, Transparency = pData.transparency})
+                
+                if pData.hasLight or LIGHT_ALL_PARTS then
+                    local targetRange = pData.hasLight and 60 or tonumber(GLOBAL_LIGHT_RANGE) or 15
+                    local targetBright = pData.hasLight and 3 or tonumber(GLOBAL_LIGHT_BRIGHTNESS) or 3
+                    
+                    table.insert(batches.lightCreate, {Part = p, LightType = "PointLight"})
+                    table.insert(batches.lightSync, {
+                        Part = p, 
+                        LightType = "PointLight", 
+                        Range = targetRange, 
+                        Brightness = targetBright,
+                        Color = Color3.new(1, 1, 1),
+                        Shadows = false
+                    })
+                end
+                
+                if pData.hasFire then
+                    table.insert(batches.decorationCreate, {Part = p, DecorationType = "Fire"})
+                end
+                
+                if pData.meshId or pData.meshType then
+                    table.insert(batches.meshCreate, {Part = p})
+                    local mTypeEnum = Enum.MeshType.FileMesh
+                    if pData.meshType then
+                        local meshTypeMap = {
+                            File = "FileMesh", FileMesh = "FileMesh", Block = "Brick", Brick = "Brick",
+                            Head = "Head", Sphere = "Sphere", Wedge = "Wedge", Cylinder = "Cylinder"
+                        }
+                        local mappedType = meshTypeMap[pData.meshType] or pData.meshType
+                        local typeSuccess, typeEnum = pcall(function() return Enum.MeshType[mappedType] end)
+                        if typeSuccess and typeEnum then mTypeEnum = typeEnum end
+                    end
+                    
+                    local mId, tId = "", ""
+                    if pData.meshId then local x = pData.meshId:match("%d+") if x then mId = "rbxassetid://"..x end end
+                    if pData.meshTextureId then local x = pData.meshTextureId:match("%d+") if x then tId = "rbxassetid://"..x end end
+                    
+                    table.insert(batches.meshSync, {
+                        Part = p, MeshType = mTypeEnum, MeshId = mId, 
+                        TextureId = tId, Scale = pData.meshScale, Offset = Vector3.new(0, 0, 0)
+                    })
+                end
+                
+                -- پردازش Decal
+                if pData.decalFace and pData.decalId and pData.decalId:match("%d+") then
+                    local formattedFace = pData.decalFace:sub(1,1):upper() .. pData.decalFace:sub(2):lower()
+                    local faceSuccess, faceEnum = pcall(function() return Enum.NormalId[formattedFace] end)
+                    if faceSuccess and faceEnum then
+                        table.insert(batches.decalCreate, {Part = p, Face = faceEnum, TextureType = "Decal"})
+                        table.insert(batches.decalSync, {Part = p, Face = faceEnum, TextureType = "Decal", Texture = "rbxassetid://"..pData.decalId:match("%d+")})
+                    end
+                end
+
+                -- پردازش Surface Texture
+                if pData.texFace and pData.texId and pData.texId:match("%d+") then
+                    local formattedFace = pData.texFace:sub(1,1):upper() .. pData.texFace:sub(2):lower()
+                    local faceSuccess, faceEnum = pcall(function() return Enum.NormalId[formattedFace] end)
+                    if faceSuccess and faceEnum then
+                        table.insert(batches.decalCreate, {Part = p, Face = faceEnum, TextureType = "Texture"})
+                        table.insert(batches.decalSync, {Part = p, Face = faceEnum, TextureType = "Texture", Texture = "rbxassetid://"..pData.texId:match("%d+")})
+                    end
+                end
+            end
+            completed = completed + 1
+        end)
+    end
+    
+    while completed < totalParts do RunService.Heartbeat:Wait() end
+    print("پایه‌ها ایجاد شدند! تزریق یکجای تمامی استایل‌ها...")
+    
+    FireMassiveSync("SyncResize", batches.resize)
+    FireMassiveSync("SyncColor", batches.color)
+    FireMassiveSync("SyncMaterial", batches.material)
+    FireMassiveSync("SyncAnchor", batches.anchor)
+    FireMassiveSync("SyncCollision", batches.collision)
+    
+    if #batches.lightCreate > 0 then 
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function() remote:InvokeServer("CreateLights", batches.lightCreate) end)
+            pcall(function() remote:InvokeServer("SyncLighting", batches.lightSync) end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
+    end
+    
+    if #batches.decorationCreate > 0 then
+        FireMassiveSync("CreateDecorations", batches.decorationCreate)
+    end
+    
+    if #batches.meshCreate > 0 then 
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function() remote:InvokeServer("CreateMeshes", batches.meshCreate) end)
+            pcall(function() remote:InvokeServer("SyncMesh", batches.meshSync) end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
+    end
+
+    if #batches.decalCreate > 0 then 
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function() remote:InvokeServer("CreateTextures", batches.decalCreate) end)
+            pcall(function() remote:InvokeServer("SyncTexture", batches.decalSync) end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
+    end
+
+    print("در حال هماهنگی با سرور...")
+    while ActiveSyncs > 0 do RunService.Heartbeat:Wait() end
+    print("مدل با موفقیت در مقابل شما اسپاون شد!")
+end
+
+---------------------------------------------------------
+-- اجرای اسکریپت اصلی
+---------------------------------------------------------
+task.spawn(function()
+    BuildAndVerifyMap(RawData)
+end)
