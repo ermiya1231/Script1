@@ -251,28 +251,11 @@ local title = create("TextLabel", {
     TextColor3 = Color(1, 1, 1),
 }, main) insertgrad(title)
 
--- دکمه رفرش (جاش درست شد و اومد دقیقاً زیر تایتل)
-local refreshBtn = create("TextButton", {
-    Size = Udim2(0.3, 0, 0, 30),
-    Position = Udim2(0.02, 0, 0.18, 0), 
-    BackgroundColor3 = Color(0.2, 0.2, 0.2),
-    TextColor3 = Color(1, 1, 1),
-    Text = "🔄 Refresh",
-    FontFace = font,
-    TextSize = 16,
-    create("UICorner", ref)
-}, main)
 
-refreshBtn.Activated:Connect(function()
-    Click:Play()
-    RefreshRemotesList()
-    notify("Info", "List Refreshed!", 2)
-end)
-
--- لیست ریموت‌ها (یه مقدار رفت پایین‌تر و کوتاه‌تر شد تا جا برای دکمه باز بشه)
+-- لیست ریموت‌ها (جای دکمه رفرش رو پر کرد)
 local remoteListFrame = create("ScrollingFrame", {
-    Size = Udim2(0.3, 0, 0.8, -45),
-    Position = Udim2(0.02, 0, 0.18, 35),
+    Size = Udim2(0.3, 0, 0.8, -10),
+    Position = Udim2(0.02, 0, 0.18, 5),
     BackgroundColor3 = Color(0.1, 0.1, 0.1),
     ScrollBarThickness = 4,
     create("UICorner", ref)
@@ -346,7 +329,7 @@ local button = create("TextButton", {
 local closeButton = create("TextButton", {
     Size = Udim2(0, 30, 0, 30),
     Position = Udim2(1, -35, 0, 5),
-    BackgroundColor3 = Color(0, 0, 0),
+    BackgroundColorBackgroundColor3 = Color(0, 0, 0),
     TextColor3 = Color(1, 1, 1),
     Text = "X",
     FontFace = font,
@@ -367,15 +350,16 @@ local bubble = create("TextButton", {
 }, gui) insertgrad(bubble)
 
 local function RefreshRemotesList()
+    local allRemotes = getAllRemotes()
+    
+    -- پاک کردن دکمه‌های قبلی
     for _, btn in ipairs(listButtons) do
         btn:Destroy()
     end
     listButtons = {}
     
-    local allRemotes = getAllRemotes()
-    
     if #allRemotes == 0 then
-        notify("Warning", "No AC6 Remotes found!", 5)
+        -- نوتیفیکیشن هشدار حذف شد تا موقع رفرش خودکار هی اسپم نشه
         return
     end
 
@@ -391,6 +375,11 @@ local function RefreshRemotesList()
             TextScaled = true,
             create("UICorner", ref)
         }, remoteListFrame)
+
+        -- حفظ رنگ سبز ریموت انتخاب شده موقع رفرش شدن
+        if SelectedRemote == remote then
+            rBtn.BackgroundColor3 = Color(0, 0.8, 0)
+        end
 
         rBtn.Activated:Connect(function()
             Click:Play()
@@ -409,6 +398,13 @@ local function RefreshRemotesList()
     
     remoteListFrame.CanvasSize = UDim2.new(0, 0, 0, #allRemotes * 35)
 end
+
+-- سیستم رفرش اتوماتیک (هر 3 ثانیه)
+task.spawn(function()
+    while task.wait(3) do
+        RefreshRemotesList()
+    end
+end)
 
 RefreshRemotesList()
 
