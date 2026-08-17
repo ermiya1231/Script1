@@ -401,7 +401,7 @@ end
 
 -- سیستم رفرش اتوماتیک (هر 3 ثانیه)
 task.spawn(function()
-    while task.wait(3) do
+    while task.wait(1) do
         RefreshRemotesList()
     end
 end)
