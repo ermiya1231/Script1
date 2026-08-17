@@ -118,8 +118,7 @@ end
 -- ======================================================
 local suspiciousKeywords = {
     "anticheat", "anti-cheat", "ac", "anti", "cheat", 
-    "detector", "kick", "ban", "exploit", "security", 
-    "protect", "check", "validation", "guard", "bypass"
+    "detector", "kick", "ban", "exploit", "security", "bypass"
 }
 
 local function isAntiCheat(scriptObj)
