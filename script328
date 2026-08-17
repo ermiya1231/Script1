@@ -76,7 +76,7 @@ local hasHookSupport = (type(hookmetamethod) == "function" or type(hookfunction)
 if hasHookSupport then
     showNotification("Full Anti-Kick Enabled", Color3.fromRGB(0, 255, 128)) -- سبز نئونی
 else
-    showNotification("No Hook! Using Nuker Only", Color3.fromRGB(255, 50, 50)) -- قرمز (ارور)
+    showNotification("Suspection Scripts Deleted", Color3.fromRGB(255, 50, 50)) -- قرمز (ارور)
     warn("[System] Executor lacks Hook support. Relying purely on Script Nuker.")
 end
 
