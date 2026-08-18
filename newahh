@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
 
 if getgenv().OrbitToolsy == true then return end
 getgenv().OrbitToolsy = true
@@ -30,6 +29,7 @@ local targetHRP = hrp
 local tweenEnabled = false
 local tweenDelay = 0.5
 local lastTargetChange = os.clock()
+local lineSpacing = 3 -- فاصله ثابت ابزارها در حالت خطی
 
 local addedT = {}
 local removedT = {}
@@ -121,7 +121,7 @@ local cmdDocs = {
     offset = "offset [num] - Sets radius distance",
     speed = "speed [num] - Sets orbit speed",
     rot = "rot [num] - Sets tool spinning speed",
-    mode = "mode [num] - Changes orbit pattern (1-20+)",
+    mode = "mode [num] - Changes orbit pattern (1-21+)",
     target = "target [name] - Orbits a specific player",
     unorbit = "unorbit - Returns orbit to yourself",
     equip = "equip - Equips all tools from backpack",
@@ -584,6 +584,13 @@ RunService.RenderStepped:Connect(function()
                 targetCFrame = targetHRP.CFrame * CFrame.new(math.cos(angle) * offset, math.sin(angle) * offset, math.sin(angle) * offset)
             elseif mode == 6 then
                 targetCFrame = targetHRP.CFrame * CFrame.Angles(angle, 0, angle) * CFrame.new(offset, 0, 0)
+            elseif mode == 21 then
+                -- سیستم چیدمان خطی (Line Mode)
+                local totalWidth = (numTools - 1) * lineSpacing
+                local startX = -totalWidth / 2
+                local currentX = startX + (i - 1) * lineSpacing
+                -- ابزارها به صورت افقی (محور X) تنظیم شده و با فاصله offset جلوتر (محور Z منفی) از کاراکتر قرار می‌گیرند
+                targetCFrame = targetHRP.CFrame * CFrame.new(currentX, 0, -offset)
             else
                 local subType = mode % 8
                 local safeSpeed = time * (1 + (mode % 5) / 10)
@@ -622,7 +629,7 @@ RunService.RenderStepped:Connect(function()
                     targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(offset + pulse, 0, 0)
                 end
 
-                if mode > 20 then
+                if mode > 20 and mode ~= 21 then
                     local slowWobble = math.rad(math.sin(time) * 15)
                     targetCFrame = targetCFrame * CFrame.Angles(slowWobble, 0, slowWobble)
                 end
@@ -742,4 +749,4 @@ plr.CharacterAdded:Connect(function(c)
     table.clear(connections)
 end)
 
-sendFlatNotification("System", "Tool Orbit V3 Initialized", Color3.fromRGB(200, 200, 200))
+sendFlatNotification("System", "Tool Orbit V3 Initialized (with Mode 21)", Color3.fromRGB(200, 200, 200))
