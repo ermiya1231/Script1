@@ -6,7 +6,7 @@ local LocalPlayer = Players.LocalPlayer
 -- تنظیم زمان رسپاون به 0
 Players.RespawnTime = 0 
 
--- ساخت GUI کلاسیک و نوستالژیک
+-- ساخت GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ClassicAdminPanel"
 ScreenGui.ResetOnSpawn = false
@@ -33,7 +33,6 @@ Title.TextSize = 18
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Parent = MainFrame
 
--- تابع ساخت دکمه‌های کلاسیک
 local function createButton(name, text, yPos)
 	local btn = Instance.new("TextButton")
 	btn.Name = name
@@ -48,7 +47,6 @@ local function createButton(name, text, yPos)
 	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	btn.AutoButtonColor = true
 	btn.Parent = MainFrame
-	
 	return btn
 end
 
@@ -63,17 +61,14 @@ local function notify(title, text)
 	})
 end
 
--- عملکرد Check Tools
 CheckToolsBtn.MouseButton1Click:Connect(function()
 	local toolsToCheck = {}
-	
 	local backpack = LocalPlayer:FindFirstChild("Backpack")
 	if backpack then
 		for _, item in pairs(backpack:GetChildren()) do
 			if item:IsA("Tool") then table.insert(toolsToCheck, item) end
 		end
 	end
-	
 	if LocalPlayer.Character then
 		for _, item in pairs(LocalPlayer.Character:GetChildren()) do
 			if item:IsA("Tool") then table.insert(toolsToCheck, item) end
@@ -107,14 +102,26 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 	if not char then return end
 	
 	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
+	local humanoid = char:FindFirstChild("Humanoid")
+	if not hrp or not humanoid then return end
 	
 	isDupeOnCooldown = true
 	DupeToolsBtn.Text = "Please Wait..."
 	DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(120, 50, 50)
 	
 	local savedCFrame = hrp.CFrame
+	local cam = workspace.CurrentCamera
 	
+	-- 1. فیکس دوربین همین پایین (بدون قفل شدن)
+	local camDummy = Instance.new("Part")
+	camDummy.Transparency = 1
+	camDummy.Anchored = true
+	camDummy.CanCollide = false
+	camDummy.CFrame = hrp.CFrame
+	camDummy.Parent = workspace
+	cam.CameraSubject = camDummy
+	
+	-- 2. آوردن وسایل به دست کاراکتر
 	local backpack = LocalPlayer:FindFirstChild("Backpack")
 	if backpack then
 		for _, v in pairs(backpack:GetChildren()) do
@@ -122,18 +129,38 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 		end
 	end
 	
-	task.wait(0.05)
+	-- 3. ساخت یک کف نامرئی در آسمان برای جلوگیری از سقوط تا زمانی که سرور تلپورت رو ثبت کنه
+	local skyPlatform = Instance.new("Part")
+	skyPlatform.Anchored = true
+	skyPlatform.Size = Vector3.new(100, 5, 100)
+	skyPlatform.CFrame = savedCFrame + Vector3.new(0, 14995, 0) -- 5 استاد زیر پای کاراکتر
+	skyPlatform.Transparency = 1
+	skyPlatform.Parent = workspace
 	
+	-- 4. تلپورت بی‌نقص به آسمان (بدون Anchored)
+	char:PivotTo(savedCFrame + Vector3.new(0, 15000, 0))
+	
+	-- 5. *** کلید حل مشکل FE ***
+	-- 0.3 ثانیه صبر میکنیم تا سرور به خاطر پینگ، موقعیت جدیدمون رو تو آسمون آپدیت کنه
+	task.wait(0.3) 
+	
+	-- 6. حالا که سرور مطمئنه ما تو آسمونیم، وسایل رو دراپ میکنیم
 	for _, v in pairs(char:GetChildren()) do
 		if v:IsA("Tool") then v.Parent = workspace end
 	end
 	
-	local humanoid = char:FindFirstChild("Humanoid")
-	if humanoid then humanoid.Health = 0 end
+	-- 7. پاک کردن پلتفرم و مرگ
+	skyPlatform:Destroy()
+	humanoid.Health = 0
 	
+	-- 8. منتظر ماندن برای ریسپاون
 	local newChar = LocalPlayer.CharacterAdded:Wait()
 	local newHrp = newChar:WaitForChild("HumanoidRootPart", 3)
 	local newHumanoid = newChar:WaitForChild("Humanoid", 3)
+	
+	-- 9. برگرداندن دوربین به کاراکتر
+	cam.CameraSubject = newHumanoid
+	camDummy:Destroy()
 	
 	if newHrp then
 		local endTime = tick() + 0.3
@@ -148,8 +175,10 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 	end
 	
 	if newHumanoid then
+		-- 10. تله‌کنسیس: گرفتن وسایل از آسمان
 		for _, child in ipairs(workspace:GetChildren()) do
 			if child:IsA("Tool") and child:FindFirstChild("Handle") then
+				child.Handle.CFrame = savedCFrame 
 				newHumanoid:EquipTool(child)
 			end
 		end
@@ -158,21 +187,20 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 
 		grabtoolsFunc = workspace.ChildAdded:Connect(function(child)
 			if newChar and child:IsA("Tool") and child:FindFirstChild("Handle") then
+				child.Handle.CFrame = savedCFrame
 				newHumanoid:EquipTool(child)
 			end
 		end)
 		
-		-- وقتی تمام پروسه Grabtools بعد از 0.5 ثانیه متوقف شد، دکمه آزاد می‌شود
 		task.delay(0.5, function()
 			if grabtoolsFunc then grabtoolsFunc:Disconnect() end
-			
-			-- بازنشانی Cooldown و بازگشت به حالت اولیه
 			isDupeOnCooldown = false
 			DupeToolsBtn.Text = "Dupe Tools"
 			DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 		end)
 	else
-		-- در صورتی که به هر دلیلی پلیر به درستی ریسپاون نشد، دکمه قفل نماند
+		if camDummy then camDummy:Destroy() end
+		cam.CameraSubject = newHumanoid or char
 		isDupeOnCooldown = false
 		DupeToolsBtn.Text = "Dupe Tools"
 		DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
