@@ -5,13 +5,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
-local SlapRemote = ReplicatedStorage:WaitForChild("SlapActionRemote")
+
+-- ریموت ایونت‌ها
+local SlapRemote = ReplicatedStorage:WaitForChild("SlapActionRemote", 5)
+local nameTagEvent = ReplicatedStorage:WaitForChild("NametagBioEvent", 5)
 
 -- ==========================================
--- متغیرها و توابع آنتی اسلپ (استخراج شده)
+-- متغیرها و توابع آنتی اسلپ (Anti-Slap)
 -- ==========================================
-local Enabled = false
-local Connection = nil
+local GodEnabled = false
+local GodConnection = nil
 local MoverName = "GOD_MOVER_ANTISLAP"
 
 local function KillForeignMovers(char)
@@ -58,10 +61,10 @@ local function SetupGodMode(char)
 end
 
 local function StartGodGuard()
-    if Connection then Connection:Disconnect() end
+    if GodConnection then GodConnection:Disconnect() end
     
-    Connection = RunService.Heartbeat:Connect(function()
-        if not Enabled then return end
+    GodConnection = RunService.Heartbeat:Connect(function()
+        if not GodEnabled then return end
         
         local char = LocalPlayer.Character
         if not char then return end
@@ -126,8 +129,8 @@ local function StartGodGuard()
 end
 
 local function StopGodGuard()
-    Enabled = false
-    if Connection then Connection:Disconnect() end
+    GodEnabled = false
+    if GodConnection then GodConnection:Disconnect() end
     
     if LocalPlayer.Character then
         local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -146,18 +149,18 @@ local function StopGodGuard()
 end
 
 -- ==========================================
--- ساخت رابط کاربری (GUI)
+-- ساخت رابط کاربری (GUI) - دارای ScrollingFrame
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CustomAdminPanel"
+ScreenGui.Name = "CoolHubGodPanel"
 ScreenGui.ResetOnSpawn = false
 pcall(function() ScreenGui.Parent = CoreGui end)
 if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 200, 0, 230) -- افزایش ارتفاع برای جا گرفتن دکمه چهارم
-MainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
+MainFrame.Size = UDim2.new(0, 230, 0, 400) -- پنل کمی بزرگتر و بلندتر
+MainFrame.Position = UDim2.new(0.5, -115, 0.4, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -178,190 +181,259 @@ Title.Name = "Title"
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.Position = UDim2.new(0, 0, 0, 5)
 Title.BackgroundTransparency = 1
-Title.Text = "Perma Death Panel"
+Title.Text = "C00LHUB By C00LHACK"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
 Title.Parent = MainFrame
 
+-- استفاده از ScrollingFrame تا دکمه‌ها هرچقدر زیاد بشن، جا بشن
+local ButtonContainer = Instance.new("ScrollingFrame")
+ButtonContainer.Size = UDim2.new(1, 0, 1, -45)
+ButtonContainer.Position = UDim2.new(0, 0, 0, 35)
+ButtonContainer.BackgroundTransparency = 1
+ButtonContainer.ScrollBarThickness = 4
+ButtonContainer.ScrollBarImageColor3 = Color3.fromRGB(50, 150, 255)
+ButtonContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+ButtonContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ButtonContainer.Parent = MainFrame
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Parent = ButtonContainer
+ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 8)
+
+-- اسپیسر برای اینکه دکمه‌ها خیلی به بالا نچسبن
+local Spacer = Instance.new("Frame")
+Spacer.Size = UDim2.new(1, 0, 0, 2)
+Spacer.BackgroundTransparency = 1
+Spacer.LayoutOrder = 0
+Spacer.Parent = ButtonContainer
+
 -- تابع ساخت دکمه‌ها
-local function CreateButton(name, text, posY)
+local function CreateButton(name, text, defaultColor, strokeColor, layoutOrder)
     local Btn = Instance.new("TextButton")
     Btn.Name = name
-    Btn.Size = UDim2.new(0.85, 0, 0, 35)
-    Btn.Position = UDim2.new(0.075, 0, 0, posY)
-    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    Btn.Size = UDim2.new(0.9, 0, 0, 35)
+    Btn.BackgroundColor3 = defaultColor or Color3.fromRGB(30, 30, 35)
     Btn.Text = text
     Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     Btn.TextSize = 14
     Btn.Font = Enum.Font.GothamBold
-    Btn.Parent = MainFrame
+    Btn.LayoutOrder = layoutOrder
+    Btn.Parent = ButtonContainer
 
     local BtnCorner = Instance.new("UICorner")
     BtnCorner.CornerRadius = UDim.new(0, 8)
     BtnCorner.Parent = Btn
 
     local BtnStroke = Instance.new("UIStroke")
-    BtnStroke.Color = Color3.fromRGB(60, 60, 65)
+    BtnStroke.Color = strokeColor or Color3.fromRGB(60, 60, 65)
     BtnStroke.Thickness = 1
     BtnStroke.Parent = Btn
     
     return Btn, BtnStroke
 end
 
--- ایجاد دکمه‌ها با ترتیب جدید
-local BtnSlap = CreateButton("BtnSlap", "Give Slap", 45)
-local BtnGravitySlap = CreateButton("BtnGravitySlap", "Buy Gravity Slap", 90)
-local BtnAutoFarm, AutoFarmStroke = CreateButton("BtnAutoFarm", "Auto Farm: OFF", 135)
-local BtnRun = CreateButton("BtnRun", "Enable Perma Death", 180)
+-- ==========================================
+-- ایجاد دکمه‌ها به ترتیب دلخواه
+-- ==========================================
+-- بخش تگ‌ها
+local BtnRgbTag, RgbStroke = CreateButton("BtnRgbTag", "RGB NameTag: OFF", Color3.fromRGB(200, 50, 50), nil, 1)
+local BtnBioSpam, BioStroke = CreateButton("BtnBioSpam", "Spam Bio: OFF", Color3.fromRGB(200, 50, 50), nil, 2)
 
--- تنطیم رنگ ابتدایی دکمه اتوفارم
+-- بخش گیمپلی
+local BtnSlap = CreateButton("BtnSlap", "Give Slap", nil, nil, 3)
+local BtnGravitySlap = CreateButton("BtnGravitySlap", "Buy Gravity Slap", nil, nil, 4)
+local BtnRun = CreateButton("BtnRun", "Enable Perma Death", Color3.fromRGB(80, 20, 20), Color3.fromRGB(255, 50, 50), 5)
+
+-- بخش فارم
+local BtnAutoFarm, AutoFarmStroke = CreateButton("BtnAutoFarm", "Auto Farm: OFF", Color3.fromRGB(30, 30, 35), nil, 6)
 BtnAutoFarm.TextColor3 = Color3.fromRGB(255, 100, 100)
 
+-- بخش اسکریپت‌های OP جدید
+local BtnBring = CreateButton("BtnBring", "ClientSide Bring", Color3.fromRGB(40, 40, 60), Color3.fromRGB(100, 100, 255), 7)
+local BtnOrbit = CreateButton("BtnOrbit", "FE TOOL ORBIT OP", Color3.fromRGB(40, 40, 60), Color3.fromRGB(100, 100, 255), 8)
+local BtnReanim = CreateButton("BtnReanim", "Uhhhhhh Reanim", Color3.fromRGB(40, 40, 60), Color3.fromRGB(100, 100, 255), 9)
+
+-- یه فاصله کوچیک برای پایین لیست
+local BottomSpacer = Instance.new("Frame")
+BottomSpacer.Size = UDim2.new(1, 0, 0, 5)
+BottomSpacer.BackgroundTransparency = 1
+BottomSpacer.LayoutOrder = 10
+BottomSpacer.Parent = ButtonContainer
+
 -- ==========================================
--- عملکرد دکمه‌ها
+-- منطق دکمه‌ها و قابلیت‌ها
 -- ==========================================
 
--- دکمه 1: Buy Fire Slap
-BtnSlap.MouseButton1Click:Connect(function()
-    local args = {
-        [1] = "BuyOrSelect",
-        [2] = "Slap"
-    }
-    SlapRemote:FireServer(unpack(args))
-end)
+-- 1. سیستم RGB NameTag
+local isRgbOn = false
+local rgbIndex = 1
+local colorArgsList = {
+    {"SetColor", "Red"}, {"SetColor", "Yellow"}, {"SetColor", "Blue"},
+    {"SetColor", "Green"}, {"SetColor", "Pink"}, {"SetColor", "Gold"},
+    {"SetColor", "Orange"}, {"SetColor", "Cyan"}, {"SetColor", "Teal"},
+    {"SetColor", "Gray"}, {"SetColor", "White"}, {"SetColor", "Purple"}
+}
 
--- دکمه 2: Buy Gravity Slap
-BtnGravitySlap.MouseButton1Click:Connect(function()
-    local args = {
-        [1] = "BuyOrSelect",
-        [2] = "GravitySlap"
-    }
-    SlapRemote:FireServer(unpack(args))
-end)
-
--- دکمه جدید: Auto Farm (استخراج شده از اسکریپت شما)
-local autoFarmActive = false
-
-BtnAutoFarm.MouseButton1Click:Connect(function()
-    if autoFarmActive then
-        -- اگر روشن بود، خاموشش می‌کنیم
-        autoFarmActive = false
-        BtnAutoFarm.Text = "Auto Farm: OFF"
-        BtnAutoFarm.TextColor3 = Color3.fromRGB(255, 100, 100)
-        BtnAutoFarm.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        AutoFarmStroke.Color = Color3.fromRGB(60, 60, 65)
-        return
-    end
-
-    autoFarmActive = true
-    BtnAutoFarm.Text = "Auto Farm: ON"
-    BtnAutoFarm.TextColor3 = Color3.fromRGB(100, 255, 100)
-    BtnAutoFarm.BackgroundColor3 = Color3.fromRGB(20, 80, 40)
-    AutoFarmStroke.Color = Color3.fromRGB(0, 255, 100)
-
-    task.spawn(function()
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-
-        if hrp then
-            local originalCFrame = hrp.CFrame
-
-            for _, prompt in pairs(Workspace:GetDescendants()) do
-                if not autoFarmActive then break end
-
-                if prompt:IsA("ProximityPrompt") then
-                    local parentPart = prompt.Parent
-                    if parentPart and parentPart:IsA("BasePart") then
-                        local color = parentPart.Color
-                        local isGreen = (color.G > 0.5 and color.R < 0.5)
-
-                        if isGreen or prompt.ObjectText:lower():find("money") or prompt.ActionText:lower():find("get") then
-                            hrp.CFrame = parentPart.CFrame + Vector3.new(0, 3, 0)
-                            task.wait(0.2)
-                            fireproximityprompt(prompt)
-                            task.wait(prompt.HoldDuration + 0.2)
-                        end
-                    end
+BtnRgbTag.MouseButton1Click:Connect(function()
+    isRgbOn = not isRgbOn
+    if isRgbOn then
+        BtnRgbTag.Text = "RGB NameTag: ON"
+        BtnRgbTag.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        task.spawn(function()
+            while isRgbOn do
+                if nameTagEvent then
+                    nameTagEvent:FireServer(unpack(colorArgsList[rgbIndex]))
                 end
+                rgbIndex = (rgbIndex % #colorArgsList) + 1
+                task.wait(0.12)
             end
-
-            -- برگشت به مکان اولیه پس از پایان
-            if hrp and autoFarmActive then
-                hrp.CFrame = originalCFrame
-            end
-        end
-
-        -- ریست وضعیت دکمه
-        autoFarmActive = false
-        BtnAutoFarm.Text = "Auto Farm: OFF"
-        BtnAutoFarm.TextColor3 = Color3.fromRGB(255, 100, 100)
-        BtnAutoFarm.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        AutoFarmStroke.Color = Color3.fromRGB(60, 60, 65)
-    end)
+        end)
+    else
+        BtnRgbTag.Text = "RGB NameTag: OFF"
+        BtnRgbTag.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    end
 end)
 
--- دکمه 4: Enable Perma Death (توالی کامل)
+-- 2. سیستم Spam Bio
+local isBioSpamOn = false
+BtnBioSpam.MouseButton1Click:Connect(function()
+    isBioSpamOn = not isBioSpamOn
+    if isBioSpamOn then
+        BtnBioSpam.Text = "Spam Bio: ON"
+        BtnBioSpam.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        task.spawn(function()
+            while isBioSpamOn do
+                if nameTagEvent then
+                    local args = {"SetBio", "COOLHUB USER"}
+                    nameTagEvent:FireServer(unpack(args))
+                end
+                task.wait(5)
+            end
+        end)
+    else
+        BtnBioSpam.Text = "Spam Bio: OFF"
+        BtnBioSpam.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    end
+end)
+
+-- 3. دکمه Give Slap
+BtnSlap.MouseButton1Click:Connect(function()
+    if SlapRemote then SlapRemote:FireServer("BuyOrSelect", "Slap") end
+end)
+
+-- 4. دکمه Buy Gravity Slap
+BtnGravitySlap.MouseButton1Click:Connect(function()
+    if SlapRemote then SlapRemote:FireServer("BuyOrSelect", "GravitySlap") end
+end)
+
+-- 5. دکمه Perma Death
 BtnRun.MouseButton1Click:Connect(function()
     task.spawn(function()
-        -- 1. اجرای Buy Gravity Slap
-        local args1 = {
-            [1] = "BuyOrSelect",
-            [2] = "GravitySlap"
-        }
-        SlapRemote:FireServer(unpack(args1))
+        if SlapRemote then SlapRemote:FireServer("BuyOrSelect", "GravitySlap") end
         
-        -- پیدا کردن کاراکتر و Equip کردن آیتم
         local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hum = char:FindFirstChildOfClass("Humanoid")
-        local backpack = LocalPlayer:WaitForChild("Backpack")
+        local backpack = LocalPlayer:WaitForChild("Backpack", 3)
         
         if backpack and hum then
             local gravityTool = backpack:WaitForChild("GravitySlap", 2)
-            if gravityTool then
-                hum:EquipTool(gravityTool)
-            end
+            if gravityTool then hum:EquipTool(gravityTool) end
         end
         
-        -- 2. فعال کردن حالت Anti-Slap
-        Enabled = true
-        if char then
-            SetupGodMode(char)
-        end
+        GodEnabled = true
+        if char then SetupGodMode(char) end
         StartGodGuard()
         
-        -- 3. صبر کردن به مدت 0.5 ثانیه
         task.wait(0.5)
         
-        -- 4. اجرای ریموت slash
         local workspaceChar = Workspace:FindFirstChild(LocalPlayer.Name)
         if workspaceChar and workspaceChar:FindFirstChild("GravitySlap") and workspaceChar.GravitySlap:FindFirstChild("Event") then
-            local args2 = {
-                [1] = "slash",
-                [2] = workspaceChar
-            }
-            workspaceChar.GravitySlap.Event:FireServer(unpack(args2))
+            workspaceChar.GravitySlap.Event:FireServer("slash", workspaceChar)
         end
         
-        -- 5. صبر کردن به مدت 0.5 ثانیه
         task.wait(0.5)
+        if SlapRemote then SlapRemote:FireServer("BuyOrSelect", "Slap") end
         
-        -- 6. اجرای Buy Fire Slap
-        local args3 = {
-            [1] = "BuyOrSelect",
-            [2] = "Slap"
-        }
-        SlapRemote:FireServer(unpack(args3))
-        
-        -- 7. خاموش کردن Anti-Slap پس از 1 ثانیه
         task.wait(1)
         StopGodGuard()
     end)
 end)
 
--- هندل کردن رسپاون (Respawn)
+-- 6. سیستم Auto Farm
+local autoFarmActive = false
+BtnAutoFarm.MouseButton1Click:Connect(function()
+    autoFarmActive = not autoFarmActive
+    if autoFarmActive then
+        BtnAutoFarm.Text = "Auto Farm: ON"
+        BtnAutoFarm.TextColor3 = Color3.fromRGB(100, 255, 100)
+        BtnAutoFarm.BackgroundColor3 = Color3.fromRGB(20, 80, 40)
+        AutoFarmStroke.Color = Color3.fromRGB(0, 255, 100)
+
+        task.spawn(function()
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+
+            if hrp then
+                local originalCFrame = hrp.CFrame
+                while autoFarmActive do
+                    for _, prompt in pairs(Workspace:GetDescendants()) do
+                        if not autoFarmActive then break end
+                        if prompt:IsA("ProximityPrompt") then
+                            local parentPart = prompt.Parent
+                            if parentPart and parentPart:IsA("BasePart") then
+                                local color = parentPart.Color
+                                local isGreen = (color.G > 0.5 and color.R < 0.5)
+
+                                if isGreen or prompt.ObjectText:lower():find("money") or prompt.ActionText:lower():find("get") then
+                                    hrp.CFrame = parentPart.CFrame + Vector3.new(0, 3, 0)
+                                    task.wait(0.2)
+                                    fireproximityprompt(prompt)
+                                    task.wait(prompt.HoldDuration + 0.2)
+                                end
+                            end
+                        end
+                    end
+                    task.wait(1)
+                end
+                if hrp then hrp.CFrame = originalCFrame end
+            end
+        end)
+    else
+        BtnAutoFarm.Text = "Auto Farm: OFF"
+        BtnAutoFarm.TextColor3 = Color3.fromRGB(255, 100, 100)
+        BtnAutoFarm.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+        AutoFarmStroke.Color = Color3.fromRGB(60, 60, 65)
+    end
+end)
+
+-- 7. دکمه ClientSide Bring
+BtnBring.MouseButton1Click:Connect(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script680"))()
+    end)
+end)
+
+-- 8. دکمه FE TOOL ORBIT OP
+BtnOrbit.MouseButton1Click:Connect(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/newahh"))()
+    end)
+end)
+
+-- 9. دکمه Uhhhhhh Reanim
+BtnReanim.MouseButton1Click:Connect(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/reanim"))()
+    end)
+end)
+
+-- هندل کردن رسپاون برای God Mode
 LocalPlayer.CharacterAdded:Connect(function(newChar)
-    if Enabled then
+    if GodEnabled then
         task.wait(0.5)
         SetupGodMode(newChar)
     end
