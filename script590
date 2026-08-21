@@ -1,0 +1,368 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+local SlapRemote = ReplicatedStorage:WaitForChild("SlapActionRemote")
+
+-- ==========================================
+-- متغیرها و توابع آنتی اسلپ (استخراج شده)
+-- ==========================================
+local Enabled = false
+local Connection = nil
+local MoverName = "GOD_MOVER_ANTISLAP"
+
+local function KillForeignMovers(char)
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BodyMover") or part:IsA("BodyVelocity") or part:IsA("BodyForce") 
+        or part:IsA("BodyPosition") or part:IsA("BodyThrust") or part:IsA("VectorForce") 
+        or part:IsA("AlignPosition") or part:IsA("LinearVelocity") or part:IsA("AngularVelocity") then
+            if part.Name ~= MoverName then
+                pcall(function() part:Destroy() end)
+            end
+        end
+    end
+end
+
+local function SetZeroFriction(char)
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            local currentProp = part.CurrentPhysicalProperties
+            local density = currentProp and currentProp.Density or 0.7
+            part.CustomPhysicalProperties = PhysicalProperties.new(density, 0, 0, 100, 100)
+        end
+    end
+end
+
+local function SetupGodMode(char)
+    local root = char:WaitForChild("HumanoidRootPart", 5)
+    if not root then return end
+    
+    if root:FindFirstChild(MoverName) then root[MoverName]:Destroy() end
+    if root:FindFirstChild("AntiSlapAttachment") then root.AntiSlapAttachment:Destroy() end
+
+    SetZeroFriction(char)
+
+    local attach = Instance.new("Attachment", root)
+    attach.Name = "AntiSlapAttachment"
+
+    local lv = Instance.new("LinearVelocity", root)
+    lv.Name = MoverName
+    lv.Attachment0 = attach
+    lv.ForceLimitMode = Enum.ForceLimitMode.PerAxis
+    lv.MaxAxesForce = Vector3.new(math.huge, 0, math.huge) 
+    lv.RelativeTo = Enum.ActuatorRelativeTo.World
+    lv.VectorVelocity = Vector3.zero
+end
+
+local function StartGodGuard()
+    if Connection then Connection:Disconnect() end
+    
+    Connection = RunService.Heartbeat:Connect(function()
+        if not Enabled then return end
+        
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        local root = char:FindFirstChild("HumanoidRootPart")
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        
+        if hum and root then
+            KillForeignMovers(char)
+            hum.PlatformStand = false
+            hum.Sit = false
+            
+            hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
+            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+            hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+            
+            local currentState = hum:GetState()
+            if currentState == Enum.HumanoidStateType.Ragdoll or currentState == Enum.HumanoidStateType.Physics or currentState == Enum.HumanoidStateType.FallingDown then
+                hum:ChangeState(Enum.HumanoidStateType.Running)
+            end
+            
+            root.CanCollide = false 
+            if char:FindFirstChild("Torso") then char.Torso.CanCollide = true end
+            if char:FindFirstChild("UpperTorso") then char.UpperTorso.CanCollide = true end
+            if char:FindFirstChild("LowerTorso") then char.LowerTorso.CanCollide = true end
+            if char:FindFirstChild("Head") then char.Head.CanCollide = true end
+            
+            local isMoving = hum.MoveDirection.Magnitude > 0
+            local isClimbing = (currentState == Enum.HumanoidStateType.Climbing)
+            
+            local isJumpingOrFalling = (currentState == Enum.HumanoidStateType.Jumping) 
+                or (currentState == Enum.HumanoidStateType.Freefall) 
+                or (hum.FloorMaterial == Enum.Material.Air and not isClimbing)
+                or (math.abs(root.AssemblyLinearVelocity.Y) > 1 and not isClimbing)
+                or hum.Jump
+            
+            if not isMoving and not isJumpingOrFalling and not isClimbing then
+                root.Anchored = true
+                root.AssemblyLinearVelocity = Vector3.zero
+            else
+                root.Anchored = false
+            end
+            
+            local lv = root:FindFirstChild(MoverName)
+            if lv then
+                if isClimbing then
+                    lv.Enabled = false
+                else
+                    lv.Enabled = true
+                    lv.VectorVelocity = hum.MoveDirection * hum.WalkSpeed
+                end
+            end
+            
+            if root.AssemblyLinearVelocity.Y > 110 then
+                root.AssemblyLinearVelocity = Vector3.new(root.AssemblyLinearVelocity.X, 0, root.AssemblyLinearVelocity.Z)
+            end
+            
+            root.AssemblyAngularVelocity = Vector3.zero
+        end
+    end)
+end
+
+local function StopGodGuard()
+    Enabled = false
+    if Connection then Connection:Disconnect() end
+    
+    if LocalPlayer.Character then
+        local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            root.Anchored = false
+            if root:FindFirstChild(MoverName) then root[MoverName]:Destroy() end
+            if root:FindFirstChild("AntiSlapAttachment") then root.AntiSlapAttachment:Destroy() end
+        end
+        
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CustomPhysicalProperties = nil
+            end
+        end
+    end
+end
+
+-- ==========================================
+-- ساخت رابط کاربری (GUI)
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "CustomAdminPanel"
+ScreenGui.ResetOnSpawn = false
+pcall(function() ScreenGui.Parent = CoreGui end)
+if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 200, 0, 230) -- افزایش ارتفاع برای جا گرفتن دکمه چهارم
+MainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local FrameCorner = Instance.new("UICorner")
+FrameCorner.CornerRadius = UDim.new(0, 10)
+FrameCorner.Parent = MainFrame
+
+local FrameStroke = Instance.new("UIStroke")
+FrameStroke.Color = Color3.fromRGB(50, 150, 255)
+FrameStroke.Thickness = 2
+FrameStroke.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Position = UDim2.new(0, 0, 0, 5)
+Title.BackgroundTransparency = 1
+Title.Text = "Perma Death Panel"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+-- تابع ساخت دکمه‌ها
+local function CreateButton(name, text, posY)
+    local Btn = Instance.new("TextButton")
+    Btn.Name = name
+    Btn.Size = UDim2.new(0.85, 0, 0, 35)
+    Btn.Position = UDim2.new(0.075, 0, 0, posY)
+    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    Btn.Text = text
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.TextSize = 14
+    Btn.Font = Enum.Font.GothamBold
+    Btn.Parent = MainFrame
+
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 8)
+    BtnCorner.Parent = Btn
+
+    local BtnStroke = Instance.new("UIStroke")
+    BtnStroke.Color = Color3.fromRGB(60, 60, 65)
+    BtnStroke.Thickness = 1
+    BtnStroke.Parent = Btn
+    
+    return Btn, BtnStroke
+end
+
+-- ایجاد دکمه‌ها با ترتیب جدید
+local BtnFireSlap = CreateButton("BtnFireSlap", "Buy Fire Slap", 45)
+local BtnGravitySlap = CreateButton("BtnGravitySlap", "Buy Gravity Slap", 90)
+local BtnAutoFarm, AutoFarmStroke = CreateButton("BtnAutoFarm", "Auto Farm: OFF", 135)
+local BtnRun = CreateButton("BtnRun", "Enable Perma Death", 180)
+
+-- تنطیم رنگ ابتدایی دکمه اتوفارم
+BtnAutoFarm.TextColor3 = Color3.fromRGB(255, 100, 100)
+
+-- ==========================================
+-- عملکرد دکمه‌ها
+-- ==========================================
+
+-- دکمه 1: Buy Fire Slap
+BtnFireSlap.MouseButton1Click:Connect(function()
+    local args = {
+        [1] = "BuyOrSelect",
+        [2] = "FireSlap"
+    }
+    SlapRemote:FireServer(unpack(args))
+end)
+
+-- دکمه 2: Buy Gravity Slap
+BtnGravitySlap.MouseButton1Click:Connect(function()
+    local args = {
+        [1] = "BuyOrSelect",
+        [2] = "GravitySlap"
+    }
+    SlapRemote:FireServer(unpack(args))
+end)
+
+-- دکمه جدید: Auto Farm (استخراج شده از اسکریپت شما)
+local autoFarmActive = false
+
+BtnAutoFarm.MouseButton1Click:Connect(function()
+    if autoFarmActive then
+        -- اگر روشن بود، خاموشش می‌کنیم
+        autoFarmActive = false
+        BtnAutoFarm.Text = "Auto Farm: OFF"
+        BtnAutoFarm.TextColor3 = Color3.fromRGB(255, 100, 100)
+        BtnAutoFarm.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+        AutoFarmStroke.Color = Color3.fromRGB(60, 60, 65)
+        return
+    end
+
+    autoFarmActive = true
+    BtnAutoFarm.Text = "Auto Farm: ON"
+    BtnAutoFarm.TextColor3 = Color3.fromRGB(100, 255, 100)
+    BtnAutoFarm.BackgroundColor3 = Color3.fromRGB(20, 80, 40)
+    AutoFarmStroke.Color = Color3.fromRGB(0, 255, 100)
+
+    task.spawn(function()
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+
+        if hrp then
+            local originalCFrame = hrp.CFrame
+
+            for _, prompt in pairs(Workspace:GetDescendants()) do
+                if not autoFarmActive then break end
+
+                if prompt:IsA("ProximityPrompt") then
+                    local parentPart = prompt.Parent
+                    if parentPart and parentPart:IsA("BasePart") then
+                        local color = parentPart.Color
+                        local isGreen = (color.G > 0.5 and color.R < 0.5)
+
+                        if isGreen or prompt.ObjectText:lower():find("money") or prompt.ActionText:lower():find("get") then
+                            hrp.CFrame = parentPart.CFrame + Vector3.new(0, 3, 0)
+                            task.wait(0.2)
+                            fireproximityprompt(prompt)
+                            task.wait(prompt.HoldDuration + 0.2)
+                        end
+                    end
+                end
+            end
+
+            -- برگشت به مکان اولیه پس از پایان
+            if hrp and autoFarmActive then
+                hrp.CFrame = originalCFrame
+            end
+        end
+
+        -- ریست وضعیت دکمه
+        autoFarmActive = false
+        BtnAutoFarm.Text = "Auto Farm: OFF"
+        BtnAutoFarm.TextColor3 = Color3.fromRGB(255, 100, 100)
+        BtnAutoFarm.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+        AutoFarmStroke.Color = Color3.fromRGB(60, 60, 65)
+    end)
+end)
+
+-- دکمه 4: Enable Perma Death (توالی کامل)
+BtnRun.MouseButton1Click:Connect(function()
+    task.spawn(function()
+        -- 1. اجرای Buy Gravity Slap
+        local args1 = {
+            [1] = "BuyOrSelect",
+            [2] = "GravitySlap"
+        }
+        SlapRemote:FireServer(unpack(args1))
+        
+        -- پیدا کردن کاراکتر و Equip کردن آیتم
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        local backpack = LocalPlayer:WaitForChild("Backpack")
+        
+        if backpack and hum then
+            local gravityTool = backpack:WaitForChild("GravitySlap", 2)
+            if gravityTool then
+                hum:EquipTool(gravityTool)
+            end
+        end
+        
+        -- 2. فعال کردن حالت Anti-Slap
+        Enabled = true
+        if char then
+            SetupGodMode(char)
+        end
+        StartGodGuard()
+        
+        -- 3. صبر کردن به مدت 0.5 ثانیه
+        task.wait(0.5)
+        
+        -- 4. اجرای ریموت slash
+        local workspaceChar = Workspace:FindFirstChild(LocalPlayer.Name)
+        if workspaceChar and workspaceChar:FindFirstChild("GravitySlap") and workspaceChar.GravitySlap:FindFirstChild("Event") then
+            local args2 = {
+                [1] = "slash",
+                [2] = workspaceChar
+            }
+            workspaceChar.GravitySlap.Event:FireServer(unpack(args2))
+        end
+        
+        -- 5. صبر کردن به مدت 0.5 ثانیه
+        task.wait(0.5)
+        
+        -- 6. اجرای Buy Fire Slap
+        local args3 = {
+            [1] = "BuyOrSelect",
+            [2] = "FireSlap"
+        }
+        SlapRemote:FireServer(unpack(args3))
+        
+        -- 7. خاموش کردن Anti-Slap پس از 1 ثانیه
+        task.wait(1)
+        StopGodGuard()
+    end)
+end)
+
+-- هندل کردن رسپاون (Respawn)
+LocalPlayer.CharacterAdded:Connect(function(newChar)
+    if Enabled then
+        task.wait(0.5)
+        SetupGodMode(newChar)
+    end
+end)
