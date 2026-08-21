@@ -1,0 +1,175 @@
+local Players = game:GetService("Players")
+local StarterPack = game:GetService("StarterPack")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- تنظیم زمان رسپاون به 0
+Players.RespawnTime = 0 
+
+-- ساخت GUI کلاسیک و نوستالژیک
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ClassicAdminPanel"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 220, 0, 140)
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -70)
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.Active = true
+MainFrame.Draggable = true 
+MainFrame.Parent = ScreenGui
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Title.BorderSizePixel = 1
+Title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Title.Text = "C00LDUPER"
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Parent = MainFrame
+
+-- تابع ساخت دکمه‌های کلاسیک
+local function createButton(name, text, yPos)
+	local btn = Instance.new("TextButton")
+	btn.Name = name
+	btn.Size = UDim2.new(0.85, 0, 0, 35)
+	btn.Position = UDim2.new(0.075, 0, 0, yPos)
+	btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	btn.BorderSizePixel = 1
+	btn.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	btn.Text = text
+	btn.Font = Enum.Font.SourceSansBold
+	btn.TextSize = 16
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.AutoButtonColor = true
+	btn.Parent = MainFrame
+	
+	return btn
+end
+
+local CheckToolsBtn = createButton("CheckToolsBtn", "Check Tools", 45)
+local DupeToolsBtn = createButton("DupeToolsBtn", "Dupe Tools", 90)
+
+local function notify(title, text)
+	game.StarterGui:SetCore("SendNotification", {
+		Title = title;
+		Text = text;
+		Duration = 4;
+	})
+end
+
+-- عملکرد Check Tools
+CheckToolsBtn.MouseButton1Click:Connect(function()
+	local toolsToCheck = {}
+	
+	local backpack = LocalPlayer:FindFirstChild("Backpack")
+	if backpack then
+		for _, item in pairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then table.insert(toolsToCheck, item) end
+		end
+	end
+	
+	if LocalPlayer.Character then
+		for _, item in pairs(LocalPlayer.Character:GetChildren()) do
+			if item:IsA("Tool") then table.insert(toolsToCheck, item) end
+		end
+	end
+	
+	if #toolsToCheck == 0 then
+		notify("Check", "هیچ ابزاری پیدا نشد!")
+		return
+	end
+	
+	for _, tool in ipairs(toolsToCheck) do
+		if not tool.CanBeDropped then
+			notify("❌ " .. tool.Name, "صد در صد قابل کلون شدن نیستند")
+		elseif tool.CanBeDropped and not StarterPack:FindFirstChild(tool.Name) then
+			notify("⚠️ " .. tool.Name, "به احتمال 40 درصد کلون میشود")
+		else
+			notify("✅ " .. tool.Name, "ابزار عادی است و در StarterPack وجود دارد")
+		end
+	end
+end)
+
+-- عملکرد Dupe Tools
+local grabtoolsFunc = nil
+local isDupeOnCooldown = false
+
+DupeToolsBtn.MouseButton1Click:Connect(function()
+	if isDupeOnCooldown then return end
+	
+	local char = LocalPlayer.Character
+	if not char then return end
+	
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	
+	isDupeOnCooldown = true
+	DupeToolsBtn.Text = "Please Wait..."
+	DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(120, 50, 50)
+	
+	task.delay(6, function()
+		isDupeOnCooldown = false
+		DupeToolsBtn.Text = "Dupe Tools"
+		DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	end)
+	
+	local savedCFrame = hrp.CFrame
+	
+	local backpack = LocalPlayer:FindFirstChild("Backpack")
+	if backpack then
+		for _, v in pairs(backpack:GetChildren()) do
+			if v:IsA("Tool") then v.Parent = char end
+		end
+	end
+	
+	task.wait(0.05)
+	
+	for _, v in pairs(char:GetChildren()) do
+		if v:IsA("Tool") then v.Parent = workspace end
+	end
+	
+	local humanoid = char:FindFirstChild("Humanoid")
+	if humanoid then humanoid.Health = 0 end
+	
+	local newChar = LocalPlayer.CharacterAdded:Wait()
+	local newHrp = newChar:WaitForChild("HumanoidRootPart", 3)
+	local newHumanoid = newChar:WaitForChild("Humanoid", 3)
+	
+	if newHrp then
+		local endTime = tick() + 0.3
+		local connection
+		connection = RunService.RenderStepped:Connect(function()
+			if tick() < endTime and newHrp.Parent then
+				newHrp.CFrame = savedCFrame
+			else
+				if connection then connection:Disconnect() end
+			end
+		end)
+	end
+	
+	if newHumanoid then
+		for _, child in ipairs(workspace:GetChildren()) do
+			if child:IsA("Tool") and child:FindFirstChild("Handle") then
+				newHumanoid:EquipTool(child)
+			end
+		end
+
+		if grabtoolsFunc then grabtoolsFunc:Disconnect() end
+
+		grabtoolsFunc = workspace.ChildAdded:Connect(function(child)
+			if newChar and child:IsA("Tool") and child:FindFirstChild("Handle") then
+				newHumanoid:EquipTool(child)
+			end
+		end)
+		
+		task.delay(0.5, function()
+			if grabtoolsFunc then grabtoolsFunc:Disconnect() end
+		end)
+	end
+end)
