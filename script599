@@ -113,12 +113,6 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 	DupeToolsBtn.Text = "Please Wait..."
 	DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(120, 50, 50)
 	
-	task.delay(6, function()
-		isDupeOnCooldown = false
-		DupeToolsBtn.Text = "Dupe Tools"
-		DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-	end)
-	
 	local savedCFrame = hrp.CFrame
 	
 	local backpack = LocalPlayer:FindFirstChild("Backpack")
@@ -168,8 +162,19 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 			end
 		end)
 		
+		-- وقتی تمام پروسه Grabtools بعد از 0.5 ثانیه متوقف شد، دکمه آزاد می‌شود
 		task.delay(0.5, function()
 			if grabtoolsFunc then grabtoolsFunc:Disconnect() end
+			
+			-- بازنشانی Cooldown و بازگشت به حالت اولیه
+			isDupeOnCooldown = false
+			DupeToolsBtn.Text = "Dupe Tools"
+			DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 		end)
+	else
+		-- در صورتی که به هر دلیلی پلیر به درستی ریسپاون نشد، دکمه قفل نماند
+		isDupeOnCooldown = false
+		DupeToolsBtn.Text = "Dupe Tools"
+		DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 	end
 end)
