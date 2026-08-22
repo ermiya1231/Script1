@@ -1,7 +1,11 @@
 local Players = game:GetService("Players")
 local StarterPack = game:GetService("StarterPack")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
+
+-- متغیر تاخیر
+local giveToolDelay = 0
 
 -- تنظیم زمان رسپاون به 0
 Players.RespawnTime = 0 
@@ -13,7 +17,8 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 140)
+-- ارتفاع فریم رو برای جا شدن اسلایدر بیشتر کردیم (از 140 به 200)
+MainFrame.Size = UDim2.new(0, 220, 0, 200)
 MainFrame.Position = UDim2.new(0.5, -110, 0.5, -70)
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 2
@@ -50,8 +55,70 @@ local function createButton(name, text, yPos)
 	return btn
 end
 
-local CheckToolsBtn = createButton("CheckToolsBtn", "Check Tools", 45)
-local DupeToolsBtn = createButton("DupeToolsBtn", "Dupe Tools", 90)
+local CheckToolsBtn = createButton("CheckToolsBtn", "Check Tools", 40)
+local DupeToolsBtn = createButton("DupeToolsBtn", "Dupe Tools", 85)
+
+-- ================== ساخت بخش اسلایدر ==================
+local DelayLabel = Instance.new("TextLabel")
+DelayLabel.Size = UDim2.new(0.85, 0, 0, 20)
+DelayLabel.Position = UDim2.new(0.075, 0, 0, 135)
+DelayLabel.BackgroundTransparency = 1
+DelayLabel.Text = "Give Tool Delay: 0s"
+DelayLabel.Font = Enum.Font.SourceSansBold
+DelayLabel.TextSize = 15
+DelayLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+DelayLabel.Parent = MainFrame
+
+local SliderBG = Instance.new("TextButton")
+SliderBG.Size = UDim2.new(0.85, 0, 0, 10)
+SliderBG.Position = UDim2.new(0.075, 0, 0, 165)
+SliderBG.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+SliderBG.BorderSizePixel = 1
+SliderBG.BorderColor3 = Color3.fromRGB(0, 0, 0)
+SliderBG.Text = ""
+SliderBG.AutoButtonColor = false
+SliderBG.Parent = MainFrame
+
+local SliderKnob = Instance.new("Frame")
+SliderKnob.Size = UDim2.new(0, 12, 0, 20)
+SliderKnob.AnchorPoint = Vector2.new(0.5, 0.5)
+SliderKnob.Position = UDim2.new(0, 0, 0.5, 0)
+SliderKnob.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+SliderKnob.BorderSizePixel = 1
+SliderKnob.BorderColor3 = Color3.fromRGB(0, 0, 0)
+SliderKnob.Parent = SliderBG
+
+-- سیستم کشیدن اسلایدر
+local isDragging = false
+
+local function updateSlider(input)
+	local relativeX = math.clamp((input.Position.X - SliderBG.AbsolutePosition.X) / SliderBG.AbsoluteSize.X, 0, 1)
+	SliderKnob.Position = UDim2.new(relativeX, 0, 0.5, 0)
+	
+	-- محاسبه مقدار تاخیر بین 0 تا 5 (با یک رقم اعشار)
+	giveToolDelay = math.floor((relativeX * 5) * 10) / 10
+	DelayLabel.Text = "Give Tool Delay: " .. tostring(giveToolDelay) .. "s"
+end
+
+SliderBG.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		isDragging = true
+		updateSlider(input)
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		isDragging = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		updateSlider(input)
+	end
+end)
+-- =======================================================
 
 local function notify(title, text)
 	game.StarterGui:SetCore("SendNotification", {
@@ -112,7 +179,6 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 	local savedCFrame = hrp.CFrame
 	local cam = workspace.CurrentCamera
 	
-	-- 1. فیکس دوربین همین پایین (بدون قفل شدن)
 	local camDummy = Instance.new("Part")
 	camDummy.Transparency = 1
 	camDummy.Anchored = true
@@ -121,7 +187,6 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 	camDummy.Parent = workspace
 	cam.CameraSubject = camDummy
 	
-	-- 2. آوردن وسایل به دست کاراکتر
 	local backpack = LocalPlayer:FindFirstChild("Backpack")
 	if backpack then
 		for _, v in pairs(backpack:GetChildren()) do
@@ -129,36 +194,27 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 		end
 	end
 	
-	-- 3. ساخت یک کف نامرئی در آسمان برای جلوگیری از سقوط تا زمانی که سرور تلپورت رو ثبت کنه
 	local skyPlatform = Instance.new("Part")
 	skyPlatform.Anchored = true
 	skyPlatform.Size = Vector3.new(100, 5, 100)
-	skyPlatform.CFrame = savedCFrame + Vector3.new(0, 14995, 0) -- 5 استاد زیر پای کاراکتر
+	skyPlatform.CFrame = savedCFrame + Vector3.new(0, 14995, 0)
 	skyPlatform.Transparency = 1
 	skyPlatform.Parent = workspace
 	
-	-- 4. تلپورت بی‌نقص به آسمان (بدون Anchored)
 	char:PivotTo(savedCFrame + Vector3.new(0, 15000, 0))
-	
-	-- 5. *** کلید حل مشکل FE ***
-	-- 0.3 ثانیه صبر میکنیم تا سرور به خاطر پینگ، موقعیت جدیدمون رو تو آسمون آپدیت کنه
 	task.wait(0.3) 
 	
-	-- 6. حالا که سرور مطمئنه ما تو آسمونیم، وسایل رو دراپ میکنیم
 	for _, v in pairs(char:GetChildren()) do
 		if v:IsA("Tool") then v.Parent = workspace end
 	end
 	
-	-- 7. پاک کردن پلتفرم و مرگ
 	skyPlatform:Destroy()
 	humanoid.Health = 0
 	
-	-- 8. منتظر ماندن برای ریسپاون
 	local newChar = LocalPlayer.CharacterAdded:Wait()
 	local newHrp = newChar:WaitForChild("HumanoidRootPart", 3)
 	local newHumanoid = newChar:WaitForChild("Humanoid", 3)
 	
-	-- 9. برگرداندن دوربین به کاراکتر
 	cam.CameraSubject = newHumanoid
 	camDummy:Destroy()
 	
@@ -175,28 +231,39 @@ DupeToolsBtn.MouseButton1Click:Connect(function()
 	end
 	
 	if newHumanoid then
-		-- 10. تله‌کنسیس: گرفتن وسایل از آسمان
-		for _, child in ipairs(workspace:GetChildren()) do
-			if child:IsA("Tool") and child:FindFirstChild("Handle") then
-				child.Handle.CFrame = savedCFrame 
-				newHumanoid:EquipTool(child)
+		-- شروع پروسه گرفتن ابزارها به صورت موازی (Spawn)
+		task.spawn(function()
+			-- اعمال تاخیر درگ شده از اسلایدر
+			if giveToolDelay > 0 then
+				task.wait(giveToolDelay)
 			end
-		end
-
-		if grabtoolsFunc then grabtoolsFunc:Disconnect() end
-
-		grabtoolsFunc = workspace.ChildAdded:Connect(function(child)
-			if newChar and child:IsA("Tool") and child:FindFirstChild("Handle") then
-				child.Handle.CFrame = savedCFrame
-				newHumanoid:EquipTool(child)
+			
+			-- پیدا کردن لوکیشن دقیق کاراکتر شما در حال حاضر (اگه تو زمان تاخیر راه رفته باشی)
+			local currentCFrame = newHrp and newHrp.CFrame or savedCFrame
+			
+			for _, child in ipairs(workspace:GetChildren()) do
+				if child:IsA("Tool") and child:FindFirstChild("Handle") then
+					child.Handle.CFrame = currentCFrame 
+					newHumanoid:EquipTool(child)
+				end
 			end
-		end)
-		
-		task.delay(0.5, function()
+
 			if grabtoolsFunc then grabtoolsFunc:Disconnect() end
-			isDupeOnCooldown = false
-			DupeToolsBtn.Text = "Dupe Tools"
-			DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+
+			grabtoolsFunc = workspace.ChildAdded:Connect(function(child)
+				if newChar and child:IsA("Tool") and child:FindFirstChild("Handle") then
+					-- هر ابزار جدید هم دقیقاً میاد به دست شما در حال حرکت
+					child.Handle.CFrame = newHrp and newHrp.CFrame or savedCFrame
+					newHumanoid:EquipTool(child)
+				end
+			end)
+			
+			task.delay(0.5, function()
+				if grabtoolsFunc then grabtoolsFunc:Disconnect() end
+				isDupeOnCooldown = false
+				DupeToolsBtn.Text = "Dupe Tools"
+				DupeToolsBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+			end)
 		end)
 	else
 		if camDummy then camDummy:Destroy() end
