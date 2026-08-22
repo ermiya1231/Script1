@@ -289,7 +289,7 @@ BtnRgbTag.MouseButton1Click:Connect(function()
                     nameTagEvent:FireServer(unpack(colorArgsList[rgbIndex]))
                 end
                 rgbIndex = (rgbIndex % #colorArgsList) + 1
-                task.wait(0.12)
+                task.wait(0.2)
             end
         end)
     else
@@ -311,7 +311,7 @@ BtnBioSpam.MouseButton1Click:Connect(function()
                     local args = {"SetBio", "COOLHUB USER"}
                     nameTagEvent:FireServer(unpack(args))
                 end
-                task.wait(5)
+                task.wait(10)
             end
         end)
     else
