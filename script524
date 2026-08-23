@@ -1,0 +1,397 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local plr = Players.LocalPlayer
+local mouse = plr:GetMouse()
+
+-- تابع برای گرفتن کاراکترِ زنده و آپدیت شده
+local function getChar()
+    local char = plr.Character or plr.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    return char, hrp
+end
+
+-- ==========================================
+-- 1. سیستم پیدا کردن هوشمند ابزارها
+-- ==========================================
+local function findTool(keyword)
+    local keywordLower = string.lower(keyword)
+    local bp = plr:FindFirstChild("Backpack")
+    local char = plr.Character
+    
+    if bp then
+        for _, tool in pairs(bp:GetChildren()) do
+            if tool:IsA("Tool") and string.find(string.lower(tool.Name), keywordLower) then return tool end
+        end
+    end
+    if char then
+        for _, tool in pairs(char:GetChildren()) do
+            if tool:IsA("Tool") and string.find(string.lower(tool.Name), keywordLower) then return tool end
+        end
+    end
+    return nil
+end
+
+-- ==========================================
+-- 2. ساخت GUI حرفه‌ای (افزایش سایز برای دکمه دوم)
+-- ==========================================
+if getgenv().SilentBombUI then getgenv().SilentBombUI:Destroy() end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "MasterpieceSilentBomb"
+gui.Parent = (gethui and gethui()) or CoreGui or plr:WaitForChild("PlayerGui")
+getgenv().SilentBombUI = gui
+
+local mainFrame = Instance.new("Frame", gui)
+mainFrame.Size = UDim2.new(0, 240, 0, 140) -- ارتفاع بیشتر شد تا دکمه ریست جا بشه
+mainFrame.Position = UDim2.new(0.5, -120, 0.7, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 8)
+Instance.new("UIStroke", mainFrame).Color = Color3.fromRGB(60, 60, 60)
+
+local topBar = Instance.new("Frame", mainFrame)
+topBar.Size = UDim2.new(1, 0, 0, 25)
+topBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+topBar.BorderSizePixel = 0
+
+local title = Instance.new("TextLabel", topBar)
+title.Size = UDim2.new(1, -10, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "💣 OP BOMB V6 (Only For C00LHACK)"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.Code
+title.TextSize = 13
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- دکمه ستاپ بمب
+local btn = Instance.new("TextButton", mainFrame)
+btn.Size = UDim2.new(1, -20, 0, 45)
+btn.Position = UDim2.new(0, 10, 0, 35)
+btn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+btn.Font = Enum.Font.Code
+btn.TextSize = 15
+btn.Text = "SETUP BOMB"
+btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+local btnStroke = Instance.new("UIStroke", btn)
+btnStroke.Color = Color3.fromRGB(80, 80, 80)
+
+-- دکمه ریست کاراکتر
+local resetBtn = Instance.new("TextButton", mainFrame)
+resetBtn.Size = UDim2.new(1, -20, 0, 45)
+resetBtn.Position = UDim2.new(0, 10, 0, 85)
+resetBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+resetBtn.Font = Enum.Font.Code
+resetBtn.TextSize = 15
+resetBtn.Text = "RESET CHARACTER"
+resetBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+Instance.new("UICorner", resetBtn).CornerRadius = UDim.new(0, 6)
+local resetBtnStroke = Instance.new("UIStroke", resetBtn)
+resetBtnStroke.Color = Color3.fromRGB(80, 20, 20)
+
+local dragging, dragInput, dragStart, startPos
+topBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+topBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+btn.MouseEnter:Connect(function() TweenService:Create(btnStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(255, 50, 50)}):Play() end)
+btn.MouseLeave:Connect(function() TweenService:Create(btnStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(80, 80, 80)}):Play() end)
+
+resetBtn.MouseEnter:Connect(function() TweenService:Create(resetBtnStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(255, 50, 50)}):Play() end)
+resetBtn.MouseLeave:Connect(function() TweenService:Create(resetBtnStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(80, 20, 20)}):Play() end)
+
+-- عملیات دکمه ریست
+resetBtn.MouseButton1Click:Connect(function()
+    local char = plr.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.Health = 0
+    end
+end)
+
+-- ==========================================
+-- 3. متغیرهای سرور ساید و وضعیت‌ها
+-- ==========================================
+local SETTINGS = {VelocityY = 220.290009, SimulationRadius = 2147483647}
+local isSetup = false
+local needsReset = false -- قفل جدید برای جلوگیری از زدن مجدد دکمه
+local isPlaying = false
+local feConnection, stepConnection, renderConnection
+local boomboxHandle
+local lastHRPPos = Vector3.zero
+
+stepConnection = RunService.Stepped:Connect(function()
+    settings().Physics.AllowSleep = false
+    if sethiddenproperty then pcall(function() sethiddenproperty(plr, "SimulationRadius", SETTINGS.SimulationRadius) end) end
+end)
+
+local function clearPhysics(handle)
+    if not handle then return end
+    for _, v in pairs(handle:GetChildren()) do
+        if v:IsA("AlignPosition") or v.Name == "SilentBombAtt" then
+            v:Destroy()
+        end
+    end
+    handle.AssemblyLinearVelocity = Vector3.zero
+    handle.AssemblyAngularVelocity = Vector3.zero
+end
+
+-- ==========================================
+-- 4. سیستم ریست کامل (صدا زده میشه وقتی میمیری)
+-- ==========================================
+local function resetSystem()
+    isSetup = false
+    needsReset = false -- قفل باز میشه چون مُردی
+    isPlaying = false
+    
+    if feConnection then feConnection:Disconnect() feConnection = nil end
+    if renderConnection then renderConnection:Disconnect() renderConnection = nil end
+    if workspace:FindFirstChild("OrbitReference_SilentBomb") then
+        workspace.OrbitReference_SilentBomb:Destroy()
+    end
+    
+    if boomboxHandle then clearPhysics(boomboxHandle) end
+    boomboxHandle = nil
+
+    local bp = plr:FindFirstChild("Backpack")
+    local boombox = findTool("boom")
+    local fusebomb = findTool("bomb")
+    
+    if bp then
+        if boombox then boombox.Parent = bp end
+        if fusebomb then fusebomb.Parent = bp end
+    end
+    
+    btn.Text = "SETUP BOMB"
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    TweenService:Create(btnStroke, TweenInfo.new(0.5), {Color = Color3.fromRGB(80, 80, 80)}):Play()
+end
+
+-- ==========================================
+-- 5. سیستم پاره کردن گِریپ هوشمند
+-- ==========================================
+local gripConnection
+local function setupGripBreaker(character)
+    if gripConnection then gripConnection:Disconnect() end
+    gripConnection = character.DescendantAdded:Connect(function(obj)
+        if isSetup and obj:IsA("Motor6D") and obj.Name == "RightGrip" and boomboxHandle then
+            if obj.Part1 == boomboxHandle then
+                task.wait()
+                obj:Destroy()
+            end
+        end
+    end)
+end
+
+setupGripBreaker(plr.Character or plr.CharacterAdded:Wait())
+plr.CharacterAdded:Connect(function(newChar)
+    resetSystem()
+    setupGripBreaker(newChar)
+end)
+
+-- ==========================================
+-- 6. منطق سرورساید
+-- ==========================================
+local function setupFEOperation(boombox, char, hrp)
+    boomboxHandle = boombox:FindFirstChild("Handle")
+    if not boomboxHandle then return end
+
+    if workspace:FindFirstChild("OrbitReference_SilentBomb") then workspace.OrbitReference_SilentBomb:Destroy() end
+
+    local targetPart = Instance.new("Part", workspace)
+    targetPart.Name = "OrbitReference_SilentBomb"
+    targetPart.Anchored = true
+    targetPart.CanCollide = false
+    targetPart.Transparency = 1
+    targetPart.Size = Vector3.new(0.2, 0.2, 0.2)
+    targetPart.CFrame = hrp.CFrame * CFrame.new(0, -5, -3)
+
+    local ap = Instance.new("AlignPosition", boomboxHandle)
+    ap.MaxForce, ap.MaxVelocity, ap.Responsiveness = math.huge, math.huge, 200
+    
+    local att0 = Instance.new("Attachment", boomboxHandle)
+    att0.Name = "SilentBombAtt"
+    local att1 = Instance.new("Attachment", targetPart)
+    ap.Attachment0, ap.Attachment1 = att0, att1
+
+    if renderConnection then renderConnection:Disconnect() end
+    if feConnection then feConnection:Disconnect() end
+
+    lastHRPPos = hrp.Position
+
+    renderConnection = RunService.RenderStepped:Connect(function()
+        if targetPart and hrp and char.Parent then
+            targetPart.CFrame = hrp.CFrame * CFrame.new(0, -5, -3)
+        end
+    end)
+
+    feConnection = RunService.PostSimulation:Connect(function(dt)
+        if boomboxHandle and boomboxHandle.Parent and hrp and char.Parent then
+            local currentTime = os.clock()
+            local currentPos = hrp.Position
+            local hrpVel = (dt > 0) and ((currentPos - lastHRPPos) / dt) or Vector3.zero
+            lastHRPPos = currentPos
+
+            local predictedTargetPos = targetPart.Position + (hrpVel * 0.1)
+            local antiSleep = Vector3.new(0, math.sin(currentTime * 15) * 0.0015, 0)
+            local gravityAxis = SETTINGS.VelocityY + math.sin(currentTime)
+
+            local dir = predictedTargetPos - boomboxHandle.Position
+            local xz = Vector3.new(dir.X, 0, dir.Z)
+            local velXZ = (xz.Magnitude > 0) and (xz.Unit * xz.Magnitude * 2) or Vector3.zero
+
+            boomboxHandle.AssemblyLinearVelocity = Vector3.new(velXZ.X, gravityAxis, velXZ.Z)
+            boomboxHandle.AssemblyAngularVelocity = Vector3.new(0, math.huge, math.huge)
+            boomboxHandle.CFrame = boomboxHandle.CFrame + antiSleep
+        else
+            if feConnection then feConnection:Disconnect() end
+            if renderConnection then renderConnection:Disconnect() end
+        end
+    end)
+end
+
+task.spawn(function()
+    while task.wait(0.1) do
+        local currentChar = plr.Character
+        local hum = currentChar and currentChar:FindFirstChild("Humanoid")
+        
+        if isSetup and boomboxHandle and boomboxHandle.Parent and currentChar and hum and hum.Health > 0 then
+            local ref = workspace:FindFirstChild("OrbitReference_SilentBomb")
+            if ref then
+                local separation = (boomboxHandle.Position - ref.Position).Magnitude
+                if separation > 8 then
+                    local tool = boomboxHandle.Parent
+                    if tool:IsA("Tool") and tool.Parent == currentChar then
+                        local bp = plr:FindFirstChild("Backpack")
+                        if bp then
+                            tool.Parent = bp
+                            task.wait()
+                            tool.Parent = currentChar
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+-- ==========================================
+-- 7. کلیک روی دکمه ستاپ
+-- ==========================================
+btn.MouseButton1Click:Connect(function()
+    -- اگر بمب کاشته شده و کاربر ریست نکرده، ارور بده
+    if needsReset then
+        local oldText = btn.Text
+        local oldColor = btn.TextColor3
+        btn.Text = "اول ریست کنید"
+        btn.TextColor3 = Color3.fromRGB(255, 50, 50)
+        task.wait(1.5)
+        btn.Text = oldText
+        btn.TextColor3 = oldColor
+        return
+    end
+
+    local char, hrp = getChar() 
+    local boombox = findTool("boom")
+    local fusebomb = findTool("bomb")
+
+    if not boombox or not fusebomb then
+        btn.Text = "MISSING TOOLS!"
+        btn.TextColor3 = Color3.fromRGB(255, 50, 50)
+        task.wait(1.5)
+        btn.Text = isSetup and "READY (CLICK SCREEN)" or "SETUP BOMB"
+        btn.TextColor3 = isSetup and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(200, 200, 200)
+        return
+    end
+
+    btn.Text = "SYNCING WITH SERVER..."
+    
+    clearPhysics(boombox:FindFirstChild("Handle"))
+
+    boombox.Parent = char
+    fusebomb.Parent = char
+    task.wait(0.2)
+
+    local rightArm = char:FindFirstChild("Right Arm") or char:FindFirstChild("RightHand")
+    if rightArm then
+        for _, obj in pairs(rightArm:GetChildren()) do
+            if obj:IsA("Motor6D") and obj.Name == "RightGrip" and obj.Part1 == boombox:FindFirstChild("Handle") then
+                obj:Destroy()
+            end
+        end
+    end
+
+    setupFEOperation(boombox, char, hrp)
+    isSetup = false
+    task.wait(0.1)
+    isSetup = true
+    
+    btn.Text = "READY! (CLICK SCREEN)"
+    btn.TextColor3 = Color3.fromRGB(50, 255, 50)
+    TweenService:Create(btnStroke, TweenInfo.new(0.5), {Color = Color3.fromRGB(50, 255, 50)}):Play()
+end)
+
+-- ==========================================
+-- 8. کلیک برای کاشت بمب (فقط پلی آهنگ و توقف انیمیشن)
+-- ==========================================
+mouse.Button1Down:Connect(function()
+    if isSetup and not isPlaying then
+        local char = plr.Character
+        local boombox = findTool("boom")
+        
+        if boombox and char and boombox.Parent == char then
+            local remote = boombox:FindFirstChild("Remote", true)
+            if remote then
+                isPlaying = true
+                needsReset = true -- اینجا قفل فعال میشه تا ریست نکنه نتونه ستاپ کنه
+                
+                -- پخش آهنگ
+                remote:FireServer("PlaySong", 673539931)
+                task.wait(1.5)
+                remote:FireServer("PlaySong", 0)
+                
+                -- === اضافه شده: متوقف کردن انیمیشن Tool Hold ===
+                local hum = char:FindFirstChild("Humanoid")
+                if hum then
+                    -- در روبلاکس انیمیشن‌ها روی Animator پلی میشن
+                    local animator = hum:FindFirstChild("Animator") or hum
+                    for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+                        if track.Animation then
+                            local animId = track.Animation.AnimationId
+                            -- اگر آیدی انیمیشن 182393478 بود یا اسمش مربوط به گرفتن تول بود متوقفش کن
+                            if string.find(animId, "182393478") or string.find(string.lower(track.Name), "tool") then
+                                track:Stop()
+                            end
+                        end
+                    end
+                end
+                -- ==============================================
+                
+                -- آپدیت وضعیت به بازیکن
+                btn.Text = "BOMB PLANTED! NOW RESET"
+                btn.TextColor3 = Color3.fromRGB(255, 180, 50)
+                TweenService:Create(btnStroke, TweenInfo.new(0.5), {Color = Color3.fromRGB(255, 180, 50)}):Play()
+            end
+        end
+    end
+end)
