@@ -256,7 +256,7 @@ BtnAutoFarm.TextColor3 = Color3.fromRGB(255, 100, 100)
 local BtnBring = CreateButton("BtnBring", "ClientSide Bring", Color3.fromRGB(40, 40, 60), Color3.fromRGB(100, 100, 255), 7)
 local BtnOrbit = CreateButton("BtnOrbit", "FE TOOL ORBIT OP", Color3.fromRGB(40, 40, 60), Color3.fromRGB(100, 100, 255), 8)
 local BtnReanim = CreateButton("BtnReanim", "Uhhhhhh Reanim", Color3.fromRGB(40, 40, 60), Color3.fromRGB(100, 100, 255), 9)
-local BtnReanim = CreateButton("BtnBomb", "BOMB(Only For C00LHACK)", Color3.fromRGB(40, 40, 60), Color3.fromRGB(100, 100, 255), 10)
+local BtnBomb = CreateButton("BtnBomb", "BOMB(Only For C00LHACK)", Color3.fromRGB(40, 40, 60), Color3.fromRGB(100, 100, 255), 10)
 
 -- یه فاصله کوچیک برای پایین لیست
 local BottomSpacer = Instance.new("Frame")
