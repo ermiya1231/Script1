@@ -7,7 +7,7 @@ if getgenv().OrbitToolsy == true then return end
 getgenv().OrbitToolsy = true
 
 local plr = Players.LocalPlayer
-local chr = plr.Character
+local chr = plr.Character or plr.CharacterAdded:Wait()
 local hrp = chr:WaitForChild("HumanoidRootPart")
 local bp = plr:WaitForChild("Backpack")
 
@@ -29,10 +29,12 @@ local targetHRP = hrp
 local tweenEnabled = false
 local tweenDelay = 0.5
 local lastTargetChange = os.clock()
-local lineSpacing = 3 -- فاصله ثابت ابزارها در حالت خطی
+local lineSpacing = 3 
 
 local addedT = {}
 local removedT = {}
+
+local invisMode = false -- متغیر جدید برای حالت Invistool
 
 local notifGui = Instance.new("ScreenGui")
 notifGui.Name = "FlatNotifGui"
@@ -115,7 +117,24 @@ task.spawn(function()
     end
 end)
 
-local cmds = {"offset", "speed", "rot", "mode", "target", "unorbit", "equip", "unequip", "stop", "lerp", "help"}
+-- لوپ برای متوقف کردن انیمیشن در حالت InvisTool
+task.spawn(function()
+    while getgenv().OrbitToolsy do
+        task.wait()
+        if invisMode and chr and chr:FindFirstChild("Humanoid") then
+            local animator = chr.Humanoid:FindFirstChildOfClass("Animator")
+            if animator then
+                for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                    if track.Name == "ToolNoneAnim" then
+                        track:Stop(0)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+local cmds = {"offset", "speed", "rot", "mode", "target", "unorbit", "equip", "unequip", "stop", "lerp", "help", "invistool"}
 
 local cmdDocs = {
     offset = "offset [num] - Sets radius distance",
@@ -128,7 +147,8 @@ local cmdDocs = {
     unequip = "unequip - Stores tools in backpack",
     stop = "stop - Terminates the orbit script",
     lerp = "lerp [num] - Adjusts transition smoothness",
-    help = "help - Toggles the command list menu"
+    help = "help - Toggles the command list menu",
+    invistool = "invistool - Hides tools under feet and blocks animation"
 }
 
 local function getPartialMatch(input)
@@ -191,6 +211,15 @@ local function processCommandString(input)
     elseif c == "lerp" then
         lerpSpeed = tonumber(val) or lerpSpeed
         sendFlatNotification("Settings", "Tween Speed: " .. lerpSpeed, Color3.fromRGB(150, 150, 150))
+    elseif c == "invistool" then
+        invisMode = not invisMode
+        if invisMode then
+            lerpSpeed = 100 -- ست کردن lerp بالا برای چسبیدن به هدف
+            sendFlatNotification("Mode", "InvisTool Activated", Color3.fromRGB(150, 255, 150))
+        else
+            lerpSpeed = 1 -- برگرداندن lerp به حالت نرمال
+            sendFlatNotification("Mode", "InvisTool Deactivated", Color3.fromRGB(255, 150, 150))
+        end
     elseif c == "help" then
         if helpFrame then helpFrame.Visible = not helpFrame.Visible end
     elseif c == "stop" then
@@ -528,7 +557,6 @@ local function createUI()
         if enter and cmdInput.Text:gsub(" ", "") ~= "" then
             local finalCmd = cmdInput.Text
             
-            -- If we have an active autofill ready and what the user typed matches the start of it
             if currentSuggestionCommand and currentSuggestionCommand ~= "" then
                 if currentSuggestionCommand:lower():sub(1, #finalCmd) == finalCmd:lower() then
                     finalCmd = currentSuggestionCommand
@@ -572,66 +600,69 @@ RunService.RenderStepped:Connect(function()
             local angle = math.rad(rot + (360 / numTools) * i)
             local targetCFrame = CFrame.new()
 
-            if mode == 1 then
-                targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(offset, 0, 0)
-            elseif mode == 2 then
-                targetCFrame = targetHRP.CFrame * CFrame.new(math.cos(angle) * offset, math.sin(time * 2 + i) * 2, math.sin(angle) * offset)
-            elseif mode == 3 then
-                targetCFrame = targetHRP.CFrame * CFrame.Angles(angle, angle, 0) * CFrame.new(offset, 0, 0)
-            elseif mode == 4 then
-                targetCFrame = CFrame.new(targetHRP.Position) * CFrame.Angles(0, angle, 0) * CFrame.new(offset, 0, 0)
-            elseif mode == 5 then
-                targetCFrame = targetHRP.CFrame * CFrame.new(math.cos(angle) * offset, math.sin(angle) * offset, math.sin(angle) * offset)
-            elseif mode == 6 then
-                targetCFrame = targetHRP.CFrame * CFrame.Angles(angle, 0, angle) * CFrame.new(offset, 0, 0)
-            elseif mode == 21 then
-                -- سیستم چیدمان خطی (Line Mode)
-                local totalWidth = (numTools - 1) * lineSpacing
-                local startX = -totalWidth / 2
-                local currentX = startX + (i - 1) * lineSpacing
-                -- ابزارها به صورت افقی (محور X) تنظیم شده و با فاصله offset جلوتر (محور Z منفی) از کاراکتر قرار می‌گیرند
-                targetCFrame = targetHRP.CFrame * CFrame.new(currentX, 0, -offset)
+if invisMode then                -- استفاده از Vector3 به جای جهتِ کاراکتر باعث میشه اگه کاراکترت موقع پریدن کج شد، ابزارها مثل پاندول نیان بالا!
+                -- اینطوری ابزارها همیشه دقیقا ۱۲ استود زیر مختصاتت، تو عمق زمین قفل میشن.
+                targetCFrame = CFrame.new(targetHRP.Position - Vector3.new(0, 12.7, 0))
             else
-                local subType = mode % 8
-                local safeSpeed = time * (1 + (mode % 5) / 10)
+                if mode == 1 then
+                    targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(offset, 0, 0)
+                elseif mode == 2 then
+                    targetCFrame = targetHRP.CFrame * CFrame.new(math.cos(angle) * offset, math.sin(time * 2 + i) * 2, math.sin(angle) * offset)
+                elseif mode == 3 then
+                    targetCFrame = targetHRP.CFrame * CFrame.Angles(angle, angle, 0) * CFrame.new(offset, 0, 0)
+                elseif mode == 4 then
+                    targetCFrame = CFrame.new(targetHRP.Position) * CFrame.Angles(0, angle, 0) * CFrame.new(offset, 0, 0)
+                elseif mode == 5 then
+                    targetCFrame = targetHRP.CFrame * CFrame.new(math.cos(angle) * offset, math.sin(angle) * offset, math.sin(angle) * offset)
+                elseif mode == 6 then
+                    targetCFrame = targetHRP.CFrame * CFrame.Angles(angle, 0, angle) * CFrame.new(offset, 0, 0)
+                elseif mode == 21 then
+                    local totalWidth = (numTools - 1) * lineSpacing
+                    local startX = -totalWidth / 2
+                    local currentX = startX + (i - 1) * lineSpacing
+                    targetCFrame = targetHRP.CFrame * CFrame.new(currentX, 0, -offset)
+                else
+                    local subType = mode % 8
+                    local safeSpeed = time * (1 + (mode % 5) / 10)
 
-                if subType == 0 then
-                    local petalCount = (mode % 5) + 3
-                    local wave = math.sin(angle * petalCount + safeSpeed)
-                    local currentOffset = offset + (wave * (offset / 3))
-                    targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(currentOffset, 0, 0)
-                elseif subType == 1 then
-                    local tiltX = math.rad((mode * 15) % 360) + (time * 0.5)
-                    local tiltZ = math.rad((mode * 45) % 360)
-                    targetCFrame = targetHRP.CFrame * CFrame.Angles(tiltX, angle, tiltZ) * CFrame.new(offset, 0, 0)
-                elseif subType == 2 then
-                    local height = math.sin(angle + (time * 2)) * (offset * 0.8)
-                    local twist = math.cos(safeSpeed + (i/2)) * 2
-                    targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(offset + twist, height, 0)
-                elseif subType == 3 then
-                    local noiseX = math.sin(angle * ((mode % 3) + 1))
-                    local noiseY = math.cos(angle * ((mode % 2) + 1))
-                    targetCFrame = targetHRP.CFrame * CFrame.Angles(angle, 0, angle) * CFrame.new(offset * noiseX, offset * noiseY, 0)
-                elseif subType == 4 then
-                    local fig8X = math.cos(angle) * offset
-                    local fig8Z = math.sin(angle * 2) * offset
-                    targetCFrame = targetHRP.CFrame * CFrame.new(fig8X, 0, fig8Z)
-                elseif subType == 5 then
-                    local spikeFreq = (mode % 4) + 3
-                    local height = math.abs(math.sin(angle * spikeFreq)) * (offset * 0.8)
-                    targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(offset, height - (offset/2), 0)
-                elseif subType == 6 then
-                    local band = (i % 3)
-                    local tiltAngle = math.rad(60 * band)
-                    targetCFrame = targetHRP.CFrame * CFrame.Angles(tiltAngle, angle, 0) * CFrame.new(offset, 0, 0)
-                elseif subType == 7 then
-                    local pulse = math.sin(safeSpeed * 2) * (offset * 0.4)
-                    targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(offset + pulse, 0, 0)
-                end
+                    if subType == 0 then
+                        local petalCount = (mode % 5) + 3
+                        local wave = math.sin(angle * petalCount + safeSpeed)
+                        local currentOffset = offset + (wave * (offset / 3))
+                        targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(currentOffset, 0, 0)
+                    elseif subType == 1 then
+                        local tiltX = math.rad((mode * 15) % 360) + (time * 0.5)
+                        local tiltZ = math.rad((mode * 45) % 360)
+                        targetCFrame = targetHRP.CFrame * CFrame.Angles(tiltX, angle, tiltZ) * CFrame.new(offset, 0, 0)
+                    elseif subType == 2 then
+                        local height = math.sin(angle + (time * 2)) * (offset * 0.8)
+                        local twist = math.cos(safeSpeed + (i/2)) * 2
+                        targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(offset + twist, height, 0)
+                    elseif subType == 3 then
+                        local noiseX = math.sin(angle * ((mode % 3) + 1))
+                        local noiseY = math.cos(angle * ((mode % 2) + 1))
+                        targetCFrame = targetHRP.CFrame * CFrame.Angles(angle, 0, angle) * CFrame.new(offset * noiseX, offset * noiseY, 0)
+                    elseif subType == 4 then
+                        local fig8X = math.cos(angle) * offset
+                        local fig8Z = math.sin(angle * 2) * offset
+                        targetCFrame = targetHRP.CFrame * CFrame.new(fig8X, 0, fig8Z)
+                    elseif subType == 5 then
+                        local spikeFreq = (mode % 4) + 3
+                        local height = math.abs(math.sin(angle * spikeFreq)) * (offset * 0.8)
+                        targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(offset, height - (offset/2), 0)
+                    elseif subType == 6 then
+                        local band = (i % 3)
+                        local tiltAngle = math.rad(60 * band)
+                        targetCFrame = targetHRP.CFrame * CFrame.Angles(tiltAngle, angle, 0) * CFrame.new(offset, 0, 0)
+                    elseif subType == 7 then
+                        local pulse = math.sin(safeSpeed * 2) * (offset * 0.4)
+                        targetCFrame = targetHRP.CFrame * CFrame.Angles(0, angle, 0) * CFrame.new(offset + pulse, 0, 0)
+                    end
 
-                if mode > 20 and mode ~= 21 then
-                    local slowWobble = math.rad(math.sin(time) * 15)
-                    targetCFrame = targetCFrame * CFrame.Angles(slowWobble, 0, slowWobble)
+                    if mode > 20 and mode ~= 21 then
+                        local slowWobble = math.rad(math.sin(time) * 15)
+                        targetCFrame = targetCFrame * CFrame.Angles(slowWobble, 0, slowWobble)
+                    end
                 end
             end
 
@@ -749,4 +780,4 @@ plr.CharacterAdded:Connect(function(c)
     table.clear(connections)
 end)
 
-sendFlatNotification("System", "Tool Orbit V3 Initialized (with Mode 21)", Color3.fromRGB(200, 200, 200))
+sendFlatNotification("System", "Tool Orbit V4 Initialized (with InvisTool)", Color3.fromRGB(200, 200, 200))
