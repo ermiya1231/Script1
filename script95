@@ -1,7 +1,8 @@
 local g = game
 local Workspace = g:GetService("Workspace")
 local ReplicatedStorage = g:GetService("ReplicatedStorage")
-local INJECT = g:GetService("TestService")
+local Players = g:GetService("Players")
+local TweenService = g:GetService("TweenService")
 local REMOTE = "AC6_FE_Sounds"
 
 local function HideGui()
@@ -17,8 +18,6 @@ end
 
 local LibraryName = "i_eat_shampoo"
 local NotificationLibrary = {}
-
-local TweenService = game:GetService("TweenService")
 local PlayerGui = HideGui()
 
 local library
@@ -69,7 +68,7 @@ function NotificationLibrary:SendNotification(Mode, Text, Duration)
     end
 
     task.spawn(function()
-        local success, err = pcall(function()
+        pcall(function()
             local Notification = template:Clone()
             local filler = Notification:WaitForChild("Filler")
             local bar = Notification:WaitForChild("bar")
@@ -105,7 +104,8 @@ local Random = Random.new()
 local loopState, isDragging = true, false
 local typof, Udim2, Color, ref = typeof, UDim2.new, Color3.new, {}
 local eep, make, call, font = task.wait, Instance.new, pcall, Font.fromEnum(Enum.Font.Cartoon)
-local split, tonum, ismatch = task.spawn, tonumber, string.match
+local split, tonum = task.spawn, tonumber
+
 local gradcolor = ColorSequence.new({
     ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
     ColorSequenceKeypoint.new(0.16, Color3.fromRGB(255,255,0)),
@@ -135,12 +135,15 @@ local function RandomName()
     return table.concat(result)
 end
 
+-- استخراج و پاکسازی دقیق آیدی برای کیبوردهای موبایل
 local function formatAssetId(input)
-    if ismatch(input, "^rbxassetid://") or ismatch(input, "^rbxasset://") or ismatch(input, "^rbxgameasset://") or ismatch(input, "^rbxhttp://") then
-        return input
+    if not input then return "rbxassetid://0" end
+    local cleanInput = string.gsub(input, "%s+", "") -- حذف فاصله و خط بعد کیبورد موبایل
+    local numericId = string.match(cleanInput, "%d+")
+    if numericId then
+        return "rbxassetid://" .. numericId
     end
-    local id = ismatch(input, "/asset/(%d+)")
-    return "rbxassetid://" .. (id or input)
+    return cleanInput
 end
 
 local function toNumber(value, default)
@@ -165,8 +168,25 @@ local function getAllRemotes()
     return foundRemotes
 end
 
+-- تعیین موقعیت معتبر جهت شنیده شدن صدا در موبایل
+local function getSoundParent()
+    local char = Players.LocalPlayer and Players.LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        return char.HumanoidRootPart
+    end
+    return Workspace
+end
+
 local function firesound(remote, name, assetId, pitch, volume, looped)
-    remote:FireServer("newSound", name, INJECT, assetId, pitch, volume, looped)
+    local targetParent = getSoundParent()
+    
+    -- ساخت صدا در سرویس قابل شنیدن
+    remote:FireServer("newSound", name, targetParent, assetId, pitch, volume, looped)
+    
+    -- وقفه کوتاه جهت هماهنگی با تاخیر پینگ موبایل
+    task.wait(0.08)
+    
+    -- پخش صدا
     remote:FireServer("playSound", name)
 end
 
@@ -196,7 +216,7 @@ local function create(class, props, parent)
             if typof(key) == "number" and typof(value) == "Instance" then
                 value.Parent = instance
             else
-                local success = call(function()
+                call(function()
                     instance[key] = value
                 end)
             end
@@ -251,8 +271,6 @@ local title = create("TextLabel", {
     TextColor3 = Color(1, 1, 1),
 }, main) insertgrad(title)
 
-
--- لیست ریموت‌ها (جای دکمه رفرش رو پر کرد)
 local remoteListFrame = create("ScrollingFrame", {
     Size = Udim2(0.3, 0, 0.8, -10),
     Position = Udim2(0.02, 0, 0.18, 5),
@@ -329,7 +347,7 @@ local button = create("TextButton", {
 local closeButton = create("TextButton", {
     Size = Udim2(0, 30, 0, 30),
     Position = Udim2(1, -35, 0, 5),
-    BackgroundColorBackgroundColor3 = Color(0, 0, 0),
+    BackgroundColor3 = Color(0, 0, 0),
     TextColor3 = Color(1, 1, 1),
     Text = "X",
     FontFace = font,
@@ -352,14 +370,12 @@ local bubble = create("TextButton", {
 local function RefreshRemotesList()
     local allRemotes = getAllRemotes()
     
-    -- پاک کردن دکمه‌های قبلی
     for _, btn in ipairs(listButtons) do
         btn:Destroy()
     end
     listButtons = {}
     
     if #allRemotes == 0 then
-        -- نوتیفیکیشن هشدار حذف شد تا موقع رفرش خودکار هی اسپم نشه
         return
     end
 
@@ -376,7 +392,6 @@ local function RefreshRemotesList()
             create("UICorner", ref)
         }, remoteListFrame)
 
-        -- حفظ رنگ سبز ریموت انتخاب شده موقع رفرش شدن
         if SelectedRemote == remote then
             rBtn.BackgroundColor3 = Color(0, 0.8, 0)
         end
@@ -399,9 +414,8 @@ local function RefreshRemotesList()
     remoteListFrame.CanvasSize = UDim2.new(0, 0, 0, #allRemotes * 35)
 end
 
--- سیستم رفرش اتوماتیک (هر 3 ثانیه)
 task.spawn(function()
-    while task.wait(1) do
+    while task.wait(3) do
         RefreshRemotesList()
     end
 end)
@@ -442,18 +456,19 @@ loopBox.Activated:Connect(function()
     end
 end)
 
-local AudioName = RandomName()
-
 button.Activated:Connect(function()
     if not SelectedRemote or not SelectedRemote:IsDescendantOf(g) then
         OhNo:Play()
         return notify("Error", "Select remote first!", 4)
     end
     
+    local cleanAudioId = formatAssetId(textBox.Text)
+    local audioName = RandomName()
+    
     local success = call(firesound,
         SelectedRemote,
-        AudioName,
-        formatAssetId(textBox.Text),
+        audioName,
+        cleanAudioId,
         toNumber(pitchBox.Text, 1),
         toNumber(volumeBox.Text, 1),
         loopState
