@@ -10,6 +10,7 @@ end
 -- ساخت رابط کاربری (GUI)
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "AutoSlapGUI"
+ScreenGui.ResetOnSpawn = false -- [مهم] جلوگیری از بسته شدن پنل بعد از مرگ
 
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Size = UDim2.new(0, 380, 0, 580)
@@ -28,7 +29,7 @@ end
 local Title = Instance.new("TextLabel", MainFrame)
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.BackgroundTransparency = 1
-Title.Text = "Slap Executor Panel By C00LHACK"
+Title.Text = "  Slap Executor Panel By C00LHACK"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18 
@@ -87,6 +88,7 @@ local function updateToolList()
         btn.MouseButton1Click:Connect(function()
             SelectedTool = tool
             SelectedToolLabel.Text = "Selected Tool: " .. tool.Name
+            SelectedToolLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
         end)
     end
     ToolsScroll.CanvasSize = UDim2.new(0, 0, 0, #tools * 40)
@@ -225,7 +227,7 @@ local function getRemoteFromTool(tool)
 end
 
 local function executeSlap()
-    if not SelectedTool then return false end
+    if not SelectedTool or not SelectedTool.Parent then return false end -- چک کردن وجود ابزار
     local targetChar = getTargetPlayer(TargetInput.Text)
     local remote = getRemoteFromTool(SelectedTool)
     if targetChar and remote then
@@ -236,7 +238,7 @@ local function executeSlap()
 end
 
 FireBtn.MouseButton1Click:Connect(function()
-    if not SelectedTool then 
+    if not SelectedTool or not SelectedTool.Parent then 
         TargetInput.PlaceholderText = "Select tool first!"
         task.wait(1)
         TargetInput.PlaceholderText = "Target (Username/Display)"
@@ -281,10 +283,10 @@ local function createAuraVisual(char, range)
 
     auraVisual = Instance.new("Part")
     auraVisual.Name = "SlapAuraVisual"
-    auraVisual.Shape = Enum.PartType.Ball -- تغییر به کُره برای انطباق با محدوده ۳ بعدی
+    auraVisual.Shape = Enum.PartType.Ball 
     auraVisual.Material = Enum.Material.Neon
     auraVisual.Color = Color3.fromRGB(255, 30, 30) 
-    auraVisual.Transparency = 0.8 -- افزایش شفافیت
+    auraVisual.Transparency = 0.8 
     auraVisual.Size = Vector3.new(range * 2, range * 2, range * 2)
     auraVisual.CanCollide = false
     auraVisual.Anchored = false
@@ -309,7 +311,7 @@ local function fireAtTarget(targetChar, remote)
 end
 
 AuraBtn.MouseButton1Click:Connect(function()
-    if not SelectedTool then 
+    if not SelectedTool or not SelectedTool.Parent then 
         TargetInput.PlaceholderText = "Select tool for Aura!"
         task.wait(1.5)
         TargetInput.PlaceholderText = "Target (Username/Display)"
@@ -328,7 +330,7 @@ AuraBtn.MouseButton1Click:Connect(function()
                 local currentRange = tonumber(AuraRangeInput.Text) or 20
                 local currentDelay = tonumber(AuraSpeedInput.Text) or 0.08
                 
-                if myChar and myChar:FindFirstChild("HumanoidRootPart") and remote then
+                if myChar and myChar:FindFirstChild("HumanoidRootPart") and remote and SelectedTool.Parent then
                     local myRoot = myChar.HumanoidRootPart
                     
                     if not auraVisual or not auraVisual.Parent or auraVisual.Parent ~= myChar then
@@ -359,4 +361,13 @@ AuraBtn.MouseButton1Click:Connect(function()
         AuraBtn.BackgroundColor3 = Color3.fromRGB(120, 50, 200)
         removeAuraVisual()
     end
+end)
+
+-- [جدید] رفع مشکل از کار افتادن ابزارها بعد از ریسپان
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1) -- صبر می‌کنیم تا کاراکتر و بک‌پک کامل لود بشن
+    SelectedTool = nil
+    SelectedToolLabel.Text = "Tool Lost! Reselect Below"
+    SelectedToolLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    updateToolList()
 end)
