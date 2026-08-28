@@ -1,0 +1,362 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+-- حذف نسخه قبلی در صورت وجود
+if CoreGui:FindFirstChild("AutoSlapGUI") then
+    CoreGui.AutoSlapGUI:Destroy()
+end
+
+-- ساخت رابط کاربری (GUI)
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "AutoSlapGUI"
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 380, 0, 580)
+MainFrame.Position = UDim2.new(0.5, -190, 0.5, -290)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+MainFrame.Draggable = true
+MainFrame.Active = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+local function addTextOutline(textLabel)
+    local stroke = Instance.new("UIStroke", textLabel)
+    stroke.Color = Color3.fromRGB(0, 0, 0)
+    stroke.Thickness = 1.2
+end
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Text = "Slap Executor Panel By C00LHACK"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18 
+Title.TextXAlignment = Enum.TextXAlignment.Left
+addTextOutline(Title)
+
+local ToolsScroll = Instance.new("ScrollingFrame", MainFrame)
+ToolsScroll.Size = UDim2.new(0.9, 0, 0, 130)
+ToolsScroll.Position = UDim2.new(0.05, 0, 0.08, 0)
+ToolsScroll.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+ToolsScroll.ScrollBarThickness = 6
+Instance.new("UICorner", ToolsScroll).CornerRadius = UDim.new(0, 5)
+
+local UIListLayout = Instance.new("UIListLayout", ToolsScroll)
+UIListLayout.Padding = UDim.new(0, 5)
+
+local SelectedTool = nil
+local SelectedToolLabel = Instance.new("TextLabel", MainFrame)
+SelectedToolLabel.Size = UDim2.new(0.9, 0, 0, 30)
+SelectedToolLabel.Position = UDim2.new(0.05, 0, 0.31, 0)
+SelectedToolLabel.BackgroundTransparency = 1
+SelectedToolLabel.Text = "Selected Tool: None"
+SelectedToolLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
+SelectedToolLabel.Font = Enum.Font.GothamSemibold
+SelectedToolLabel.TextSize = 18 
+addTextOutline(SelectedToolLabel)
+
+local function updateToolList()
+    for _, child in pairs(ToolsScroll:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+
+    local character = LocalPlayer.Character
+    local tools = {}
+
+    if character then
+        for _, v in pairs(character:GetChildren()) do
+            if v:IsA("Tool") then table.insert(tools, v) end
+        end
+    end
+    for _, v in pairs(LocalPlayer.Backpack:GetChildren()) do
+        if v:IsA("Tool") then table.insert(tools, v) end
+    end
+
+    for _, tool in pairs(tools) do
+        local btn = Instance.new("TextButton", ToolsScroll)
+        btn.Size = UDim2.new(1, 0, 0, 35)
+        btn.BackgroundColor3 = Color3.fromRGB(65, 65, 70)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Text = tool.Name
+        btn.Font = Enum.Font.GothamMedium
+        btn.TextSize = 16 
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+        addTextOutline(btn)
+
+        btn.MouseButton1Click:Connect(function()
+            SelectedTool = tool
+            SelectedToolLabel.Text = "Selected Tool: " .. tool.Name
+        end)
+    end
+    ToolsScroll.CanvasSize = UDim2.new(0, 0, 0, #tools * 40)
+end
+
+local RefreshBtn = Instance.new("TextButton", MainFrame)
+RefreshBtn.Size = UDim2.new(0.25, 0, 0, 30)
+RefreshBtn.Position = UDim2.new(0.7, 0, 0.015, 0)
+RefreshBtn.Text = "Refresh"
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+RefreshBtn.TextColor3 = Color3.fromRGB(255,255,255)
+RefreshBtn.Font = Enum.Font.GothamBold
+RefreshBtn.TextSize = 14
+Instance.new("UICorner", RefreshBtn)
+addTextOutline(RefreshBtn)
+RefreshBtn.MouseButton1Click:Connect(updateToolList)
+
+updateToolList()
+
+local TargetInput = Instance.new("TextBox", MainFrame)
+TargetInput.Size = UDim2.new(0.9, 0, 0, 40)
+TargetInput.Position = UDim2.new(0.05, 0, 0.38, 0)
+TargetInput.Text = ""
+TargetInput.PlaceholderText = "Target (Username/Display)"
+TargetInput.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+TargetInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+TargetInput.Font = Enum.Font.GothamMedium
+TargetInput.TextSize = 16 
+TargetInput.ClearTextOnFocus = false
+Instance.new("UICorner", TargetInput).CornerRadius = UDim.new(0, 5)
+
+local function createMiniTitle(text, xPos, yPos, color)
+    local lbl = Instance.new("TextLabel", MainFrame)
+    lbl.Size = UDim2.new(0.28, 0, 0, 20)
+    lbl.Position = UDim2.new(xPos, 0, yPos, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = text
+    lbl.TextColor3 = color or Color3.fromRGB(200, 200, 200)
+    lbl.Font = Enum.Font.GothamMedium
+    lbl.TextSize = 12
+    addTextOutline(lbl)
+end
+
+createMiniTitle("Spam Delay (s)", 0.05, 0.465, Color3.fromRGB(255, 200, 100))
+createMiniTitle("Aura Delay (s)", 0.36, 0.465, Color3.fromRGB(200, 200, 255))
+createMiniTitle("Aura Range", 0.67, 0.465, Color3.fromRGB(255, 100, 100))
+
+local SpamSpeedInput = Instance.new("TextBox", MainFrame)
+SpamSpeedInput.Size = UDim2.new(0.28, 0, 0, 35)
+SpamSpeedInput.Position = UDim2.new(0.05, 0, 0.50, 0)
+SpamSpeedInput.Text = "0.06"
+SpamSpeedInput.PlaceholderText = "0.06"
+SpamSpeedInput.BackgroundColor3 = Color3.fromRGB(55, 55, 60)
+SpamSpeedInput.TextColor3 = Color3.fromRGB(255, 200, 100)
+SpamSpeedInput.Font = Enum.Font.GothamMedium
+SpamSpeedInput.TextSize = 14 
+SpamSpeedInput.ClearTextOnFocus = false
+Instance.new("UICorner", SpamSpeedInput).CornerRadius = UDim.new(0, 5)
+
+local AuraSpeedInput = Instance.new("TextBox", MainFrame)
+AuraSpeedInput.Size = UDim2.new(0.28, 0, 0, 35)
+AuraSpeedInput.Position = UDim2.new(0.36, 0, 0.50, 0)
+AuraSpeedInput.Text = "0.08"
+AuraSpeedInput.PlaceholderText = "0.08"
+AuraSpeedInput.BackgroundColor3 = Color3.fromRGB(55, 55, 60)
+AuraSpeedInput.TextColor3 = Color3.fromRGB(200, 200, 255)
+AuraSpeedInput.Font = Enum.Font.GothamMedium
+AuraSpeedInput.TextSize = 14
+AuraSpeedInput.ClearTextOnFocus = false
+Instance.new("UICorner", AuraSpeedInput).CornerRadius = UDim.new(0, 5)
+
+local AuraRangeInput = Instance.new("TextBox", MainFrame)
+AuraRangeInput.Size = UDim2.new(0.28, 0, 0, 35)
+AuraRangeInput.Position = UDim2.new(0.67, 0, 0.50, 0)
+AuraRangeInput.Text = "20"
+AuraRangeInput.PlaceholderText = "20"
+AuraRangeInput.BackgroundColor3 = Color3.fromRGB(55, 55, 60)
+AuraRangeInput.TextColor3 = Color3.fromRGB(255, 100, 100)
+AuraRangeInput.Font = Enum.Font.GothamBold
+AuraRangeInput.TextSize = 15
+AuraRangeInput.ClearTextOnFocus = false
+Instance.new("UICorner", AuraRangeInput).CornerRadius = UDim.new(0, 5)
+
+local FireBtn = Instance.new("TextButton", MainFrame)
+FireBtn.Size = UDim2.new(0.43, 0, 0, 45)
+FireBtn.Position = UDim2.new(0.05, 0, 0.58, 0)
+FireBtn.Text = "🔥 Slap Once"
+FireBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+FireBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FireBtn.Font = Enum.Font.GothamBold
+FireBtn.TextSize = 18 
+Instance.new("UICorner", FireBtn).CornerRadius = UDim.new(0, 5)
+addTextOutline(FireBtn)
+
+local SpamBtn = Instance.new("TextButton", MainFrame)
+SpamBtn.Size = UDim2.new(0.43, 0, 0, 45)
+SpamBtn.Position = UDim2.new(0.52, 0, 0.58, 0)
+SpamBtn.Text = "⚡ Spam: OFF"
+SpamBtn.BackgroundColor3 = Color3.fromRGB(180, 140, 30)
+SpamBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpamBtn.Font = Enum.Font.GothamBold
+SpamBtn.TextSize = 18
+Instance.new("UICorner", SpamBtn).CornerRadius = UDim.new(0, 5)
+addTextOutline(SpamBtn)
+
+local AuraBtn = Instance.new("TextButton", MainFrame)
+AuraBtn.Size = UDim2.new(0.9, 0, 0, 45)
+AuraBtn.Position = UDim2.new(0.05, 0, 0.68, 0)
+AuraBtn.Text = "🌀 Slap Aura: OFF"
+AuraBtn.BackgroundColor3 = Color3.fromRGB(120, 50, 200)
+AuraBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AuraBtn.Font = Enum.Font.GothamBold
+AuraBtn.TextSize = 18
+Instance.new("UICorner", AuraBtn).CornerRadius = UDim.new(0, 5)
+addTextOutline(AuraBtn)
+
+local function getTargetPlayer(targetName)
+    if targetName == "" then return nil end
+    local searchLower = string.lower(targetName)
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then
+            if string.find(string.lower(p.Name), searchLower) or string.find(string.lower(p.DisplayName), searchLower) then
+                return p.Character
+            end
+        end
+    end
+    return nil
+end
+
+local function getRemoteFromTool(tool)
+    if not tool then return nil end
+    for _, child in pairs(tool:GetChildren()) do
+        if child:IsA("RemoteEvent") then return child end
+    end
+    return nil
+end
+
+local function executeSlap()
+    if not SelectedTool then return false end
+    local targetChar = getTargetPlayer(TargetInput.Text)
+    local remote = getRemoteFromTool(SelectedTool)
+    if targetChar and remote then
+        remote:FireServer("slash", targetChar, Vector3.new(4.979505, -0.000000, 0.452252))
+        return true
+    end
+    return false
+end
+
+FireBtn.MouseButton1Click:Connect(function()
+    if not SelectedTool then 
+        TargetInput.PlaceholderText = "Select tool first!"
+        task.wait(1)
+        TargetInput.PlaceholderText = "Target (Username/Display)"
+        return 
+    end
+    executeSlap()
+end)
+
+local isSpamming = false
+
+SpamBtn.MouseButton1Click:Connect(function()
+    isSpamming = not isSpamming
+    if isSpamming then
+        SpamBtn.Text = "🛑 Spam: ON"
+        SpamBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 80)
+        task.spawn(function()
+            while isSpamming do
+                executeSlap()
+                local delayTime = tonumber(SpamSpeedInput.Text) or 0.06
+                task.wait(delayTime)
+            end
+        end)
+    else
+        SpamBtn.Text = "⚡ Spam: OFF"
+        SpamBtn.BackgroundColor3 = Color3.fromRGB(180, 140, 30)
+    end
+end)
+
+-- سیستم کره شفاف (Sphere Visual)
+local auraVisual = nil
+
+local function removeAuraVisual()
+    if auraVisual then
+        auraVisual:Destroy()
+        auraVisual = nil
+    end
+end
+
+local function createAuraVisual(char, range)
+    removeAuraVisual()
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+
+    auraVisual = Instance.new("Part")
+    auraVisual.Name = "SlapAuraVisual"
+    auraVisual.Shape = Enum.PartType.Ball -- تغییر به کُره برای انطباق با محدوده ۳ بعدی
+    auraVisual.Material = Enum.Material.Neon
+    auraVisual.Color = Color3.fromRGB(255, 30, 30) 
+    auraVisual.Transparency = 0.8 -- افزایش شفافیت
+    auraVisual.Size = Vector3.new(range * 2, range * 2, range * 2)
+    auraVisual.CanCollide = false
+    auraVisual.Anchored = false
+    auraVisual.Massless = true
+    auraVisual.CastShadow = false
+
+    auraVisual.CFrame = char.HumanoidRootPart.CFrame
+
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = char.HumanoidRootPart
+    weld.Part1 = auraVisual
+    weld.Parent = auraVisual
+
+    auraVisual.Parent = char
+end
+
+local isAuraActive = false
+
+local function fireAtTarget(targetChar, remote)
+    if not targetChar or not remote then return end
+    remote:FireServer("slash", targetChar, Vector3.new(4.979505, -0.000000, 0.452252))
+end
+
+AuraBtn.MouseButton1Click:Connect(function()
+    if not SelectedTool then 
+        TargetInput.PlaceholderText = "Select tool for Aura!"
+        task.wait(1.5)
+        TargetInput.PlaceholderText = "Target (Username/Display)"
+        return 
+    end
+
+    isAuraActive = not isAuraActive
+    if isAuraActive then
+        AuraBtn.Text = "🌀 Slap Aura: ON"
+        AuraBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 255)
+        
+        task.spawn(function()
+            while isAuraActive do
+                local remote = getRemoteFromTool(SelectedTool)
+                local myChar = LocalPlayer.Character
+                local currentRange = tonumber(AuraRangeInput.Text) or 20
+                local currentDelay = tonumber(AuraSpeedInput.Text) or 0.08
+                
+                if myChar and myChar:FindFirstChild("HumanoidRootPart") and remote then
+                    local myRoot = myChar.HumanoidRootPart
+                    
+                    if not auraVisual or not auraVisual.Parent or auraVisual.Parent ~= myChar then
+                        createAuraVisual(myChar, currentRange)
+                    else
+                        auraVisual.Size = Vector3.new(currentRange * 2, currentRange * 2, currentRange * 2)
+                    end
+                    
+                    for _, p in pairs(Players:GetPlayers()) do
+                        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+                            local targetRoot = p.Character.HumanoidRootPart
+                            local distance = (myRoot.Position - targetRoot.Position).Magnitude
+                            
+                            if distance <= currentRange then
+                                fireAtTarget(p.Character, remote)
+                            end
+                        end
+                    end
+                else
+                    removeAuraVisual()
+                end
+                
+                task.wait(currentDelay)
+            end
+        end)
+    else
+        AuraBtn.Text = "🌀 Slap Aura: OFF"
+        AuraBtn.BackgroundColor3 = Color3.fromRGB(120, 50, 200)
+        removeAuraVisual()
+    end
+end)
