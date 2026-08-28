@@ -184,7 +184,7 @@ local function AutoScan()
 
         local startTime = os.clock()
         local success = false
-        while (os.clock() - startTime) < 1.5 do
+        while (os.clock() - startTime) < 0.5 do
             if not targetPart:IsDescendantOf(Workspace) then
                 success = true
                 break
