@@ -29,7 +29,7 @@ end
 local Title = Instance.new("TextLabel", MainFrame)
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.BackgroundTransparency = 1
-Title.Text = "  Slap Executor Panel By C00LHACK"
+Title.Text = "  Slap Panel By C00LHACK"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18 
