@@ -1,0 +1,338 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+-- ScreenGui Setup
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "LolzerTargetPanel"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 280, 0, 235)
+MainFrame.Position = UDim2.new(0.5, -140, 0.4, -90)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 8)
+Corner.Parent = MainFrame
+
+-- Title Bar
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+Title.Text = "C00LHACK REMOTE TARGET MODE"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 14
+Title.Font = Enum.Font.SourceSansBold
+Title.Parent = MainFrame
+Title.ZIndex = 5
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 8)
+TitleCorner.Parent = Title
+
+local TitleCover = Instance.new("Frame")
+TitleCover.Size = UDim2.new(1, 0, 0, 6)
+TitleCover.Position = UDim2.new(0, 0, 1, -6)
+TitleCover.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+TitleCover.BorderSizePixel = 0
+TitleCover.Parent = Title
+
+-- Target TextBox
+local TargetBox = Instance.new("TextBox")
+TargetBox.Size = UDim2.new(0.85, 0, 0, 35)
+TargetBox.Position = UDim2.new(0.075, 0, 0.2, 0)
+TargetBox.PlaceholderText = "Target Username / DisplayName..."
+TargetBox.Text = ""
+TargetBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TargetBox.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+TargetBox.BorderSizePixel = 0
+TargetBox.Font = Enum.Font.SourceSans
+TargetBox.TextSize = 14
+TargetBox.ClearTextOnFocus = false
+TargetBox.TextXAlignment = Enum.TextXAlignment.Center
+TargetBox.Parent = MainFrame
+
+local TargetCorner = Instance.new("UICorner")
+TargetCorner.CornerRadius = UDim.new(0, 6)
+TargetCorner.Parent = TargetBox
+
+-- Execute On Target Button
+local ExecTargetButton = Instance.new("TextButton")
+ExecTargetButton.Size = UDim2.new(0.85, 0, 0, 38)
+ExecTargetButton.Position = UDim2.new(0.075, 0, 0.38, 0)
+ExecTargetButton.Text = "Execute On Target"
+ExecTargetButton.BackgroundColor3 = Color3.fromRGB(190, 40, 40)
+ExecTargetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecTargetButton.Font = Enum.Font.SourceSansBold
+ExecTargetButton.TextSize = 15
+ExecTargetButton.AutoButtonColor = true
+ExecTargetButton.Parent = MainFrame
+
+local BtnCorner1 = Instance.new("UICorner")
+BtnCorner1.CornerRadius = UDim.new(0, 6)
+BtnCorner1.Parent = ExecTargetButton
+
+-- Execute On Me Button
+local ExecMeButton = Instance.new("TextButton")
+ExecMeButton.Size = UDim2.new(0.85, 0, 0, 38)
+ExecMeButton.Position = UDim2.new(0.075, 0, 0.55, 0)
+ExecMeButton.Text = "Execute On Me"
+ExecMeButton.BackgroundColor3 = Color3.fromRGB(40, 120, 200)
+ExecMeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecMeButton.Font = Enum.Font.SourceSansBold
+ExecMeButton.TextSize = 15
+ExecMeButton.AutoButtonColor = true
+ExecMeButton.Parent = MainFrame
+
+local BtnCorner2 = Instance.new("UICorner")
+BtnCorner2.CornerRadius = UDim.new(0, 6)
+BtnCorner2.Parent = ExecMeButton
+
+-- Execute On Others Button
+local ExecOthersButton = Instance.new("TextButton")
+ExecOthersButton.Size = UDim2.new(0.85, 0, 0, 38)
+ExecOthersButton.Position = UDim2.new(0.075, 0, 0.72, 0)
+ExecOthersButton.Text = "Execute On Others"
+ExecOthersButton.BackgroundColor3 = Color3.fromRGB(160, 90, 30)
+ExecOthersButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecOthersButton.Font = Enum.Font.SourceSansBold
+ExecOthersButton.TextSize = 15
+ExecOthersButton.AutoButtonColor = true
+ExecOthersButton.Parent = MainFrame
+
+local BtnCorner3 = Instance.new("UICorner")
+BtnCorner3.CornerRadius = UDim.new(0, 6)
+BtnCorner3.Parent = ExecOthersButton
+
+-- Drag System (Mobile + PC Support)
+local dragToggle = false
+local dragStart = Vector2.zero
+local startPos = UDim2.new()
+
+MainFrame.InputBegan:Connect(function(input)
+	if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+		local focused = UIS:GetFocusedTextBox()
+		if focused == nil then
+			dragToggle = true
+			dragStart = input.Position
+			startPos = MainFrame.Position
+
+			local connection
+			connection = input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragToggle = false
+					connection:Disconnect()
+				end
+			end)
+		end
+	end
+end)
+
+local dragInput = nil
+
+MainFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if input == dragInput and dragToggle then
+		local delta = input.Position - dragStart
+		local newPos = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+		TweenService:Create(MainFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = newPos}):Play()
+	end
+end)
+
+-- Target Finder (Partial Username & DisplayName Support)
+local function findTarget(query: string)
+	if query == "" then
+		return nil
+	end
+
+	local lowerQuery = string.lower(query)
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			local nameLower = string.lower(player.Name)
+			local displayLower = string.lower(player.DisplayName)
+
+			if string.find(nameLower, lowerQuery, 1, true) or string.find(displayLower, lowerQuery, 1, true) then
+				return player
+			end
+		end
+	end
+	return nil
+end
+
+-- Collect Remotes
+local function getRemotes()
+	local remotes = {}
+
+	local locations = {
+		workspace,
+		game:GetService("ReplicatedStorage"),
+		Players,
+		game:GetService("Lighting"),
+		game:GetService("SoundService"),
+	}
+
+	for _, loc in ipairs(locations) do
+		local success, descendants = pcall(function()
+			return loc:GetDescendants()
+		end)
+
+		if success then
+			for _, obj in ipairs(descendants) do
+				if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+					table.insert(remotes, obj)
+				end
+			end
+		end
+	end
+
+	return remotes
+end
+
+local isExecuting = false
+
+local function executeOnPlayer(player: Player)
+	if not player or not player.Parent then
+		return
+	end
+
+	local remotes = getRemotes()
+
+	for _, remote in ipairs(remotes) do
+		pcall(function()
+			if remote:IsA("RemoteEvent") then
+				remote:FireServer(player)
+				remote:FireServer(player.Name)
+				if player.Character then
+					remote:FireServer(player.Character)
+				end
+			elseif remote:IsA("RemoteFunction") then
+				task.spawn(function()
+					pcall(function()
+						remote:InvokeServer(player)
+						remote:InvokeServer(player.Name)
+					end)
+				end)
+			end
+		end)
+	end
+end
+
+local function setButtonText(button: TextButton, text: string, delay: number?)
+	local oldText = button.Text
+	button.Text = text
+	task.wait(delay or 1.5)
+	if button.Text == text then
+		button.Text = oldText
+	end
+end
+
+-- Execute On Target
+ExecTargetButton.MouseButton1Click:Connect(function()
+	if isExecuting then
+		return
+	end
+
+	local target = findTarget(TargetBox.Text)
+
+	if not target then
+		setButtonText(ExecTargetButton, "Target Not Found!")
+		return
+	end
+
+	isExecuting = true
+	ExecTargetButton.Text = "Firing Remotes..."
+
+	task.spawn(function()
+		executeOnPlayer(target)
+	end)
+
+	task.wait(1)
+	ExecTargetButton.Text = "Done!"
+	task.wait(1.5)
+	ExecTargetButton.Text = "Execute On Target"
+	isExecuting = false
+end)
+
+-- Execute On Me
+ExecMeButton.MouseButton1Click:Connect(function()
+	if isExecuting then
+		return
+	end
+
+	isExecuting = true
+	ExecMeButton.Text = "Firing Remotes..."
+
+	task.spawn(function()
+		executeOnPlayer(LocalPlayer)
+	end)
+
+	task.wait(1)
+	ExecMeButton.Text = "Done!"
+	task.wait(1.5)
+	ExecMeButton.Text = "Execute On Me"
+	isExecuting = false
+end)
+
+-- Execute On Others
+ExecOthersButton.MouseButton1Click:Connect(function()
+	if isExecuting then
+		return
+	end
+
+	isExecuting = true
+	ExecOthersButton.Text = "Firing Remotes..."
+
+	task.spawn(function()
+		local remotes = getRemotes()
+
+		for _, player in ipairs(Players:GetPlayers()) do
+			if player ~= LocalPlayer then
+				for _, remote in ipairs(remotes) do
+					pcall(function()
+						if remote:IsA("RemoteEvent") then
+							remote:FireServer(player)
+							remote:FireServer(player.Name)
+							if player.Character then
+								remote:FireServer(player.Character)
+							end
+						elseif remote:IsA("RemoteFunction") then
+							task.spawn(function()
+								pcall(function()
+									remote:InvokeServer(player)
+									remote:InvokeServer(player.Name)
+								end)
+							end)
+						end
+					end)
+				end
+			end
+		end
+	end)
+
+	task.wait(1)
+	ExecOthersButton.Text = "Done!"
+	task.wait(1.5)
+	ExecOthersButton.Text = "Execute On Others"
+	isExecuting = false
+end)
