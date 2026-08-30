@@ -1,0 +1,14 @@
+local function webImport(url, fileName)
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet(url), fileName .. ".lua")()
+    end)
+    
+    if not success then
+        warn("خطا در لود فایل " .. fileName .. ": " .. tostring(result))
+    end
+    return result
+end
+
+-- اجرای فایل‌های Hydroxide از گیت‌هاب شما
+webImport("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/hydroxide1", "init")
+webImport("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/hydroxide2", "ui/main")
