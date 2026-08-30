@@ -1,169 +1,301 @@
---[[
-	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
-]]
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local player = game.Players.LocalPlayer
 
-local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "MoonsecDumper"
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "MoonsecDumper_Classic_V2"
+gui.ResetOnSpawn = false
 
+-- استایل‌دهی کلاسیک پنجره اصلی (جمع و جورتر)
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 400, 0, 300)
-frame.Position = UDim2.new(0.5, -200, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.Size = UDim2.new(0, 400, 0, 310)
+frame.Position = UDim2.new(0.5, -200, 0.5, -155)
+frame.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+frame.BorderColor3 = Color3.fromRGB(50, 50, 50)
+frame.BorderSizePixel = 2
 frame.Active = true
 
-local input = Instance.new("TextBox", frame)
-input.Size = UDim2.new(1, -20, 0, 40)
-input.Position = UDim2.new(0, 10, 0, 10)
-input.PlaceholderText = "paste loadstring..."
-input.TextColor3 = Color3.new(1,1,1)
-input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+-- تایتل‌بار 
+local titleBar = Instance.new("Frame", frame)
+titleBar.Size = UDim2.new(1, 0, 0, 22)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 150)
+titleBar.BorderSizePixel = 0
 
+local titleText = Instance.new("TextLabel", titleBar)
+titleText.Size = UDim2.new(1, -10, 1, 0)
+titleText.Position = UDim2.new(0, 5, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "Moonsec V3 Deobfuscator By C00LHACK"
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.Font = Enum.Font.Legacy
+titleText.TextSize = 13
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+
+-- باکس ورودی قابل اسکرول و چندخطی (جمع و جور)
+local inputScroll = Instance.new("ScrollingFrame", frame)
+inputScroll.Size = UDim2.new(1, -16, 0, 50)
+inputScroll.Position = UDim2.new(0, 8, 0, 28)
+inputScroll.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+inputScroll.BorderColor3 = Color3.fromRGB(100, 100, 100)
+inputScroll.BorderSizePixel = 1
+inputScroll.ScrollBarThickness = 10
+inputScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local input = Instance.new("TextBox", inputScroll)
+input.Size = UDim2.new(1, -8, 1, 0)
+input.Position = UDim2.new(0, 4, 0, 0)
+input.Text = ""
+input.PlaceholderText = "Paste loadstring here..."
+input.TextColor3 = Color3.fromRGB(0, 0, 0)
+input.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+input.BackgroundTransparency = 1
+input.BorderSizePixel = 0
+input.Font = Enum.Font.Legacy
+input.TextSize = 12
+input.TextXAlignment = Enum.TextXAlignment.Left
+input.TextYAlignment = Enum.TextYAlignment.Top
+input.ClearTextOnFocus = false
+input.TextWrapped = true
+input.MultiLine = true
+
+input:GetPropertyChangedSignal("TextBounds"):Connect(function()
+    local textHeight = input.TextBounds.Y
+    input.Size = UDim2.new(1, -8, 0, math.max(40, textHeight + 8))
+    inputScroll.CanvasSize = UDim2.new(0, 0, 0, textHeight + 12)
+end)
+
+-- دکمه Execute
 local execute = Instance.new("TextButton", frame)
-execute.Size = UDim2.new(0.5, -15, 0, 40)
-execute.Position = UDim2.new(0, 10, 0, 60)
-execute.Text = "EXECUTE"
+execute.Size = UDim2.new(0.5, -10, 0, 26)
+execute.Position = UDim2.new(0, 8, 0, 84)
+execute.Text = "Deobfuscate"
+execute.BackgroundColor3 = Color3.fromRGB(210, 210, 210)
+execute.BorderColor3 = Color3.fromRGB(100, 100, 100)
+execute.BorderSizePixel = 1
+execute.TextColor3 = Color3.fromRGB(0, 0, 0)
+execute.Font = Enum.Font.Legacy
+execute.TextSize = 13
+execute.TextWrapped = true
+execute.TextScaled = true
+execute.ClipsDescendants = true
 
+-- دکمه Copy
 local copy = Instance.new("TextButton", frame)
-copy.Size = UDim2.new(0.5, -15, 0, 40)
-copy.Position = UDim2.new(0.5, 5, 0, 60)
+copy.Size = UDim2.new(0.5, -10, 0, 26)
+copy.Position = UDim2.new(0.5, 2, 0, 84)
 copy.Text = "COPY"
+copy.BackgroundColor3 = Color3.fromRGB(210, 210, 210)
+copy.BorderColor3 = Color3.fromRGB(100, 100, 100)
+copy.BorderSizePixel = 1
+copy.TextColor3 = Color3.fromRGB(0, 0, 0)
+copy.Font = Enum.Font.Legacy
+copy.TextSize = 13
+copy.TextWrapped = true
+copy.TextScaled = true
+copy.ClipsDescendants = true
 
-local outputBox = Instance.new("TextBox", frame)
-outputBox.Size = UDim2.new(1, -20, 1, -120)
-outputBox.Position = UDim2.new(0, 10, 0, 110)
+-- کادر قابل اسکرول خروجی
+local outputScroll = Instance.new("ScrollingFrame", frame)
+outputScroll.Size = UDim2.new(1, -16, 1, -120)
+outputScroll.Position = UDim2.new(0, 8, 0, 114)
+outputScroll.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+outputScroll.BorderColor3 = Color3.fromRGB(100, 100, 100)
+outputScroll.BorderSizePixel = 1
+outputScroll.ScrollBarThickness = 14
+outputScroll.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 120)
+outputScroll.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+outputScroll.MidImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+outputScroll.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+outputScroll.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+outputScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+-- باکس خروجی
+local outputBox = Instance.new("TextBox", outputScroll)
+outputBox.Size = UDim2.new(1, -8, 1, 0)
+outputBox.Position = UDim2.new(0, 4, 0, 4)
+outputBox.Text = ""
 outputBox.MultiLine = true
 outputBox.TextWrapped = true
+outputBox.ClearTextOnFocus = false
+outputBox.TextEditable = false
 outputBox.TextYAlignment = Enum.TextYAlignment.Top
-outputBox.TextColor3 = Color3.new(1,1,1)
-outputBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
+outputBox.TextXAlignment = Enum.TextXAlignment.Left
+outputBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+outputBox.BackgroundTransparency = 1
+outputBox.Font = Enum.Font.Code
+outputBox.TextSize = 12
 
-local toggleBtn = Instance.new("TextButton", frame)
-toggleBtn.Size = UDim2.new(0, 30, 0, 30)
-toggleBtn.Position = UDim2.new(1, -35, 0, 5)
-toggleBtn.Text = "-"
+outputBox:GetPropertyChangedSignal("TextBounds"):Connect(function()
+    local textHeight = outputBox.TextBounds.Y
+    outputBox.Size = UDim2.new(1, -8, 0, textHeight + 16)
+    outputScroll.CanvasSize = UDim2.new(0, 0, 0, textHeight + 24)
+end)
 
-local mobileToggle = Instance.new("TextButton", gui)
-mobileToggle.Size = UDim2.new(0, 100, 0, 40)
-mobileToggle.Position = UDim2.new(0, 10, 0.8, 0)
-mobileToggle.Text = "OPEN"
+-- دکمه تغییر اندازه (ری‌سایز)
+local resize = Instance.new("TextButton", frame)
+resize.Size = UDim2.new(0, 15, 0, 15)
+resize.Position = UDim2.new(1, -15, 1, -15)
+resize.Text = "◢"
+resize.BackgroundTransparency = 1
+resize.TextColor3 = Color3.fromRGB(100, 100, 100)
+resize.TextSize = 14
+resize.Font = Enum.Font.Legacy
 
-local resize = Instance.new("Frame", frame)
-resize.Size = UDim2.new(0, 20, 0, 20)
-resize.Position = UDim2.new(1, -20, 1, -20)
-resize.BackgroundColor3 = Color3.fromRGB(80,80,80)
-
-local minimized = false
-local dragging = false
-local dragStart, startPos
-local resizing = false
-local resizeStart, startSize
-local collected = ""
-
-local function addOutput(t)
-	collected = collected .. t .. "\n"
-	outputBox.Text = collected
+-- سیستم Dragify
+local function dragify(dragFrame)
+    local dragToggle = nil
+    local dragSpeed = 0.15
+    local dragInput = nil
+    local dragStart = nil
+    local startPos = nil
+    
+    local function updateInput(input)
+        local Delta = input.Position - dragStart
+        local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+        TweenService:Create(dragFrame, TweenInfo.new(dragSpeed), {Position = Position}):Play()
+    end
+    
+    dragFrame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UIS:GetFocusedTextBox() == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = dragFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+    
+    dragFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then
+            updateInput(input)
+        end
+    end)
 end
 
-frame.InputBegan:Connect(function(inputObj)
-	if inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = inputObj.Position
-		startPos = frame.Position
-	end
-end)
+dragify(frame)
 
-frame.InputEnded:Connect(function(inputObj)
-	if inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch then
-		dragging = false
-	end
-end)
-
+local resizing, resizeStart, startSize = false, nil, nil
 resize.InputBegan:Connect(function(inputObj)
-	if inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch then
-		resizing = true
-		resizeStart = inputObj.Position
-		startSize = frame.Size
-	end
+    if inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch then 
+        resizing = true 
+        resizeStart = inputObj.Position 
+        startSize = frame.Size 
+    end
 end)
-
-resize.InputEnded:Connect(function()
-	resizing = false
-end)
-
+resize.InputEnded:Connect(function() resizing = false end)
 UIS.InputChanged:Connect(function(inputObj)
-	if dragging and (inputObj.UserInputType == Enum.UserInputType.MouseMovement or inputObj.UserInputType == Enum.UserInputType.Touch) then
-		local delta = inputObj.Position - dragStart
-		local goal = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		TweenService:Create(frame, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {Position = goal}):Play()
-	end
-
-	if resizing then
-		local delta = inputObj.Position - resizeStart
-		frame.Size = UDim2.new(0, startSize.X.Offset + delta.X, 0, startSize.Y.Offset + delta.Y)
-	end
+    if resizing and (inputObj.UserInputType == Enum.UserInputType.MouseMovement or inputObj.UserInputType == Enum.UserInputType.Touch) then
+        local delta = inputObj.Position - resizeStart
+        frame.Size = UDim2.new(0, math.clamp(startSize.X.Offset + delta.X, 300, 800), 0, math.clamp(startSize.Y.Offset + delta.Y, 200, 600))
+    end
 end)
 
-toggleBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	local size = minimized and UDim2.new(0, 400, 0, 40) or UDim2.new(0, 400, 0, 300)
-	frame:TweenSize(size, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.25, true)
-	input.Visible = not minimized
-	execute.Visible = not minimized
-	copy.Visible = not minimized
-	outputBox.Visible = not minimized
-	toggleBtn.Text = minimized and "+" or "-"
+UIS.InputBegan:Connect(function(key, gp) 
+    if not gp and key.KeyCode == Enum.KeyCode.K then 
+        gui.Enabled = not gui.Enabled 
+    end 
 end)
 
-UIS.InputBegan:Connect(function(key, gp)
-	if gp then return end
-	if key.KeyCode == Enum.KeyCode.K then
-		gui.Enabled = not gui.Enabled
-	end
-end)
+-- سیستم ثبت ترتیبی دقیق
+local dumpedRawStrings = {}
 
-mobileToggle.MouseButton1Click:Connect(function()
-	gui.Enabled = not gui.Enabled
-end)
+local function SequentialFilter(rawStrings)
+    local finalCode = "--[[ OP Deobfuscator By C00LHACK V2 ]]\n\n"
+    local hasData = false
+
+    for _, v in ipairs(rawStrings) do
+        if type(v) == "string" then
+            local isJunk = v:match("MoonSec") or v:match("protected with") or v:match("^_MBOX") 
+                            or v:match("^%%%w+") or v:match("^:%d+:") or v:match("^__%w+") 
+                            or (#v < 2 and not v:match("%a")) or v == ":%d+: a"
+
+            if not isJunk then
+                hasData = true
+                local safeStr = string.gsub(v, '"', '\\"')
+                safeStr = string.gsub(safeStr, '\n', '\\n')
+
+                if safeStr:match("^[%a%d_]+$") and not safeStr:match(" ") then
+                    finalCode = finalCode .. safeStr .. "\n"
+                else
+                    finalCode = finalCode .. '"' .. safeStr .. '"\n'
+                end
+            end
+        end
+    end
+
+    if not hasData then
+        return "-- No readable data found."
+    end
+
+    return finalCode
+end
 
 local function deep_unpack(tbl)
-	for _, v in pairs(tbl) do
-		if type(v) == "table" then
-			deep_unpack(v)
-		elseif type(v) == "string" then
-			addOutput(v)
-		end
-	end
+    for _, v in pairs(tbl) do
+        if type(v) == "table" then
+            deep_unpack(v)
+        elseif type(v) == "string" then
+            table.insert(dumpedRawStrings, v)
+        end
+    end
 end
 
 local old_unpack = unpack or table.unpack
-
 function unpack(...)
-	for _, v in ipairs({...}) do
-		if type(v) == "table" then
-			deep_unpack(v)
-		end
-	end
-	return old_unpack(...)
+    for _, v in ipairs({...}) do
+        if type(v) == "table" then deep_unpack(v) end
+    end
+    return old_unpack(...)
 end
-
 _G.unpack = unpack
 
 execute.MouseButton1Click:Connect(function()
-	collected = ""
-	outputBox.Text = ""
-	local success, err = pcall(function()
-		loadstring(input.Text)()
-	end)
-	if not success then
-		addOutput("ERROR: "..err)
-	end
+    dumpedRawStrings = {}
+    outputBox.Text = "-- Deobfuscating..."
+
+    task.wait(0.1)
+
+    local success, err = pcall(function()
+        loadstring(input.Text)()
+    end)
+
+    if success then
+        outputBox.Text = SequentialFilter(dumpedRawStrings)
+    else
+        outputBox.Text = "-- ERROR: " .. tostring(err)
+    end
 end)
 
 copy.MouseButton1Click:Connect(function()
-	if setclipboard then
-		setclipboard(collected)
-	end
+    local textToCopy = outputBox.Text
+    if not textToCopy or textToCopy == "" then textToCopy = "-- No output" end
+    local copyFunction = setclipboard or toclipboard or set_clipboard
+
+    if copyFunction then
+        local success, err = pcall(function() copyFunction(textToCopy) end)
+        if success then
+            copy.Text = "COPIED!" 
+            copy.BackgroundColor3 = Color3.fromRGB(150, 220, 150)
+        else
+            copy.Text = "ERROR!" 
+            copy.BackgroundColor3 = Color3.fromRGB(220, 150, 150)
+        end
+    else
+        copy.Text = "NO CLIPBOARD API" 
+        copy.BackgroundColor3 = Color3.fromRGB(220, 150, 150)
+    end
+
+    task.wait(1.5)
+    copy.Text = "COPY" 
+    copy.BackgroundColor3 = Color3.fromRGB(210, 210, 210)
 end)
