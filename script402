@@ -1,3 +1,18 @@
+-- این بخش باید دقیقاً خطوط اول اسکریپت شما باشد
+if _G.PanelAlreadyExecuted then
+    -- اگر قبلاً اجرا شده باشد، نوتیفیکیشن می‌دهد
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Error",
+        Text = "This Script Already Executed",
+        Duration = 3,
+    })
+    
+    return -- این دستور باعث می‌شود خواندن کد همینجا متوقف شود و به کدهای طولانی شما نرسد
+end
+
+-- قفل کردن سیستم برای دفعات بعدی
+_G.PanelAlreadyExecuted = true
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -5,13 +20,26 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
-local TweenService = game:GetService("TweenService")
+local StarterPack = game:GetService("StarterPack")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 local selectedRemote = nil
-local remoteType = "None" -- میتونه "AllAccess" یا "PartOnly" باشه
+local remoteType = "None"
 local bannedPlayers = {}
+local isOrbiting = false
+local activeHats = {}
+local partsFolder = nil
+local mov, mov2, par = {}, {}, {}
+
+local function getSpeed() return 2 end
+local function getOffset() return 5 end
+
+local function cleanupOrbit()
+    if partsFolder then partsFolder:Destroy() partsFolder = nil end
+    activeHats = {}
+    mov, mov2, par = {}, {}, {}
+end
 
 local function Notify(title, text, duration)
     pcall(function()
@@ -49,10 +77,21 @@ local function createUI(class, properties)
 end
 
 local ScanLabel = createUI("TextLabel", {
-    Size = UDim2.new(0, 300, 0, 50), Position = UDim2.new(0.5, -150, 0.5, -25),
+    Size = UDim2.new(0, 320, 0, 70), Position = UDim2.new(0.5, -160, 0.5, -35),
     BackgroundColor3 = Color3.fromRGB(30, 30, 30), BorderColor3 = Color3.fromRGB(255, 170, 0),
     BorderSizePixel = 2, TextColor3 = Color3.fromRGB(255, 170, 0), Text = "Initializing Scanner...",
     Font = Enum.Font.SourceSansBold, TextSize = 16, Parent = ScreenGui
+})
+
+-- ساخت Progress Bar
+local ProgressBarBg = createUI("Frame", {
+    Size = UDim2.new(1, -20, 0, 8), Position = UDim2.new(0, 10, 1, -18),
+    BackgroundColor3 = Color3.fromRGB(50, 50, 50), BorderSizePixel = 0, Parent = ScanLabel
+})
+
+local ProgressBarFill = createUI("Frame", {
+    Size = UDim2.new(0, 0, 1, 0), BackgroundColor3 = Color3.fromRGB(255, 170, 0),
+    BorderSizePixel = 0, Parent = ProgressBarBg
 })
 
 local MainFrame = createUI("Frame", {
@@ -110,7 +149,6 @@ local HatOrbitBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 30), Pos
 local BlockHatBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 135), BackgroundColor3 = Color3.fromRGB(60, 60, 200), BorderSizePixel = 1, Text = "BlockHat", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
 local RightKorbloxBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 170), BackgroundColor3 = Color3.fromRGB(30, 30, 30), BorderColor3 = Color3.fromRGB(100, 100, 100), BorderSizePixel = 1, Text = "Korblox Me", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
 
--- تابع قفل کردن دکمه‌هایی که نیاز به دسترسی کامل (غیر پارت) دارن
 local function lockButton(btn)
     btn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     btn.TextColor3 = Color3.fromRGB(100, 100, 100)
@@ -131,87 +169,110 @@ local function GetTestableMapPart()
     return nil
 end
 
+-- توابع اسکن هوشمند با اولویت‌بندی، حذف تکراری‌ها و Progress Bar
 local function SmartScan()
-    -- سرویس‌های اصلی که ریموت‌ها معمولاً در آن‌ها قرار دارند
     local servicesToScan = {
         Workspace, ReplicatedStorage, StarterGui, StarterPack, 
         game:GetService("Lighting"), game:GetService("JointsService")
     }
-    
-    local foundRemote = nil
-    local rType = "None"
-    
+
+    local allRemotes = {}
+    local seenNames = {}
+
+    -- جمع‌آوری و فیلتر ریموت‌های تکراری بر اساس نام
     for _, service in ipairs(servicesToScan) do
         for _, v in ipairs(service:GetDescendants()) do
-            if v:IsA("RemoteEvent") then
-                ScanLabel.Text = "Scanning: " .. v.Name
-                
-                -- مرحله ۱: تست حذف پارت مپ
-                local testPart = GetTestableMapPart()
-                local canDeletePart = false
-                
-                if testPart then
-                    pcall(function() v:FireServer(testPart) end)
-                    task.wait(0.3)
-                    if not testPart or not testPart.Parent then
-                        canDeletePart = true
-                    end
-                end
-                
-                if canDeletePart then
-                    foundRemote = v
-                    rType = "PartOnly"
-                    
-                    -- مرحله ۲: تست روی اینستنس غیر پارت (مثل اسکریپت صدا)
-                    local nonPartTarget = game:GetService("StarterPlayer").StarterPlayerScripts:FindFirstChild("RbxCharacterSounds")
-                    
-                    if nonPartTarget then
-                        pcall(function() v:FireServer(nonPartTarget) end)
-                        task.wait(0.3)
-                        if not nonPartTarget or not nonPartTarget.Parent then
-                            rType = "AllAccess"
-                            break 
-                        end
-                    end
-                    
-                    if rType == "AllAccess" then break end
-                end
+            if v:IsA("RemoteEvent") and not seenNames[v.Name] then
+                seenNames[v.Name] = true
+                table.insert(allRemotes, v)
             end
         end
-        if rType == "AllAccess" then break end
     end
-    
+
+    -- مرتب‌سازی: اولویت با ریموت‌هایی که حاوی Remove, Destroy یا Delete هستند
+    table.sort(allRemotes, function(a, b)
+        local aLower = a.Name:lower()
+        local bLower = b.Name:lower()
+        local aHasPriority = aLower:find("remove") or aLower:find("destroy") or aLower:find("delete")
+        local bHasPriority = bLower:find("remove") or bLower:find("destroy") or bLower:find("delete")
+        
+        if aHasPriority and not bHasPriority then
+            return true
+        elseif not aHasPriority and bHasPriority then
+            return false
+        end
+        return false
+    end)
+
+    local foundRemote = nil
+    local rType = "None"
+    local total = #allRemotes
+
+    for index, v in ipairs(allRemotes) do
+        if total > 0 then
+            local progress = index / total
+            ProgressBarFill.Size = UDim2.new(progress, 0, 1, 0)
+        end
+        
+        ScanLabel.Text = "Scanning (" .. index .. "/" .. total .. "):\n" .. v.Name
+
+        local testPart = GetTestableMapPart()
+        local canDeletePart = false
+
+        if testPart then
+            pcall(function() v:FireServer(testPart) end)
+            task.wait(0.5) -- کندتر کردن سرعت تست برای بالا رفتن دقت
+            if not testPart or not testPart.Parent then
+                canDeletePart = true
+            end
+        end
+
+        if canDeletePart then
+            foundRemote = v
+            rType = "Limited"
+
+            local nonPartTarget = game:GetService("StarterPlayer").StarterPlayerScripts:FindFirstChild("RbxCharacterSounds")
+            if nonPartTarget then
+                pcall(function() v:FireServer(nonPartTarget) end)
+                task.wait(0.4)
+                if not nonPartTarget or not nonPartTarget.Parent then
+                    rType = "FullAccess"
+                    break 
+                end
+            end
+
+            if rType == "FullAccess" then break end
+        end
+    end
+
     return foundRemote, rType
 end
 
 task.spawn(function()
     Notify("Vulnerability Checker", "Looking up for remotes, may take a while.", 3)
     task.wait(1)
-    
+
     local vRemote, vType = SmartScan()
-    
+
     if vRemote then
         selectedRemote = vRemote
         remoteType = vType
         ScanLabel.Visible = false
-        StatusLabel.Text = "C00LHACK | Remote: " .. vRemote.Name .. " [" .. vType .. "]"
-        
-        -- اعمال قفل هوشمند دکمه ها بر اساس منطق جدید
-        if vType == "PartOnly" then
+        StatusLabel.Text = "This Script Made By C00LHACK | Detected Remote: " .. vRemote.Name .. " [" .. vType .. "]"
+
+        if vType == "Limited" then
             Notify("Scanner Result", "Part-Only Remote! Non-part tools locked.", 4)
-            -- فقط دکمه هایی قفل میشن که نیاز به حذف اینستنس های غیر پارت دارن!
-            -- دکمه های Btools, Delete Map, Korblox Target/Me, Kill باز میمونن!
             lockButton(KickBtn)
             lockButton(BanBtn)
             lockButton(HatOrbitBtn)
             lockButton(BlockHatBtn)
         else
-            Notify("Scanner Result", "Remote Found! All tools available.", 4)
+            Notify("Scanner Result", "Remote Found!.", 4)
         end
-        
+
         MainFrame.Visible = true
     else
-        Notify("Vulnerability Checker", "This game is not vulnerable/supported.", 5)
+        Notify("Vulnerability Checker", "This game is not vulnerable.", 5)
         ScanLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
         ScanLabel.Text = "No Vulnerable Remote Found!"
         task.wait(2)
@@ -286,7 +347,7 @@ KillBtn.MouseButton1Click:Connect(function()
 end)
 
 BanBtn.MouseButton1Click:Connect(function()
-	if checkLock(BanBtn) then return end
+    if checkLock(BanBtn) then return end
     local targetText = string.lower(KickTextBox.Text)
     if targetText == "" then return end
     if targetText == "all" then
@@ -399,7 +460,7 @@ HatOrbitBtn.MouseButton1Click:Connect(function()
             table.insert(par, part)
         end
 
-        velocityCon = RunService.Heartbeat:Connect(function()
+        RunService.Heartbeat:Connect(function()
             for _, handle in pairs(activeHats) do
                 if handle and handle.Parent then
                     handle.Velocity = Vector3.new(0, 30, 0)
@@ -408,13 +469,8 @@ HatOrbitBtn.MouseButton1Click:Connect(function()
         end)
 
         local l = 1
-
-        alignCon = RunService.RenderStepped:Connect(function()
-            if not char or not hrp or not hrp.Parent then
-                isOrbiting = false
-                HatOrbitBtn.Text = "HatOrbit"
-                HatOrbitBtn.BackgroundColor3 = Color3.fromRGB(120, 40, 160)
-                cleanupOrbit()
+        RunService.RenderStepped:Connect(function()
+            if not char or not hrp or not hrp.Parent or not isOrbiting then
                 return
             end
 
@@ -481,22 +537,19 @@ BtoolsBtn.MouseButton1Click:Connect(function()
     tool.Name = "Delete Tool"
     tool.RequiresHandle = false
     tool.TextureId = "rbxasset://Textures/Hammer.png"
-    
-    -- ساخت قاب هایلایت برای نشان دادن شیء انتخاب شده
+
     local Field = Instance.new("SelectionBox")
     Field.Color3 = Color3.fromRGB(255, 0, 0)
     Field.LineThickness = 0.04
     Field.Parent = getGuiParent()
-    
+
     local equipped = false
     local renderConnection = nil
-    
-    -- زمانی که ابزار دست بازیکن گرفته می‌شود
+
     tool.Equipped:Connect(function()
         equipped = true
         mouse.Icon = "rbxasset://textures/HammerCursor.png"
-        
-        -- حلقه RenderStepped بسیار بهینه‌تر از while loop در Luau است
+
         renderConnection = RunService.RenderStepped:Connect(function()
             if equipped and mouse.Target then
                 Field.Adornee = mouse.Target
@@ -505,8 +558,7 @@ BtoolsBtn.MouseButton1Click:Connect(function()
             end
         end)
     end)
-    
-    -- زمانی که ابزار از دست بازیکن کنار گذاشته می‌شود
+
     tool.Unequipped:Connect(function()
         equipped = false
         Field.Adornee = nil
@@ -516,20 +568,17 @@ BtoolsBtn.MouseButton1Click:Connect(function()
             renderConnection = nil
         end
     end)
-    
-    -- حذف هایلایت در صورت نابودی ابزار
+
     tool.Destroying:Connect(function()
         Field:Destroy()
         if renderConnection then renderConnection:Disconnect() end
     end)
-    
-    -- عملکرد کلیک و حذف پارت
+
     tool.Activated:Connect(function()
         if mouse.Target and selectedRemote then
             local targetPos = mouse.Hit.Position
-            
             pcall(function() selectedRemote:FireServer(mouse.Target) end)
-            
+
             local explosion = Instance.new("Explosion")
             explosion.Position = targetPos
             explosion.BlastRadius = 0
@@ -538,6 +587,6 @@ BtoolsBtn.MouseButton1Click:Connect(function()
             explosion.Parent = Workspace
         end
     end)
-    
+
     tool.Parent = player:WaitForChild("Backpack")
 end)
