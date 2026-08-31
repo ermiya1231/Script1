@@ -1,0 +1,854 @@
+local cloneref = cloneref or function(obj) return obj end
+
+local function svc(s)
+    return cloneref(game:GetService(s))
+end
+
+local FACS_PROPERTIES = {
+    "ChinRaiser", "ChinRaiserUpperLip", "Corrugator", "EyesLookDown", 
+    "EyesLookLeft", "EyesLookRight", "EyesLookUp", "FlatPucker", 
+    "Funneler", "JawDrop", "JawLeft", "JawRight", "LeftBrowLowerer", 
+    "LeftCheekPuff", "LeftCheekRaiser", "LeftDimpler", "LeftEyeClosed", 
+    "LeftEyeUpperLidRaiser", "LeftInnerBrowRaiser", "LeftLipCornerDown", 
+    "LeftLipCornerPuller", "LeftLipStretcher", "LeftLowerLipDepressor", 
+    "LeftNoseWrinkler", "LeftOuterBrowRaiser", "LeftUpperLipRaiser", 
+    "LipPresser", "LipsTogether", "LowerLipSuck", "MouthLeft", 
+    "MouthRight", "Pucker", "RightBrowLowerer", "RightCheekPuff", 
+    "RightCheekRaiser", "RightDimpler", "RightEyeClosed", 
+    "RightEyeUpperLidRaiser", "RightInnerBrowRaiser", "RightLipCornerDown", 
+    "RightLipCornerPuller", "RightLipStretcher", "RightLowerLipDepressor", 
+    "RightNoseWrinkler", "RightOuterBrowRaiser", "RightUpperLipRaiser", 
+    "TongueDown", "TongueOut", "TongueUp", "UpperLipSuck"
+}
+
+local function resetFace(character)
+    --nothin nfvm
+end
+
+local Players = svc("Players")
+local RunSvc = svc("RunService")
+local UIS = svc("UserInputService")
+local TweenSvc = svc("TweenService")
+local MktSvc = svc("MarketplaceService")
+local HttpSvc = svc("HttpService")
+
+local plr = Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+local anim = hum:WaitForChild("Animator")
+local gui_parent = (gethui or function() return svc("CoreGui") end)()
+
+local function getAnimId(id)
+    local ok, obj = pcall(function()
+        return game:GetObjects("rbxassetid://" .. math.floor(id))
+    end)
+    if ok and #obj > 0 then
+        local r = obj[1]
+        if r:IsA("Animation") and r.AnimationId ~= "" then return r.AnimationId end
+        for _, d in ipairs(r:GetDescendants()) do
+            if d:IsA("Animation") and d.AnimationId ~= "" then return d.AnimationId end
+        end
+    end
+    return "rbxassetid://" .. tostring(id)
+end
+
+local SAVE_FILE = "FeMoodAnimations_v3.json"
+
+local defaultMoods = {
+    {id=14618207727, name="Default Mood", custom=false},
+    {id=11163856931, name="The Winning Smile - MoodAnimation", custom=false},
+    {id=11822637523, name="Classic M", custom=false},
+    {id=14532855772, name="Skeptic", custom=false},
+    {id=11236428476, name="Chill", custom=false},
+    {id=11308848181, name="Err...", custom=false},
+    {id=13692973305, name="Friendly Smile", custom=false},
+    {id=12936976200, name="Big Grin", custom=false},
+    {id=121076841749094, name="Digital Artist", custom=false},
+    {id=140640344101974, name="Green Starry Sight", custom=false},
+    {id=140674747936185, name="Punk Face", custom=false},
+    {id=140618689743432, name="Gritty Bombo", custom=false},
+    {id=140480905079474, name="Angelic", custom=false},
+    {id=140044533863949, name=":-/", custom=false},
+    {id=139474716430273, name="Winning Smile", custom=false},
+    {id=139316725131015, name="Epic Vampire Face", custom=false},
+    {id=139953850337831, name="Sad Clown", custom=false},
+    {id=139526093746720, name="Toothless", custom=false},
+    {id=137609125548926, name="Woebegone", custom=false},
+    {id=138185630136605, name="Disapproving Unibrow", custom=false},
+    {id=140052496463742, name="Blue Goof", custom=false},
+    {id=136879820533259, name="Exclamation Face", custom=false},
+    {id=136546654719224, name="I <3 New Site Theme", custom=false},
+    {id=137408517878226, name="Look At My Nose", custom=false},
+    {id=134291162215057, name="Red Lip - Tate McRae", custom=false},
+    {id=130561088322232, name="Mr. Bubbles", custom=false},
+    {id=130497284519819, name="Classic Male", custom=false},
+    {id=128421511488094, name="Blizzard Beast Mode", custom=false},
+    {id=128407337644177, name="Visual Studio Seized Up For 45 Seconds", custom=false},
+    {id=128134603526623, name="Gamin the Scaled Sorcerer", custom=false},
+    {id=126528619438701, name="Eyes of Azurewrath", custom=false},
+    {id=124996118032440, name="$.$", custom=false},
+    {id=125691365606754, name="Vampire", custom=false},
+    {id=124025238726707, name="Suspicious", custom=false},
+    {id=124888276087842, name="FragmentedNoob-MoodAnimation", custom=false},
+    {id=124706365042112, name="Nouveau George", custom=false},
+    {id=124258266581596, name="You ated my caik!", custom=false},
+    {id=11573370910, name="Anime Mood", custom=false},
+    {id=12939349434, name="MoodAnimation", custom=false},
+    {id=7715145252, name="moods_11_FaceAnimation", custom=false},
+    {id=13823254132, name="I <3 New Site Theme", custom=false},
+    {id=134419765247655, name=nil, custom=false},
+    {id=107730729807187, name=nil, custom=false},
+    {id=120553760947068, name=nil, custom=false},
+    {id=118643418731536, name=nil, custom=false},
+    {id=79346395723524, name=nil, custom=false},
+    {id=76510106017408, name=nil, custom=false},
+    {id=91978833431789, name=nil, custom=false},
+    {id=101688041825708, name=nil, custom=false},
+    {id=101129638946940, name=nil, custom=false},
+    {id=123180368705441, name=nil, custom=false},
+    {id=91151555508302, name=nil, custom=false},
+    {id=89840927035490, name=nil, custom=false},
+    {id=78343337775421, name=nil, custom=false},
+    {id=101181418263903, name=nil, custom=false},
+    {id=83904137934334, name=nil, custom=false},
+    {id=100651230653468, name=nil, custom=false},
+    {id=128335781600842, name=nil, custom=false},
+    {id=128122013895135, name=nil, custom=false},
+    {id=132819723961701, name=nil, custom=false},
+    {id=120583250906926, name=nil, custom=false},
+    {id=100464614086897, name=nil, custom=false},
+    {id=76691628978545, name=nil, custom=false},
+    {id=114212689731002, name=nil, custom=false},
+    {id=120963099526858, name=nil, custom=false},
+    {id=130940389771481, name=nil, custom=false},
+    {id=75052027130388, name=nil, custom=false},
+    {id=86626081697396, name=nil, custom=false},
+    {id=97714690779642, name=nil, custom=false},
+    {id=116484803023213, name=nil, custom=false},
+    {id=102787301148676, name=nil, custom=false},
+    {id=107063727266904, name=nil, custom=false},
+    {id=112168273527580, name=nil, custom=false},
+    {id=103859657203422, name=nil, custom=false},
+    {id=115978284002225, name=nil, custom=false},
+    {id=105599066955614, name=nil, custom=false},
+    {id=106488236631979, name=nil, custom=false},
+    {id=135691439511406, name=nil, custom=false},
+    {id=129327232961037, name=nil, custom=false},
+    {id=108254418440729, name=nil, custom=false},
+    {id=121106082705060, name=nil, custom=false},
+    {id=98230008978401, name=nil, custom=false},
+    {id=134732357298188, name=nil, custom=false},
+    {id=72329268435782, name=nil, custom=false},
+    {id=126431603201618, name=nil, custom=false},
+    {id=113384897583144, name=nil, custom=false},
+    {id=104569705232659, name=nil, custom=false},
+    {id=107317685859402, name=nil, custom=false},
+    {id=125824414343139, name=nil, custom=false},
+    {id=96617149266845, name=nil, custom=false},
+    {id=84656447841369, name=nil, custom=false},
+    {id=106071295675734, name=nil, custom=false},
+    {id=102294387193896, name=nil, custom=false},
+    {id=109016325316032, name=nil, custom=false},
+}
+
+local moods = {}
+
+local function saveData()
+    local data = {}
+    for _, m in ipairs(moods) do
+        table.insert(data, {id=m.id, name=m.name, custom=m.custom})
+    end
+    pcall(function() writefile(SAVE_FILE, HttpSvc:JSONEncode(data)) end)
+end
+
+local function loadData()
+    local ok, content = pcall(function() return readfile(SAVE_FILE) end)
+    if ok and content then
+        local dok, decoded = pcall(function() return HttpSvc:JSONDecode(content) end)
+        if dok and type(decoded) == "table" then
+            for _, entry in ipairs(decoded) do
+                if type(entry) == "table" and type(entry.id) == "number" then
+                    table.insert(moods, {id=entry.id, name=entry.name, custom=entry.custom})
+                end
+            end
+            return true
+        end
+    end
+    return false
+end
+
+if not loadData() then
+    for _, m in ipairs(defaultMoods) do
+        table.insert(moods, {id=m.id, name=m.name, custom=false})
+    end
+    saveData()
+end
+
+local curTrack = nil
+local curMoodId = nil
+local looped = false
+local moodBtns = {}
+
+local cfg = {weight=1, speed=1, priority=Enum.AnimationPriority.Action4}
+local cfgDefault = {weight=1, speed=1, priority=Enum.AnimationPriority.Action4}
+
+local function newInst(cls, props, parent)
+    local i = Instance.new(cls)
+    for k, v in pairs(props) do i[k] = v end
+    if parent then i.Parent = parent end
+    return i
+end
+
+local function corner(r, p)
+    return newInst("UICorner", {CornerRadius=UDim.new(0,r)}, p)
+end
+
+local sg = newInst("ScreenGui", {
+    Name="FeMoodAnimationsV2", ResetOnSpawn=false,
+    ZIndexBehavior=Enum.ZIndexBehavior.Sibling,
+    IgnoreGuiInset=true,
+})
+pcall(function() sg.Parent = gui_parent end)
+if not sg.Parent then sg.Parent = plr:WaitForChild("PlayerGui") end
+
+local toggleBtn = newInst("TextButton", {
+    Name="ToggleBtn",
+    Size=UDim2.new(0,42,0,42),
+    Position=UDim2.new(0,12,0.5,-21),
+    BackgroundColor3=Color3.fromRGB(88,101,242),
+    BackgroundTransparency=0.3,
+    BorderSizePixel=0,
+    Text="[M]",
+    TextSize=20,
+    Font=Enum.Font.GothamBold,
+    TextColor3=Color3.fromRGB(255,255,255),
+    ZIndex=200,
+}, sg)
+corner(10, toggleBtn)
+
+local tDrag = false
+local tMoved = false
+local tDragStart, tPosStart
+toggleBtn.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+        tDrag = true
+        tMoved = false
+        tDragStart = inp.Position
+        tPosStart = toggleBtn.Position
+    end
+end)
+UIS.InputChanged:Connect(function(inp)
+    if tDrag and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+        local delta = inp.Position - tDragStart
+        if math.abs(delta.X) > 4 or math.abs(delta.Y) > 4 then
+            tMoved = true
+            toggleBtn.Position = UDim2.new(tPosStart.X.Scale, tPosStart.X.Offset+delta.X, tPosStart.Y.Scale, tPosStart.Y.Offset+delta.Y)
+        end
+    end
+end)
+UIS.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+        tDrag = false
+    end
+end)
+
+local mainFrame = newInst("Frame", {
+    Name="Main",
+    Size=UDim2.new(0,440,0,340),
+    Position=UDim2.new(0.5,-220,0.5,-170),
+    BackgroundColor3=Color3.fromRGB(18,18,18),
+    BackgroundTransparency=0.45,
+    BorderSizePixel=0,
+    Active=true,
+    Draggable=true,
+}, sg)
+corner(6, mainFrame)
+
+local titleBar = newInst("Frame", {
+    Size=UDim2.new(1,0,0,36),
+    BackgroundColor3=Color3.fromRGB(28,28,28),
+    BackgroundTransparency=0.35,
+    BorderSizePixel=0,
+}, mainFrame)
+corner(6, titleBar)
+
+newInst("TextLabel", {
+    Size=UDim2.new(1,-80,1,0),
+    Position=UDim2.new(0,12,0,0),
+    BackgroundTransparency=1,
+    Text="Fe Mood Animations",
+    TextColor3=Color3.fromRGB(255,255,255),
+    TextSize=15,
+    Font=Enum.Font.GothamBold,
+    TextXAlignment=Enum.TextXAlignment.Left,
+}, titleBar)
+
+local closeBtn = newInst("TextButton", {
+    Size=UDim2.new(0,28,0,28),
+    Position=UDim2.new(1,-34,0,4),
+    BackgroundColor3=Color3.fromRGB(200,50,50),
+    BorderSizePixel=0,
+    Text="X",
+    TextColor3=Color3.fromRGB(255,255,255),
+    TextSize=13,
+    Font=Enum.Font.GothamBold,
+}, titleBar)
+corner(3, closeBtn)
+
+local tutBtn = newInst("TextButton", {
+    Size=UDim2.new(0,28,0,28),
+    Position=UDim2.new(1,-66,0,4),
+    BackgroundColor3=Color3.fromRGB(60,120,200),
+    BorderSizePixel=0,
+    Text="?",
+    TextColor3=Color3.fromRGB(255,255,255),
+    TextSize=14,
+    Font=Enum.Font.GothamBold,
+}, titleBar)
+corner(3, tutBtn)
+
+local searchBox = newInst("TextBox", {
+    Size=UDim2.new(0,235,0,28),
+    Position=UDim2.new(0,10,0,44),
+    BackgroundColor3=Color3.fromRGB(35,35,35),
+    BackgroundTransparency=0.4,
+    BorderSizePixel=0,
+    Text="",
+    PlaceholderText="/ Search moods",
+    TextColor3=Color3.fromRGB(255,255,255),
+    PlaceholderColor3=Color3.fromRGB(110,110,110),
+    TextSize=12,
+    Font=Enum.Font.Gotham,
+}, mainFrame)
+corner(3, searchBox)
+
+local addMoodBtn = newInst("TextButton", {
+    Size=UDim2.new(0,150,0,28),
+    Position=UDim2.new(0,250,0,44),
+    BackgroundColor3=Color3.fromRGB(88,181,100),
+    BackgroundTransparency=0.25,
+    BorderSizePixel=0,
+    Text="[+] Add Custom Mood",
+    TextColor3=Color3.fromRGB(255,255,255),
+    TextSize=11,
+    Font=Enum.Font.GothamBold,
+}, mainFrame)
+corner(3, addMoodBtn)
+
+local scrollFrame = newInst("ScrollingFrame", {
+    Name="MoodList",
+    Size=UDim2.new(0,275,0,235),
+    Position=UDim2.new(0,10,0,78),
+    BackgroundColor3=Color3.fromRGB(22,22,22),
+    BackgroundTransparency=0.45,
+    BorderSizePixel=0,
+    ScrollBarThickness=4,
+    ScrollBarImageColor3=Color3.fromRGB(80,80,80),
+    CanvasSize=UDim2.new(0,0,0,0),
+}, mainFrame)
+corner(4, scrollFrame)
+
+local grid = newInst("UIGridLayout", {
+    CellSize=UDim2.new(0,82,0,78),
+    CellPadding=UDim2.new(0,5,0,5),
+    FillDirectionMaxCells=3,
+    HorizontalAlignment=Enum.HorizontalAlignment.Center,
+}, scrollFrame)
+
+local settingsFrame = newInst("Frame", {
+    Name="Settings",
+    Size=UDim2.new(0,148,0,255),
+    Position=UDim2.new(0,288,0,78),
+    BackgroundColor3=Color3.fromRGB(22,22,22),
+    BackgroundTransparency=0.45,
+    BorderSizePixel=0,
+}, mainFrame)
+corner(4, settingsFrame)
+
+local sSc = newInst("ScrollingFrame", {
+    Size=UDim2.new(1,-8,1,-8),
+    Position=UDim2.new(0,4,0,4),
+    BackgroundTransparency=1,
+    BorderSizePixel=0,
+    ScrollBarThickness=3,
+    ScrollBarImageColor3=Color3.fromRGB(80,80,80),
+    CanvasSize=UDim2.new(0,0,0,300),
+}, settingsFrame)
+
+local resetBtn = newInst("TextButton", {
+    Size=UDim2.new(1,-8,0,26),
+    Position=UDim2.new(0,4,0,0),
+    BackgroundColor3=Color3.fromRGB(200,50,50),
+    BackgroundTransparency=0.3,
+    BorderSizePixel=0,
+    Text="Reset Settings",
+    TextColor3=Color3.fromRGB(255,255,255),
+    TextSize=11,
+    Font=Enum.Font.GothamBold,
+}, sSc)
+corner(3, resetBtn)
+
+local sliderRefs = {}
+local priRef, loopRef
+
+local function updateUIFromSettings()
+    if sliderRefs.weight then sliderRefs.weight.set(cfg.weight) end
+    if sliderRefs.speed then sliderRefs.speed.set(cfg.speed) end
+    if priRef then priRef.Text = tostring(cfg.priority):gsub("Enum.AnimationPriority.","") end
+    if loopRef then
+        loopRef.Text = looped and "ON" or "OFF"
+        loopRef.BackgroundColor3 = looped and Color3.fromRGB(88,101,242) or Color3.fromRGB(70,70,70)
+    end
+end
+
+local function createSlider(lbl, def, mn, mx, yp, cb)
+    local con = newInst("Frame", {Size=UDim2.new(1,0,0,62), Position=UDim2.new(0,0,0,yp), BackgroundTransparency=1}, sSc)
+    newInst("TextLabel", {Size=UDim2.new(1,0,0,14), BackgroundTransparency=1, Text=lbl, TextColor3=Color3.fromRGB(170,170,170), TextSize=10, Font=Enum.Font.GothamSemibold, TextXAlignment=Enum.TextXAlignment.Left}, con)
+
+    local bg = newInst("TextButton", {Size=UDim2.new(1,-8,0,14), Position=UDim2.new(0,4,0,16), BackgroundColor3=Color3.fromRGB(45,45,45), BackgroundTransparency=0.35, BorderSizePixel=0, Text="", AutoButtonColor=false}, con)
+    corner(3, bg)
+    local fill = newInst("Frame", {Size=UDim2.new((def-mn)/(mx-mn),0,1,0), BackgroundColor3=Color3.fromRGB(88,101,242), BorderSizePixel=0}, bg)
+    corner(3, fill)
+
+    local handle = newInst("Frame", {
+        Size=UDim2.new(0,10,0,20),
+        Position=UDim2.new((def-mn)/(mx-mn),0-5,0.5,-10),
+        BackgroundColor3=Color3.fromRGB(220,220,220),
+        BackgroundTransparency=0.15,
+        BorderSizePixel=0,
+        ZIndex=3,
+    }, bg)
+    corner(2, handle)
+
+    local tb = newInst("TextBox", {Size=UDim2.new(0,52,0,18), Position=UDim2.new(0.5,-26,0,33), BackgroundColor3=Color3.fromRGB(38,38,38), BackgroundTransparency=0.4, BorderSizePixel=0, Text=tostring(def), TextColor3=Color3.fromRGB(255,255,255), TextSize=10, Font=Enum.Font.Gotham, ClearTextOnFocus=false}, con)
+    corner(2, tb)
+
+    local dragging = false
+    local function updVis(v)
+        local scale = math.clamp((v-mn)/(mx-mn),0,1)
+        fill.Size = UDim2.new(scale,0,1,0)
+        handle.Position = UDim2.new(scale,-5,0.5,-10)
+        tb.Text = string.format("%.2f", v)
+    end
+    local function setValue(v)
+        updVis(v)
+        cb(v)
+    end
+    local function fromInput(inp)
+        local rx = math.clamp((inp.Position.X - bg.AbsolutePosition.X) / bg.AbsoluteSize.X, 0, 1)
+        local v = math.floor((mn + rx*(mx-mn))*100)/100
+        updVis(v)
+        cb(v)
+    end
+    bg.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; fromInput(i)
+        end
+    end)
+    UIS.InputChanged:Connect(function(i)
+        if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+            fromInput(i)
+        end
+    end)
+    UIS.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    tb.FocusLost:Connect(function()
+        local n = tonumber(tb.Text)
+        if n then
+            if lbl == "Weight" then
+                n = math.max(0.01, n)
+            else
+                n = math.clamp(n, mn, mx)
+            end
+            n = math.floor(n*100)/100
+            updVis(n)
+            cb(n)
+        else
+            tb.Text = string.format("%.2f", cfg[string.lower(lbl)])
+        end
+    end)
+    return {set=setValue}
+end
+
+sliderRefs.weight = createSlider("Weight", cfg.weight, 0.1, 1, 35, function(v)
+    cfg.weight = v
+    if curTrack then curTrack:AdjustWeight(v) end
+end)
+
+sliderRefs.speed = createSlider("Speed", cfg.speed, 0, 5, 102, function(v)
+    cfg.speed = v
+    if curTrack then curTrack:AdjustSpeed(v) end
+end)
+
+local likeFrame = newInst("Frame", {Size=UDim2.new(1,0,0,36), Position=UDim2.new(0,0,0,170), BackgroundTransparency=1}, sSc)
+newInst("TextLabel", {Size=UDim2.new(0.6,0,0,14), BackgroundTransparency=1, Text="Likes", TextColor3=Color3.fromRGB(170,170,170), TextSize=10, Font=Enum.Font.GothamSemibold, TextXAlignment=Enum.TextXAlignment.Left}, likeFrame)
+local likeBtn = newInst("TextButton", {Size=UDim2.new(1,-4,0,20), Position=UDim2.new(0,2,0,15), BackgroundColor3=Color3.fromRGB(200,60,60), BackgroundTransparency=0.35, BorderSizePixel=0, Text="<3 Like", TextColor3=Color3.fromRGB(255,255,255), TextSize=12, Font=Enum.Font.GothamBold}, likeFrame)
+corner(3, likeBtn)
+local liked = false
+likeBtn.MouseButton1Click:Connect(function()
+    liked = not liked
+    likeBtn.Text = liked and "<3 Liked!" or "<3 Like"
+    likeBtn.BackgroundColor3 = liked and Color3.fromRGB(220,80,80) or Color3.fromRGB(200,60,60)
+end)
+
+local priFrame = newInst("Frame", {Size=UDim2.new(1,0,0,46), Position=UDim2.new(0,0,0,210), BackgroundTransparency=1}, sSc)
+newInst("TextLabel", {Size=UDim2.new(1,0,0,14), BackgroundTransparency=1, Text="Priority", TextColor3=Color3.fromRGB(170,170,170), TextSize=10, Font=Enum.Font.GothamSemibold, TextXAlignment=Enum.TextXAlignment.Left}, priFrame)
+local priBtn = newInst("TextButton", {Size=UDim2.new(1,-4,0,26), Position=UDim2.new(0,2,0,16), BackgroundColor3=Color3.fromRGB(45,45,45), BackgroundTransparency=0.35, BorderSizePixel=0, Text=tostring(cfg.priority):gsub("Enum.AnimationPriority.",""), TextColor3=Color3.fromRGB(255,255,255), TextSize=11, Font=Enum.Font.GothamBold}, priFrame)
+corner(3, priBtn)
+priRef = priBtn
+
+local pris = {Enum.AnimationPriority.Action, Enum.AnimationPriority.Action2, Enum.AnimationPriority.Action3, Enum.AnimationPriority.Action4}
+local priIdx = 4
+priBtn.MouseButton1Click:Connect(function()
+    priIdx = priIdx % #pris + 1
+    cfg.priority = pris[priIdx]
+    priBtn.Text = tostring(cfg.priority):gsub("Enum.AnimationPriority.","")
+    if curTrack then curTrack.Priority = cfg.priority end
+end)
+
+local loopFrame = newInst("Frame", {Size=UDim2.new(1,0,0,32), Position=UDim2.new(0,0,0,260), BackgroundTransparency=1}, sSc)
+newInst("TextLabel", {Size=UDim2.new(0.5,0,1,0), BackgroundTransparency=1, Text="Looped", TextColor3=Color3.fromRGB(170,170,170), TextSize=10, Font=Enum.Font.GothamSemibold, TextXAlignment=Enum.TextXAlignment.Left}, loopFrame)
+local loopToggle = newInst("TextButton", {Size=UDim2.new(0,46,0,22), Position=UDim2.new(1,-48,0.5,-11), BackgroundColor3=Color3.fromRGB(70,70,70), BorderSizePixel=0, Text="OFF", TextColor3=Color3.fromRGB(255,255,255), TextSize=10, Font=Enum.Font.GothamBold}, loopFrame)
+corner(3, loopToggle)
+loopRef = loopToggle
+loopToggle.MouseButton1Click:Connect(function()
+    looped = not looped
+    loopToggle.Text = looped and "ON" or "OFF"
+    loopToggle.BackgroundColor3 = looped and Color3.fromRGB(88,101,242) or Color3.fromRGB(70,70,70)
+    if curTrack then curTrack.Looped = looped end
+end)
+
+resetBtn.MouseButton1Click:Connect(function()
+    cfg.weight = cfgDefault.weight
+    cfg.speed = cfgDefault.speed
+    cfg.priority = cfgDefault.priority
+    looped = false
+    updateUIFromSettings()
+    if curTrack then
+        curTrack:AdjustWeight(cfg.weight)
+        curTrack:AdjustSpeed(cfg.speed)
+        curTrack.Priority = cfg.priority
+        curTrack.Looped = false
+    end
+end)
+
+local function applyToTrack(t)
+    t.Priority = cfg.priority
+    t.Looped = looped
+    t:AdjustWeight(cfg.weight)
+    t:AdjustSpeed(cfg.speed)
+end
+
+local function playMood(moodId)
+    if curTrack then
+        resetFace(char)
+        curTrack:AdjustWeight(0)
+        
+        curTrack:Destroy()
+        resetFace(char)
+        curTrack = nil
+    end
+    curMoodId = moodId
+    local animId = getAnimId(moodId)
+    local a = Instance.new("Animation")
+    a.AnimationId = animId
+    local t = anim:LoadAnimation(a)
+    applyToTrack(t)
+    curTrack = t
+    t:Play()
+    if not looped then
+        t.Stopped:Connect(function()
+            if curTrack == t and curMoodId == moodId then
+                t:Play()
+            end
+        end)
+    end
+end
+
+local function updateCanvas()
+    local vis = 0
+    for _, b in ipairs(moodBtns) do if b.Visible then vis += 1 end end
+    scrollFrame.CanvasSize = UDim2.new(0,0,0, math.ceil(vis/3)*88+10)
+end
+
+local function makeDialog(w, h, title)
+    local overlay = newInst("Frame", {Size=UDim2.new(1,0,1,0), Position=UDim2.new(0,0,0,0), BackgroundColor3=Color3.fromRGB(0,0,0), BackgroundTransparency=0.5, BorderSizePixel=0, ZIndex=150}, sg)
+    local d = newInst("Frame", {
+        Size=UDim2.new(0,w,0,h),
+        Position=UDim2.new(0.5,-w/2,0.5,-h/2),
+        BackgroundColor3=Color3.fromRGB(25,25,25),
+        BackgroundTransparency=0.35,
+        BorderSizePixel=0,
+        ZIndex=151,
+    }, sg)
+    corner(6, d)
+    newInst("TextLabel", {Size=UDim2.new(1,-10,0,30), Position=UDim2.new(0,5,0,0), BackgroundTransparency=1, Text=title, TextColor3=Color3.fromRGB(255,255,255), TextSize=14, Font=Enum.Font.GothamBold, ZIndex=152}, d)
+    return d, overlay
+end
+
+local function showEditDialog(moodEntry, nameLabel)
+    local d, ov = makeDialog(260, 140, "Edit Mood")
+    local nameIn = newInst("TextBox", {Size=UDim2.new(1,-20,0,30), Position=UDim2.new(0,10,0,38), BackgroundColor3=Color3.fromRGB(38,38,38), BackgroundTransparency=0.4, BorderSizePixel=0, Text=moodEntry.name or "", PlaceholderText="Custom name", TextColor3=Color3.fromRGB(255,255,255), TextSize=12, Font=Enum.Font.Gotham, ZIndex=152}, d)
+    corner(3, nameIn)
+    local idIn = newInst("TextBox", {Size=UDim2.new(1,-20,0,30), Position=UDim2.new(0,10,0,72), BackgroundColor3=Color3.fromRGB(38,38,38), BackgroundTransparency=0.4, BorderSizePixel=0, Text=tostring(moodEntry.id), PlaceholderText="Asset ID", TextColor3=Color3.fromRGB(255,255,255), TextSize=12, Font=Enum.Font.Gotham, ZIndex=152}, d)
+    corner(3, idIn)
+    local saveE = newInst("TextButton", {Size=UDim2.new(0.45,0,0,30), Position=UDim2.new(0.05,0,1,-38), BackgroundColor3=Color3.fromRGB(88,181,100), BorderSizePixel=0, Text="Save", TextColor3=Color3.fromRGB(255,255,255), TextSize=13, Font=Enum.Font.GothamBold, ZIndex=152}, d)
+    corner(3, saveE)
+    local cancelE = newInst("TextButton", {Size=UDim2.new(0.45,0,0,30), Position=UDim2.new(0.5,0,1,-38), BackgroundColor3=Color3.fromRGB(70,70,70), BorderSizePixel=0, Text="Cancel", TextColor3=Color3.fromRGB(255,255,255), TextSize=13, Font=Enum.Font.GothamBold, ZIndex=152}, d)
+    corner(3, cancelE)
+    saveE.MouseButton1Click:Connect(function()
+        local newId = tonumber(idIn.Text)
+        local newName = nameIn.Text ~= "" and nameIn.Text or nil
+        if newId then
+            moodEntry.id = newId
+            moodEntry.name = newName or moodEntry.name
+            if nameLabel then nameLabel.Text = moodEntry.name or tostring(newId):sub(-4) end
+        elseif newName then
+            moodEntry.name = newName
+            if nameLabel then nameLabel.Text = newName end
+        end
+        saveData()
+        d:Destroy(); ov:Destroy()
+    end)
+    cancelE.MouseButton1Click:Connect(function() d:Destroy(); ov:Destroy() end)
+end
+
+local function addMoodButton(moodEntry)
+    local id = moodEntry.id
+    local btn = newInst("ImageButton", {
+        Name=tostring(id),
+        BackgroundColor3=Color3.fromRGB(35,35,35),
+        BackgroundTransparency=0.4,
+        BorderSizePixel=0,
+        Image="rbxthumb://type=Asset&id="..id.."&w=420&h=420",
+        ScaleType=Enum.ScaleType.Crop,
+        ClipsDescendants=true,
+    }, scrollFrame)
+    corner(3, btn)
+
+    local nl = newInst("TextLabel", {
+        Size=UDim2.new(1,0,0,16),
+        Position=UDim2.new(0,0,1,-16),
+        BackgroundColor3=Color3.fromRGB(0,0,0),
+        BackgroundTransparency=0.35,
+        BorderSizePixel=0,
+        Text=moodEntry.name or "Unnamed",
+        TextColor3=Color3.fromRGB(255,255,255),
+        TextSize=9,
+        TextScaled=true,
+        Font=Enum.Font.GothamBold,
+    }, btn)
+
+    if not moodEntry.name then
+        task.spawn(function()
+            local ok, res = pcall(function() return MktSvc:GetProductInfo(id) end)
+            if ok and res then
+                local n = res.Name
+                n = n:gsub("%s*%-?%s*[Mm]ood%s*$","")
+                nl.Text = n
+                moodEntry.name = n
+            else
+                nl.Text = tostring(id):sub(-4)
+                moodEntry.name = tostring(id):sub(-4)
+            end
+        end)
+    end
+
+    btn.MouseEnter:Connect(function() TweenSvc:Create(btn, TweenInfo.new(0.15), {BackgroundColor3=Color3.fromRGB(55,55,55)}):Play() end)
+    btn.MouseLeave:Connect(function() TweenSvc:Create(btn, TweenInfo.new(0.15), {BackgroundColor3=Color3.fromRGB(35,35,35)}):Play() end)
+    btn.MouseButton1Click:Connect(function() playMood(id) end)
+
+    local editBtn = newInst("TextButton", {
+        Size=UDim2.new(0,16,0,16),
+        Position=UDim2.new(1,-18,0,2),
+        BackgroundColor3=Color3.fromRGB(88,101,242),
+        BackgroundTransparency=0.35,
+        BorderSizePixel=0,
+        Text="E",
+        TextSize=9,
+        Font=Enum.Font.GothamBold,
+        TextColor3=Color3.fromRGB(255,255,255),
+        ZIndex=5,
+    }, btn)
+    corner(2, editBtn)
+
+    local delBtn = newInst("TextButton", {
+        Size=UDim2.new(0,16,0,16),
+        Position=UDim2.new(0,2,0,2),
+        BackgroundColor3=Color3.fromRGB(200,50,50),
+        BackgroundTransparency=0.35,
+        BorderSizePixel=0,
+        Text="X",
+        TextSize=9,
+        Font=Enum.Font.GothamBold,
+        TextColor3=Color3.fromRGB(255,255,255),
+        ZIndex=5,
+    }, btn)
+    corner(2, delBtn)
+
+    delBtn.MouseButton1Click:Connect(function()
+        local cd, cov = makeDialog(240, 110, "Delete Mood?")
+        newInst("TextLabel", {Size=UDim2.new(1,-20,0,28), Position=UDim2.new(0,10,0,32), BackgroundTransparency=1, Text="This will remove the mood permanently.", TextWrapped=true, TextColor3=Color3.fromRGB(200,200,200), TextSize=11, Font=Enum.Font.Gotham, ZIndex=152}, cd)
+        local yesB = newInst("TextButton", {Size=UDim2.new(0.45,0,0,28), Position=UDim2.new(0.05,0,1,-36), BackgroundColor3=Color3.fromRGB(200,50,50), BorderSizePixel=0, Text="Delete", TextColor3=Color3.fromRGB(255,255,255), TextSize=12, Font=Enum.Font.GothamBold, ZIndex=152}, cd)
+        corner(3, yesB)
+        local noB = newInst("TextButton", {Size=UDim2.new(0.45,0,0,28), Position=UDim2.new(0.5,0,1,-36), BackgroundColor3=Color3.fromRGB(60,60,60), BorderSizePixel=0, Text="Cancel", TextColor3=Color3.fromRGB(255,255,255), TextSize=12, Font=Enum.Font.GothamBold, ZIndex=152}, cd)
+        corner(3, noB)
+        yesB.MouseButton1Click:Connect(function()
+            for i, m in ipairs(moods) do
+                if m.id == id then table.remove(moods, i) break end
+            end
+            for i, b in ipairs(moodBtns) do
+                if b == btn then table.remove(moodBtns, i) break end
+            end
+            btn:Destroy()
+            saveData()
+            updateCanvas()
+            cd:Destroy(); cov:Destroy()
+        end)
+        noB.MouseButton1Click:Connect(function() cd:Destroy(); cov:Destroy() end)
+    end)
+
+    editBtn.MouseButton1Click:Connect(function()
+        showEditDialog(moodEntry, nl)
+    end)
+
+    table.insert(moodBtns, btn)
+    updateCanvas()
+    return btn
+end
+
+for _, m in ipairs(moods) do
+    addMoodButton(m)
+end
+
+local addDialog, addOv
+local function showAddDialog()
+    local d, ov = makeDialog(280, 200, "[+] Add Custom Mood")
+    addDialog = d; addOv = ov
+    newInst("TextLabel", {Size=UDim2.new(1,-10,0,14), Position=UDim2.new(0,5,0,34), BackgroundTransparency=1, Text="Paste Asset ID below:", TextColor3=Color3.fromRGB(150,150,150), TextSize=10, Font=Enum.Font.Gotham, ZIndex=152}, d)
+    local idIn = newInst("TextBox", {Size=UDim2.new(1,-20,0,30), Position=UDim2.new(0,10,0,50), BackgroundColor3=Color3.fromRGB(38,38,38), BackgroundTransparency=0.4, BorderSizePixel=0, Text="", PlaceholderText="e.g. 14618207727", TextColor3=Color3.fromRGB(255,255,255), TextSize=12, Font=Enum.Font.Gotham, ZIndex=152}, d)
+    corner(3, idIn)
+    local nmIn = newInst("TextBox", {Size=UDim2.new(1,-20,0,30), Position=UDim2.new(0,10,0,84), BackgroundColor3=Color3.fromRGB(38,38,38), BackgroundTransparency=0.4, BorderSizePixel=0, Text="", PlaceholderText="Custom name (optional)", TextColor3=Color3.fromRGB(255,255,255), TextSize=12, Font=Enum.Font.Gotham, ZIndex=152}, d)
+    corner(3, nmIn)
+    local addC = newInst("TextButton", {Size=UDim2.new(0.45,0,0,30), Position=UDim2.new(0.05,0,1,-38), BackgroundColor3=Color3.fromRGB(88,181,100), BorderSizePixel=0, Text="Add", TextColor3=Color3.fromRGB(255,255,255), TextSize=13, Font=Enum.Font.GothamBold, ZIndex=152}, d)
+    corner(3, addC)
+    local canC = newInst("TextButton", {Size=UDim2.new(0.45,0,0,30), Position=UDim2.new(0.5,0,1,-38), BackgroundColor3=Color3.fromRGB(70,70,70), BorderSizePixel=0, Text="Cancel", TextColor3=Color3.fromRGB(255,255,255), TextSize=13, Font=Enum.Font.GothamBold, ZIndex=152}, d)
+    corner(3, canC)
+    addC.MouseButton1Click:Connect(function()
+        local id = tonumber(idIn.Text)
+        if id then
+            local exists = false
+            for _, m in ipairs(moods) do if m.id == id then exists=true break end end
+            if not exists then
+                local entry = {id=id, name=nmIn.Text~="" and nmIn.Text or nil, custom=true}
+                table.insert(moods, entry)
+                addMoodButton(entry)
+                saveData()
+            end
+        end
+        d:Destroy(); ov:Destroy()
+    end)
+    canC.MouseButton1Click:Connect(function() d:Destroy(); ov:Destroy() end)
+    idIn:CaptureFocus()
+end
+
+addMoodBtn.MouseButton1Click:Connect(showAddDialog)
+
+local tutPages = {
+    {
+        title="Welcome to Fe Mood Animations",
+        body="This tool lets you apply mood animations to your character.\n\nUse the grid to browse & click any mood to play it instantly!\n\nSettings on the right control weight, speed, priority, and loop.",
+    },
+    {
+        title="Finding Mood IDs",
+        body="1. Go to: rolimons.com/roblox-catalog/avatar-animations\n\n2. Search for 'mood' in the catalog.\n\n3. Click a mood you like - copy the number in the URL.\n\n4. That's the Asset ID!",
+    },
+    {
+        title="Adding Custom Moods",
+        body="Click '+ Add Custom Mood' button.\n\nPaste the Asset ID you copied.\n\nOptionally give it a custom name.\n\nHit Add - your mood appears in the grid!",
+    },
+    {
+        title="Edit & Delete Moods",
+        body="Every mood card has two small buttons:\n\nX (red, top-left) - deletes the mood from your list.\n\nE (blue, top-right) - edit the name or swap the Asset ID.",
+    },
+    {
+        title="Settings Panel",
+        body="Weight: how strongly the anim overrides others (slider 0.1-1, or type any value).\n\nSpeed: playback speed.\n\nPriority: animation priority level.\n\nLoop: whether the animation loops.",
+    },
+}
+
+local tutPage = 1
+local tutDialog, tutOv
+local tutTitle, tutBody, tutPageLbl, tutPrev, tutNext, tutYes, tutNo
+
+local function updateTutPage()
+    tutTitle.Text = tutPages[tutPage].title
+    tutBody.Text = tutPages[tutPage].body
+    tutPageLbl.Text = tutPage .. " / " .. #tutPages
+    tutPrev.Visible = tutPage > 1
+    tutNext.Visible = tutPage < #tutPages
+    tutYes.Visible = tutPage == #tutPages
+    tutNo.Visible = tutPage == #tutPages
+end
+
+local function showTutorial()
+    if tutDialog then tutDialog:Destroy() tutOv:Destroy() end
+    tutPage = 1
+    local d, ov = makeDialog(320, 280, "")
+    tutDialog = d; tutOv = ov
+    tutTitle = newInst("TextLabel", {Size=UDim2.new(1,-20,0,30), Position=UDim2.new(0,10,0,8), BackgroundTransparency=1, Text="", TextColor3=Color3.fromRGB(255,255,255), TextSize=14, Font=Enum.Font.GothamBold, TextWrapped=true, ZIndex=152}, d)
+    tutBody = newInst("TextLabel", {Size=UDim2.new(1,-20,0,170), Position=UDim2.new(0,10,0,44), BackgroundTransparency=1, Text="", TextColor3=Color3.fromRGB(200,200,200), TextSize=11, Font=Enum.Font.Gotham, TextWrapped=true, TextXAlignment=Enum.TextXAlignment.Left, TextYAlignment=Enum.TextYAlignment.Top, ZIndex=152}, d)
+    tutPageLbl = newInst("TextLabel", {Size=UDim2.new(1,0,0,16), Position=UDim2.new(0,0,0,218), BackgroundTransparency=1, Text="", TextColor3=Color3.fromRGB(120,120,120), TextSize=10, Font=Enum.Font.Gotham, ZIndex=152}, d)
+    tutPrev = newInst("TextButton", {Size=UDim2.new(0,70,0,28), Position=UDim2.new(0,10,1,-36), BackgroundColor3=Color3.fromRGB(60,60,60), BorderSizePixel=0, Text="< Back", TextColor3=Color3.fromRGB(255,255,255), TextSize=11, Font=Enum.Font.GothamBold, ZIndex=152}, d)
+    corner(3, tutPrev)
+    tutNext = newInst("TextButton", {Size=UDim2.new(0,70,0,28), Position=UDim2.new(1,-80,1,-36), BackgroundColor3=Color3.fromRGB(88,101,242), BorderSizePixel=0, Text="Next >", TextColor3=Color3.fromRGB(255,255,255), TextSize=11, Font=Enum.Font.GothamBold, ZIndex=152}, d)
+    corner(3, tutNext)
+    tutYes = newInst("TextButton", {Size=UDim2.new(0,120,0,28), Position=UDim2.new(0.5,-130,1,-36), BackgroundColor3=Color3.fromRGB(88,181,100), BorderSizePixel=0, Text="[Y] I Understand", TextColor3=Color3.fromRGB(255,255,255), TextSize=11, Font=Enum.Font.GothamBold, ZIndex=152}, d)
+    corner(3, tutYes)
+    tutNo = newInst("TextButton", {Size=UDim2.new(0,100,0,28), Position=UDim2.new(0.5,10,1,-36), BackgroundColor3=Color3.fromRGB(180,80,50), BorderSizePixel=0, Text="[N] Repeat", TextColor3=Color3.fromRGB(255,255,255), TextSize=11, Font=Enum.Font.GothamBold, ZIndex=152}, d)
+    corner(3, tutNo)
+    updateTutPage()
+    tutPrev.MouseButton1Click:Connect(function() if tutPage > 1 then tutPage -= 1 updateTutPage() end end)
+    tutNext.MouseButton1Click:Connect(function() if tutPage < #tutPages then tutPage += 1 updateTutPage() end end)
+    tutYes.MouseButton1Click:Connect(function() d:Destroy() ov:Destroy() end)
+    tutNo.MouseButton1Click:Connect(function() tutPage = 1 updateTutPage() end)
+end
+
+tutBtn.MouseButton1Click:Connect(showTutorial)
+
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local s = searchBox.Text:lower()
+    for i, b in ipairs(moodBtns) do
+        local m = moods[i]
+        local n = (m and m.name or ""):lower()
+        b.Visible = s == "" or n:find(s, 1, true) ~= nil
+    end
+    updateCanvas()
+end)
+
+closeBtn.MouseButton1Click:Connect(function() mainFrame.Visible = false end)
+toggleBtn.MouseButton1Click:Connect(function()
+    if not tMoved then
+        mainFrame.Visible = not mainFrame.Visible
+    end
+end)
+
+UIS.InputBegan:Connect(function(inp, gpe)
+    if gpe then return end
+    if inp.KeyCode == Enum.KeyCode.M then
+        mainFrame.Visible = not mainFrame.Visible
+    end
+end)
+
+plr.CharacterAdded:Connect(function(c)
+    char = c
+    hum = c:WaitForChild("Humanoid")
+    anim = hum:WaitForChild("Animator")
+    if curMoodId then
+        task.wait(0.3)
+        playMood(curMoodId)
+    end
+end)
