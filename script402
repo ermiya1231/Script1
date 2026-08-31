@@ -221,7 +221,7 @@ local function SmartScan()
 
         if testPart then
             pcall(function() v:FireServer(testPart) end)
-            task.wait(0.5) -- کندتر کردن سرعت تست برای بالا رفتن دقت
+            task.wait(0.67) -- کندتر کردن سرعت تست برای بالا رفتن دقت
             if not testPart or not testPart.Parent then
                 canDeletePart = true
             end
