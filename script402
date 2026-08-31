@@ -1,16 +1,12 @@
--- این بخش باید دقیقاً خطوط اول اسکریپت شما باشد
 if _G.PanelAlreadyExecuted then
-    -- اگر قبلاً اجرا شده باشد، نوتیفیکیشن می‌دهد
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Error",
         Text = "This Script Already Executed",
         Duration = 3,
     })
-    
-    return -- این دستور باعث می‌شود خواندن کد همینجا متوقف شود و به کدهای طولانی شما نرسد
+    return
 end
 
--- قفل کردن سیستم برای دفعات بعدی
 _G.PanelAlreadyExecuted = true
 
 local Players = game:GetService("Players")
@@ -21,25 +17,14 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local StarterPack = game:GetService("StarterPack")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 local selectedRemote = nil
-local remoteType = "None"
+local remoteType = "FullAccess"
 local bannedPlayers = {}
-local isOrbiting = false
-local activeHats = {}
-local partsFolder = nil
-local mov, mov2, par = {}, {}, {}
-
-local function getSpeed() return 2 end
-local function getOffset() return 5 end
-
-local function cleanupOrbit()
-    if partsFolder then partsFolder:Destroy() partsFolder = nil end
-    activeHats = {}
-    mov, mov2, par = {}, {}, {}
-end
+local remoteButtonMap = {}
 
 local function Notify(title, text, duration)
     pcall(function()
@@ -50,6 +35,67 @@ local function Notify(title, text, duration)
             Icon = "http://www.roblox.com/asset/?id=158118263";
         })
     end)
+end
+
+-- افکت Blur هنگام اسکن
+local BlurFX = Workspace.CurrentCamera:FindFirstChild("ScannerBlur") or Instance.new("BlurEffect")
+BlurFX.Size = 0
+BlurFX.Name = "ScannerBlur"
+BlurFX.Parent = Workspace.CurrentCamera
+
+local function blurefct(siz)
+    local tweenInfo = TweenInfo.new(1.5)
+    local tween = TweenService:Create(BlurFX, tweenInfo, {Size = siz})
+    tween:Play()
+end
+
+local function shakePanel(btn)
+    if selectedRemote then return false end
+
+    task.spawn(function()
+        local originalPos = MainFrame.Position
+        for i = 1, 6 do
+            local offsetX = math.random(-5, 5)
+            local offsetY = math.random(-5, 5)
+            MainFrame.Position = originalPos + UDim2.new(0, offsetX, 0, offsetY)
+            task.wait(0.03)
+        end
+        MainFrame.Position = originalPos
+    end)
+
+    if btn and btn:IsA("TextButton") then
+        task.spawn(function()
+            local oldText = btn.Text
+            local oldColor = btn.BackgroundColor3
+            btn.Text = "Select A Remote!"
+            btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+            task.wait(1.5)
+            btn.Text = oldText
+            btn.BackgroundColor3 = oldColor
+        end)
+    end
+
+    return true
+end
+
+local function fireRemote(...)
+    if not selectedRemote then return end
+    local args = {...}
+    pcall(function()
+        if selectedRemote:IsA("RemoteFunction") then
+            selectedRemote:InvokeServer(unpack(args))
+        elseif selectedRemote:IsA("RemoteEvent") then
+            selectedRemote:FireServer(unpack(args))
+        end
+    end)
+end
+
+local function lockButton(btn)
+    if not btn:GetAttribute("IsLocked") then
+        btn:SetAttribute("IsLocked", true)
+        btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        btn.Text = btn.Text .. " (Locked)"
+    end
 end
 
 -- ==== ساخت رابط کاربری (UI) ====
@@ -76,29 +122,65 @@ local function createUI(class, properties)
     return inst
 end
 
-local ScanLabel = createUI("TextLabel", {
-    Size = UDim2.new(0, 320, 0, 70), Position = UDim2.new(0.5, -160, 0.5, -35),
-    BackgroundColor3 = Color3.fromRGB(30, 30, 30), BorderColor3 = Color3.fromRGB(255, 170, 0),
-    BorderSizePixel = 2, TextColor3 = Color3.fromRGB(255, 170, 0), Text = "Initializing Scanner...",
-    Font = Enum.Font.SourceSansBold, TextSize = 16, Parent = ScreenGui
+local ScanLabel = createUI("Frame", {
+    Size = UDim2.new(0, 380, 0, 140), Position = UDim2.new(0.5, -190, 0.5, -70),
+    BackgroundColor3 = Color3.fromRGB(25, 25, 25), BorderColor3 = Color3.fromRGB(255, 170, 0),
+    BorderSizePixel = 2, Parent = ScreenGui
+})
+createUI("UICorner", {CornerRadius = UDim.new(0, 8), Parent = ScanLabel})
+
+createUI("TextLabel", {
+    Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1,
+    Text = "LEVEL 8 BACKDOOR SCANNER", TextColor3 = Color3.fromRGB(255, 170, 0),
+    Font = Enum.Font.SourceSansBold, TextSize = 18, Parent = ScanLabel
 })
 
--- ساخت Progress Bar
-local ProgressBarBg = createUI("Frame", {
-    Size = UDim2.new(1, -20, 0, 8), Position = UDim2.new(0, 10, 1, -18),
-    BackgroundColor3 = Color3.fromRGB(50, 50, 50), BorderSizePixel = 0, Parent = ScanLabel
+createUI("TextLabel", {
+    Size = UDim2.new(1, 0, 0, 20), Position = UDim2.new(0, 0, 0, 35), BackgroundTransparency = 1,
+    Text = "Select your preferred scanning mode below:", TextColor3 = Color3.fromRGB(180, 180, 180),
+    Font = Enum.Font.SourceSans, TextSize = 13, Parent = ScanLabel
 })
+
+local AutoBtn = createUI("TextButton", {
+    Size = UDim2.new(0.44, 0, 0, 35), Position = UDim2.new(0.04, 0, 0.62, 0),
+    BackgroundColor3 = Color3.fromRGB(0, 160, 90), BorderSizePixel = 0,
+    Text = "Automatic Scan(LowDetection)", TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = ScanLabel
+})
+createUI("UICorner", {CornerRadius = UDim.new(0, 6), Parent = AutoBtn})
+
+local ManualBtn = createUI("TextButton", {
+    Size = UDim2.new(0.44, 0, 0, 35), Position = UDim2.new(0.52, 0, 0.62, 0),
+    BackgroundColor3 = Color3.fromRGB(200, 110, 0), BorderSizePixel = 0,
+    Text = "Manual Select", TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = ScanLabel
+})
+createUI("UICorner", {CornerRadius = UDim.new(0, 6), Parent = ManualBtn})
+
+local ProgressText = createUI("TextLabel", {
+    Size = UDim2.new(1, 0, 0, 45), Position = UDim2.new(0, 0, 0.48, 0), BackgroundTransparency = 1,
+    Text = "", TextColor3 = Color3.fromRGB(255, 170, 0), Font = Enum.Font.SourceSansBold, TextSize = 13,
+    TextWrapped = true, Visible = false, Parent = ScanLabel
+})
+
+local ProgressBarBg = createUI("Frame", {
+    Size = UDim2.new(1, -30, 0, 8), Position = UDim2.new(0, 15, 0.82, 0),
+    BackgroundColor3 = Color3.fromRGB(50, 50, 50), BorderSizePixel = 0, Visible = false, Parent = ScanLabel
+})
+createUI("UICorner", {CornerRadius = UDim.new(0, 4), Parent = ProgressBarBg})
 
 local ProgressBarFill = createUI("Frame", {
     Size = UDim2.new(0, 0, 1, 0), BackgroundColor3 = Color3.fromRGB(255, 170, 0),
     BorderSizePixel = 0, Parent = ProgressBarBg
 })
+createUI("UICorner", {CornerRadius = UDim.new(0, 4), Parent = ProgressBarFill})
 
-local MainFrame = createUI("Frame", {
-    Size = UDim2.new(0, 420, 0, 380), Position = UDim2.new(0.5, -210, 0.5, -190),
+MainFrame = createUI("Frame", {
+    Size = UDim2.new(0, 660, 0, 380), Position = UDim2.new(0.5, -330, 0.5, -190),
     BackgroundColor3 = Color3.fromRGB(35, 35, 35), BorderColor3 = Color3.fromRGB(0, 0, 0),
     BorderSizePixel = 2, Active = true, Visible = false, Parent = ScreenGui
 })
+createUI("UICorner", {CornerRadius = UDim.new(0, 6), Parent = MainFrame})
 
 local function dragify(Frame)
     local dragToggle, dragInput, dragStart, startPos
@@ -122,12 +204,116 @@ dragify(MainFrame)
 
 local StatusLabel = createUI("TextLabel", {
     Size = UDim2.new(1, 0, 0, 25), BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-    BorderSizePixel = 0, Text = "Made By C00LHACK | Selected Remote: None",
+    BorderSizePixel = 0, Text = "This Script Made By C00LHACK | Selected Remote: None",
     TextColor3 = Color3.fromRGB(0, 255, 100), TextSize = 13, Font = Enum.Font.SourceSansBold, Parent = MainFrame
 })
 
+local RemoteMenuFrame = createUI("Frame", {
+    Size = UDim2.new(0, 210, 1, -35), Position = UDim2.new(0, 10, 0, 30),
+    BackgroundColor3 = Color3.fromRGB(45, 45, 45), BorderColor3 = Color3.fromRGB(20, 20, 20),
+    BorderSizePixel = 1, Parent = MainFrame
+})
+
+createUI("TextLabel", {
+    Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
+    Text = "- Remote List -", TextColor3 = Color3.fromRGB(220, 220, 220),
+    Font = Enum.Font.SourceSansBold, TextSize = 13, Parent = RemoteMenuFrame
+})
+
+local SearchBox = createUI("TextBox", {
+    Size = UDim2.new(1, -10, 0, 32), Position = UDim2.new(0, 5, 0, 25),
+    BackgroundColor3 = Color3.fromRGB(20, 20, 20), BorderColor3 = Color3.fromRGB(70, 70, 70),
+    Text = "", PlaceholderText = "Search Remote...", TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.SourceSans, TextSize = 14, Parent = RemoteMenuFrame
+})
+
+local RemoteScrolling = createUI("ScrollingFrame", {
+    Size = UDim2.new(1, -10, 1, -65), Position = UDim2.new(0, 5, 0, 60),
+    BackgroundTransparency = 1, CanvasSize = UDim2.new(0, 0, 0, 0),
+    ScrollBarThickness = 4, Parent = RemoteMenuFrame
+})
+
+local UIList = Instance.new("UIListLayout")
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0, 5)
+UIList.Parent = RemoteScrolling
+
+local function updateCanvasSize()
+    RemoteScrolling.CanvasSize = UDim2.new(0, 0, 0, UIList.AbsoluteContentSize.Y + 5)
+end
+
+local function addRemoteButton(remote)
+    if not remote:IsA("RemoteEvent") and not remote:IsA("RemoteFunction") then return end
+    if remoteButtonMap[remote] then return end
+
+    local rBtn = createUI("TextButton", {
+        Size = UDim2.new(1, 0, 0, 34),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+        BorderColor3 = Color3.fromRGB(60, 60, 60),
+        Text = " " .. remote.Name .. " (" .. remote.ClassName .. ")",
+        TextColor3 = Color3.fromRGB(220, 220, 220),
+        Font = Enum.Font.SourceSans,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = RemoteScrolling
+    })
+
+    rBtn.MouseButton1Click:Connect(function()
+        selectedRemote = remote
+        StatusLabel.Text = "This Script Made By C00LHACK | Selected Remote: " .. remote.Name .. " [" .. remote.ClassName .. "]"
+        Notify("Remote Selected", "Target set to: " .. remote.Name, 2)
+    end)
+
+    remoteButtonMap[remote] = rBtn
+
+    local query = SearchBox.Text:lower()
+    if query == "" or rBtn.Text:lower():find(query, 1, true) then
+        rBtn.Visible = true
+    else
+        rBtn.Visible = false
+    end
+
+    updateCanvasSize()
+end
+
+local function removeRemoteButton(remote)
+    if remoteButtonMap[remote] then
+        remoteButtonMap[remote]:Destroy()
+        remoteButtonMap[remote] = nil
+        updateCanvasSize()
+    end
+end
+
+local servicesToScan = {Workspace, ReplicatedStorage, StarterGui, StarterPack, game:GetService("Lighting"), game:GetService("JointsService")}
+
+local function initRealtimeMonitoring()
+    for _, service in ipairs(servicesToScan) do
+        for _, v in ipairs(service:GetDescendants()) do
+            addRemoteButton(v)
+        end
+        service.DescendantAdded:Connect(function(v)
+            addRemoteButton(v)
+        end)
+        service.DescendantRemoving:Connect(function(v)
+            removeRemoteButton(v)
+        end)
+    end
+end
+
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local query = SearchBox.Text:lower()
+    for remote, btn in pairs(remoteButtonMap) do
+        if query == "" or btn.Text:lower():find(query, 1, true) then
+            btn.Visible = true
+        else
+            btn.Visible = false
+        end
+    end
+    updateCanvasSize()
+end)
+
 local ContentContainer = createUI("Frame", {
-    Size = UDim2.new(1, -20, 1, -35), Position = UDim2.new(0, 10, 0, 30),
+    Size = UDim2.new(1, -240, 1, -35), Position = UDim2.new(0, 230, 0, 30),
     BackgroundTransparency = 1, Parent = MainFrame
 })
 
@@ -143,144 +329,114 @@ local LeftKorbloxBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 35), 
 local RightFrame = createUI("Frame", {Size = UDim2.new(0.48, 0, 1, 0), Position = UDim2.new(0.52, 0, 0, 0), BackgroundColor3 = Color3.fromRGB(45, 45, 45), BorderColor3 = Color3.fromRGB(20, 20, 20), BorderSizePixel = 1, Parent = ContentContainer})
 createUI("TextLabel", {Size = UDim2.new(1, 0, 0, 25), BackgroundTransparency = 1, Text = "- Server & Accessories -", TextColor3 = Color3.fromRGB(220, 220, 220), Font = Enum.Font.SourceSansBold, TextSize = 13, Parent = RightFrame})
 
-local BtoolsBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 30), BackgroundColor3 = Color3.fromRGB(0, 120, 200), BorderSizePixel = 1, Text = "Btools", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
-local DeleteMapBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 65), BackgroundColor3 = Color3.fromRGB(200, 80, 0), BorderSizePixel = 1, Text = "Delete Map", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
-local HatOrbitBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 100), BackgroundColor3 = Color3.fromRGB(120, 40, 160), BorderSizePixel = 1, Text = "HatOrbit", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
-local BlockHatBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 135), BackgroundColor3 = Color3.fromRGB(60, 60, 200), BorderSizePixel = 1, Text = "BlockHat", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
-local RightKorbloxBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 170), BackgroundColor3 = Color3.fromRGB(30, 30, 30), BorderColor3 = Color3.fromRGB(100, 100, 100), BorderSizePixel = 1, Text = "Korblox Me", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
+local BtoolsBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 35), Position = UDim2.new(0, 10, 0, 35), BackgroundColor3 = Color3.fromRGB(0, 120, 200), BorderSizePixel = 1, Text = "Btools", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
+local DeleteMapBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 35), Position = UDim2.new(0, 10, 0, 80), BackgroundColor3 = Color3.fromRGB(200, 80, 0), BorderSizePixel = 1, Text = "Delete Map", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
+local RightKorbloxBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 35), Position = UDim2.new(0, 10, 0, 125), BackgroundColor3 = Color3.fromRGB(30, 30, 30), BorderColor3 = Color3.fromRGB(100, 100, 100), BorderSizePixel = 1, Text = "Korblox Me", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
 
-local function lockButton(btn)
-    btn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    btn.TextColor3 = Color3.fromRGB(100, 100, 100)
-    btn.Text = btn.Text .. " [LOCKED]"
-    btn:SetAttribute("IsLocked", true)
-end
+-- ==== منطق بهینه‌شده اسکن اتوماتیک ====
+local function SmartScanNew()
+    blurefct(20)
+    Notify("Vulnerability Checker", "Looking up for remotes, may take a while.", 3)
 
-local function isValidMapPart(obj)
-    if not obj:IsA("BasePart") or obj:IsA("Terrain") or obj.Name:lower() == "baseplate" or obj.Transparency >= 1 or obj.Size.Magnitude > 30 then return false end
-    local ancestorModel = obj:FindFirstAncestorOfClass("Model")
-    return not (ancestorModel and ancestorModel:FindFirstChildOfClass("Humanoid"))
-end
+    local checkIn = {"Workspace", "ReplicatedStorage", "StarterGui", "CoreGui"}
+    local names = {"Delete", "Deletar", "Remove", "Destroy", "Clean", "Clear", "Bullet", "Bala", "Shoot", "Shot", "Fire", "Segway", "Handless", "Sword", "Attack"}
 
-local function GetTestableMapPart()
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if isValidMapPart(obj) then return obj end
-    end
-    return nil
-end
-
--- توابع اسکن هوشمند با اولویت‌بندی، حذف تکراری‌ها و Progress Bar
-local function SmartScan()
-    local servicesToScan = {
-        Workspace, ReplicatedStorage, StarterGui, StarterPack, 
-        game:GetService("Lighting"), game:GetService("JointsService")
-    }
-
-    local allRemotes = {}
-    local seenNames = {}
-
-    -- جمع‌آوری و فیلتر ریموت‌های تکراری بر اساس نام
-    for _, service in ipairs(servicesToScan) do
-        for _, v in ipairs(service:GetDescendants()) do
-            if v:IsA("RemoteEvent") and not seenNames[v.Name] then
-                seenNames[v.Name] = true
-                table.insert(allRemotes, v)
-            end
-        end
-    end
-
-    -- مرتب‌سازی: اولویت با ریموت‌هایی که حاوی Remove, Destroy یا Delete هستند
-    table.sort(allRemotes, function(a, b)
-        local aLower = a.Name:lower()
-        local bLower = b.Name:lower()
-        local aHasPriority = aLower:find("remove") or aLower:find("destroy") or aLower:find("delete")
-        local bHasPriority = bLower:find("remove") or bLower:find("destroy") or bLower:find("delete")
-        
-        if aHasPriority and not bHasPriority then
-            return true
-        elseif not aHasPriority and bHasPriority then
-            return false
-        end
-        return false
-    end)
-
-    local foundRemote = nil
-    local rType = "None"
-    local total = #allRemotes
-
-    for index, v in ipairs(allRemotes) do
-        if total > 0 then
-            local progress = index / total
-            ProgressBarFill.Size = UDim2.new(progress, 0, 1, 0)
-        end
-        
-        ScanLabel.Text = "Scanning (" .. index .. "/" .. total .. "):\n" .. v.Name
-
-        local testPart = GetTestableMapPart()
-        local canDeletePart = false
-
-        if testPart then
-            pcall(function() v:FireServer(testPart) end)
-            task.wait(0.67) -- کندتر کردن سرعت تست برای بالا رفتن دقت
-            if not testPart or not testPart.Parent then
-                canDeletePart = true
-            end
-        end
-
-        if canDeletePart then
-            foundRemote = v
-            rType = "Limited"
-
-            local nonPartTarget = game:GetService("StarterPlayer").StarterPlayerScripts:FindFirstChild("RbxCharacterSounds")
-            if nonPartTarget then
-                pcall(function() v:FireServer(nonPartTarget) end)
-                task.wait(0.4)
-                if not nonPartTarget or not nonPartTarget.Parent then
-                    rType = "FullAccess"
-                    break 
+    local candidates = {}
+    for _, serviceName in pairs(checkIn) do
+        local serviceObj = nil
+        pcall(function() serviceObj = game:GetService(serviceName) end)
+        if serviceObj then
+            for _, v in pairs(serviceObj:GetDescendants()) do
+                if v:IsA("RemoteEvent") then
+                    for _, str in pairs(names) do
+                        if string.match(v.Name:lower(), str:lower()) then
+                            table.insert(candidates, {remote = v, service = serviceName})
+                            break
+                        end
+                    end
                 end
             end
-
-            if rType == "FullAccess" then break end
         end
     end
 
-    return foundRemote, rType
+    local foundRemote = nil
+    local total = #candidates
+
+    for i, item in ipairs(candidates) do
+        local v = item.remote
+        local service = item.service
+
+        if total > 0 then
+            ProgressBarFill.Size = UDim2.new(i / total, 0, 1, 0)
+        end
+        ProgressText.Text = "Checking (" .. i .. "/" .. total .. "):\n" .. v.Name .. " [" .. service .. "]"
+
+        -- اطمینان از زنده بودن کاراکتر قبل از تست
+        local char = player.Character
+        if not char or not char:FindFirstChild("Head") or (char:FindFirstChildOfClass("Humanoid") and char:FindFirstChildOfClass("Humanoid").Health <= 0) then
+            char = player.CharacterAdded:Wait()
+            task.wait(1)
+        end
+
+        local head = char:FindFirstChild("Head")
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+
+        if head then
+            pcall(function()
+                v:FireServer(head)
+            end)
+
+            -- مهلت انتظار تا ۱.۲ ثانیه برای پاسخ سرور و پینگ شبکه
+            local startTime = tick()
+            local detected = false
+            while tick() - startTime < 1.7 do
+                if not char:FindFirstChild("Head") or (humanoid and humanoid.Health <= 0) or not char.Parent then
+                    detected = true
+                    break
+                end
+                task.wait(0.1)
+            end
+
+            if detected then
+                foundRemote = v
+                break
+            end
+        end
+    end
+
+    blurefct(0)
+    return foundRemote
 end
 
-task.spawn(function()
-    Notify("Vulnerability Checker", "Looking up for remotes, may take a while.", 3)
-    task.wait(1)
+AutoBtn.MouseButton1Click:Connect(function()
+    AutoBtn.Visible = false
+    ManualBtn.Visible = false
+    ProgressText.Visible = true
+    ProgressBarBg.Visible = true
 
-    local vRemote, vType = SmartScan()
-
-    if vRemote then
-        selectedRemote = vRemote
-        remoteType = vType
+    task.spawn(function()
+        local vRemote = SmartScanNew()
         ScanLabel.Visible = false
-        StatusLabel.Text = "This Script Made By C00LHACK | Detected Remote: " .. vRemote.Name .. " [" .. vType .. "]"
+        initRealtimeMonitoring()
 
-        if vType == "Limited" then
-            Notify("Scanner Result", "Part-Only Remote! Non-part tools locked.", 4)
-            lockButton(KickBtn)
-            lockButton(BanBtn)
-            lockButton(HatOrbitBtn)
-            lockButton(BlockHatBtn)
+        if vRemote then
+            selectedRemote = vRemote
+            remoteType = "FullAccess"
+            StatusLabel.Text = "Detected: " .. vRemote.Name .. " [Vulnerable]"
+            Notify("Vulnerability Checker", "Found Vulnerable Remote: " .. vRemote.Name, 4)
         else
-            Notify("Scanner Result", "Remote Found!.", 4)
+            Notify("Vulnerability Checker", "This game is not vulnerable/supported.", 5)
         end
-
         MainFrame.Visible = true
-    else
-        Notify("Vulnerability Checker", "This game is not vulnerable.", 5)
-        ScanLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
-        ScanLabel.Text = "No Vulnerable Remote Found!"
-        task.wait(2)
-        if ScreenGui then ScreenGui:Destroy() end
-    end
+    end)
 end)
 
--- ==== لاجیک دکمه ها ====
+ManualBtn.MouseButton1Click:Connect(function()
+    ScanLabel.Visible = false
+    initRealtimeMonitoring()
+    MainFrame.Visible = true
+    Notify("Manual Mode", "Select a remote from the left list.", 3)
+end)
 
 local function checkLock(btn) return btn:GetAttribute("IsLocked") end
 local function getPlayer(name)
@@ -294,8 +450,8 @@ end
 local function KickTarget(targetPlayer)
     if selectedRemote and targetPlayer then
         pcall(function()
-            selectedRemote:FireServer(targetPlayer)
-            if targetPlayer.Character then selectedRemote:FireServer(targetPlayer.Character) end
+            fireRemote(targetPlayer)
+            if targetPlayer.Character then fireRemote(targetPlayer.Character) end
         end)
     end
 end
@@ -304,7 +460,7 @@ local function KillTarget(targetPlayer)
     if selectedRemote and targetPlayer and targetPlayer.Character then
         local char = targetPlayer.Character
         local part = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildOfClass("BasePart")
-        if part then pcall(function() selectedRemote:FireServer(part) end) end
+        if part then pcall(function() fireRemote(part) end) end
     end
 end
 
@@ -313,19 +469,26 @@ local function DeleteRightLeg(targetCharacter)
     local legParts = {"Right Leg", "RightFoot", "RightLowerLeg", "RightUpperLeg"}
     for _, partName in ipairs(legParts) do
         local part = targetCharacter:FindFirstChild(partName)
-        if part then pcall(function() selectedRemote:FireServer(part) end) end
+        if part then pcall(function() fireRemote(part) end) end
     end
 end
 
 KickBtn.MouseButton1Click:Connect(function()
+    if shakePanel(KickBtn) then return end
     if checkLock(KickBtn) then return end
     local targetText = string.lower(KickTextBox.Text)
     if targetText == "" then return end
+
     if targetText == "all" then
-        for _, p in pairs(Players:GetPlayers()) do if p ~= player then KickTarget(p) end end
-        task.wait(0.5); KickTarget(player)
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then KickTarget(p) end
+        end
+        task.wait(0.5)
+        KickTarget(player)
     elseif targetText == "others" then
-        for _, p in pairs(Players:GetPlayers()) do if p ~= player then KickTarget(p) end end
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then KickTarget(p) end
+        end
     else
         local targetPlayer = getPlayer(targetText)
         if targetPlayer then KickTarget(targetPlayer) end
@@ -333,13 +496,21 @@ KickBtn.MouseButton1Click:Connect(function()
 end)
 
 KillBtn.MouseButton1Click:Connect(function()
+    if shakePanel(KillBtn) then return end
     if checkLock(KillBtn) then return end
     local targetText = string.lower(KickTextBox.Text)
     if targetText == "" then return end
+
     if targetText == "all" then
-        for _, p in pairs(Players:GetPlayers()) do KillTarget(p) end
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then KillTarget(p) end
+        end
+        task.wait(0.5)
+        KillTarget(player)
     elseif targetText == "others" then
-        for _, p in pairs(Players:GetPlayers()) do if p ~= player then KillTarget(p) end end
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then KillTarget(p) end
+        end
     else
         local targetPlayer = getPlayer(targetText)
         if targetPlayer then KillTarget(targetPlayer) end
@@ -347,27 +518,34 @@ KillBtn.MouseButton1Click:Connect(function()
 end)
 
 BanBtn.MouseButton1Click:Connect(function()
+    if shakePanel(BanBtn) then return end
     if checkLock(BanBtn) then return end
     local targetText = string.lower(KickTextBox.Text)
     if targetText == "" then return end
+
     if targetText == "all" then
-        for _, p in pairs(Players:GetPlayers()) do 
-            if p ~= player then 
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then
                 bannedPlayers[p.UserId] = true
-                KickTarget(p) 
-            end 
+                KickTarget(p)
+            end
         end
+        task.wait(0.5)
+        bannedPlayers[player.UserId] = true
+        KickTarget(player)
     elseif targetText == "others" then
-        for _, p in pairs(Players:GetPlayers()) do 
-            if p ~= player then 
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then
                 bannedPlayers[p.UserId] = true
-                KickTarget(p) 
-            end 
+                KickTarget(p)
+            end
         end
     else
         local targetPlayer = getPlayer(targetText)
-        if targetPlayer and targetPlayer ~= player then
-            bannedPlayers[targetPlayer.UserId] = true
+        if targetPlayer then
+            if targetPlayer ~= player then
+                bannedPlayers[targetPlayer.UserId] = true
+            end
             KickTarget(targetPlayer)
         end
     end
@@ -381,150 +559,34 @@ Players.PlayerAdded:Connect(function(newPlayer)
 end)
 
 LeftKorbloxBtn.MouseButton1Click:Connect(function()
+    if shakePanel(LeftKorbloxBtn) then return end
     if checkLock(LeftKorbloxBtn) then return end
     local targetText = string.lower(KickTextBox.Text)
     if targetText == "" then return end
     local targetPlayer = getPlayer(targetText)
-    if targetPlayer and targetPlayer.Character then
-        DeleteRightLeg(targetPlayer.Character)
-    end
+    if targetPlayer and targetPlayer.Character then DeleteRightLeg(targetPlayer.Character) end
 end)
 
 RightKorbloxBtn.MouseButton1Click:Connect(function()
+    if shakePanel(RightKorbloxBtn) then return end
     if checkLock(RightKorbloxBtn) then return end
-    if player.Character then
-        DeleteRightLeg(player.Character)
-    end
-end)
-
-HatOrbitBtn.MouseButton1Click:Connect(function()
-    if checkLock(HatOrbitBtn) then return end
-    if not selectedRemote or not player.Character then return end
-    local char = player.Character
-    local hum = char:FindFirstChild("Humanoid")
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hum or not hrp then return end
-
-    isOrbiting = not isOrbiting
-
-    if isOrbiting then
-        HatOrbitBtn.Text = "Stop Orbit"
-        HatOrbitBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
-        cleanupOrbit()
-
-        partsFolder = Instance.new("Folder", char)
-        partsFolder.Name = "wacky parts folder"
-
-        for _, v in pairs(hum:GetAccessories()) do
-            local handle = v:FindFirstChild("Handle")
-            if handle then
-                handle.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
-                handle.CanCollide = false
-
-                for _, joint in pairs(handle:GetDescendants()) do
-                    if joint:IsA("JointInstance") then
-                        pcall(function() selectedRemote:FireServer(joint) end)
-                        joint:Destroy()
-                    end
-                end
-
-                table.insert(activeHats, handle)
-            end
-        end
-
-        for _, handle in pairs(activeHats) do
-            local still = Instance.new("BodyAngularVelocity", handle)
-            still.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-            still.AngularVelocity = Vector3.new(0, 0, 0)
-
-            local align = Instance.new("AlignPosition", handle)
-            align.MaxForce = 1000000
-            align.MaxVelocity = math.huge
-            align.RigidityEnabled = false
-            align.ApplyAtCenterOfMass = true
-            align.Responsiveness = 200
-
-            local a0 = Instance.new("Attachment", handle)
-            local a1 = Instance.new("Attachment", char.Head)
-            align.Attachment0 = a0
-            align.Attachment1 = a1
-
-            table.insert(mov, a1)
-            table.insert(mov2, still)
-
-            local part = Instance.new("Part", partsFolder)
-            part.Anchored = true
-            part.Size = Vector3.new(1, 1, 1)
-            part.Transparency = 1
-            part.CanCollide = false
-            table.insert(par, part)
-        end
-
-        RunService.Heartbeat:Connect(function()
-            for _, handle in pairs(activeHats) do
-                if handle and handle.Parent then
-                    handle.Velocity = Vector3.new(0, 30, 0)
-                end
-            end
-        end)
-
-        local l = 1
-        RunService.RenderStepped:Connect(function()
-            if not char or not hrp or not hrp.Parent or not isOrbiting then
-                return
-            end
-
-            local speed = getSpeed()
-            local offset = getOffset()
-            local angular = Vector3.new(0, 0, 0)
-
-            l = (l >= 360 and 1 or l + speed)
-
-            for i, v in pairs(par) do
-                if v and hrp then
-                    v.CFrame = CFrame.new(hrp.Position) * CFrame.fromEulerAnglesXYZ(0, math.rad(l + (360 / #par) * i + speed), 0) * CFrame.new(offset, 0, 0)
-                end
-            end
-
-            for i, v in pairs(mov) do
-                if par[i] then 
-                    v.Position = Vector3.new(hrp.CFrame:ToObjectSpace(CFrame.new(par[i].Position)).X, hrp.CFrame:ToObjectSpace(CFrame.new(par[i].Position)).Y, hrp.CFrame:ToObjectSpace(CFrame.new(par[i].Position)).Z) 
-                end
-            end
-
-            for _, v in pairs(mov2) do v.AngularVelocity = angular end
-        end)
-    else
-        HatOrbitBtn.Text = "HatOrbit"
-        HatOrbitBtn.BackgroundColor3 = Color3.fromRGB(120, 40, 160)
-        cleanupOrbit()
-    end
-end)
-
-BlockHatBtn.MouseButton1Click:Connect(function()
-    if checkLock(BlockHatBtn) then return end
-    if not selectedRemote or not player.Character then return end
-    BlockHatBtn.Text = "Blocking..."
-    for _, acc in ipairs(player.Character:GetChildren()) do
-        if acc:IsA("Accessory") and acc:FindFirstChild("Handle") then
-            for _, mesh in ipairs(acc.Handle:GetChildren()) do
-                if mesh:IsA("SpecialMesh") or mesh:IsA("BlockMesh") or mesh:IsA("CylinderMesh") or mesh:IsA("Mesh") then
-                    pcall(function() selectedRemote:FireServer(mesh) end)
-                end
-            end
-        end
-    end
-    task.wait(0.5)
-    BlockHatBtn.Text = "BlockHat"
+    if player.Character then DeleteRightLeg(player.Character) end
 end)
 
 DeleteMapBtn.MouseButton1Click:Connect(function()
+    if shakePanel(DeleteMapBtn) then return end
     if not selectedRemote then return end
     DeleteMapBtn.Text = "Deleting..."
     task.spawn(function()
         for i, obj in ipairs(Workspace:GetDescendants()) do
             if (obj:IsA("BasePart") or obj:IsA("Model")) and obj.Parent then
-                pcall(function() selectedRemote:FireServer(obj) end)
+                pcall(function()
+                    if selectedRemote:IsA("RemoteFunction") then
+                        task.spawn(function() selectedRemote:InvokeServer(obj) end)
+                    else
+                        selectedRemote:FireServer(obj)
+                    end
+                end)
             end
             if i % 500 == 0 then task.wait() end
         end
@@ -533,6 +595,9 @@ DeleteMapBtn.MouseButton1Click:Connect(function()
 end)
 
 BtoolsBtn.MouseButton1Click:Connect(function()
+    if shakePanel(BtoolsBtn) then return end
+    if not selectedRemote then return end
+
     local tool = Instance.new("Tool")
     tool.Name = "Delete Tool"
     tool.RequiresHandle = false
@@ -549,13 +614,8 @@ BtoolsBtn.MouseButton1Click:Connect(function()
     tool.Equipped:Connect(function()
         equipped = true
         mouse.Icon = "rbxasset://textures/HammerCursor.png"
-
         renderConnection = RunService.RenderStepped:Connect(function()
-            if equipped and mouse.Target then
-                Field.Adornee = mouse.Target
-            else
-                Field.Adornee = nil
-            end
+            if equipped and mouse.Target then Field.Adornee = mouse.Target else Field.Adornee = nil end
         end)
     end)
 
@@ -563,10 +623,7 @@ BtoolsBtn.MouseButton1Click:Connect(function()
         equipped = false
         Field.Adornee = nil
         mouse.Icon = ""
-        if renderConnection then
-            renderConnection:Disconnect()
-            renderConnection = nil
-        end
+        if renderConnection then renderConnection:Disconnect(); renderConnection = nil end
     end)
 
     tool.Destroying:Connect(function()
@@ -577,12 +634,10 @@ BtoolsBtn.MouseButton1Click:Connect(function()
     tool.Activated:Connect(function()
         if mouse.Target and selectedRemote then
             local targetPos = mouse.Hit.Position
-            pcall(function() selectedRemote:FireServer(mouse.Target) end)
-
+            pcall(function() fireRemote(mouse.Target) end)
             local explosion = Instance.new("Explosion")
             explosion.Position = targetPos
-            explosion.BlastRadius = 0
-            explosion.BlastPressure = 0
+            explosion.BlastRadius = 0; explosion.BlastPressure = 0
             explosion.DestroyJointRadiusPercent = 0
             explosion.Parent = Workspace
         end
