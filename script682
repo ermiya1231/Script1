@@ -33,11 +33,11 @@ end
 
 local global_container
 do
-	local filename = "script681"
+	local filename = "UniversalMethodFinder"
 
 	local finder
 	finder, global_container = loadstring(
-		game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/" .. filename .. "", true),
+		game:HttpGet("https://raw.githubusercontent.com/luau/SomeHub/main/" .. filename .. ".luau", true),
 		filename
 	)()
 
