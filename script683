@@ -1,0 +1,7 @@
+local scriptURL = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script682"
+
+local synsaveinstance = loadstring(game:HttpGet(scriptURL, true))()
+
+local options = {} 
+
+synsaveinstance(options)
