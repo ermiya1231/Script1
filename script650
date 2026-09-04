@@ -1,0 +1,71 @@
+local Players = game:GetService("Players")
+local p = Players.LocalPlayer
+
+local function setupTool()
+    local Tool = Instance.new("Tool")
+    Tool.Name = "Fire Parts V2"
+    Tool.RequiresHandle = false
+
+    Tool.Activated:Connect(function()
+        local character = p.Character
+        if not character then return end
+
+        local touchPart = character:FindFirstChild("Right Arm") 
+            or character:FindFirstChild("RightHand") 
+            or character:FindFirstChild("Right Leg")
+            or character:FindFirstChild("RightLowerLeg")
+            or character:FindFirstChild("HumanoidRootPart") 
+            or character.PrimaryPart
+            
+        if not touchPart then return end
+
+        local mouse = p:GetMouse()
+        mouse.TargetFilter = character 
+
+        local target = mouse.Target
+        if target then
+            local partsToFire = {}
+
+            -- ۱. اول خود پارتی که دقیقا روش کلیک شده رو چک میکنه
+            if target:FindFirstChildOfClass("TouchTransmitter") then
+                table.insert(partsToFire, target)
+            end
+
+            -- ۲. فقط پارت‌هایی که "دقیقا داخل" همین پارتی که کلیک کردیم هستند رو میگرده (نه اطرافش)
+            for _, child in ipairs(target:GetDescendants()) do
+                if child:IsA("BasePart") and child:FindFirstChildOfClass("TouchTransmitter") then
+                    if not table.find(partsToFire, child) then
+                        table.insert(partsToFire, child)
+                    end
+                end
+            end
+
+            -- اگر حداقل یک پارت پیدا شد، همه رو فایر میکنه
+            if #partsToFire > 0 then
+                for _, part in ipairs(partsToFire) do
+                    firetouchinterest(touchPart, part, 0)
+                end
+
+                task.wait(0.05)
+
+                for _, part in ipairs(partsToFire) do
+                    firetouchinterest(touchPart, part, 1)
+                end
+            end
+        end
+    end)
+
+    local backpack = p:WaitForChild("Backpack", 5)
+    if backpack then
+        Tool.Parent = backpack
+    end
+end
+
+p.CharacterAdded:Connect(function()
+    task.wait(0.2)
+    setupTool()
+end)
+
+if p.Character then
+    setupTool()
+end
