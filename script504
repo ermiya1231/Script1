@@ -1,11 +1,9 @@
---[[
-	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
-]]
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
 local CloseBtn = Instance.new("TextButton")
 local AntiBangBtn = Instance.new("TextButton")
+local AutoBtn = Instance.new("TextButton") -- دکمه جدید برای حالت اتوماتیک
 local UICorner_Main = Instance.new("UICorner")
 local UIStroke_Main = Instance.new("UIStroke")
 local UIGradient_Main = Instance.new("UIGradient")
@@ -13,7 +11,8 @@ local UIGradient_Main = Instance.new("UIGradient")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local player = game:GetService("Players").LocalPlayer
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 ScreenGui.Name = "tarekscripter_AntiBangCore"
@@ -49,7 +48,7 @@ UIGradient_Main.Parent = UIStroke_Main
 
 Title.Size = UDim2.new(1, -40, 0, 35)
 Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "Simple Anti Bang"
+Title.Text = "C00LHACK Anti Bang"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
@@ -79,22 +78,35 @@ local function ApplyEffects(btn)
     end)
 end
 
-AntiBangBtn.Size = UDim2.new(0, 200, 0, 45)
-AntiBangBtn.Position = UDim2.new(0, 10, 0, 50)
-AntiBangBtn.Text = "EXECUTE ANTI BANG"
+AntiBangBtn.Size = UDim2.new(0, 200, 0, 40)
+AntiBangBtn.Position = UDim2.new(0, 10, 0, 45)
+AntiBangBtn.Text = "Execute"
 AntiBangBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 AntiBangBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AntiBangBtn.Font = Enum.Font.GothamMedium
 AntiBangBtn.TextSize = 12
 AntiBangBtn.Parent = MainFrame
-
 Instance.new("UICorner", AntiBangBtn).CornerRadius = UDim.new(0, 6)
-local bStroke = Instance.new("UIStroke", AntiBangBtn)
-bStroke.Color = Color3.fromRGB(0, 150, 255)
-bStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+local bStroke1 = Instance.new("UIStroke", AntiBangBtn)
+bStroke1.Color = Color3.fromRGB(0, 150, 255)
+bStroke1.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+AutoBtn.Size = UDim2.new(0, 200, 0, 40)
+AutoBtn.Position = UDim2.new(0, 10, 0, 95)
+AutoBtn.Text = "Automatic: OFF"
+AutoBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+AutoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoBtn.Font = Enum.Font.GothamMedium
+AutoBtn.TextSize = 12
+AutoBtn.Parent = MainFrame
+Instance.new("UICorner", AutoBtn).CornerRadius = UDim.new(0, 6)
+local bStroke2 = Instance.new("UIStroke", AutoBtn)
+bStroke2.Color = Color3.fromRGB(0, 150, 255)
+bStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 ApplyEffects(CloseBtn)
 ApplyEffects(AntiBangBtn)
+ApplyEffects(AutoBtn)
 
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
@@ -119,30 +131,108 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
-RunService.RenderStepped:Connect(function()
-    UIGradient_Main.Rotation = UIGradient_Main.Rotation + 3
-end)
-
+-- اندازه Frame را برای جا دادن دو دکمه بزرگتر کردیم
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
-TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 220, 0, 110)}):Play()
+TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 220, 0, 145)}):Play()
 
 workspace.FallenPartsDestroyHeight = 0/0
 
-AntiBangBtn.MouseButton1Click:Connect(function()
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+-- متغیرهای کنترل
+local isDodging = false
+local autoEnabled = false
+local PROXIMITY_DISTANCE = 2 -- فاصله‌ای که در آن بازیکنان دیگر تشخیص داده می‌شوند (استود)
+
+-- تابع اصلی Anti Bang با قابلیت شبح (Ghost Part)
+local function performAntiBang()
+    if isDodging then return end
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
+        isDodging = true
         local root = player.Character.HumanoidRootPart
+        local humanoid = player.Character.Humanoid
         local originalCF = root.CFrame
-        root.CFrame = originalCF * CFrame.new(0, -999, 0)
         
-        for i = 1, 10 do
-            RunService.Heartbeat:Wait()
+        -- ساخت Part شبح برای موقعیت اصلی
+        local ghostPart = Instance.new("Part")
+        ghostPart.Name = "AntiBangGhost"
+        ghostPart.Size = Vector3.new(2, 2, 1) -- سایز تقریبی بدن
+        ghostPart.CFrame = originalCF
+        ghostPart.Anchored = true
+        ghostPart.CanCollide = false
+        ghostPart.Transparency = 0.6
+        
+        -- تغییرات برای حس کلاسیک
+        ghostPart.Color = Color3.fromRGB(163, 162, 165) -- رنگ خاکستری کلاسیک (Medium stone grey)
+        ghostPart.Material = Enum.Material.Plastic -- متریال پلاستیک کلاسیک
+        ghostPart.TopSurface = Enum.SurfaceType.Studs -- اضافه کردن Stud به سطح بالایی
+        ghostPart.BottomSurface = Enum.SurfaceType.Inlet -- اضافه کردن فرورفتگی به سطح پایینی
+        
+        ghostPart.Parent = workspace
+        
+        -- قفل کردن دوربین روی پارت شبح
+        local cam = workspace.CurrentCamera
+        cam.CameraSubject = ghostPart
+        
+        -- رفتن به وید
+        root.CFrame = originalCF * CFrame.new(0, -551, 0)
+        
+        task.wait(0.4)
+        
+        -- برگشت به جای قبلی
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = originalCF
         end
         
-        root.CFrame = originalCF
+        -- برگرداندن دوربین روی پلیر و پاک کردن پارت شبح
+        cam.CameraSubject = humanoid
+        ghostPart:Destroy()
+        
+        -- جلوگیری از تکرار بیش از حد سریع در حالت اتوماتیک
+        task.wait(1.5)
+        isDodging = false
+    end
+end
+
+AntiBangBtn.MouseButton1Click:Connect(function()
+    task.spawn(performAntiBang)
+end)
+
+AutoBtn.MouseButton1Click:Connect(function()
+    autoEnabled = not autoEnabled
+    if autoEnabled then
+        AutoBtn.Text = "Automatic: ON"
+        AutoBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50) -- رنگ سبز برای روشن بودن
+    else
+        AutoBtn.Text = "Automatic: OFF"
+        AutoBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- رنگ اصلی برای خاموش بودن
+    end
+end)
+
+-- حلقه پردازش فریم به فریم برای تشخیص بازیکنان نزدیک
+RunService.RenderStepped:Connect(function()
+    UIGradient_Main.Rotation = UIGradient_Main.Rotation + 3
+    
+    if autoEnabled and not isDodging then
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local myRoot = player.Character.HumanoidRootPart
+            
+            for _, otherPlayer in ipairs(Players:GetPlayers()) do
+                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local otherRoot = otherPlayer.Character.HumanoidRootPart
+                    local distance = (myRoot.Position - otherRoot.Position).Magnitude
+                    
+                    -- اگر پلیر دیگری نزدیک‌تر از مقدار تعیین شده بود
+                    if distance <= PROXIMITY_DISTANCE then
+                        task.spawn(performAntiBang)
+                        break -- برای جلوگیری از اجرای همزمان چند دستور
+                    end
+                end
+            end
+        end
     end
 end)
 
 CloseBtn.MouseButton1Click:Connect(function()
+    autoEnabled = false -- برای اطمینان خاموش کردن حالت اتوماتیک قبل از بستن
     TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)}):Play()
     task.wait(0.3)
     ScreenGui:Destroy()
