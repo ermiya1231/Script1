@@ -1,328 +1,143 @@
---[[
-    WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
-]]
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local CloseBtn = Instance.new("TextButton")
-local AntiBangBtn = Instance.new("TextButton")
-local AutoBtn = Instance.new("TextButton")
-local StrongBtn = Instance.new("TextButton")
-local UICorner_Main = Instance.new("UICorner")
-local UIStroke_Main = Instance.new("UIStroke")
-local UIGradient_Main = Instance.new("UIGradient")
-
+local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
 
-ScreenGui.Name = "tarekscripter_AntiBangCore"
-ScreenGui.Parent = playerGui
+-- ساخت اسکرین اصلی
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AntiVoidHubRGB"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.DisplayOrder = 999
 
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 0, 0, 0)
-MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+-- قرار دادن GUI در CoreGui برای مخفی موندن
+local success = pcall(function()
+    ScreenGui.Parent = CoreGui
+end)
+if not success then
+    ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- ساخت پنل اصلی (کوچیک تر شده)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 200, 0, 100) -- ابعاد جمع و جور
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -50)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.ClipsDescendants = true
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Parent = ScreenGui
 
-UICorner_Main.CornerRadius = UDim.new(0, 10)
-UICorner_Main.Parent = MainFrame
+-- گرد کردن گوشه های پنل
+local PanelCorner = Instance.new("UICorner")
+PanelCorner.CornerRadius = UDim.new(0, 10)
+PanelCorner.Parent = MainFrame
 
-UIStroke_Main.Color = Color3.fromRGB(0, 150, 255)
-UIStroke_Main.Thickness = 2
-UIStroke_Main.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke_Main.Parent = MainFrame
+-- حاشیه رنگی دور پنل (برای افکت RGB)
+local PanelStroke = Instance.new("UIStroke")
+PanelStroke.Thickness = 2
+PanelStroke.Parent = MainFrame
 
-UIGradient_Main.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 50, 150)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 255))
-}
-UIGradient_Main.Rotation = 0
-UIGradient_Main.Parent = UIStroke_Main
-
-Title.Size = UDim2.new(1, -40, 0, 35)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "C00LHACK Anti Bang"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+-- تایتل پنل
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Position = UDim2.new(0, 0, 0, 5)
 Title.BackgroundTransparency = 1
+Title.Text = "C00LHACK AntiBang Kill"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
-Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextSize = 16
 Title.Parent = MainFrame
 
-CloseBtn.Name = "CloseBtn"
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -35, 0, 2)
-CloseBtn.Text = "×"
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-CloseBtn.BackgroundTransparency = 0.8
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 20
-CloseBtn.Parent = MainFrame
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+-- دکمه روشن/خاموش (کوچیک تر شده)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 140, 0, 35)
+ToggleButton.Position = UDim2.new(0.5, -70, 0, 45)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 75, 75)
+ToggleButton.Text = "OFF"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 18
+ToggleButton.AutoButtonColor = false
+ToggleButton.Parent = MainFrame
 
-local function ApplyEffects(btn)
-    btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.5}):Play()
-    end)
-    btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.8}):Play()
-    end)
-end
+-- گرد کردن گوشه های دکمه
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(0, 6)
+ButtonCorner.Parent = ToggleButton
 
--- دکمه عادی
-AntiBangBtn.Size = UDim2.new(0, 200, 0, 40)
-AntiBangBtn.Position = UDim2.new(0, 10, 0, 45)
-AntiBangBtn.Text = "Execute"
-AntiBangBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-AntiBangBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-AntiBangBtn.Font = Enum.Font.GothamMedium
-AntiBangBtn.TextSize = 12
-AntiBangBtn.Parent = MainFrame
-Instance.new("UICorner", AntiBangBtn).CornerRadius = UDim.new(0, 6)
-local bStroke1 = Instance.new("UIStroke", AntiBangBtn)
-bStroke1.Color = Color3.fromRGB(0, 150, 255)
-bStroke1.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
--- دکمه اتوماتیک
-AutoBtn.Size = UDim2.new(0, 200, 0, 40)
-AutoBtn.Position = UDim2.new(0, 10, 0, 95)
-AutoBtn.Text = "Automatic: OFF"
-AutoBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-AutoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-AutoBtn.Font = Enum.Font.GothamMedium
-AutoBtn.TextSize = 12
-AutoBtn.Parent = MainFrame
-Instance.new("UICorner", AutoBtn).CornerRadius = UDim.new(0, 6)
-local bStroke2 = Instance.new("UIStroke", AutoBtn)
-bStroke2.Color = Color3.fromRGB(0, 150, 255)
-bStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
--- دکمه Strong Anti Bang (زمان 15 ثانیه)
-StrongBtn.Size = UDim2.new(0, 200, 0, 40)
-StrongBtn.Position = UDim2.new(0, 10, 0, 145)
-StrongBtn.Text = "Glitch Mode (10s)"
-StrongBtn.BackgroundColor3 = Color3.fromRGB(120, 20, 20)
-StrongBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-StrongBtn.Font = Enum.Font.GothamBold
-StrongBtn.TextSize = 12
-StrongBtn.Parent = MainFrame
-Instance.new("UICorner", StrongBtn).CornerRadius = UDim.new(0, 6)
-local bStroke3 = Instance.new("UIStroke", StrongBtn)
-bStroke3.Color = Color3.fromRGB(255, 50, 50)
-bStroke3.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-ApplyEffects(CloseBtn)
-ApplyEffects(AntiBangBtn)
-ApplyEffects(AutoBtn)
-ApplyEffects(StrongBtn)
-
-local dragging, dragInput, dragStart, startPos
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
-        end)
-    end
-end)
-
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-MainFrame.Size = UDim2.new(0, 0, 0, 0)
-TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 220, 0, 195)}):Play()
-
-workspace.FallenPartsDestroyHeight = 0/0
-
-local isDodging = false
-local autoEnabled = false
-local PROXIMITY_DISTANCE = 2
-
--- فانکشن پارت شبح
-local function createGhostPart(originalCF)
-    local ghostPart = Instance.new("Part")
-    ghostPart.Name = "AntiBangGhost"
-    ghostPart.Size = Vector3.new(2, 2, 1)
-    ghostPart.CFrame = originalCF
-    ghostPart.Anchored = true
-    ghostPart.CanCollide = false
-    ghostPart.Transparency = 0.6
-    ghostPart.Color = Color3.fromRGB(163, 162, 165)
-    ghostPart.Material = Enum.Material.Plastic
-    ghostPart.TopSurface = Enum.SurfaceType.Studs
-    ghostPart.BottomSurface = Enum.SurfaceType.Inlet
-    ghostPart.Parent = workspace
-    return ghostPart
-end
-
--- تابع عادی
-local function performAntiBang()
-    if isDodging then return end
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
-        isDodging = true
-        local root = player.Character.HumanoidRootPart
-        local humanoid = player.Character.Humanoid
-        local originalCF = root.CFrame
-        
-        local ghostPart = createGhostPart(originalCF)
-        local cam = workspace.CurrentCamera
-        cam.CameraSubject = ghostPart
-        
-        root.CFrame = originalCF * CFrame.new(0, -551, 0)
-        task.wait(0.4)
-        
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            player.Character.HumanoidRootPart.CFrame = originalCF
-        end
-        
-        cam.CameraSubject = humanoid
-        ghostPart:Destroy()
-        
-        task.wait(1.5)
-        isDodging = false
-    end
-end
-
--- تابع Strong Anti Bang (15 ثانیه خروج مستقیم با سرعت 100 هزار استود!)
-local function performStrongAntiBang()
-    if isDodging then return end
-    isDodging = true
-    
-    -- اجرای کد بای‌پس NetworkPause با نوتیفیکیشن
-    local function notify(title, text)
-        pcall(function()
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = title,
-                Text = text,
-                Duration = 5
-            })
-        end)
-    end
-
-    local CoreGui = game:GetService("CoreGui")
-    if getgenv().networkPaused then
-        pcall(function() getgenv().networkPaused:Disconnect() end)
-    end
-    getgenv().networkPaused = CoreGui.RobloxGui.ChildAdded:Connect(function(obj)
-        if obj.Name == "CoreScripts/NetworkPause" then
-            pcall(function() obj:Destroy() end)
-        end
-    end)
-    pcall(function()
-        local existingPause = CoreGui.RobloxGui:FindFirstChild("CoreScripts/NetworkPause")
-        if existingPause then existingPause:Destroy() end
-    end)
-    
-    notify("AntiGamePlayPaused", "Network Pause Bypassed - Entering Null Zone!")
-    -- =========================================
-
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
-        local root = player.Character.HumanoidRootPart
-        local humanoid = player.Character.Humanoid
-        local originalCF = root.CFrame
-        
-        local ghostPart = createGhostPart(originalCF)
-        local cam = workspace.CurrentCamera
-        cam.CameraSubject = ghostPart
-        
-        -- تلپورت به بالا تا به هیچ چیز برخورد نکنیم
-        root.CFrame = originalCF * CFrame.new(0, 1000, 0)
-        
-        -- سرعت ماورایی و دیوانه‌وار برای رسیدن به ته دنیای بازی
-        local moveSpeed = 1000000000 -- صد هزار استود در ثانیه!
-        local moveConnection
-        
-        moveConnection = RunService.Heartbeat:Connect(function(deltaTime)
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                -- شلیک شدن در خط مستقیم رو به جلو با سرعت فضایی
-                player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -moveSpeed * deltaTime)
-            end
-        end)
-        
-        -- حالا 15 ثانیه توی این حالت میمونه تا قشنگ گلیچ بخوره
-        task.wait(10)
-        
-        -- قطع کردن نیروی حرکت
-        if moveConnection then moveConnection:Disconnect() end
-        
-        -- برگرداندن پلیر به جای اصلی
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            root.Velocity = Vector3.new(0,0,0)
-            root.RotVelocity = Vector3.new(0,0,0)
-            root.CFrame = originalCF
-        end
-        
-        cam.CameraSubject = humanoid
-        ghostPart:Destroy()
-    end
-    
-    isDodging = false
-end
-
-AntiBangBtn.MouseButton1Click:Connect(function()
-    task.spawn(performAntiBang)
-end)
-
-StrongBtn.MouseButton1Click:Connect(function()
-    task.spawn(performStrongAntiBang)
-end)
-
-AutoBtn.MouseButton1Click:Connect(function()
-    autoEnabled = not autoEnabled
-    if autoEnabled then
-        AutoBtn.Text = "Automatic: ON"
-        AutoBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-    else
-        AutoBtn.Text = "Automatic: OFF"
-        AutoBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    end
-end)
-
+---------------------------------------------------------
+-- افکت حاشیه RGB (رنگین کمانی)
+---------------------------------------------------------
 RunService.RenderStepped:Connect(function()
-    UIGradient_Main.Rotation = UIGradient_Main.Rotation + 3
-    
-    if autoEnabled and not isDodging then
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local myRoot = player.Character.HumanoidRootPart
-            for _, otherPlayer in ipairs(Players:GetPlayers()) do
-                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local otherRoot = otherPlayer.Character.HumanoidRootPart
-                    local distance = (myRoot.Position - otherRoot.Position).Magnitude
-                    if distance <= PROXIMITY_DISTANCE then
-                        task.spawn(performAntiBang)
-                        break
-                    end
-                end
-            end
-        end
-    end
+    -- زمان رو تقسیم بر 4 میکنیم تا سرعت تغییر رنگ مناسب باشه (عدد کمتر = سریع تر)
+    local hue = tick() % 4 / 4 
+    PanelStroke.Color = Color3.fromHSV(hue, 1, 1)
 end)
 
-CloseBtn.MouseButton1Click:Connect(function()
-    autoEnabled = false
-    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)}):Play()
-    task.wait(0.3)
-    ScreenGui:Destroy()
+---------------------------------------------------------
+-- منطق آنتی وید و انیمیشن
+---------------------------------------------------------
+local normalHeight = Workspace.FallenPartsDestroyHeight
+local isAntiVoidOn = false
+local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    isAntiVoidOn = not isAntiVoidOn
+    
+    local goalColor
+    if isAntiVoidOn then
+        Workspace.FallenPartsDestroyHeight = 0
+        ToggleButton.Text = "ON"
+        goalColor = Color3.fromRGB(75, 255, 115)
+    else
+        Workspace.FallenPartsDestroyHeight = normalHeight
+        ToggleButton.Text = "OFF"
+        goalColor = Color3.fromRGB(255, 75, 75)
+    end
+    
+    local colorTween = TweenService:Create(ToggleButton, tweenInfo, {BackgroundColor3 = goalColor})
+    colorTween:Play()
 end)
+
+---------------------------------------------------------
+-- سیستم جابجایی پنل با موس (کد درخواستی شما)
+---------------------------------------------------------
+local function dragify(Frame)
+    local dragToggle = nil
+    local dragSpeed = 0.15
+    local dragInput = nil
+    local dragStart = nil
+    local startPos = nil
+    
+    local function updateInput(input)
+        local Delta = input.Position - dragStart
+        local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+        TweenService:Create(Frame, TweenInfo.new(dragSpeed), {Position = Position}):Play()
+    end
+    
+    Frame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = Frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+    
+    Frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then
+            updateInput(input)
+        end
+    end)
+end
+
+-- اعمال قابلیت درگ روی پنل اصلی
+dragify(MainFrame)
