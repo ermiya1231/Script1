@@ -1,9 +1,13 @@
+--[[
+    WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
 local CloseBtn = Instance.new("TextButton")
 local AntiBangBtn = Instance.new("TextButton")
-local AutoBtn = Instance.new("TextButton") -- دکمه جدید برای حالت اتوماتیک
+local AutoBtn = Instance.new("TextButton")
+local StrongBtn = Instance.new("TextButton")
 local UICorner_Main = Instance.new("UICorner")
 local UIStroke_Main = Instance.new("UIStroke")
 local UIGradient_Main = Instance.new("UIGradient")
@@ -66,7 +70,6 @@ CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextSize = 20
 CloseBtn.Parent = MainFrame
-
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
 local function ApplyEffects(btn)
@@ -78,6 +81,7 @@ local function ApplyEffects(btn)
     end)
 end
 
+-- دکمه عادی
 AntiBangBtn.Size = UDim2.new(0, 200, 0, 40)
 AntiBangBtn.Position = UDim2.new(0, 10, 0, 45)
 AntiBangBtn.Text = "Execute"
@@ -91,6 +95,7 @@ local bStroke1 = Instance.new("UIStroke", AntiBangBtn)
 bStroke1.Color = Color3.fromRGB(0, 150, 255)
 bStroke1.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
+-- دکمه اتوماتیک
 AutoBtn.Size = UDim2.new(0, 200, 0, 40)
 AutoBtn.Position = UDim2.new(0, 10, 0, 95)
 AutoBtn.Text = "Automatic: OFF"
@@ -104,9 +109,24 @@ local bStroke2 = Instance.new("UIStroke", AutoBtn)
 bStroke2.Color = Color3.fromRGB(0, 150, 255)
 bStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
+-- دکمه Strong Anti Bang (زمان 15 ثانیه)
+StrongBtn.Size = UDim2.new(0, 200, 0, 40)
+StrongBtn.Position = UDim2.new(0, 10, 0, 145)
+StrongBtn.Text = "Glitch Mode (10s)"
+StrongBtn.BackgroundColor3 = Color3.fromRGB(120, 20, 20)
+StrongBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+StrongBtn.Font = Enum.Font.GothamBold
+StrongBtn.TextSize = 12
+StrongBtn.Parent = MainFrame
+Instance.new("UICorner", StrongBtn).CornerRadius = UDim.new(0, 6)
+local bStroke3 = Instance.new("UIStroke", StrongBtn)
+bStroke3.Color = Color3.fromRGB(255, 50, 50)
+bStroke3.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
 ApplyEffects(CloseBtn)
 ApplyEffects(AntiBangBtn)
 ApplyEffects(AutoBtn)
+ApplyEffects(StrongBtn)
 
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
@@ -131,18 +151,33 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- اندازه Frame را برای جا دادن دو دکمه بزرگتر کردیم
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
-TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 220, 0, 145)}):Play()
+TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 220, 0, 195)}):Play()
 
 workspace.FallenPartsDestroyHeight = 0/0
 
--- متغیرهای کنترل
 local isDodging = false
 local autoEnabled = false
-local PROXIMITY_DISTANCE = 2 -- فاصله‌ای که در آن بازیکنان دیگر تشخیص داده می‌شوند (استود)
+local PROXIMITY_DISTANCE = 2
 
--- تابع اصلی Anti Bang با قابلیت شبح (Ghost Part)
+-- فانکشن پارت شبح
+local function createGhostPart(originalCF)
+    local ghostPart = Instance.new("Part")
+    ghostPart.Name = "AntiBangGhost"
+    ghostPart.Size = Vector3.new(2, 2, 1)
+    ghostPart.CFrame = originalCF
+    ghostPart.Anchored = true
+    ghostPart.CanCollide = false
+    ghostPart.Transparency = 0.6
+    ghostPart.Color = Color3.fromRGB(163, 162, 165)
+    ghostPart.Material = Enum.Material.Plastic
+    ghostPart.TopSurface = Enum.SurfaceType.Studs
+    ghostPart.BottomSurface = Enum.SurfaceType.Inlet
+    ghostPart.Parent = workspace
+    return ghostPart
+end
+
+-- تابع عادی
 local function performAntiBang()
     if isDodging then return end
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
@@ -151,79 +186,133 @@ local function performAntiBang()
         local humanoid = player.Character.Humanoid
         local originalCF = root.CFrame
         
-        -- ساخت Part شبح برای موقعیت اصلی
-        local ghostPart = Instance.new("Part")
-        ghostPart.Name = "AntiBangGhost"
-        ghostPart.Size = Vector3.new(2, 2, 1) -- سایز تقریبی بدن
-        ghostPart.CFrame = originalCF
-        ghostPart.Anchored = true
-        ghostPart.CanCollide = false
-        ghostPart.Transparency = 0.6
-        
-        -- تغییرات برای حس کلاسیک
-        ghostPart.Color = Color3.fromRGB(163, 162, 165) -- رنگ خاکستری کلاسیک (Medium stone grey)
-        ghostPart.Material = Enum.Material.Plastic -- متریال پلاستیک کلاسیک
-        ghostPart.TopSurface = Enum.SurfaceType.Studs -- اضافه کردن Stud به سطح بالایی
-        ghostPart.BottomSurface = Enum.SurfaceType.Inlet -- اضافه کردن فرورفتگی به سطح پایینی
-        
-        ghostPart.Parent = workspace
-        
-        -- قفل کردن دوربین روی پارت شبح
+        local ghostPart = createGhostPart(originalCF)
         local cam = workspace.CurrentCamera
         cam.CameraSubject = ghostPart
         
-        -- رفتن به وید
         root.CFrame = originalCF * CFrame.new(0, -551, 0)
-        
         task.wait(0.4)
         
-        -- برگشت به جای قبلی
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             player.Character.HumanoidRootPart.CFrame = originalCF
         end
         
-        -- برگرداندن دوربین روی پلیر و پاک کردن پارت شبح
         cam.CameraSubject = humanoid
         ghostPart:Destroy()
         
-        -- جلوگیری از تکرار بیش از حد سریع در حالت اتوماتیک
         task.wait(1.5)
         isDodging = false
     end
+end
+
+-- تابع Strong Anti Bang (15 ثانیه خروج مستقیم با سرعت 100 هزار استود!)
+local function performStrongAntiBang()
+    if isDodging then return end
+    isDodging = true
+    
+    -- اجرای کد بای‌پس NetworkPause با نوتیفیکیشن
+    local function notify(title, text)
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = title,
+                Text = text,
+                Duration = 5
+            })
+        end)
+    end
+
+    local CoreGui = game:GetService("CoreGui")
+    if getgenv().networkPaused then
+        pcall(function() getgenv().networkPaused:Disconnect() end)
+    end
+    getgenv().networkPaused = CoreGui.RobloxGui.ChildAdded:Connect(function(obj)
+        if obj.Name == "CoreScripts/NetworkPause" then
+            pcall(function() obj:Destroy() end)
+        end
+    end)
+    pcall(function()
+        local existingPause = CoreGui.RobloxGui:FindFirstChild("CoreScripts/NetworkPause")
+        if existingPause then existingPause:Destroy() end
+    end)
+    
+    notify("AntiGamePlayPaused", "Network Pause Bypassed - Entering Null Zone!")
+    -- =========================================
+
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
+        local root = player.Character.HumanoidRootPart
+        local humanoid = player.Character.Humanoid
+        local originalCF = root.CFrame
+        
+        local ghostPart = createGhostPart(originalCF)
+        local cam = workspace.CurrentCamera
+        cam.CameraSubject = ghostPart
+        
+        -- تلپورت به بالا تا به هیچ چیز برخورد نکنیم
+        root.CFrame = originalCF * CFrame.new(0, 1000, 0)
+        
+        -- سرعت ماورایی و دیوانه‌وار برای رسیدن به ته دنیای بازی
+        local moveSpeed = 1000000000 -- صد هزار استود در ثانیه!
+        local moveConnection
+        
+        moveConnection = RunService.Heartbeat:Connect(function(deltaTime)
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                -- شلیک شدن در خط مستقیم رو به جلو با سرعت فضایی
+                player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -moveSpeed * deltaTime)
+            end
+        end)
+        
+        -- حالا 15 ثانیه توی این حالت میمونه تا قشنگ گلیچ بخوره
+        task.wait(10)
+        
+        -- قطع کردن نیروی حرکت
+        if moveConnection then moveConnection:Disconnect() end
+        
+        -- برگرداندن پلیر به جای اصلی
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            root.Velocity = Vector3.new(0,0,0)
+            root.RotVelocity = Vector3.new(0,0,0)
+            root.CFrame = originalCF
+        end
+        
+        cam.CameraSubject = humanoid
+        ghostPart:Destroy()
+    end
+    
+    isDodging = false
 end
 
 AntiBangBtn.MouseButton1Click:Connect(function()
     task.spawn(performAntiBang)
 end)
 
+StrongBtn.MouseButton1Click:Connect(function()
+    task.spawn(performStrongAntiBang)
+end)
+
 AutoBtn.MouseButton1Click:Connect(function()
     autoEnabled = not autoEnabled
     if autoEnabled then
         AutoBtn.Text = "Automatic: ON"
-        AutoBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50) -- رنگ سبز برای روشن بودن
+        AutoBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
     else
         AutoBtn.Text = "Automatic: OFF"
-        AutoBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- رنگ اصلی برای خاموش بودن
+        AutoBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     end
 end)
 
--- حلقه پردازش فریم به فریم برای تشخیص بازیکنان نزدیک
 RunService.RenderStepped:Connect(function()
     UIGradient_Main.Rotation = UIGradient_Main.Rotation + 3
     
     if autoEnabled and not isDodging then
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local myRoot = player.Character.HumanoidRootPart
-            
             for _, otherPlayer in ipairs(Players:GetPlayers()) do
                 if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
                     local otherRoot = otherPlayer.Character.HumanoidRootPart
                     local distance = (myRoot.Position - otherRoot.Position).Magnitude
-                    
-                    -- اگر پلیر دیگری نزدیک‌تر از مقدار تعیین شده بود
                     if distance <= PROXIMITY_DISTANCE then
                         task.spawn(performAntiBang)
-                        break -- برای جلوگیری از اجرای همزمان چند دستور
+                        break
                     end
                 end
             end
@@ -232,7 +321,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 CloseBtn.MouseButton1Click:Connect(function()
-    autoEnabled = false -- برای اطمینان خاموش کردن حالت اتوماتیک قبل از بستن
+    autoEnabled = false
     TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)}):Play()
     task.wait(0.3)
     ScreenGui:Destroy()
