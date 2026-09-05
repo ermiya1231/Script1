@@ -1,253 +1,298 @@
--- ==========================================
--- NUCLEAR ANTI SLAP (ABSOLUTE IMMUNITY - ZERO WALL FRICTION & FIXED CLIMB)
--- ==========================================
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local CoreGui = game:GetService("CoreGui")
-
 local LocalPlayer = Players.LocalPlayer
-local Enabled = false
-local Connection = nil
 
-local MoverName = "GOD_MOVER_ANTISLAP"
-
-------------------------------------------
--- 1. ساخت GUI 
-------------------------------------------
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "NuclearAntiSlap_UI"
-ScreenGui.ResetOnSpawn = false
-pcall(function() ScreenGui.Parent = CoreGui end)
-if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 170, 0, 80)
-MainFrame.Position = UDim2.new(0.45, 0, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
-
-local FrameCorner = Instance.new("UICorner")
-FrameCorner.CornerRadius = UDim.new(0, 10)
-FrameCorner.Parent = MainFrame
-
-local FrameStroke = Instance.new("UIStroke")
-FrameStroke.Color = Color3.fromRGB(255, 30, 30)
-FrameStroke.Thickness = 2
-FrameStroke.Parent = MainFrame
-
-local Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Size = UDim2.new(1, 0, 0.4, 0)
-Title.Position = UDim2.new(0, 0, 0.05, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "GOD Anti Slap"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 16
-Title.Font = Enum.Font.GothamBold
-Title.Parent = MainFrame
-
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "ToggleBtn"
-ToggleBtn.Size = UDim2.new(0.85, 0, 0.42, 0)
-ToggleBtn.Position = UDim2.new(0.075, 0, 0.48, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-ToggleBtn.Text = "OFF"
-ToggleBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-ToggleBtn.TextSize = 14
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.Parent = MainFrame
-
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 8)
-BtnCorner.Parent = ToggleBtn
-
-local BtnStroke = Instance.new("UIStroke")
-BtnStroke.Color = Color3.fromRGB(60, 60, 65)
-BtnStroke.Thickness = 1
-BtnStroke.Parent = ToggleBtn
-
-------------------------------------------
--- 2. توابع کمکی (حذف فورس‌ها و صفر کردن اصطکاک)
-------------------------------------------
-local function KillForeignMovers(char)
-    for _, part in ipairs(char:GetDescendants()) do
-        if part:IsA("BodyMover") or part:IsA("BodyVelocity") or part:IsA("BodyForce") 
-        or part:IsA("BodyPosition") or part:IsA("BodyThrust") or part:IsA("VectorForce") 
-        or part:IsA("AlignPosition") or part:IsA("LinearVelocity") or part:IsA("AngularVelocity") then
-            if part.Name ~= MoverName then
-                pcall(function() part:Destroy() end)
+-- لود کردن درگ برای UI
+pcall(function()
+local uis = game:GetService("UserInputService")
+local localplr = game.Players.LocalPlayer
+local mouse = localplr:GetMouse()
+local dragging = {}
+function dragtopos(fpos,spos,pos,frame,bounds,ar)
+    local finalpos = UDim2.new(
+        frame.Position.X.Scale, --spos.X.Scale+(fpos.X.Scale-pos.X.Scale),
+        spos.X.Offset-(fpos.X.Offset-pos.X),
+        frame.Position.Y.Scale, --spos.Y.Scale+(fpos.Y.Scale-pos.Y.Scale),
+        spos.Y.Offset-(fpos.Y.Offset-pos.Y)
+    )
+    if bounds ~= nil then
+        local UI = Instance.new("ScreenGui")
+        UI.ScreenInsets = Enum.ScreenInsets.None 
+        UI.Parent = game.CoreGui
+        local screensize = UI.AbsoluteSize
+        UI.Enabled = true
+        local replframe = frame:Clone()
+        replframe.Parent = UI
+        replframe.Position = finalpos
+        local absp = replframe.AbsolutePosition
+        local abss = replframe.AbsoluteSize
+        finalpos = UDim2.new(
+            finalpos.X.Scale,
+            math.clamp(
+                finalpos.X.Offset,
+                -finalpos.X.Scale*screensize.X,
+                -finalpos.X.Scale*screensize.X+(screensize.X-abss.X)
+            ),
+            finalpos.Y.Scale,
+            math.clamp(
+                finalpos.Y.Offset,
+                -finalpos.Y.Scale*screensize.Y,
+                (-finalpos.Y.Scale*screensize.Y)+(screensize.Y-abss.Y) -- doesnt actually do the correct position but i gave up
+            )
+        )
+        UI:Destroy()
+    end
+    frame.Position = finalpos
+end
+local drag = function(frame,bounds,chf)
+    local frames = {}
+    if frame:IsA("ScreenGui") then
+        for i,v in pairs(frame:GetChildren()) do
+            if chf ~= nil and (v:IsA("Frame") or v:IsA("ScrollingFrame")) then
+                table.insert(frames,v)
+            elseif not chf then
+                table.insert(frames,v)
             end
         end
+    else
+        table.insert(frames,frame)
+    end
+    for i,frame in pairs(frames) do
+        frame.Active = true -- uhh
+        local w,h = frame.AbsoluteSize.X,frame.AbsoluteSize.Y
+        local ar = w/h
+        frame.InputBegan:Connect(function(input)
+            if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not dragging[input] then
+                dragging[input] = frame
+                local firstpos = UDim2.new(0,mouse.X,0,mouse.Y)
+                local startpos = frame.Position
+                local move1 = uis.TouchMoved:Connect(function(input2)
+                    if input == input2 then
+                        dragtopos(firstpos,startpos,input2.Position,frame,bounds or nil,ar)
+                    end
+                end)
+                local move2 = uis.InputChanged:Connect(function(input2)
+                    if input2.UserInputType == Enum.UserInputType.MouseMovement then
+                        dragtopos(firstpos,startpos,input2.Position,frame,bounds or nil,ar)
+                    end
+                end)
+                repeat task.wait() until dragging[input] == nil
+                move1:Disconnect()
+                move2:Disconnect()
+            end
+        end)
+        uis.InputEnded:Connect(function(input)
+            dragging[input] = nil
+        end)
+        uis.InputBegan:Connect(function(input)
+            dragging[input] = true
+        end)
+    end
+end
+return drag
+end)
+if not drag then
+    drag = function(f)
+        f.Active = true
+        f.Draggable = true
     end
 end
 
-local function SetZeroFriction(char)
-    -- این تابع باعث میشه کاراکتر به هیچ وجه به دیوارها نچسبه
+-- ساخت UI
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.Parent = game.CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,220,0,90)
+frame.Position = UDim2.new(0.5,-110,0.5,-45)
+frame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+frame.BorderColor3 = Color3.fromRGB(255,255,255)
+frame.Parent = gui
+drag(frame)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,0.4,0)
+title.BackgroundTransparency = 1
+title.Text = "Anti Slap V2"
+title.TextScaled = true
+title.TextColor3 = Color3.new(1,1,1)
+title.Parent = frame
+
+local toggle = Instance.new("TextButton")
+toggle.Position = UDim2.new(0,10,0.45,0)
+toggle.Size = UDim2.new(1,-20,0.45,0)
+toggle.BackgroundColor3 = Color3.fromRGB(60,60,60)
+toggle.BorderColor3 = Color3.fromRGB(255,255,255)
+toggle.TextColor3 = Color3.new(1,1,1)
+toggle.TextScaled = true
+toggle.Parent = frame
+
+local AntiFling = false
+local Connection
+
+-- تابع تبدیل کردن کاراکتر به تانک
+local function setupTankMode(char)
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then return end
+
     for _, part in ipairs(char:GetDescendants()) do
         if part:IsA("BasePart") then
-            local currentProp = part.CurrentPhysicalProperties
-            local density = currentProp and currentProp.Density or 0.7
-            -- فرمول: (چگالی, اصطکاک، کشسانی، وزن اصطکاک، وزن کشسانی)
-            part.CustomPhysicalProperties = PhysicalProperties.new(density, 0, 0, 100, 100)
-        end
-    end
-end
-
-------------------------------------------
--- 3. نصب موتور فیزیک شخصی
-------------------------------------------
-local function SetupGodMode(char)
-    local root = char:WaitForChild("HumanoidRootPart", 5)
-    if not root then return end
-    
-    if root:FindFirstChild(MoverName) then root[MoverName]:Destroy() end
-    if root:FindFirstChild("AntiSlapAttachment") then root.AntiSlapAttachment:Destroy() end
-
-    -- صفر کردن اصطکاک برای جلوگیری از چسبیدن به دیوار
-    SetZeroFriction(char)
-
-    local attach = Instance.new("Attachment", root)
-    attach.Name = "AntiSlapAttachment"
-
-    local lv = Instance.new("LinearVelocity", root)
-    lv.Name = MoverName
-    lv.Attachment0 = attach
-    lv.ForceLimitMode = Enum.ForceLimitMode.PerAxis
-    lv.MaxAxesForce = Vector3.new(math.huge, 0, math.huge) 
-    lv.RelativeTo = Enum.ActuatorRelativeTo.World
-    lv.VectorVelocity = Vector3.zero
-end
-
-------------------------------------------
--- 4. لوپ اصلی
-------------------------------------------
-local function StartGodGuard()
-    if Connection then Connection:Disconnect() end
-    
-    Connection = RunService.Heartbeat:Connect(function()
-        if not Enabled then return end
-        
-        local char = LocalPlayer.Character
-        if not char then return end
-        
-        local root = char:FindFirstChild("HumanoidRootPart")
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        
-        if hum and root then
-            KillForeignMovers(char)
-            
-            -- ۱. جلوگیری از زمین‌گیر شدن
-            hum.PlatformStand = false
-            hum.Sit = false
-            
-            -- ۲. غیرفعال کردن استیت‌های خطرناک
-            hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
-            
-            local currentState = hum:GetState()
-            if currentState == Enum.HumanoidStateType.Ragdoll or currentState == Enum.HumanoidStateType.Physics or currentState == Enum.HumanoidStateType.FallingDown then
-                hum:ChangeState(Enum.HumanoidStateType.Running)
-            end
-            
-            -- ۳. مدیریت برخوردها (RootPart نباید برخورد داشته باشه تا به لبه‌ها گیر نکنه)
-            root.CanCollide = false 
-            if char:FindFirstChild("Torso") then char.Torso.CanCollide = true end
-            if char:FindFirstChild("UpperTorso") then char.UpperTorso.CanCollide = true end
-            if char:FindFirstChild("LowerTorso") then char.LowerTorso.CanCollide = true end
-            if char:FindFirstChild("Head") then char.Head.CanCollide = true end
-            
-            local isMoving = hum.MoveDirection.Magnitude > 0
-            local isClimbing = (currentState == Enum.HumanoidStateType.Climbing)
-            
-            -- تشخیص دقیق پرش و روی هوا بودن
-            local isJumpingOrFalling = (currentState == Enum.HumanoidStateType.Jumping) 
-                or (currentState == Enum.HumanoidStateType.Freefall) 
-                or (hum.FloorMaterial == Enum.Material.Air and not isClimbing)
-                or (math.abs(root.AssemblyLinearVelocity.Y) > 1 and not isClimbing)
-                or hum.Jump
-            
-            -- ۴. لنگر هوشمند
-            if not isMoving and not isJumpingOrFalling and not isClimbing then
-                root.Anchored = true
-                root.AssemblyLinearVelocity = Vector3.zero
+            if part.Name == "HumanoidRootPart" then
+                part.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0, 0, 1, 1)
             else
-                root.Anchored = false
+                part.Massless = true
+                part.CustomPhysicalProperties = PhysicalProperties.new(0.01, 0, 0, 1, 1)
             end
-            
-            -- ۵. کنترل حرکت
-            local lv = root:FindFirstChild(MoverName)
-            if lv then
-                if isClimbing then
-                    lv.Enabled = false -- برای نردبان موتور رو خاموش می‌کنیم تا راحت بالا بره
-                else
-                    lv.Enabled = true
-                    lv.VectorVelocity = hum.MoveDirection * hum.WalkSpeed
-                end
-            end
-            
-            -- ۶. ضد آپرکات شدید
-            if root.AssemblyLinearVelocity.Y > 110 then
-                root.AssemblyLinearVelocity = Vector3.new(root.AssemblyLinearVelocity.X, 0, root.AssemblyLinearVelocity.Z)
-            end
-            
-            root.AssemblyAngularVelocity = Vector3.zero
         end
-    end)
+    end
+
+    hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+    hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+    hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
+
+    local attachment = hrp:FindFirstChild("AntiFlingAttachment") or Instance.new("Attachment", hrp)
+    attachment.Name = "AntiFlingAttachment"
+
+    local mover = hrp:FindFirstChild("AntiFlingVelocity") or Instance.new("LinearVelocity", hrp)
+    mover.Name = "AntiFlingVelocity"
+    mover.Attachment0 = attachment
+    mover.RelativeTo = Enum.ActuatorRelativeTo.World
+    
+    mover.ForceLimitMode = Enum.ForceLimitMode.PerAxis
+    mover.MaxAxesForce = Vector3.new(99999999, 0, 99999999) 
+    mover.Enabled = true
 end
 
-------------------------------------------
--- 5. دکمه فعال/غیرفعال
-------------------------------------------
-ToggleBtn.MouseButton1Click:Connect(function()
-    Enabled = not Enabled
-    if Enabled then
-        ToggleBtn.Text = "ON"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-        ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        BtnStroke.Color = Color3.fromRGB(0, 255, 120)
-        FrameStroke.Color = Color3.fromRGB(0, 255, 120)
-        
-        if LocalPlayer.Character then
-            SetupGodMode(LocalPlayer.Character)
-        end
-        StartGodGuard()
-    else
-        ToggleBtn.Text = "OFF"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        ToggleBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-        BtnStroke.Color = Color3.fromRGB(60, 60, 65)
-        FrameStroke.Color = Color3.fromRGB(255, 30, 30)
-        
-        if Connection then Connection:Disconnect() end
-        
-        if LocalPlayer.Character then
-            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if root then
-                root.Anchored = false
-                if root:FindFirstChild(MoverName) then root[MoverName]:Destroy() end
-                if root:FindFirstChild("AntiSlapAttachment") then root.AntiSlapAttachment:Destroy() end
+-- تابع بازگرداندن به حالت عادی
+local function disableTankMode(char)
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    
+    if hum then
+        hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+        hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+        hum:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
+    end
+    
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CustomPhysicalProperties = nil
+            if part.Name ~= "HumanoidRootPart" then
+                part.Massless = false
             end
+        end
+    end
+
+    if hrp then
+        local mover = hrp:FindFirstChild("AntiFlingVelocity")
+        if mover then mover:Destroy() end
+        local att = hrp:FindFirstChild("AntiFlingAttachment")
+        if att then att:Destroy() end
+    end
+end
+
+-- حلقه‌ی دفاعی
+local function onUpdate()
+    if not AntiFling then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local mover = hrp and hrp:FindFirstChild("AntiFlingVelocity")
+
+    if hum and hrp then
+        if hum.PlatformStand then hum.PlatformStand = false end
+        if hum.Sit then hum.Sit = false end
+        
+        for _, obj in ipairs(hrp:GetChildren()) do
+            if obj:IsA("BodyVelocity") or obj:IsA("BodyThrust") or obj:IsA("BodyForce") 
+            or obj:IsA("BodyAngularVelocity") or obj:IsA("AngularVelocity") or obj:IsA("Torque") 
+            or (obj:IsA("LinearVelocity") and obj.Name ~= "AntiFlingVelocity") then
+                obj:Destroy()
+            end
+        end
+
+        local moveDir = hum.MoveDirection
+        local isNearWall = false
+        
+        -- آپدیت جدید: رادار تشخیص دیوار (جلوگیری از بالا رفتن از دیوار و چسبیدن به آن)
+        if moveDir.Magnitude > 0 then
+            local rayOrigin = hrp.Position
+            local params = RaycastParams.new()
+            params.FilterDescendantsInstances = {char}
+            params.FilterType = Enum.RaycastFilterType.Exclude
             
-            -- برگرداندن اصطکاک به حالت عادی
-            for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CustomPhysicalProperties = nil
-                end
+            -- ارسال یک پرتو به اندازه 2.2 استاد جلوتر از کاراکتر
+            local result = workspace:Raycast(rayOrigin, moveDir * 2.2, params)
+            
+            -- اگر به یک جسم سخت (مثل دیوار یا پله) برخورد کرد
+            if result and result.Instance and result.Instance.CanCollide then
+                isNearWall = true
             end
         end
+
+        -- اگر در حال بالا رفتن از نردبان هستید یا به دیوار نزدیک شده‌اید، نیروی هل‌دهنده را خاموش کن
+        if hum:GetState() == Enum.HumanoidStateType.Climbing or isNearWall then
+            if mover then mover.Enabled = false end
+        else
+            if mover then
+                mover.Enabled = true
+                mover.VectorVelocity = moveDir * hum.WalkSpeed
+            end
+        end
+
+        -- محدود کننده‌های سرعت (خفه‌کننده پرتاب)
+        local vel = hrp.AssemblyLinearVelocity
+        local newX, newY, newZ = vel.X, vel.Y, vel.Z
+
+        if vel.Y > 65 or vel.Y < -150 then newY = 0 end
+        
+        if moveDir.Magnitude == 0 then
+            if math.abs(vel.X) > 1 then newX = 0 end
+            if math.abs(vel.Z) > 1 then newZ = 0 end
+        end
+
+        if newX ~= vel.X or newY ~= vel.Y or newZ ~= vel.Z then
+            hrp.AssemblyLinearVelocity = Vector3.new(newX, newY, newZ)
+        end
+        
+        local angVel = hrp.AssemblyAngularVelocity
+        hrp.AssemblyAngularVelocity = Vector3.new(0, math.clamp(angVel.Y, -15, 15), 0)
+    end
+end
+
+local function refresh()
+    if AntiFling then
+        toggle.Text = "Anti Slap: ON"
+        setupTankMode(LocalPlayer.Character)
+        if not Connection then
+            Connection = RunService.Stepped:Connect(onUpdate)
+        end
+    else
+        toggle.Text = "Anti Slap: OFF"
+        disableTankMode(LocalPlayer.Character)
+        if Connection then
+            Connection:Disconnect()
+            Connection = nil
+        end
+    end
+end
+
+toggle.MouseButton1Click:Connect(function()
+    AntiFling = not AntiFling
+    refresh()
+end)
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    task.wait(0.5)
+    if AntiFling then
+        setupTankMode(char)
     end
 end)
 
-LocalPlayer.CharacterAdded:Connect(function(newChar)
-    if Enabled then
-        task.wait(0.5)
-        SetupGodMode(newChar)
-    end
-end)
+refresh()
