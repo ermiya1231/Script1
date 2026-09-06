@@ -296,14 +296,16 @@ local FES_ScreenGui = Instance.new("ScreenGui")
         FES_Active = false
         end)
  
-        while true do
-        wait(0.5)
-        local FES_setting = game:GetService("SoundService").RespectFilteringEnabled
-        if FES_setting == true then
-        FES_Time.TextColor = BrickColor.new(255,0,0)
-        FES_Time.Text ="RespectFilteringEnabled(RFE) : true"
-        elseif FES_setting == false then
-        FES_Time.Text ="RespectFilteringEnabled(RFE) : false"
-        FES_Time.TextColor = BrickColor.new(0,255,0)
-        end
-end
+task.spawn(function()
+            while true do
+                task.wait(0.5)
+                local FES_setting = game:GetService("SoundService").RespectFilteringEnabled
+                if FES_setting == true then
+                    FES_Time.TextColor = BrickColor.new(255,0,0)
+                    FES_Time.Text ="RespectFilteringEnabled(RFE) : true"
+                elseif FES_setting == false then
+                    FES_Time.Text ="RespectFilteringEnabled(RFE) : false"
+                    FES_Time.TextColor = BrickColor.new(0,255,0)
+                end
+            end
+        end)
