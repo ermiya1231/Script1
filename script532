@@ -1,10 +1,3 @@
-		--[[
-        Made By Scripty#2063
-        If You Gonna showcase this , make sure to Credit me , do not take that you are owner of the script
-        This Gui is Undetectable
-        RespectFilteringEnabled must be false to use it
-        --]]
-
         local ScreenGui = Instance.new("ScreenGui")
         local Draggable = Instance.new("Frame")
         local Frame = Instance.new("Frame")
