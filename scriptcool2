@@ -84,7 +84,7 @@ ToggleButton.MouseButton1Click:Connect(function()
     
     local goalColor
     if isAntiVoidOn then
-        Workspace.FallenPartsDestroyHeight = nan
+        Workspace.FallenPartsDestroyHeight = 0/0
         ToggleButton.Text = "ON"
         goalColor = Color3.fromRGB(75, 255, 115)
     else
