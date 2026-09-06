@@ -295,16 +295,7 @@
         Stop.MouseButton1Click:Connect(function()
         Active = false
         end)
-        --Credit:
-        notification:Play()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "FE Sound Hack";
-        Text = "FE Sound Hack Has Been Loaded , Skidded By C00LHACK";
-        Icon = "";
-        Duration = 10; 
-        Button1 = "Yes Sir";
-        })
-        --Check:
+ 
         while true do
         wait(0.5)
         local setting = game:GetService("SoundService").RespectFilteringEnabled
