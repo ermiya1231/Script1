@@ -1,4 +1,3 @@
-
 if not SoundService.RespectFilteringEnabled then
     
 game.StarterGui:SetCore("SendNotification", {
