@@ -1,0 +1,10 @@
+local TARGET_ID = 73885730
+
+if game.PlaceId == TARGET_ID or game.GameId == TARGET_ID then
+    print("بازی شناسایی شد! در حال اجرای اسکریپت...")
+    
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script531"))()
+
+else
+    warn("این اسکریپت برای این بازی ساخته نشده است. شناسه فعلی: " .. tostring(game.PlaceId))
+end
