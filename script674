@@ -1,8 +1,4 @@
-local SoundService = game:GetService("SoundService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 
--- بررسی وضعیت RespectFilteringEnabled
 if not SoundService.RespectFilteringEnabled then
     
 game.StarterGui:SetCore("SendNotification", {
