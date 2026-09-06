@@ -1,3 +1,7 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local SoundService = game:GetService("SoundService")
+
 if not SoundService.RespectFilteringEnabled then
     
 game.StarterGui:SetCore("SendNotification", {
