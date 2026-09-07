@@ -1,0 +1,250 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- متغیرهای سیستم
+local activeMode = nil
+local connection = nil
+local animTrack1, animTrack2 = nil, nil
+local savedpos = nil
+local targetPlayer = nil
+local bangLoop = nil
+local speedTask = nil
+
+local character, humanoid, root = nil, nil, nil
+
+local function updateCharacter(newChar)
+    character = newChar
+    if newChar then
+        humanoid = newChar:WaitForChild("Humanoid", 5)
+        root = newChar:WaitForChild("HumanoidRootPart", 5)
+    end
+end
+
+if LocalPlayer.Character then updateCharacter(LocalPlayer.Character) end
+LocalPlayer.CharacterAdded:Connect(updateCharacter)
+
+-- ساخت GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MasterpiecePanel_V2"
+ScreenGui.Parent = game:GetService("CoreGui") or LocalPlayer:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Position = UDim2.new(0.5, -100, 0.6, 0)
+MainFrame.Size = UDim2.new(0, 200, 0, 190)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+local Title = Instance.new("TextLabel")
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "No Delay Troll By C00LHACK"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 15
+
+local TargetTextBox = Instance.new("TextBox")
+TargetTextBox.Parent = MainFrame
+TargetTextBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+TargetTextBox.Position = UDim2.new(0.1, 0, 0.2, 0)
+TargetTextBox.Size = UDim2.new(0.8, 0, 0, 30)
+TargetTextBox.Font = Enum.Font.SourceSans
+TargetTextBox.PlaceholderText = "Target Username..."
+TargetTextBox.Text = ""
+TargetTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TargetTextBox.TextSize = 14
+
+-- دکمه‌ها
+local BtnNormal = Instance.new("TextButton")
+BtnNormal.Parent = MainFrame
+BtnNormal.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+BtnNormal.Position = UDim2.new(0.1, 0, 0.4, 0)
+BtnNormal.Size = UDim2.new(0.8, 0, 0, 25)
+BtnNormal.Font = Enum.Font.SourceSansBold
+BtnNormal.Text = "Hand PP"
+BtnNormal.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnNormal.TextSize = 14
+
+local BtnOscillate = Instance.new("TextButton")
+BtnOscillate.Parent = MainFrame
+BtnOscillate.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+BtnOscillate.Position = UDim2.new(0.1, 0, 0.57, 0)
+BtnOscillate.Size = UDim2.new(0.8, 0, 0, 25)
+BtnOscillate.Font = Enum.Font.SourceSansBold
+BtnOscillate.Text = "Get Sucked"
+BtnOscillate.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnOscillate.TextSize = 14
+
+local BtnBang = Instance.new("TextButton")
+BtnBang.Parent = MainFrame
+BtnBang.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+BtnBang.Position = UDim2.new(0.1, 0, 0.74, 0)
+BtnBang.Size = UDim2.new(0.8, 0, 0, 25)
+BtnBang.Font = Enum.Font.SourceSansBold
+BtnBang.Text = "Bang"
+BtnBang.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnBang.TextSize = 14
+
+local function getTarget()
+    local name = TargetTextBox.Text:lower():gsub("%s+", "")
+    if name == "" then return nil end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then
+            if p.Name:lower():find(name) or (p.DisplayName and p.DisplayName:lower():find(name)) then
+                return p
+            end
+        end
+    end
+    return nil
+end
+
+local function stopAll()
+    activeMode = nil
+    BtnNormal.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    BtnOscillate.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    BtnBang.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    
+    if connection then connection:Disconnect(); connection = nil end
+    if bangLoop then task.cancel(bangLoop); bangLoop = nil end
+    if speedTask then task.cancel(speedTask); speedTask = nil end
+    if animTrack1 then animTrack1:Stop(); animTrack1 = nil end
+    if animTrack2 then animTrack2:Stop(); animTrack2 = nil end
+    
+    pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+    if humanoid then workspace.CurrentCamera.CameraSubject = humanoid end
+
+    if savedpos and root and root.Parent then
+        root.CFrame = savedpos
+        root.Velocity = Vector3.new()
+        root.AssemblyLinearVelocity = Vector3.new()
+        root.AssemblyAngularVelocity = Vector3.new()
+        root.RotVelocity = Vector3.new()
+    end
+    savedpos = nil
+end
+
+local function playAnim(id, speed)
+    local anim = Instance.new("Animation")
+    anim.AnimationId = id
+    local track = humanoid:LoadAnimation(anim)
+    track.Looped = true
+    track:Play()
+    track:AdjustSpeed(speed or 1)
+    return track
+end
+
+local function startMode(mode)
+    if activeMode then stopAll() end
+    targetPlayer = getTarget()
+    if not targetPlayer or not root or not humanoid or humanoid.Health <= 0 then return end
+    
+    activeMode = mode
+    savedpos = root.CFrame
+    
+    if targetPlayer.Character then
+        local tHum = targetPlayer.Character:FindFirstChild("Humanoid")
+        if tHum then workspace.CurrentCamera.CameraSubject = tHum end
+    end
+    
+    local tChar = targetPlayer.Character
+    local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+    
+    if mode == "Normal" then
+        BtnNormal.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        animTrack1 = playAnim("rbxassetid://85568863", 1)
+        
+        -- تنظیم سرعت بعد از ۰.۸ ثانیه به صفر (مطابق مشخصات)
+        speedTask = task.delay(0.80, function()
+            if activeMode == "Normal" and animTrack1 then
+                animTrack1:AdjustSpeed(0)
+            end
+        end)
+        
+    elseif mode == "Oscillate" then
+        BtnOscillate.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        -- افزایش سرعت انیمیشن به ۸
+        animTrack1 = playAnim("rbxassetid://79155149", 8)
+        
+    elseif mode == "Bang" then
+        BtnBang.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        local currentAnim = 1
+        local function loopBangAnim()
+            if currentAnim == 1 then
+                if animTrack2 then animTrack2:Stop() end
+                animTrack1 = playAnim("rbxassetid://215262147", 1)
+                currentAnim = 2
+            else
+                if animTrack1 then animTrack1:Stop() end
+                animTrack2 = playAnim("rbxassetid://185299570", 1)
+                currentAnim = 1
+            end
+            bangLoop = task.delay(0.5, loopBangAnim)
+        end
+        loopBangAnim()
+    end
+
+    connection = RunService.Heartbeat:Connect(function()
+        if not activeMode then return end
+        if not root or not root.Parent or humanoid.Health <= 0 then stopAll(); return end
+
+        if not tRoot or not tRoot:IsDescendantOf(workspace) then
+            tChar = targetPlayer.Character
+            tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+            if not tRoot then return end
+        end
+
+        local targetCFrame = tRoot.CFrame
+
+        if activeMode == "Normal" then
+            -- سیستم تشخیص پرش (Track Jump)
+            local tHum = tChar:FindFirstChild("Humanoid")
+            local currentYOffset = -4.4
+            
+            if tHum then
+                local state = tHum:GetState()
+                if state == Enum.HumanoidStateType.Jumping or state == Enum.HumanoidStateType.Freefall then
+                    currentYOffset = -30
+                end
+            end
+            
+            targetCFrame = targetCFrame * CFrame.new(0.5, currentYOffset, -1) * CFrame.Angles(0, 0, 1.5707963267948966)
+            
+        elseif activeMode == "Oscillate" then
+            -- افزایش سرعت فرکانس نوسان (از ۳.۷ به ۷.۵)
+            local oscValue = (math.sin(tick() * 7.5) * 0.3) - 1.3 
+            targetCFrame = targetCFrame * CFrame.new(0, 2.4, oscValue) * CFrame.Angles(math.pi, 0, math.pi)
+            
+        elseif activeMode == "Bang" then
+            targetCFrame = targetCFrame * CFrame.new(0, 0, 1.1) * CFrame.Angles(0, 0, 0)
+        end
+
+        pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", tRoot) end)
+
+        root.CFrame = targetCFrame
+        root.Velocity = Vector3.new()
+        root.AssemblyLinearVelocity = Vector3.new()
+        root.AssemblyAngularVelocity = Vector3.new()
+        root.RotVelocity = Vector3.new()
+    end)
+end
+
+-- کلیک روی دکمه‌ها
+BtnNormal.MouseButton1Click:Connect(function()
+    if activeMode == "Normal" then stopAll() else startMode("Normal") end
+end)
+
+BtnOscillate.MouseButton1Click:Connect(function()
+    if activeMode == "Oscillate" then stopAll() else startMode("Oscillate") end
+end)
+
+BtnBang.MouseButton1Click:Connect(function()
+    if activeMode == "Bang" then stopAll() else startMode("Bang") end
+end)
+
+LocalPlayer.CharacterRemoving:Connect(function()
+    pcall(function() sethiddenproperty(root, "PhysicsRepRootPart", nil) end)
+    stopAll()
+end)
