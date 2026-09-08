@@ -290,7 +290,7 @@ BtnRgbTag.MouseButton1Click:Connect(function()
                     nameTagEvent:FireServer(unpack(colorArgsList[rgbIndex]))
                 end
                 rgbIndex = (rgbIndex % #colorArgsList) + 1
-                task.wait(0.2)
+                task.wait(1)
             end
         end)
     else
