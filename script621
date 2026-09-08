@@ -1,0 +1,147 @@
+-- Services
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Tracking tables
+local equippedTools = {}
+local trackedTools = {}
+
+-- Send Notification
+pcall(function()
+    StarterGui:SetCore("SendNotification", {
+        Title = "Skidded By C00LHACK",
+        Text = "Enjoy!",
+        Icon = "rbxassetid://122714132204276",
+        Duration = 10
+    })
+end)
+
+-- GUI Creation
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MultiToolsV1"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local holder = Instance.new("Frame")
+holder.Name = "Holder"
+holder.AnchorPoint = Vector2.new(0, 0.5)
+holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+holder.BackgroundTransparency = 1
+holder.Position = UDim2.new(0.006, 0, 0.5, 0)
+holder.Size = UDim2.new(0, 138, 0, 76)
+holder.Parent = screenGui
+
+-- Activate All Button
+local activateBtn = Instance.new("TextButton")
+activateBtn.Name = "ActivateAll"
+activateBtn.BackgroundColor3 = Color3.fromRGB(36, 67, 104)
+activateBtn.BorderSizePixel = 0
+activateBtn.Position = UDim2.new(0, 0, -0.011, 0)
+activateBtn.Size = UDim2.new(0, 138, 0, 36)
+activateBtn.Font = Enum.Font.JosefinSans
+activateBtn.Text = "Activate All"
+activateBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+activateBtn.TextScaled = true
+activateBtn.Parent = holder
+
+local corner1 = Instance.new("UICorner", activateBtn)
+corner1.CornerRadius = UDim.new(0, 4)
+
+local sizeConstraint1 = Instance.new("UITextSizeConstraint", activateBtn)
+sizeConstraint1.MaxTextSize = 18
+
+-- Unequip All Button
+local unequipBtn = Instance.new("TextButton")
+unequipBtn.Name = "RemoveAll"
+unequipBtn.BackgroundColor3 = Color3.fromRGB(36, 67, 104)
+unequipBtn.BorderSizePixel = 0
+unequipBtn.Position = UDim2.new(0, 0, 0.521, 0)
+unequipBtn.Size = UDim2.new(0, 138, 0, 36)
+unequipBtn.Font = Enum.Font.JosefinSans
+unequipBtn.Text = "Unequip All"
+unequipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+unequipBtn.TextScaled = true
+unequipBtn.Parent = holder
+
+local corner2 = Instance.new("UICorner", unequipBtn)
+corner2.CornerRadius = UDim.new(0, 4)
+
+local sizeConstraint2 = Instance.new("UITextSizeConstraint", unequipBtn)
+sizeConstraint2.MaxTextSize = 18
+
+screenGui.Parent = PlayerGui
+
+-- Helper Functions
+local function trackTool(tool)
+    if not tool:IsA("Tool") or trackedTools[tool] then return end
+    
+    trackedTools[tool] = tool.Equipped:Connect(function()
+        equippedTools[tool] = true
+    end)
+end
+
+local function setupBackpack(backpack)
+    for _, child in ipairs(backpack:GetChildren()) do
+        trackTool(child)
+    end
+    
+    backpack.ChildAdded:Connect(trackTool)
+end
+
+-- Force keep equipped tools in character
+RunService.Heartbeat:Connect(function()
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    for tool, isEquipped in pairs(equippedTools) do
+        if isEquipped and tool.Parent ~= character then
+            tool.Parent = character
+        end
+    end
+end)
+
+-- Button Logic
+activateBtn.MouseButton1Click:Connect(function()
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    for _, child in ipairs(character:GetChildren()) do
+        if child:IsA("Tool") then
+            child:Activate()
+        end
+    end
+end)
+
+unequipBtn.MouseButton1Click:Connect(function()
+    table.clear(equippedTools)
+    
+    local character = LocalPlayer.Character
+    local backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
+    
+    if character and backpack then
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("Tool") then
+                child.Parent = backpack
+            end
+        end
+    end
+end)
+
+-- Character & Backpack Lifecycle
+if LocalPlayer:FindFirstChildOfClass("Backpack") then
+    setupBackpack(LocalPlayer.Backpack)
+end
+
+LocalPlayer.ChildAdded:Connect(function(child)
+    if child:IsA("Backpack") then
+        setupBackpack(child)
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    table.clear(equippedTools)
+end)
