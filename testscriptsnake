@@ -1,0 +1,27 @@
+loadstring(game:HttpGet('https://raw.githubusercontent.com/GhostPlayer352/UI-Library/refs/heads/main/Ghost%20Gui'))()
+game.CoreGui.GhostGui.MainFrame.Title.Text = "NO FE Snake"
+
+
+AddContent("TextButton", "Запустить Белого", [[
+loadstring(game:HttpGet("https://pastebin.com/raw/bHv33pLi"))()
+]])
+
+
+AddContent("TextButton", "Запустить Розового", [[
+loadstring(game:HttpGet("https://pastebin.com/raw/jGgn6SDn"))()
+]])
+
+
+AddContent("TextButton", "Запустить Черного", [[
+loadstring(game:HttpGet("https://pastebin.com/raw/4CTBvaGp"))()
+]])
+
+
+AddContent("TextButton", "Удалить змей", [[
+local PpHolder = workspace:FindFirstChild("PpHolder")
+
+while PpHolder do
+    PpHolder:Destroy()
+    PpHolder = workspace:FindFirstChild("PpHolder")
+end
+]])
