@@ -1,5 +1,506 @@
-loadstring(game:HttpGet('https://raw.githubusercontent.com/GhostPlayer352/UI-Library/refs/heads/main/Ghost%20Gui'))()
-game.CoreGui.GhostGui.MainFrame.Title.Text = "NO FE Snake"
+if game.CoreGui:FindFirstChild("GhostGui") then
+   game.CoreGui:FindFirstChild("GhostGui"):Destroy()
+end
+
+local ScreenGui1 = Instance.new("ScreenGui")
+ScreenGui1.Parent = game.CoreGui
+ScreenGui1.Name = "GhostGui"
+
+local Frame1 = Instance.new("Frame") 
+Frame1.Parent = ScreenGui1
+Frame1.Name = "MainFrame"
+Frame1.BackgroundColor3 = Color3.fromRGB(17,17,17)
+Frame1.Position = UDim2.new(0.3,0,0.05)
+Frame1.Size = UDim2.new(0,165,0,34,0)
+Frame1.Active = true
+Frame1.Draggable = true
+
+local UICorner1 = Instance.new("UICorner") 
+UICorner1.Parent = Frame1
+UICorner1.CornerRadius = UDim.new(0.15,0)
+
+local TextLabel1 = Instance.new("TextLabel") 
+TextLabel1.Parent = Frame1
+TextLabel1.Name = "Title"
+TextLabel1.BackgroundTransparency = 1
+TextLabel1.Position = UDim2.new(0,0,0)
+TextLabel1.Size = UDim2.new(1,0,1,0)
+TextLabel1.Font = Enum.Font.SourceSansBold
+TextLabel1.TextColor3 = Color3.fromRGB(248,248,248)
+TextLabel1.Text = "Title Here"
+TextLabel1.TextSize = 18
+TextLabel1.TextScaled = false
+TextLabel1.TextWrapped = true
+
+local Frame2 = Instance.new("Frame") 
+Frame2.Parent = Frame1
+Frame2.Name = "ContentsFrame"
+Frame2.BackgroundColor3 = Color3.fromRGB(33,33,33)
+Frame2.BorderSizePixel = 0
+Frame2.Position = UDim2.new(0,0,0.9)
+Frame2.Size = UDim2.new(1,0,0.1,0)
+Frame2.Visible = false
+
+local Frame2UICorner = UICorner1:Clone()
+Frame2UICorner.Parent = Frame2
+
+local UIListLayout1 = Instance.new("UIListLayout")
+UIListLayout1.Parent = Frame2
+UIListLayout1.Padding = UDim.new(-2.35,0)
+UIListLayout1.SortOrder = "LayoutOrder"
+
+local TextButton1 = Instance.new("TextButton") 
+TextButton1.Parent = Frame1
+TextButton1.Name = "Open"
+TextButton1.BackgroundTransparency = 1
+TextButton1.Position = UDim2.new(0.85,0,0.05)
+TextButton1.Size = UDim2.new(0.15,0,0.8,0)
+TextButton1.Font = Enum.Font.SourceSansBold
+TextButton1.TextColor3 = Color3.fromRGB(248,248,248)
+TextButton1.Text = "v"
+TextButton1.TextSize = 18
+TextButton1.TextScaled = true
+TextButton1.TextWrapped = false
+
+TextButton1.MouseButton1Click:Connect(function() 
+if TextButton1.Text == "v" then
+   TextButton1.Text = "–"
+   Frame2.Visible = true
+else
+   TextButton1.Text = "v"
+   Frame2.Visible = false
+end
+end)
+
+
+
+local ContentPositionZ = 0
+local Current_Layout = 0
+local Current_Parent = nil
+function AddContent(type, text, script, script2)
+ if text == nil then
+    text = ""
+ end
+ if script == nil then
+    script = ""
+ end
+ if script2 == nil then
+    script2 = ""
+ end
+ 
+ if type == "Title" then
+    TextLabel1.Text = text
+    return
+ end
+ 
+ for i, v in pairs((Current_Parent or Frame2):GetChildren()) do
+   if v:IsA("Frame") and v:FindFirstChild("UICorner") then
+      v:FindFirstChild("UICorner"):Destroy()
+   end
+ end
+ 
+ local Frame = Instance.new("Frame") 
+ Frame.Parent = Current_Parent or Frame2
+ Frame.BackgroundColor3 = Color3.fromRGB(33,33,33)
+ Frame.BorderSizePixel = 0
+ Frame.Position = UDim2.new(0,0,ContentPositionZ)
+ Frame.Size = UDim2.new(1,0,12,0)
+ 
+ local UICorner = Instance.new("UICorner") 
+ UICorner.Parent = Frame
+ UICorner.CornerRadius = UDim.new(0.15,0)
+ 
+ local RETURN = nil
+ if type == "Tab" then
+    Current_Layout += 1
+    Current_Parent = Frame
+    Frame.Name = "Tab"
+    Frame.Parent = Frame2
+    Frame.BackgroundColor3 = Color3.fromRGB(53,53,53)
+    Frame.LayoutOrder = Current_Layout
+    local ChildFrames = {}
+    local TextLabel = Instance.new("TextLabel") 
+    TextLabel.Parent = Frame
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Position = UDim2.new(0.1,0,0.15)
+    TextLabel.Size = UDim2.new(0.8,0,0.7,0)
+    TextLabel.Font = Enum.Font.SourceSansBold
+    TextLabel.TextColor3 = Color3.fromRGB(248,248,248)
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.Text = text
+    TextLabel.TextSize = 18
+    TextLabel.TextScaled = false
+    TextLabel.TextWrapped = true
+    
+    local TextButton = Instance.new("TextButton") 
+    TextButton.Parent = Frame
+    TextButton.BackgroundTransparency = 1
+    TextButton.Position = UDim2.new(0.83,0,0.15)
+    TextButton.Size = UDim2.new(0.15,0,0.7,0)
+    TextButton.Font = Enum.Font.SourceSansBold
+    TextButton.TextColor3 = Color3.fromRGB(248,248,248)
+    TextButton.Text = "v"
+    TextButton.TextSize = 18
+    TextButton.TextScaled = false
+    TextButton.TextWrapped = false
+    
+    TextButton.MouseButton1Click:Connect(function()
+    if TextButton.Text == "v" then
+       TextButton.Text = "—"
+       for i, v in pairs(Frame:GetChildren()) do
+         if v:IsA("Frame") then
+            table.insert(ChildFrames, v)
+            v.Parent = Frame.Parent
+            v.LayoutOrder = Frame.LayoutOrder
+         end
+       end
+    else
+       TextButton.Text = "v"
+       for i, v in pairs(ChildFrames) do
+         v.Parent = Frame
+       end
+    end
+    end)
+ elseif type == "TextLabel" then
+    local TextLabel = Instance.new("TextLabel") 
+    TextLabel.Parent = Frame
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Position = UDim2.new(0.1,0,0.15)
+    TextLabel.Size = UDim2.new(0.8,0,0.7,0)
+    TextLabel.Font = Enum.Font.SourceSansBold
+    TextLabel.TextColor3 = Color3.fromRGB(248,248,248)
+    TextLabel.Text = text
+    TextLabel.TextSize = 18
+    TextLabel.TextScaled = false
+    TextLabel.TextWrapped = true
+    RETURN = TextLabel
+ elseif type == "TextBox" then
+    local TextBox = Instance.new("TextBox") 
+    TextBox.Parent = Frame
+    TextBox.BackgroundTransparency = 0.25
+    TextBox.Position = UDim2.new(0.1,0,0.15)
+    TextBox.Size = UDim2.new(0.8,0,0.7,0)
+    TextBox.Font = Enum.Font.SourceSansBold
+    TextBox.TextColor3 = Color3.fromRGB(248,248,248)
+    TextBox.PlaceholderColor3 = Color3.fromRGB(179, 179, 179)
+    TextBox.PlaceholderText = text
+    TextBox.Text = ""
+    TextBox.TextSize = 18
+    TextBox.TextScaled = false
+    TextBox.TextWrapped = true
+
+    local UICorner = Instance.new("UICorner") 
+    UICorner.Parent = TextButton
+    UICorner.CornerRadius = UDim.new(0.15,0)
+    RETURN = TextBox
+ elseif type == "TextButton" then
+    local TextButton = Instance.new("TextButton") 
+    TextButton.Parent = Frame
+    TextButton.BackgroundTransparency = 0
+    TextButton.Position = UDim2.new(0.1,0,0.15)
+    TextButton.Size = UDim2.new(0.8,0,0.6,0)
+    TextButton.Font = Enum.Font.SourceSansBold
+    TextButton.TextColor3 = Color3.fromRGB(248,248,248)
+    TextButton.Text = text
+    TextButton.TextSize = 18
+    TextButton.TextScaled = false
+    TextButton.TextWrapped = true
+
+    local UICorner = Instance.new("UICorner") 
+    UICorner.Parent = TextButton
+    UICorner.CornerRadius = UDim.new(0.15,0)
+
+    TextButton.MouseButton1Click:Connect(function()
+    loadstring(script)()
+    end)
+ elseif type == "Toogle" or type == "Toggle" then
+    local TextLabel = Instance.new("TextLabel") 
+    TextLabel.Parent = Frame
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Position = UDim2.new(0.1,0,0.15)
+    TextLabel.Size = UDim2.new(0.7,0,0.7,0)
+    TextLabel.Font = Enum.Font.SourceSansBold
+    TextLabel.TextColor3 = Color3.fromRGB(248,248,248)
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.Text = text
+    TextLabel.TextSize = 18
+    TextLabel.TextScaled = false
+    TextLabel.TextWrapped = true
+
+    local TextButton = Instance.new("TextButton") 
+    TextButton.Parent = Frame
+    TextButton.BackgroundTransparency = 1
+    TextButton.Position = UDim2.new(0.805,0,0.15)
+    TextButton.Size = UDim2.new(0.15,0,0.7,0)
+    TextButton.Font = Enum.Font.SourceSansBold
+    TextButton.TextColor3 = Color3.fromRGB(248,248,248)
+    TextButton.Text = "□"
+    TextButton.TextSize = 24
+    TextButton.TextScaled = false
+    TextButton.TextWrapped = true
+
+    local Toogle = false
+    TextButton.MouseButton1Click:Connect(function()
+    if TextButton.Text == "□" then
+       TextButton.Text = "■"
+       TextButton.TextSize = 22
+       TextButton.Position = UDim2.new(0.8103,0,0.148)
+       Toogle = true
+    else
+       TextButton.Text = "□"
+       TextButton.TextSize = 24
+       TextButton.Position = UDim2.new(0.805,0,0.15)
+       Toogle = false
+    end
+    end)
+    local BetterLoopOperator = false
+    game:GetService("RunService").RenderStepped:Connect(function()
+    if Toogle == true and BetterLoopOperator == false then
+       BetterLoopOperator = true
+       pcall(function()
+       loadstring(script)()
+       end)
+       BetterLoopOperator = false
+    end
+    end)
+ elseif type == "Switch" then
+    local TextLabel = Instance.new("TextLabel") 
+    TextLabel.Parent = Frame
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Position = UDim2.new(0.1,0,0.15)
+    TextLabel.Size = UDim2.new(0.7,0,0.7,0)
+    TextLabel.Font = Enum.Font.SourceSansBold
+    TextLabel.TextColor3 = Color3.fromRGB(248,248,248)
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.Text = text
+    TextLabel.TextSize = 18
+    TextLabel.TextScaled = false
+    TextLabel.TextWrapped = true
+
+    local ImageButton = Instance.new("ImageButton")
+    ImageButton.Parent = Frame
+    ImageButton.BackgroundTransparency = 1
+    ImageButton.Position = UDim2.new(0.785,0,0.05)
+    ImageButton.Size = UDim2.new(0.2,0,0.9,0)
+    ImageButton.Image = "rbxassetid://85429087203738"
+    ImageButton.Rotation = 180
+    ImageButton.Draggable = false
+    ImageButton.Visible = true
+
+    ImageButton.MouseButton1Click:Connect(function()
+    if ImageButton.Rotation == 180 then
+       ImageButton.Rotation = 0
+       loadstring(script)()
+    else
+       ImageButton.Rotation = 180
+       loadstring(script2)()
+    end
+    end)
+ elseif type == "Slidebar" then
+    local curSpeed = script[2]
+    local minSpeed = script[1]
+    local maxSpeed = script[3]
+
+    local Slider = Instance.new("Frame")
+    Slider.Size = UDim2.new(1, 0, 1)
+    Slider.Position = UDim2.new(0, 0, 0)
+    Slider.BackgroundTransparency = 1
+    Slider.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Slider.BorderSizePixel = 0
+    Slider.Parent = Frame
+
+    local SliderCorner = Instance.new("UICorner")
+    SliderCorner.CornerRadius = UDim.new(0, 6)
+    SliderCorner.Parent = Slider
+
+    local SliderText = Instance.new("TextLabel")
+    SliderText.Size = UDim2.new(1, 0, 0, 20)
+    SliderText.Position = UDim2.new(0, 0, 0, 0)
+    SliderText.BackgroundTransparency = 1
+    SliderText.Text = text..": "..curSpeed
+    SliderText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    SliderText.Font = Enum.Font.Gotham
+    SliderText.TextSize = 12
+    SliderText.Parent = Slider
+    
+    local SliderBar = Instance.new("Frame")
+    SliderBar.Size = UDim2.new(0.8, 0, 0, 6)
+    SliderBar.Position = UDim2.new(0.1, 0, 0, 20)
+    SliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    SliderBar.BorderSizePixel = 0
+    SliderBar.Parent = Slider
+
+    local BarCorner = Instance.new("UICorner")
+    BarCorner.CornerRadius = UDim.new(0, 3)
+    BarCorner.Parent = SliderBar
+
+    local SliderFill = Instance.new("Frame")
+    SliderFill.Size = UDim2.new((curSpeed - minSpeed) / (maxSpeed - minSpeed), 0, 1, 0)
+    SliderFill.Position = UDim2.new(0, 0, 0, 0)
+    SliderFill.BackgroundColor3 = Color3.fromRGB(248, 248, 248)
+    SliderFill.BorderSizePixel = 0
+    SliderFill.Parent = SliderBar
+
+    local FillCorner = Instance.new("UICorner")
+    FillCorner.CornerRadius = UDim.new(0, 3)
+    FillCorner.Parent = SliderFill
+
+    local SliderButton = Instance.new("TextButton")
+    SliderButton.Size = UDim2.new(0, 15, 0, 15)
+    SliderButton.Position = UDim2.new((curSpeed - minSpeed) / (maxSpeed - minSpeed), -7.5, 1, -10)
+    SliderButton.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    SliderButton.BorderSizePixel = 0
+    SliderButton.Text = ""
+    SliderButton.Parent = SliderBar
+
+    local SliderButtonCorner = Instance.new("UICorner")
+    SliderButtonCorner.CornerRadius = UDim.new(0, 10)
+    SliderButtonCorner.Parent = SliderButton
+
+    local Number = Instance.new("NumberValue")
+    Number.Parent = Slider
+    Number.Archivable = true
+    Number.Value = curSpeed
+
+    local sliding = false
+    local function updateSlider(input)
+     if sliding then
+        local sliderAbsolutePosition = SliderBar.AbsolutePosition
+        local sliderAbsoluteSize = SliderBar.AbsoluteSize
+        local touchPosition
+        if input.UserInputType == Enum.UserInputType.Touch then
+           touchPosition = input.Position
+        else
+           touchPosition = UserInputService:GetMouseLocation()
+        end     
+        local relativeX = (touchPosition.X - sliderAbsolutePosition.X) / sliderAbsoluteSize.X
+        relativeX = math.clamp(relativeX, 0, 1)       
+        SliderButton.Position = UDim2.new(relativeX, -7.5, 1, -10)
+        SliderFill.Size = UDim2.new(relativeX, 0, 1, 0)      
+        curSpeed = math.floor(minSpeed + (maxSpeed - minSpeed) * relativeX)
+        SliderText.Text = text..": "..curSpeed
+        Number.Value = curSpeed
+     end
+    end
+
+    SliderButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+       sliding = true
+    end
+    end)
+    SliderBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+       sliding = true
+       updateSlider(input)
+    end
+    end)
+    game:GetService("UserInputService").InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+       sliding = false
+    end
+    end)
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if sliding and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+       updateSlider(input)
+    end
+    end)
+    RETURN = Number
+ elseif type == "Dropdown" then
+    local Frame2 = Instance.new("Frame") 
+    Frame2.Parent = Frame
+    Frame2.BackgroundColor3 = Color3.fromRGB(33,33,33)
+    Frame2.BackgroundTransparency = 1
+    Frame2.Position = UDim2.new(0.91,0,0.125)
+    Frame2.Size = UDim2.new(0.6,0,2.7,0)
+    Frame2.Visible = false
+    
+    local ScrollingFrame = Instance.new("ScrollingFrame")
+    ScrollingFrame.Parent = Frame2
+    ScrollingFrame.BackgroundColor3 = Color3.fromRGB(33,33,33)
+    ScrollingFrame.BackgroundTransparency = 1
+    ScrollingFrame.Position = UDim2.new(0, 0, 0)
+    ScrollingFrame.Size = UDim2.new(1, 0, 1)
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 1, 0)
+    ScrollingFrame.ScrollBarThickness = 0
+
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = ScrollingFrame
+    UIListLayout.Padding = UDim.new(0.0001,0)
+    
+    local TextButton = Instance.new("TextButton") 
+    TextButton.Parent = Frame
+    TextButton.BackgroundTransparency = 0
+    TextButton.BorderColor3 = Color3.fromRGB(91,93,105)
+    TextButton.BorderSizePixel = 1
+    TextButton.Position = UDim2.new(0.1,0,0.125)
+    TextButton.Size = UDim2.new(0.8,0,0.7,0)
+    TextButton.Font = Enum.Font.SourceSansBold
+    TextButton.TextColor3 = Color3.fromRGB(248,248,248)
+    TextButton.Text = text
+    TextButton.TextSize = 18
+    TextButton.TextScaled = false
+    TextButton.TextWrapped = true
+
+    local String = Instance.new("StringValue")
+    String.Parent = Frame
+    String.Archivable = true
+    String.Value = text
+
+    local function AddButton(title)
+     local Button = TextButton:Clone()
+     Button.Parent = ScrollingFrame
+     Button.Position = UDim2.new(0, 1, 0)
+     Button.Size = UDim2.new(0,100,0,25)
+     Button.Text = title
+     Button.ZIndex = 100
+     Button.TextScaled = true
+     Button.TextWrapped = true
+     local Padding = Instance.new("UIPadding")
+     Padding.PaddingLeft = UDim.new(0, 10)
+     Padding.PaddingRight = UDim.new(0, 10)
+     Padding.PaddingTop = UDim.new(0, 5)
+     Padding.PaddingBottom = UDim.new(0, 5)
+     Padding.Parent = Button
+     Button.MouseButton1Click:Connect(function()
+     TextButton.Text = Button.Text
+     String.Value = Button.Text
+     Frame2.Visible = false
+     for i, v in pairs(ScrollingFrame:GetChildren()) do
+       if not v:IsA("UIListLayout") then
+          v:Destroy()
+       end
+     end
+     end)
+    end
+
+    TextButton.MouseButton1Click:Connect(function()
+    if (#ScrollingFrame:GetChildren() - 1) > 0 then
+       Frame2.Visible = false
+       for i, v in pairs(ScrollingFrame:GetChildren()) do
+         if not v:IsA("UIListLayout") then
+            v:Destroy()
+         end
+       end
+       return
+    end
+    Frame2.Visible = true
+    ScrollingFrame.CanvasPosition = Vector2.new(0,0)
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 1, 0)
+    for i = 1, #script do
+      AddButton(script[i])
+      if i >= 4 and #script > 4 then
+         ScrollingFrame.CanvasSize += UDim2.new(0, 0, 0.25, 0)
+      end
+    end
+    end)
+    RETURN = String
+ end
+ ContentPositionZ += 9.3
+ if RETURN ~= nil then
+    return RETURN
+ end
+end
+game.CoreGui.GhostGui.MainFrame.Title.Text = "Visual Snake"
 
 
 AddContent("TextButton", "White Snake", [[
@@ -11,12 +512,122 @@ local SNAKE_COLOR = Color3.fromRGB(220, 220, 220)
 local SNAKE_WETNESS = 5
 local SNAKE_MATERIAL = "Glass"
 
+-- secript
+local Character = game:GetService("Players").LocalPlayer.Character
+local Root: BasePart = Character:WaitForChild("HumanoidRootPart")
 
+local PpAttachment = Instance.new("Attachment")
+PpAttachment.Name = "PpAttachment"
+PpAttachment.Position = Vector3.new(0, -1, -0.5)
+PpAttachment.Orientation = Vector3.new(0, 90, 0)
+PpAttachment.Parent = Root
 
+local PpHolder = Instance.new("Folder")
+PpHolder.Name = "PpHolder"
+PpHolder.Parent = workspace
 
+local function MakeSnake(Length: number, Size: number, Wobbliness: number)
+	PpHolder:ClearAllChildren()
 
+	local LastSection
+	local Sections = {}
 
+	local PpRoot = Instance.new("Part")
+	PpRoot.Transparency = 1
+	PpRoot.CanCollide = false
+	PpRoot.CanQuery = false
+	PpRoot.CanTouch = false
+	PpRoot.Massless = true
+	PpRoot.Name = "NewPPRoot"
+	PpRoot.Parent = PpHolder
 
+	local NewPpAttachment = Instance.new("Attachment")
+	NewPpAttachment.Parent = PpRoot
+
+	local AlignPp = Instance.new("AlignPosition")
+	AlignPp.RigidityEnabled = true
+	AlignPp.Attachment0 = NewPpAttachment
+	AlignPp.Attachment1 = PpAttachment
+	AlignPp.Parent = PpRoot
+
+	local AlignPpRotation = Instance.new("AlignOrientation")
+	AlignPpRotation.RigidityEnabled = true
+	AlignPpRotation.Attachment0 = NewPpAttachment
+	AlignPpRotation.Attachment1 = PpAttachment
+	AlignPpRotation.Parent = PpRoot
+
+	local MinimumIndex = math.ceil(1 / Size) * 1
+
+	for i = 1, math.ceil(Length) do
+		local IsLastSection = i == Length
+		
+		local PpSection = Instance.new("Part")
+		PpSection.Shape = IsLastSection and Enum.PartType.Ball or Enum.PartType.Cylinder
+		PpSection.CanCollide = i > MinimumIndex
+		PpSection.Massless = true
+		PpSection.Material = Enum.Material.SmoothPlastic
+		PpSection.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0.0001, 0.0001)
+		PpSection.Position = Root.Position
+		PpSection.Color = SNAKE_COLOR
+		PpSection.Reflectance = SNAKE_WETNESS / 100
+		PpSection.Material = SNAKE_MATERIAL
+		PpSection.Size = Vector3.one * Size
+
+		local BackAttachment = Instance.new("Attachment")
+		BackAttachment.Position = Vector3.new(IsLastSection and -0.25 or (-Size / 2), 0, 0)
+		BackAttachment.Parent = PpSection
+
+		local FrontAttachment = Instance.new("Attachment")
+		FrontAttachment.Position = Vector3.new(Size / 2, 0, 0)
+		FrontAttachment.Name = "Important"
+		FrontAttachment.Parent = PpSection
+
+		local BallsConstraint = Instance.new("BallSocketConstraint")
+		BallsConstraint.Attachment0 = LastSection and LastSection:FindFirstChild("Important") or NewPpAttachment
+		BallsConstraint.Attachment1 = BackAttachment
+		BallsConstraint.Parent = PpSection
+
+		local AlignOrientation = Instance.new("AlignOrientation")
+		AlignOrientation.Responsiveness = Wobbliness or 10
+		AlignOrientation.Attachment0 = BackAttachment
+		AlignOrientation.Attachment1 = LastSection and LastSection:FindFirstChild("Important") or NewPpAttachment
+		AlignOrientation.Parent = PpSection
+
+		local AlignPosition = Instance.new("AlignPosition")
+		AlignPosition.Responsiveness = 10
+		AlignPosition.Attachment0 = BackAttachment
+		AlignPosition.Attachment1 = LastSection and LastSection:FindFirstChild("Important") or PpAttachment
+		AlignPosition.Parent = PpSection
+
+		PpSection.Parent = PpHolder
+		LastSection = PpSection
+
+		table.insert(Sections, PpSection)
+	end
+
+	for _, Section in pairs(Sections) do
+		for _, OtherSection in pairs(Sections) do
+			if Section == OtherSection then continue end
+
+			local Constraint = Instance.new("NoCollisionConstraint")
+			Constraint.Part0 = Section
+			Constraint.Part1 = OtherSection
+			Constraint.Parent = Section
+		end
+	end
+end
+
+MakeSnake(SNAKE_LENGTH, SNAKE_SIZE, SNAKE_WOBBLINESS)
+]])
+
+AddContent("TextButton", "Pink Snake", [[
+-- settings
+local SNAKE_LENGTH = 10
+local SNAKE_SIZE = 1
+local SNAKE_WOBBLINESS = 50
+local SNAKE_COLOR = Color3.fromRGB(255, 105, 180)
+local SNAKE_WETNESS = 5
+local SNAKE_MATERIAL = "Glass"
 
 -- secript
 local Character = game:GetService("Players").LocalPlayer.Character
@@ -132,140 +743,9 @@ AddContent("TextButton", "Black Snake", [[
 local SNAKE_LENGTH = 10
 local SNAKE_SIZE = 1
 local SNAKE_WOBBLINESS = 50
-local SNAKE_COLOR = Color3.fromRGB(255, 105, 180)
-local SNAKE_WETNESS = 5
-local SNAKE_MATERIAL = "Glass"
-
-
-
-
-
-
-
-
--- secript
-local Character = game:GetService("Players").LocalPlayer.Character
-local Root: BasePart = Character:WaitForChild("HumanoidRootPart")
-
-local PpAttachment = Instance.new("Attachment")
-PpAttachment.Name = "PpAttachment"
-PpAttachment.Position = Vector3.new(0, -1, -0.5)
-PpAttachment.Orientation = Vector3.new(0, 90, 0)
-PpAttachment.Parent = Root
-
-local PpHolder = Instance.new("Folder")
-PpHolder.Name = "PpHolder"
-PpHolder.Parent = workspace
-
-local function MakeSnake(Length: number, Size: number, Wobbliness: number)
-	PpHolder:ClearAllChildren()
-
-	local LastSection
-	local Sections = {}
-
-	local PpRoot = Instance.new("Part")
-	PpRoot.Transparency = 1
-	PpRoot.CanCollide = false
-	PpRoot.CanQuery = false
-	PpRoot.CanTouch = false
-	PpRoot.Massless = true
-	PpRoot.Name = "NewPPRoot"
-	PpRoot.Parent = PpHolder
-
-	local NewPpAttachment = Instance.new("Attachment")
-	NewPpAttachment.Parent = PpRoot
-
-	local AlignPp = Instance.new("AlignPosition")
-	AlignPp.RigidityEnabled = true
-	AlignPp.Attachment0 = NewPpAttachment
-	AlignPp.Attachment1 = PpAttachment
-	AlignPp.Parent = PpRoot
-
-	local AlignPpRotation = Instance.new("AlignOrientation")
-	AlignPpRotation.RigidityEnabled = true
-	AlignPpRotation.Attachment0 = NewPpAttachment
-	AlignPpRotation.Attachment1 = PpAttachment
-	AlignPpRotation.Parent = PpRoot
-
-	local MinimumIndex = math.ceil(1 / Size) * 1
-
-	for i = 1, math.ceil(Length) do
-		local IsLastSection = i == Length
-		
-		local PpSection = Instance.new("Part")
-		PpSection.Shape = IsLastSection and Enum.PartType.Ball or Enum.PartType.Cylinder
-		PpSection.CanCollide = i > MinimumIndex
-		PpSection.Massless = true
-		PpSection.Material = Enum.Material.SmoothPlastic
-		PpSection.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0.0001, 0.0001)
-		PpSection.Position = Root.Position
-		PpSection.Color = SNAKE_COLOR
-		PpSection.Reflectance = SNAKE_WETNESS / 100
-		PpSection.Material = SNAKE_MATERIAL
-		PpSection.Size = Vector3.one * Size
-
-		local BackAttachment = Instance.new("Attachment")
-		BackAttachment.Position = Vector3.new(IsLastSection and -0.25 or (-Size / 2), 0, 0)
-		BackAttachment.Parent = PpSection
-
-		local FrontAttachment = Instance.new("Attachment")
-		FrontAttachment.Position = Vector3.new(Size / 2, 0, 0)
-		FrontAttachment.Name = "Important"
-		FrontAttachment.Parent = PpSection
-
-		local BallsConstraint = Instance.new("BallSocketConstraint")
-		BallsConstraint.Attachment0 = LastSection and LastSection:FindFirstChild("Important") or NewPpAttachment
-		BallsConstraint.Attachment1 = BackAttachment
-		BallsConstraint.Parent = PpSection
-
-		local AlignOrientation = Instance.new("AlignOrientation")
-		AlignOrientation.Responsiveness = Wobbliness or 10
-		AlignOrientation.Attachment0 = BackAttachment
-		AlignOrientation.Attachment1 = LastSection and LastSection:FindFirstChild("Important") or NewPpAttachment
-		AlignOrientation.Parent = PpSection
-
-		local AlignPosition = Instance.new("AlignPosition")
-		AlignPosition.Responsiveness = 10
-		AlignPosition.Attachment0 = BackAttachment
-		AlignPosition.Attachment1 = LastSection and LastSection:FindFirstChild("Important") or PpAttachment
-		AlignPosition.Parent = PpSection
-
-		PpSection.Parent = PpHolder
-		LastSection = PpSection
-
-		table.insert(Sections, PpSection)
-	end
-
-	for _, Section in pairs(Sections) do
-		for _, OtherSection in pairs(Sections) do
-			if Section == OtherSection then continue end
-
-			local Constraint = Instance.new("NoCollisionConstraint")
-			Constraint.Part0 = Section
-			Constraint.Part1 = OtherSection
-			Constraint.Parent = Section
-		end
-	end
-end
-
-MakeSnake(SNAKE_LENGTH, SNAKE_SIZE, SNAKE_WOBBLINESS)
-]])
-
-
-AddContent("TextButton", "Pink Snake", [[
--- settings
-local SNAKE_LENGTH = 10
-local SNAKE_SIZE = 1
-local SNAKE_WOBBLINESS = 50
 local SNAKE_COLOR = Color3.fromRGB(0, 0, 0)
 local SNAKE_WETNESS = 5
 local SNAKE_MATERIAL = "Glass"
-
-
-
-
-
-
 
 
 -- secript
