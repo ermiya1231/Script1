@@ -90,16 +90,16 @@ local function createButton(name, text, pos, scriptUrl)
 end
 
 -- Create Buttons
-createButton("Button1", "FE Fighter", UDim2.new(0.0364, 0, 0.0363, 0), "https://github.com/Sinister-Scripts/Roblox-Exploits/raw/refs/heads/main/FE-Fighter-Cracked")
-createButton("Button2", "FE SCP-096", UDim2.new(0.5255, 0, 0.0363, 0), "https://rawscripts.net/raw/Universal-Script-SCP-096-R6-27531")
-createButton("Button3", "FE Punch", UDim2.new(0.0364, 0, 0.2145, 0), "https://raw.githubusercontent.com/0Ben1/fe/main/obf_rf6iQURzu1fqrytcnLBAvW34C9N55kS9g9G3CKz086rC47M6632sEd4ZZYB0AYgV.lua.txt")
-createButton("Button4", "FE Neko", UDim2.new(0.5255, 0, 0.2145, 0), "https://raw.githubusercontent.com/Gazer-Ha/Neko-v1/main/Extremely%20Broken")
-createButton("Button5", "FE Goner Divine Edge", UDim2.new(0.0364, 0, 0.4, 0), "https://pastebin.com/raw/sFf9MeBE")
-createButton("Button6", "FE Glios", UDim2.new(0.5255, 0, 0.4, 0), "https://glot.io/snippets/gua2ntmbdm/raw/main.lua")
-createButton("Button7", "FE Gale Fighter", UDim2.new(0.0364, 0, 0.5963, 0), "https://pastebin.com/raw/XPGSMEw9")
-createButton("Button8", "FE Honored One", UDim2.new(0.5255, 0, 0.5963, 0), "https://raw.githubusercontent.com/Cortzalno666/NectoVerse-Industries-Data/master/Scripts%20Folder/Honored.lua")
-createButton("Button9", "FE Caducus", UDim2.new(0.0364, 0, 0.7818, 0), "https://pastebin.com/raw/LDL9AyQ4")
-createButton("Button10", "FE Sonic", UDim2.new(0.5255, 0, 0.7818, 0), "https://pastebin.com/raw/uacVtsWe")
+createButton("Button1", "FE Fighter", UDim2.new(0.0364, 0, 0.0363, 0), "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script642")
+createButton("Button2", "FE SCP-096", UDim2.new(0.5255, 0, 0.0363, 0), "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/shy")
+createButton("Button3", "FE Punch", UDim2.new(0.0364, 0, 0.2145, 0), "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script640")
+createButton("Button4", "FE Neko", UDim2.new(0.5255, 0, 0.2145, 0), "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script602")
+createButton("Button5", "FE Goner Divine Edge", UDim2.new(0.0364, 0, 0.4, 0), "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script512")
+createButton("Button6", "FE Glios(NotWork)", UDim2.new(0.5255, 0, 0.4, 0), "https://glot.io/snippets/gua2ntmbdm/raw/main.lua")
+createButton("Button7", "FE Gale Fighter", UDim2.new(0.0364, 0, 0.5963, 0), "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script699")
+createButton("Button8", "FE Honored One", UDim2.new(0.5255, 0, 0.5963, 0), "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script698")
+createButton("Button9", "FE Caducus", UDim2.new(0.0364, 0, 0.7818, 0), "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script697")
+createButton("Button10", "FE Sonic", UDim2.new(0.5255, 0, 0.7818, 0), "https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script695")
 
 -- Smooth Dragging System
 local dragging, dragInput, dragStart, startPos
