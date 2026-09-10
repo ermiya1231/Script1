@@ -1,0 +1,834 @@
+if not isfile("CosmicG.rbxmx") then
+writefile("CosmicG.rbxmx", game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/CosmicG.rbxmx"))
+end
+
+writefile("Cosmic.rbxmx", game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/Cosmic.rbxmx"))
+ 
+ 
+writefile("Cosmic.mp3", game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/Cosmic.mp3"))
+ 
+
+local Tool = Instance.new("Tool")
+Tool.Name = "???"
+Tool.RequiresHandle = false
+Tool.ToolTip = "Bless me"
+Tool.Parent = game.Players.LocalPlayer.Backpack
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local root = character:WaitForChild("HumanoidRootPart")
+
+local originalCFrame = nil
+local previousAsset = nil
+local originalAnimator = nil
+local originalSky = nil
+
+local function ApplyRandomFriendAppearance(rig)
+	local success, pages = pcall(function()
+		return Players:GetFriendsAsync(player.UserId)
+	end)
+
+	if not success or not pages then
+		warn("Test")
+		return
+	end
+
+	local friends = {}
+
+	repeat
+		for _, friend in ipairs(pages:GetCurrentPage()) do
+			table.insert(friends, friend)
+		end
+
+		if not pages.IsFinished then
+			pages:AdvanceToNextPageAsync()
+		end
+	until pages.IsFinished
+
+	if #friends <= 0 then
+		warn("I'm sorry bro")
+		return
+	end
+
+	local chosenFriend = friends[math.random(1, #friends)]
+
+
+	for _, v in ipairs(rig:GetChildren()) do
+		if v:IsA("Accessory")
+			or v:IsA("Shirt")
+			or v:IsA("Pants")
+			or v:IsA("ShirtGraphic")
+			or v:IsA("BodyColors")
+		then
+			v:Destroy()
+		end
+	end
+
+	local successModel, friendModel = pcall(function()
+		return Players:CreateHumanoidModelFromUserId(
+			chosenFriend.Id,
+			Enum.HumanoidRigType.R6
+		)
+	end)
+
+	if not successModel or not friendModel then
+		warn("Failed loading friend avatar")
+		return
+	end
+
+	friendModel.Parent = nil
+
+local rigHumanoid = rig:FindFirstChildOfClass("Humanoid")
+
+rigHumanoid.RigType = Enum.HumanoidRigType.R6
+
+for _, acc in ipairs(friendModel:GetChildren()) do
+	if acc:IsA("Accessory") then
+
+		local ok, cloned = pcall(function()
+			return acc:Clone()
+		end)
+
+		if ok and cloned then
+			local handle = cloned:FindFirstChild("Handle")
+
+			if handle then
+				handle.CanCollide = false
+				handle.Massless = true
+
+				for _, v in ipairs(handle:GetDescendants()) do
+					if v:IsA("WrapLayer") or v:IsA("WrapTarget") then
+						v:Destroy()
+					end
+				end
+			end
+
+			task.defer(function()
+				if rigHumanoid and cloned then
+					rigHumanoid:AddAccessory(cloned)
+				end
+			end)
+		end
+	end
+end
+
+	for _, item in ipairs(friendModel:GetChildren()) do
+		if item:IsA("Shirt")
+			or item:IsA("Pants")
+			or item:IsA("ShirtGraphic")
+		then
+			item:Clone().Parent = rig
+		end
+	end
+
+	local friendHead = friendModel:FindFirstChild("Head")
+	local rigHead = rig:FindFirstChild("Head")
+
+	if friendHead and rigHead then
+		for _, v in ipairs(rigHead:GetChildren()) do
+			if v:IsA("Decal") then
+				v:Destroy()
+			end
+		end
+
+		for _, v in ipairs(friendHead:GetChildren()) do
+			if v:IsA("Decal") then
+				v:Clone().Parent = rigHead
+			end
+		end
+	end
+
+	local friendBC = friendModel:FindFirstChildOfClass("BodyColors")
+
+	if friendBC then
+		friendBC:Clone().Parent = rig
+	end
+
+	local bodyParts = {
+		"Head",
+		"Torso",
+		"Left Arm",
+		"Right Arm",
+		"Left Leg",
+		"Right Leg"
+	}
+
+	for _, name in ipairs(bodyParts) do
+		local source = friendModel:FindFirstChild(name)
+		local target = rig:FindFirstChild(name)
+
+		if source and target then
+			target.Color = source.Color
+			target.Material = source.Material
+		end
+	end
+
+	friendModel:Destroy()
+end
+
+local EasingStyleMap = {
+	[Enum.PoseEasingStyle.Linear]   = Enum.EasingStyle.Linear,
+	[Enum.PoseEasingStyle.Bounce]   = Enum.EasingStyle.Bounce,
+	[Enum.PoseEasingStyle.Cubic]    = Enum.EasingStyle.Cubic,
+	[Enum.PoseEasingStyle.Elastic]  = Enum.EasingStyle.Elastic,
+	[Enum.PoseEasingStyle.Constant] = Enum.EasingStyle.Linear,
+}
+
+local EasingDirectionMap = {
+	[Enum.PoseEasingDirection.In]    = Enum.EasingDirection.In,
+	[Enum.PoseEasingDirection.Out]   = Enum.EasingDirection.Out,
+	[Enum.PoseEasingDirection.InOut] = Enum.EasingDirection.InOut,
+}
+
+local function PlayKeyframeSequence(Model, KeyframeSequence, SpeedMult)
+	SpeedMult = SpeedMult or 1
+
+	local keyframes = {}
+
+	for _, kf in ipairs(KeyframeSequence:GetKeyframes()) do
+		table.insert(keyframes, {
+			Time = kf.Time,
+			KF = kf
+		})
+	end
+
+	table.sort(keyframes, function(a,b)
+		return a.Time < b.Time
+	end)
+
+	if #keyframes == 0 then
+		return nil
+	end
+
+	local jointData = {}
+	local motorMap = {}
+	local boneMap = {}
+
+	local function ResolveJoint(pose)
+		local name = pose.Name
+
+		if motorMap[name] then
+			return motorMap[name], "Motor6D"
+		end
+
+		if boneMap[name] then
+			return boneMap[name], "Bone"
+		end
+
+		for _, v in ipairs(Model:GetDescendants()) do
+			if v:IsA("Motor6D")
+				and v.Part1
+				and v.Part1.Name == name
+			then
+				motorMap[name] = v
+				return v, "Motor6D"
+
+			elseif v:IsA("Bone")
+				and v.Name == name
+			then
+				boneMap[name] = v
+				return v, "Bone"
+			end
+		end
+
+		return nil, nil
+	end
+
+	for _, entry in ipairs(keyframes) do
+		for _, pose in ipairs(entry.KF:GetDescendants()) do
+			if pose:IsA("Pose")
+				and pose.Weight > 0
+			then
+				local joint, jtype =
+					ResolveJoint(pose)
+
+				if joint then
+					if not jointData[pose.Name] then
+						jointData[pose.Name] = {}
+					end
+
+					table.insert(jointData[pose.Name], {
+						time = entry.Time,
+						cframe = pose.CFrame,
+						style = pose.EasingStyle,
+						dir = pose.EasingDirection,
+						joint = joint,
+						jtype = jtype
+					})
+				end
+			end
+		end
+	end
+
+	local totalLength =
+		keyframes[#keyframes].Time / SpeedMult
+
+	local startTime = os.clock()
+	local skipOffset = 0
+	local isPlaying = true
+	local conn
+
+	conn = RunService.Heartbeat:Connect(function()
+		if not isPlaying
+			or not Model
+			or not Model.Parent
+		then
+			if conn then
+				conn:Disconnect()
+			end
+			return
+		end
+
+		local elapsed =
+			(os.clock() - startTime)
+			* SpeedMult
+
+		local timePos =
+			(elapsed + skipOffset)
+			% totalLength
+
+		for _, poses in pairs(jointData) do
+			if #poses < 1 then
+				continue
+			end
+
+			local lastPose = poses[1]
+			local nextPose = poses[#poses]
+
+			for i = 1, #poses - 1 do
+				if timePos >= poses[i].time
+					and timePos < poses[i + 1].time
+				then
+					lastPose = poses[i]
+					nextPose = poses[i + 1]
+					break
+				end
+			end
+
+			local alpha = 0
+
+			if nextPose.time > lastPose.time then
+				alpha =
+					(timePos - lastPose.time)
+					/ (nextPose.time - lastPose.time)
+			end
+
+			local easedAlpha =
+				TweenService:GetValue(
+					alpha,
+					EasingStyleMap[nextPose.style]
+						or Enum.EasingStyle.Linear,
+					EasingDirectionMap[nextPose.dir]
+						or Enum.EasingDirection.InOut
+				)
+
+			local finalCF =
+				lastPose.cframe:Lerp(
+					nextPose.cframe,
+					easedAlpha
+				)
+
+			lastPose.joint.Transform = finalCF
+		end
+	end)
+
+	local animator = {
+		Length = totalLength,
+
+		Stop = function()
+			isPlaying = false
+
+			if conn then
+				conn:Disconnect()
+			end
+		end,
+
+		AddSkip = function(seconds)
+			skipOffset = skipOffset + seconds
+		end,
+
+		GetPlayedTime = function()
+			return
+				(os.clock() - startTime)
+				* SpeedMult
+				+ skipOffset
+		end
+	}
+
+	return animator
+end
+
+local function ApplyCosmicTransformation()
+	local asset =
+		game:GetObjects(
+			getcustomasset("Cosmic.rbxmx")
+		)[1]
+
+	local function makeBodyInvisible(chr)
+		for _, obj in ipairs(chr:GetDescendants()) do
+			if obj:IsA("BasePart")
+				and not obj.Parent:IsA("Accessory")
+			then
+				if obj.Name ~= "HumanoidRootPart" then
+					obj.Transparency = 1
+					obj.Color = Color3.new(0,0,0)
+					obj.CanCollide = false
+				end
+
+			elseif obj:IsA("Decal")
+				and not obj.Parent:IsA("Accessory")
+			then
+				obj.Transparency = 1
+
+			elseif obj:IsA("Clothing")
+				or obj:IsA("ShirtGraphic")
+			then
+				obj:Destroy()
+			end
+		end
+	end
+
+	makeBodyInvisible(character)
+
+	local blackTextureId = "rbxassetid://5151897861"
+
+	local function processAccessories(chr, loadedAsset)
+		local accessoriesFolder =
+			loadedAsset:FindFirstChild("Accessories")
+
+		if not accessoriesFolder then
+			return
+		end
+
+		for _, acc in ipairs(chr:GetChildren()) do
+			if acc:IsA("Accessory") then
+				local handle =
+					acc:FindFirstChild("Handle")
+
+				if handle then
+					handle.Transparency = 0
+					handle.Material = Enum.Material.Foil
+
+					for _, v in ipairs(handle:GetChildren()) do
+						if v:IsA("Texture")
+							or v:IsA("Decal")
+						then
+							v:Destroy()
+						end
+					end
+
+					for _, refAcc in ipairs(
+						accessoriesFolder:GetDescendants()
+					) do
+						if refAcc:IsA("Model")
+							or refAcc:IsA("Accessory")
+						then
+							local refHandle =
+								refAcc:FindFirstChild(
+									"Handle",
+									true
+								)
+
+							if refHandle then
+								for _, child in ipairs(
+									refHandle:GetChildren()
+								) do
+									if child:IsA("Texture")
+										or child:IsA("Decal")
+									then
+										child:Clone().Parent =
+											handle
+									end
+								end
+							end
+						end
+					end
+
+					local blackTex =
+						Instance.new("Texture")
+
+					blackTex.Name = "BlackOverlay"
+					blackTex.Texture = blackTextureId
+					blackTex.Transparency = 0
+					blackTex.Parent = handle
+				end
+			end
+		end
+	end
+
+	processAccessories(character, asset)
+
+	local function createCleanHighlight(chr)
+		local hl = Instance.new("Highlight")
+
+		hl.Name = "CosmicHighlight"
+		hl.FillTransparency = 1
+		hl.OutlineTransparency = 0.6
+		hl.OutlineColor = Color3.new(1,1,1)
+		hl.DepthMode =
+			Enum.HighlightDepthMode.AlwaysOnTop
+
+		hl.Adornee = chr
+		hl.Parent = chr
+	end
+
+	createCleanHighlight(character)
+
+	local function setupNormalModel(model, chr)
+		if not model then
+			return
+		end
+
+		local clone = model:Clone()
+		clone.Parent = chr
+
+		local partsList = {
+			"Head",
+			"Torso",
+			"Left Arm",
+			"Right Arm",
+			"Left Leg",
+			"Right Leg"
+		}
+
+		for _, pn in ipairs(partsList) do
+			local fake = clone:FindFirstChild(pn)
+			local real = chr:FindFirstChild(pn)
+
+			if fake and real then
+				fake.Transparency =
+					(model.Name == "Constellations")
+					and 1 or 0
+
+				fake.CanCollide = false
+
+				local weld =
+					Instance.new("Motor6D")
+
+				weld.Name = "CosmicWeld"
+				weld.Part0 = real
+				weld.Part1 = fake
+				weld.C0 = CFrame.new()
+				weld.C1 = CFrame.new()
+				weld.Parent = fake
+			end
+		end
+	end
+
+	setupNormalModel(
+		asset:FindFirstChild("Aura"),
+		character
+	)
+
+	setupNormalModel(
+		asset:FindFirstChild("Constellations"),
+		character
+	)
+
+	setupNormalModel(
+		asset:FindFirstChild("BlackBody"),
+		character
+	)
+end
+
+local function CreateSkybox()
+	originalSky =
+		Lighting:FindFirstChildOfClass("Sky")
+
+	local sky = Instance.new("Sky")
+
+	sky.SkyboxBk = "rbxassetid://7188341508"
+	sky.SkyboxDn = "rbxassetid://7188341508"
+	sky.SkyboxFt = "rbxassetid://7188341508"
+	sky.SkyboxLf = "rbxassetid://7188341508"
+	sky.SkyboxRt = "rbxassetid://7188341508"
+	sky.SkyboxUp = "rbxassetid://7188341508"
+
+	sky.Parent = Lighting
+
+	task.delay(9, function()
+		if sky and sky.Parent then
+			sky:Destroy()
+		end
+
+		if originalSky
+			and originalSky.Parent
+		then
+			originalSky.Parent = Lighting
+		end
+
+		local screenGui =
+			Instance.new("ScreenGui")
+
+		screenGui.IgnoreGuiInset = true
+		screenGui.ResetOnSpawn = false
+		screenGui.Parent =
+			player:WaitForChild("PlayerGui")
+
+		local blackFrame =
+			Instance.new("Frame")
+
+		blackFrame.BackgroundColor3 =
+			Color3.new(0,0,0)
+
+		blackFrame.Size =
+			UDim2.new(1,0,1,0)
+
+		blackFrame.Parent = screenGui
+
+		task.delay(2, function()
+			local tween =
+				TweenService:Create(
+					blackFrame,
+					TweenInfo.new(1),
+					{
+						BackgroundTransparency = 1
+					}
+				)
+
+			tween:Play()
+
+			tween.Completed:Connect(function()
+				screenGui:Destroy()
+			end)
+		end)
+	end)
+end
+
+Tool.Activated:Connect(function()
+	Tool:Destroy()
+
+	if previousAsset
+		and previousAsset.Parent
+	then
+		previousAsset:Destroy()
+	end
+
+	originalCFrame = root.CFrame
+
+	for _, v in ipairs(humanoid:GetChildren()) do
+		if v:IsA("Animator") then
+			originalAnimator = v
+			break
+		end
+	end
+
+	local success, Asset = pcall(function()
+		return game:GetObjects(
+			getcustomasset("CosmicG.rbxmx")
+		)[1]
+	end)
+
+	if not success or not Asset then
+		warn("Failed to load asset")
+		return
+	end
+
+	previousAsset = Asset
+	Asset.Parent = workspace
+
+	local CosmicRigs =
+		Asset:FindFirstChild("CosmicRigs")
+
+	local Anims =
+		Asset:FindFirstChild("Anims")
+
+	if not CosmicRigs or not Anims then
+		warn("Missing folders")
+		return
+	end
+
+	local GODRig =
+		CosmicRigs:FindFirstChild("GOD")
+
+	local SceneRig =
+		CosmicRigs:FindFirstChild("SceneRig")
+
+	if GODRig then
+		ApplyRandomFriendAppearance(GODRig)
+	end
+
+	local GODAnim =
+		Anims:FindFirstChild("GOD")
+
+	local SceneAnim =
+		Anims:FindFirstChild("SceneRig")
+
+	local PlayerAnim =
+		Anims:FindFirstChild("Player")
+
+	local PlayerTwoAnim =
+		Anims:FindFirstChild("PlayerTwo")
+
+	for _, v in ipairs(humanoid:GetChildren()) do
+		if v:IsA("Animator") then
+			v:Destroy()
+		end
+	end
+
+	root.CFrame = CFrame.new(
+		876.199097,
+		1882.01294,
+		-397.585388,
+		-0.565931678,
+		4.82408259e-17,
+		0.824452102,
+		-5.49948317e-17,
+		1,
+		2.07622863e-17,
+		-0.824452102,
+		3.35905705e-17,
+		-0.565931678
+	)
+
+	root.Anchored = true
+
+	local sound = Instance.new("Sound")
+
+	sound.SoundId =
+		getcustomasset("Cosmic.mp3")
+
+	sound.Volume = 1
+	sound.Parent = workspace
+
+	sound:Play()
+
+	CreateSkybox()
+
+	loadstring(game:HttpGet(
+		"https://raw.githubusercontent.com/ian49972/smth/refs/heads/main/CosmicTest"
+	))()
+
+	task.wait(0.3)
+
+	local backgroundAnims = {}
+
+	if GODRig and GODAnim then
+		table.insert(
+			backgroundAnims,
+			PlayKeyframeSequence(
+				GODRig,
+				GODAnim
+			)
+		)
+	end
+
+	if SceneRig and SceneAnim then
+		table.insert(
+			backgroundAnims,
+			PlayKeyframeSequence(
+				SceneRig,
+				SceneAnim
+			)
+		)
+	end
+
+	local playerAnim1 =
+		PlayerAnim
+		and PlayKeyframeSequence(
+			character,
+			PlayerAnim
+		)
+
+	task.delay(8, function()
+		for _, anim in ipairs(backgroundAnims) do
+			if anim then
+				anim.AddSkip(8)
+			end
+		end
+
+		if playerAnim1 then
+			playerAnim1.AddSkip(9.9)
+		end
+	end)
+
+	if playerAnim1 then
+		local startWait = tick()
+
+		while (tick() - startWait)
+			< playerAnim1.Length
+		do
+			if playerAnim1.GetPlayedTime()
+				>= playerAnim1.Length
+			then
+				break
+			end
+
+			task.wait(0.05)
+		end
+
+		playerAnim1:Stop()
+	end
+
+	if originalCFrame then
+		root.CFrame = originalCFrame
+	end
+
+	task.wait(2.9)
+
+	if PlayerTwoAnim then
+		ApplyCosmicTransformation()
+
+		local playerAnim2 =
+			PlayKeyframeSequence(
+				character,
+				PlayerTwoAnim
+			)
+
+		if playerAnim2 then
+			playerAnim2.AddSkip(27.8)
+
+			local startWait = tick()
+
+			while (tick() - startWait)
+				< (playerAnim2.Length + 5)
+			do
+				if playerAnim2.GetPlayedTime()
+					>= playerAnim2.Length
+				then
+					break
+				end
+
+				task.wait(0.05)
+			end
+
+			playerAnim2:Stop()
+		end
+	end
+
+	root.Anchored = false
+
+	if originalCFrame then
+		root.CFrame = originalCFrame
+	end
+
+	camera.CameraType =
+		Enum.CameraType.Custom
+
+	camera.CameraSubject = humanoid
+
+	if not humanoid:FindFirstChild("Animator") then
+		local newAnim =
+			Instance.new("Animator")
+
+		newAnim.Parent = humanoid
+	end
+
+	for _, anim in ipairs(backgroundAnims) do
+		if anim then
+			anim:Stop()
+		end
+	end
+
+	if previousAsset then
+		previousAsset:Destroy()
+		previousAsset = nil
+	end
+end)
