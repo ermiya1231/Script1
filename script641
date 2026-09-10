@@ -1,0 +1,136 @@
+-- Services
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Check for R6 RigType
+local function checkR6()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    if humanoid.RigType ~= Enum.HumanoidRigType.R6 then
+        StarterGui:SetCore("SendNotification", {
+            Title = "Warning",
+            Text = "This script supports R6 games only!",
+            Icon = "rbxassetid://11027963555",
+            Duration = 5,
+        })
+    end
+end
+task.spawn(checkR6)
+
+-- Send Initial Notifications
+StarterGui:SetCore("SendNotification", {
+    Title = "Info",
+    Text = "Cracked By C00LHACK",
+    Icon = "rbxassetid://122714132204276",
+    Duration = 5,
+})
+
+-- Stop Animations Command (/e stop)
+LocalPlayer.Chatted:Connect(function(msg)
+    if msg:lower() == "/e stop" then
+        local char = LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChildWhichIsA("Humanoid")
+            if hum then
+                for _, track in ipairs(hum:GetPlayingAnimationTracks()) do
+                    track:Stop()
+                end
+            end
+        end
+    end
+end)
+
+-- GUI Elements Creation
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AnimationGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local Core = Instance.new("ImageLabel")
+Core.Name = "Core"
+Core.Parent = ScreenGui
+Core.BackgroundColor3 = Color3.new(1, 1, 1)
+Core.BorderColor3 = Color3.new(1, 1, 1)
+Core.Position = UDim2.new(0.3369, 0, 0.2607, 0)
+Core.Size = UDim2.new(0, 274, 0, 275)
+Core.Image = "rbxassetid://11027963555"
+
+-- Helper Function to Create Buttons easily
+local function createButton(name, text, pos, scriptUrl)
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Parent = Core
+    btn.BackgroundColor3 = Color3.new(1, 1, 1)
+    btn.BackgroundTransparency = 0.3
+    btn.BorderColor3 = Color3.new(0, 0, 0)
+    btn.BorderSizePixel = 0
+    btn.Position = pos
+    btn.Size = UDim2.new(0, 120, 0, 37)
+    btn.Font = Enum.Font.Arial
+    btn.TextColor3 = Color3.new(0, 0, 0)
+    btn.TextSize = 14
+    btn.Text = text
+
+    btn.MouseButton1Click:Connect(function()
+        task.spawn(function()
+            local success, err = pcall(function()
+                loadstring(game:HttpGet(scriptUrl, true))()
+            end)
+            if not success then
+                warn("Failed to execute " .. text .. ": " .. tostring(err))
+            end
+        end)
+    end)
+    return btn
+end
+
+-- Create Buttons
+createButton("Button1", "FE Fighter", UDim2.new(0.0364, 0, 0.0363, 0), "https://github.com/Sinister-Scripts/Roblox-Exploits/raw/refs/heads/main/FE-Fighter-Cracked")
+createButton("Button2", "FE SCP-096", UDim2.new(0.5255, 0, 0.0363, 0), "https://rawscripts.net/raw/Universal-Script-SCP-096-R6-27531")
+createButton("Button3", "FE Punch", UDim2.new(0.0364, 0, 0.2145, 0), "https://raw.githubusercontent.com/0Ben1/fe/main/obf_rf6iQURzu1fqrytcnLBAvW34C9N55kS9g9G3CKz086rC47M6632sEd4ZZYB0AYgV.lua.txt")
+createButton("Button4", "FE Neko", UDim2.new(0.5255, 0, 0.2145, 0), "https://raw.githubusercontent.com/Gazer-Ha/Neko-v1/main/Extremely%20Broken")
+createButton("Button5", "FE Goner Divine Edge", UDim2.new(0.0364, 0, 0.4, 0), "https://pastebin.com/raw/sFf9MeBE")
+createButton("Button6", "FE Glios", UDim2.new(0.5255, 0, 0.4, 0), "https://glot.io/snippets/gua2ntmbdm/raw/main.lua")
+createButton("Button7", "FE Gale Fighter", UDim2.new(0.0364, 0, 0.5963, 0), "https://pastebin.com/raw/XPGSMEw9")
+createButton("Button8", "FE Honored One", UDim2.new(0.5255, 0, 0.5963, 0), "https://raw.githubusercontent.com/Cortzalno666/NectoVerse-Industries-Data/master/Scripts%20Folder/Honored.lua")
+createButton("Button9", "FE Caducus", UDim2.new(0.0364, 0, 0.7818, 0), "https://pastebin.com/raw/LDL9AyQ4")
+createButton("Button10", "FE Sonic", UDim2.new(0.5255, 0, 0.7818, 0), "https://pastebin.com/raw/uacVtsWe")
+
+-- Smooth Dragging System
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    Core.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+Core.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = Core.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Core.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
