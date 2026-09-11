@@ -1,0 +1,321 @@
+function missing(t, f, fallback)
+    if type(f) == t then return f end
+    return fallback 
+end
+
+cloneref = missing("function", cloneref, function(...) return ... end)
+
+local Services = setmetatable({}, { __index = function(_, n) return cloneref(game:GetService(n)) end })
+local Players = Services.Players
+local RunService = Services.RunService
+local UserInputService = Services.UserInputService
+local MarketplaceService = Services.MarketplaceService
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local function getAnimator()
+    local animator = humanoid:FindFirstChildOfClass("Animator")
+    if not animator then animator = Instance.new("Animator", humanoid) end
+    return animator
+end
+
+player.CharacterAdded:Connect(function(c) character = c; humanoid = c:WaitForChild("Humanoid") end)
+
+local Settings = { ["Stop On Move"] = true, ["Looped"] = true, ["Glitch Mode"] = false, ["Start Position"] = 0, ["Speed"] = 1, ["Time Position"] = 0 }
+local CurrentTrack, isManualStop, currentGlitchId = nil, false, 0
+local loggedAnims = {}
+
+local function make(cls, props)
+    local i = Instance.new(cls)
+    for k, v in pairs(props) do if k ~= "Parent" then i[k] = v end end
+    if props.Parent then i.Parent = props.Parent end
+    return i
+end
+
+local screenGui = make("ScreenGui", {ResetOnSpawn = false})
+if gethui then screenGui.Parent = gethui() else pcall(function() screenGui.Parent = game:GetService("CoreGui") end); screenGui.Parent = screenGui.Parent or playerGui end
+
+local mainFrame = make("Frame", {Parent = screenGui, Size = UDim2.new(0, 380, 0, 320), Position = UDim2.new(0.5, 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(30, 30, 30)})
+local titleBar = make("Frame", {Parent = mainFrame, Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1, Active = true})
+make("TextLabel", {Parent = titleBar, Size = UDim2.new(1, -60, 1, 0), Position = UDim2.new(0, 35, 0, 0), BackgroundTransparency = 1, Text = "Emote Player Ultimate Remake By C00LHACK", TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 14, TextXAlignment = 0})
+
+local toggleLogBtn = make("TextButton", {Parent = titleBar, Size = UDim2.new(0, 25, 0, 25), Position = UDim2.new(0, 5, 0, 2), BackgroundColor3 = Color3.fromRGB(50, 50, 50), Text = "<", TextColor3 = Color3.new(1,1,1)})
+local closeBtn = make("TextButton", {Parent = titleBar, Size = UDim2.new(0, 25, 0, 25), Position = UDim2.new(1, -30, 0, 2), BackgroundColor3 = Color3.fromRGB(200, 50, 50), Text = "X", TextColor3 = Color3.new(1,1,1)})
+
+local loggerPanel = make("Frame", {Parent = screenGui, Size = UDim2.new(0, 200, 0, 320), AnchorPoint = Vector2.new(1, 0.5), BackgroundColor3 = Color3.fromRGB(30, 30, 30), Visible = false})
+make("TextLabel", {Parent = loggerPanel, Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1, Text = "Anim Logger", TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 14})
+local selectedPlayerLabel = make("TextLabel", {Parent = loggerPanel, Size = UDim2.new(1, -10, 0, 18), Position = UDim2.new(0, 5, 0, 28), BackgroundTransparency = 1, Text = "Selected Player: " .. player.Name, TextColor3 = Color3.fromRGB(170, 170, 170), TextSize = 10, Font = Enum.Font.Gotham, TextXAlignment = 0})
+local targetBox = make("TextBox", {Parent = loggerPanel, Size = UDim2.new(1, -45, 0, 25), Position = UDim2.new(0, 5, 0, 48), BackgroundColor3 = Color3.fromRGB(45, 45, 45), Text = player.Name, TextColor3 = Color3.new(1,1,1)})
+local targetOkBtn = make("TextButton", {Parent = loggerPanel, Size = UDim2.new(0, 30, 0, 25), Position = UDim2.new(1, -35, 0, 48), BackgroundColor3 = Color3.fromRGB(0, 200, 100), Text = "OK", TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 12, Visible = false})
+local clearBtn = make("TextButton", {Parent = loggerPanel, Size = UDim2.new(1, -10, 0, 25), Position = UDim2.new(0, 5, 0, 76), BackgroundColor3 = Color3.fromRGB(200, 50, 50), Text = "Clear Logs", TextColor3 = Color3.new(1,1,1)})
+local logScroll = make("ScrollingFrame", {Parent = loggerPanel, Size = UDim2.new(1, -10, 1, -106), Position = UDim2.new(0, 5, 0, 104), BackgroundTransparency = 1, ScrollBarThickness = 3})
+local logList = make("UIListLayout", {Parent = logScroll, Padding = UDim.new(0, 4)})
+logList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() logScroll.CanvasSize = UDim2.new(0,0,0,logList.AbsoluteContentSize.Y) end)
+
+local content = make("Frame", {Parent = mainFrame, Size = UDim2.new(1, -10, 1, -35), Position = UDim2.new(0, 5, 0, 35), BackgroundTransparency = 1})
+local emoteBox = make("TextBox", {Parent = content, Size = UDim2.new(1, 0, 0, 30), BackgroundColor3 = Color3.fromRGB(45, 45, 45), PlaceholderText = "ID / URL", TextColor3 = Color3.new(1,1,1), Text = ""})
+local playBtn = make("TextButton", {Parent = content, Size = UDim2.new(0.48, 0, 0, 25), Position = UDim2.new(0, 0, 0, 35), BackgroundColor3 = Color3.fromRGB(0, 120, 255), Text = "Play", TextColor3 = Color3.new(1,1,1)})
+local stopBtn = make("TextButton", {Parent = content, Size = UDim2.new(0.48, 0, 0, 25), Position = UDim2.new(0.52, 0, 0, 35), BackgroundColor3 = Color3.fromRGB(200, 50, 50), Text = "Stop", TextColor3 = Color3.new(1,1,1)})
+
+local optScroll = make("ScrollingFrame", {Parent = content, Size = UDim2.new(1, 0, 1, -65), Position = UDim2.new(0, 0, 0, 65), BackgroundTransparency = 1, ScrollBarThickness = 3})
+local optList = make("UIListLayout", {Parent = optScroll, Padding = UDim.new(0, 4)})
+optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() optScroll.CanvasSize = UDim2.new(0,0,0,optList.AbsoluteContentSize.Y) end)
+
+-- Cross-platform Dragging Support (PC & Mobile)
+local dragging, dragStart, startPos
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+mainFrame:GetPropertyChangedSignal("Position"):Connect(function()
+    loggerPanel.Position = UDim2.new(mainFrame.Position.X.Scale, mainFrame.Position.X.Offset - 195, mainFrame.Position.Y.Scale, mainFrame.Position.Y.Offset)
+end)
+loggerPanel.Position = UDim2.new(mainFrame.Position.X.Scale, mainFrame.Position.X.Offset - 195, mainFrame.Position.Y.Scale, mainFrame.Position.Y.Offset)
+
+local function clearLogs()
+    table.clear(loggedAnims)
+    for _, v in pairs(logScroll:GetChildren()) do 
+        if v:IsA("TextButton") then v:Destroy() end 
+    end
+end
+
+local function logAnim(track)
+    if not track.Animation then return end
+    local id = string.match(track.Animation.AnimationId, "%d+")
+    if not id or loggedAnims[id] then return end
+    loggedAnims[id] = true
+    
+    local name = track.Name
+    if name == "" or name == "Animation" then
+        name = track.Animation.Name
+    end
+
+    if name == "ToolLoopAnimation" then
+        name = "ToolAnim"
+    end
+
+    local initialName = (name ~= "" and name ~= "Animation") and name or ("Animation " .. id)
+    local textInfo = string.format("%s (%s)", initialName, id)
+    
+    local btn = make("TextButton", {Parent = logScroll, Size = UDim2.new(1, 0, 0, 30), BackgroundColor3 = Color3.fromRGB(40, 40, 40), Text = textInfo, TextWrapped = true, TextColor3 = Color3.new(1,1,1), TextSize = 11, Font = Enum.Font.Gotham})
+    btn.MouseButton1Click:Connect(function()
+        if setclipboard then 
+            setclipboard(id) 
+            local currentText = btn.Text
+            btn.Text = "Copied To Clipboard!"
+            task.delay(1.2, function()
+                if btn and btn.Parent then
+                    btn.Text = currentText
+                end
+            end)
+        end
+    end)
+
+    if name == "" or name == "Animation" then
+        task.spawn(function()
+            local success, info = pcall(function()
+                return MarketplaceService:GetProductInfo(tonumber(id))
+            end)
+            if success and info and info.Name then
+                btn.Text = string.format("%s (%s)", info.Name, id)
+            end
+        end)
+    end
+end
+
+clearBtn.MouseButton1Click:Connect(clearLogs)
+
+local animConn, charConn
+local function setupLogger(targetName)
+    if animConn then animConn:Disconnect() end
+    if charConn then charConn:Disconnect() end
+    local targetPlr
+    for _, p in pairs(Players:GetPlayers()) do
+        if string.lower(p.Name) == string.lower(targetName) or string.lower(p.DisplayName) == string.lower(targetName) then targetPlr = p; break end
+    end
+    if not targetPlr then return end
+    
+    -- Clear previous logs when switching target
+    clearLogs()
+
+    selectedPlayerLabel.Text = "Selected Player: " .. targetPlr.Name
+    local function onChar(char)
+        local h = char:WaitForChild("Humanoid", 5)
+        if h then
+            local a = h:WaitForChild("Animator", 5)
+            if a then animConn = a.AnimationPlayed:Connect(logAnim) end
+        end
+    end
+    charConn = targetPlr.CharacterAdded:Connect(onChar)
+    if targetPlr.Character then onChar(targetPlr.Character) end
+end
+
+targetBox:GetPropertyChangedSignal("Text"):Connect(function() targetOkBtn.Visible = true end)
+targetOkBtn.MouseButton1Click:Connect(function()
+    local text = string.lower(targetBox.Text)
+    local found = nil
+    for _, p in pairs(Players:GetPlayers()) do
+        if string.sub(string.lower(p.Name), 1, #text) == text or string.sub(string.lower(p.DisplayName), 1, #text) == text then
+            found = p
+            break
+        end
+    end
+    if found then
+        targetBox.Text = found.Name
+        setupLogger(found.Name)
+        targetOkBtn.Visible = false
+    end
+end)
+
+setupLogger(player.Name)
+
+local function StartGlitchLoop(track)
+    currentGlitchId = currentGlitchId + 1
+    local myId = currentGlitchId
+    task.spawn(function()
+        while CurrentTrack == track and track.IsPlaying and Settings["Glitch Mode"] and currentGlitchId == myId do
+            local nextPos = track.TimePosition + 0.08
+            if track.Length > 0 and nextPos >= track.Length then
+                if Settings["Looped"] then 
+                    track.TimePosition = math.clamp(Settings["Start Position"], 0, 1) * track.Length 
+                else 
+                    track:Stop(); break 
+                end
+            else track.TimePosition = nextPos end
+            task.wait(0.08)
+        end
+    end)
+end
+
+local function createSlider(name, min, max)
+    local frame = make("Frame", {Parent = optScroll, Size = UDim2.new(1, 0, 0, 35), BackgroundTransparency = 1})
+    local label = make("TextLabel", {Parent = frame, Size = UDim2.new(1, 0, 0, 15), BackgroundTransparency = 1, Text = string.format("%s: %.2f", name, Settings[name]), TextColor3 = Color3.new(1,1,1), TextXAlignment = 0, TextSize = 11})
+    local bg = make("Frame", {Parent = frame, Size = UDim2.new(1, 0, 0, 5), Position = UDim2.new(0, 0, 0, 20), BackgroundColor3 = Color3.fromRGB(60, 60, 60)})
+    local fill = make("Frame", {Parent = bg, Size = UDim2.new((Settings[name]-min)/(max-min), 0, 1, 0), BackgroundColor3 = Color3.fromRGB(0, 120, 255)})
+    local thumb = make("Frame", {Parent = bg, Size = UDim2.new(0, 10, 0, 10), Position = UDim2.new((Settings[name]-min)/(max-min), 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5)})
+    
+    local isDraggingSlider = false
+    local function updateSlider(input)
+        local p = math.clamp((input.Position.X - bg.AbsolutePosition.X) / bg.AbsoluteSize.X, 0, 1)
+        local val = min + (max - min) * p
+        Settings[name] = val; label.Text = string.format("%s: %.2f", name, val)
+        fill.Size = UDim2.new(p, 0, 1, 0); thumb.Position = UDim2.new(p, 0, 0.5, 0)
+        if CurrentTrack and CurrentTrack.IsPlaying then
+            if name == "Speed" and not Settings["Glitch Mode"] then CurrentTrack:AdjustSpeed(val)
+            elseif name == "Time Position" and CurrentTrack.Length > 0 then CurrentTrack.TimePosition = p * CurrentTrack.Length end
+        end
+    end
+    local function startDrag(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then isDraggingSlider = true; updateSlider(i) end end
+    bg.InputBegan:Connect(startDrag); thumb.InputBegan:Connect(startDrag)
+    UserInputService.InputChanged:Connect(function(i) if isDraggingSlider and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then updateSlider(i) end end)
+    UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then isDraggingSlider = false end end)
+    
+    if name == "Time Position" then
+        RunService.RenderStepped:Connect(function()
+            if not isDraggingSlider and CurrentTrack and CurrentTrack.IsPlaying and CurrentTrack.Length > 0 then
+                local p = CurrentTrack.TimePosition / CurrentTrack.Length
+                Settings[name] = p; label.Text = string.format("%s: %.2f", name, p)
+                fill.Size = UDim2.new(p, 0, 1, 0); thumb.Position = UDim2.new(p, 0, 0.5, 0)
+            end
+        end)
+    end
+end
+
+local function createToggle(name)
+    local frame = make("Frame", {Parent = optScroll, Size = UDim2.new(1, 0, 0, 25), BackgroundTransparency = 1})
+    make("TextLabel", {Parent = frame, Size = UDim2.new(0.7, 0, 1, 0), BackgroundTransparency = 1, Text = name, TextColor3 = Color3.new(1,1,1), TextXAlignment = 0, TextSize = 12})
+    local btn = make("TextButton", {Parent = frame, Size = UDim2.new(0, 30, 0, 15), Position = UDim2.new(1, -30, 0.5, -7), BackgroundColor3 = Settings[name] and Color3.fromRGB(0,200,100) or Color3.fromRGB(200,50,50), Text = ""})
+    btn.MouseButton1Click:Connect(function()
+        Settings[name] = not Settings[name]
+        btn.BackgroundColor3 = Settings[name] and Color3.fromRGB(0,200,100) or Color3.fromRGB(200,50,50)
+        if name == "Looped" and CurrentTrack then CurrentTrack.Looped = Settings[name] end
+        if name == "Glitch Mode" and CurrentTrack and CurrentTrack.IsPlaying then
+            if Settings[name] then CurrentTrack:AdjustSpeed(0); StartGlitchLoop(CurrentTrack) else currentGlitchId = currentGlitchId + 1; CurrentTrack:AdjustSpeed(Settings["Speed"]) end
+        end
+    end)
+end
+
+createSlider("Speed", 0, 10); createSlider("Start Position", 0, 1); createSlider("Time Position", 0, 1)
+createToggle("Stop On Move"); createToggle("Looped"); createToggle("Glitch Mode")
+
+local function StopTrack()
+    if CurrentTrack then isManualStop = true; CurrentTrack:Stop(0.1); CurrentTrack = nil; currentGlitchId = currentGlitchId + 1 end
+end
+
+local function LoadTrack(id)
+    if CurrentTrack then isManualStop = true; CurrentTrack:Stop(0) end
+    isManualStop = false
+    local anim = Instance.new("Animation"); anim.AnimationId = "rbxassetid://"..tostring(id)
+    local track = getAnimator():LoadAnimation(anim)
+    track.Priority = Enum.AnimationPriority.Action4
+    track.Looped = Settings["Looped"]
+    track:Play(0.1, 1, Settings["Speed"])
+    CurrentTrack = track
+    
+    if Settings["Glitch Mode"] then track:AdjustSpeed(0); StartGlitchLoop(track) end
+    
+    track.DidLoop:Connect(function()
+        if Settings["Start Position"] > 0 and CurrentTrack == track then
+            track.TimePosition = math.clamp(Settings["Start Position"], 0, 1) * track.Length
+        end
+    end)
+
+    track.Stopped:Connect(function()
+        if Settings["Looped"] and not isManualStop and CurrentTrack == track and not Settings["Glitch Mode"] and not track.Looped then
+            task.spawn(function()
+                task.wait()
+                if Settings["Looped"] and not isManualStop and CurrentTrack == track and not Settings["Glitch Mode"] then
+                    track:Play(0.1, 1, Settings["Speed"])
+                    track.TimePosition = math.clamp(Settings["Start Position"], 0, 1) * track.Length
+                end
+            end)
+        end
+    end)
+    
+    task.spawn(function()
+        repeat task.wait() until track.Length > 0 or CurrentTrack ~= track
+        if CurrentTrack == track then 
+            track.TimePosition = math.clamp(Settings["Start Position"], 0, 1) * track.Length 
+        end
+    end)
+end
+
+playBtn.MouseButton1Click:Connect(function() local id = string.match(emoteBox.Text, "%d+"); if id then LoadTrack(id) end end)
+stopBtn.MouseButton1Click:Connect(StopTrack)
+
+RunService.Heartbeat:Connect(function()
+    if Settings["Stop On Move"] and humanoid and CurrentTrack and CurrentTrack.IsPlaying and humanoid.MoveDirection.Magnitude > 0 then StopTrack() end
+end)
+
+local isOpen = true
+local function toggleUI()
+    isOpen = not isOpen; mainFrame.Visible = isOpen
+    if not isOpen then loggerPanel.Visible = false else loggerPanel.Visible = toggleLogBtn.Text == ">" end
+end
+closeBtn.MouseButton1Click:Connect(toggleUI)
+UserInputService.InputBegan:Connect(function(input, gp) if not gp and input.KeyCode == Enum.KeyCode.C then toggleUI() end end)
+
+toggleLogBtn.MouseButton1Click:Connect(function()
+    local newState = toggleLogBtn.Text == "<"
+    toggleLogBtn.Text = newState and ">" or "<"
+    loggerPanel.Visible = newState
+end)
