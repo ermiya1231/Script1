@@ -51,7 +51,6 @@ local selectedPlayerLabel = make("TextLabel", {Parent = loggerPanel, Size = UDim
 local targetBox = make("TextBox", {Parent = loggerPanel, Size = UDim2.new(1, -45, 0, 25), Position = UDim2.new(0, 5, 0, 48), BackgroundColor3 = Color3.fromRGB(45, 45, 45), Text = player.Name, TextColor3 = Color3.new(1,1,1)})
 local targetOkBtn = make("TextButton", {Parent = loggerPanel, Size = UDim2.new(0, 30, 0, 25), Position = UDim2.new(1, -35, 0, 48), BackgroundColor3 = Color3.fromRGB(0, 200, 100), Text = "OK", TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 12, Visible = false})
 
--- Added Filter Button logic
 local isFilterMode = false
 local clearBtn = make("TextButton", {Parent = loggerPanel, Size = UDim2.new(0.5, -7, 0, 25), Position = UDim2.new(0, 5, 0, 76), BackgroundColor3 = Color3.fromRGB(200, 50, 50), Text = "Clear", TextColor3 = Color3.new(1,1,1)})
 local filterBtn = make("TextButton", {Parent = loggerPanel, Size = UDim2.new(0.5, -7, 0, 25), Position = UDim2.new(0.5, 2, 0, 76), BackgroundColor3 = Color3.fromRGB(200, 50, 50), Text = "FilterAnims: OFF", TextColor3 = Color3.new(1,1,1)})
@@ -113,20 +112,38 @@ local function clearLogs()
     end
 end
 
--- Default Animation Names to Filter
+-- Filtered Animation Names
 local defaultAnims = {
     ["walkanim"] = true, ["runanim"] = true, ["jumpanim"] = true, ["fallanim"] = true,
     ["climbanim"] = true, ["idleanim"] = true, ["sitanim"] = true, ["toolnoneanim"] = true,
     ["toolslashanim"] = true, ["toollungeanim"] = true, ["swimanim"] = true, ["swimidleanim"] = true,
     ["toolloopanimation"] = true, ["animation1"] = true, ["animation2"] = true,
-    -- Basic keywords that catch most default actions
     ["walk"] = true, ["run"] = true, ["jump"] = true, ["fall"] = true, ["climb"] = true,
     ["idle"] = true, ["sit"] = true
+}
+
+-- Filtered Animation IDs (Add any specific IDs you want to ignore here)
+local filteredIds = {
+    ["180435571"] = true,
+    ["180436148"] = true,
+	["180426354"] = true,
+	["180435792"] = true,
+	["125750702"] = true,
+	["182393478"] = true,
+	["129967478"] = true,
+	["129967390"] = true,
+	["913376220"] = true,
+	["180436334"] = true,
+	["507766666"] = true,
+	["507766388"] = true
 }
 
 local function logAnim(track)
     if not track.Animation then return end
     
+    local id = string.match(track.Animation.AnimationId, "%d+")
+    if not id then return end
+
     local name = track.Name
     if name == "" or name == "Animation" then
         name = track.Animation.Name
@@ -135,17 +152,17 @@ local function logAnim(track)
         name = "ToolAnim"
     end
 
-    -- Filter Mode Logic
+    -- Filter Mode Logic (Checks both ID and Name)
     if isFilterMode then
+        if filteredIds[id] then return end -- Filter by ID
+        
         local lowerName = string.lower(name)
-        -- Check exact names or keyword matches
         if defaultAnims[lowerName] or string.find(lowerName, "walk") or string.find(lowerName, "idle") or string.find(lowerName, "run") or string.find(lowerName, "jump") or string.find(lowerName, "fall") or string.find(lowerName, "tool") then
             return 
         end
     end
 
-    local id = string.match(track.Animation.AnimationId, "%d+")
-    if not id or loggedAnims[id] then return end
+    if loggedAnims[id] then return end
     loggedAnims[id] = true
     
     local initialName = (name ~= "" and name ~= "Animation") and name or ("Animation " .. id)
@@ -179,7 +196,6 @@ end
 
 clearBtn.MouseButton1Click:Connect(clearLogs)
 
--- Multi-Player Logger Logic
 local activeConnections = {}
 local globalPlayerAdded = nil
 
@@ -214,7 +230,6 @@ local function setupLogger(targetName)
     disconnectAllPlayers()
     clearLogs()
 
-    -- ALL Players Logic
     if string.lower(targetName) == "all" then
         selectedPlayerLabel.Text = "Selected: ALL PLAYERS"
         for _, p in pairs(Players:GetPlayers()) do
@@ -226,7 +241,6 @@ local function setupLogger(targetName)
         return
     end
 
-    -- Specific Player Logic
     local targetPlr
     for _, p in pairs(Players:GetPlayers()) do
         if string.lower(p.Name) == string.lower(targetName) or string.lower(p.DisplayName) == string.lower(targetName) then targetPlr = p; break end
@@ -272,7 +286,6 @@ end)
 
 setupLogger(player.Name)
 
--- Glitch and Media controls
 local function StartGlitchLoop(track)
     currentGlitchId = currentGlitchId + 1
     local myId = currentGlitchId
