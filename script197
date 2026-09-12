@@ -50,7 +50,23 @@ make("TextLabel", {Parent = loggerPanel, Size = UDim2.new(1, 0, 0, 30), Backgrou
 local selectedPlayerLabel = make("TextLabel", {Parent = loggerPanel, Size = UDim2.new(1, -10, 0, 18), Position = UDim2.new(0, 5, 0, 28), BackgroundTransparency = 1, Text = "Selected Player: " .. player.Name, TextColor3 = Color3.fromRGB(170, 170, 170), TextSize = 10, Font = Enum.Font.Gotham, TextXAlignment = 0})
 local targetBox = make("TextBox", {Parent = loggerPanel, Size = UDim2.new(1, -45, 0, 25), Position = UDim2.new(0, 5, 0, 48), BackgroundColor3 = Color3.fromRGB(45, 45, 45), Text = player.Name, TextColor3 = Color3.new(1,1,1)})
 local targetOkBtn = make("TextButton", {Parent = loggerPanel, Size = UDim2.new(0, 30, 0, 25), Position = UDim2.new(1, -35, 0, 48), BackgroundColor3 = Color3.fromRGB(0, 200, 100), Text = "OK", TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 12, Visible = false})
-local clearBtn = make("TextButton", {Parent = loggerPanel, Size = UDim2.new(1, -10, 0, 25), Position = UDim2.new(0, 5, 0, 76), BackgroundColor3 = Color3.fromRGB(200, 50, 50), Text = "Clear Logs", TextColor3 = Color3.new(1,1,1)})
+
+-- Added Filter Button logic
+local isFilterMode = false
+local clearBtn = make("TextButton", {Parent = loggerPanel, Size = UDim2.new(0.5, -7, 0, 25), Position = UDim2.new(0, 5, 0, 76), BackgroundColor3 = Color3.fromRGB(200, 50, 50), Text = "Clear", TextColor3 = Color3.new(1,1,1)})
+local filterBtn = make("TextButton", {Parent = loggerPanel, Size = UDim2.new(0.5, -7, 0, 25), Position = UDim2.new(0.5, 2, 0, 76), BackgroundColor3 = Color3.fromRGB(200, 50, 50), Text = "FilterAnims: OFF", TextColor3 = Color3.new(1,1,1)})
+
+filterBtn.MouseButton1Click:Connect(function()
+    isFilterMode = not isFilterMode
+    if isFilterMode then
+        filterBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+        filterBtn.Text = "FilterAnims: ON"
+    else
+        filterBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        filterBtn.Text = "FilterAnims: OFF"
+    end
+end)
+
 local logScroll = make("ScrollingFrame", {Parent = loggerPanel, Size = UDim2.new(1, -10, 1, -106), Position = UDim2.new(0, 5, 0, 104), BackgroundTransparency = 1, ScrollBarThickness = 3})
 local logList = make("UIListLayout", {Parent = logScroll, Padding = UDim.new(0, 4)})
 logList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() logScroll.CanvasSize = UDim2.new(0,0,0,logList.AbsoluteContentSize.Y) end)
@@ -64,7 +80,6 @@ local optScroll = make("ScrollingFrame", {Parent = content, Size = UDim2.new(1, 
 local optList = make("UIListLayout", {Parent = optScroll, Padding = UDim.new(0, 4)})
 optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() optScroll.CanvasSize = UDim2.new(0,0,0,optList.AbsoluteContentSize.Y) end)
 
--- Cross-platform Dragging Support (PC & Mobile)
 local dragging, dragStart, startPos
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -98,21 +113,41 @@ local function clearLogs()
     end
 end
 
+-- Default Animation Names to Filter
+local defaultAnims = {
+    ["walkanim"] = true, ["runanim"] = true, ["jumpanim"] = true, ["fallanim"] = true,
+    ["climbanim"] = true, ["idleanim"] = true, ["sitanim"] = true, ["toolnoneanim"] = true,
+    ["toolslashanim"] = true, ["toollungeanim"] = true, ["swimanim"] = true, ["swimidleanim"] = true,
+    ["toolloopanimation"] = true, ["animation1"] = true, ["animation2"] = true,
+    -- Basic keywords that catch most default actions
+    ["walk"] = true, ["run"] = true, ["jump"] = true, ["fall"] = true, ["climb"] = true,
+    ["idle"] = true, ["sit"] = true
+}
+
 local function logAnim(track)
     if not track.Animation then return end
-    local id = string.match(track.Animation.AnimationId, "%d+")
-    if not id or loggedAnims[id] then return end
-    loggedAnims[id] = true
     
     local name = track.Name
     if name == "" or name == "Animation" then
         name = track.Animation.Name
     end
-
     if name == "ToolLoopAnimation" then
         name = "ToolAnim"
     end
 
+    -- Filter Mode Logic
+    if isFilterMode then
+        local lowerName = string.lower(name)
+        -- Check exact names or keyword matches
+        if defaultAnims[lowerName] or string.find(lowerName, "walk") or string.find(lowerName, "idle") or string.find(lowerName, "run") or string.find(lowerName, "jump") or string.find(lowerName, "fall") or string.find(lowerName, "tool") then
+            return 
+        end
+    end
+
+    local id = string.match(track.Animation.AnimationId, "%d+")
+    if not id or loggedAnims[id] then return end
+    loggedAnims[id] = true
+    
     local initialName = (name ~= "" and name ~= "Animation") and name or ("Animation " .. id)
     local textInfo = string.format("%s (%s)", initialName, id)
     
@@ -121,7 +156,7 @@ local function logAnim(track)
         if setclipboard then 
             setclipboard(id) 
             local currentText = btn.Text
-            btn.Text = "Copied To Clipboard!"
+            btn.Text = "Copied!"
             task.delay(1.2, function()
                 if btn and btn.Parent then
                     btn.Text = currentText
@@ -144,34 +179,75 @@ end
 
 clearBtn.MouseButton1Click:Connect(clearLogs)
 
-local animConn, charConn
+-- Multi-Player Logger Logic
+local activeConnections = {}
+local globalPlayerAdded = nil
+
+local function disconnectAllPlayers()
+    for _, conns in pairs(activeConnections) do
+        if conns.anim then conns.anim:Disconnect() end
+        if conns.char then conns.char:Disconnect() end
+    end
+    table.clear(activeConnections)
+    if globalPlayerAdded then globalPlayerAdded:Disconnect(); globalPlayerAdded = nil end
+end
+
+local function hookPlayer(p)
+    if activeConnections[p] then return end
+    activeConnections[p] = {}
+
+    local function onChar(char)
+        local h = char:WaitForChild("Humanoid", 5)
+        if h then
+            local a = h:WaitForChild("Animator", 5)
+            if a then 
+                if activeConnections[p].anim then activeConnections[p].anim:Disconnect() end
+                activeConnections[p].anim = a.AnimationPlayed:Connect(logAnim) 
+            end
+        end
+    end
+    activeConnections[p].char = p.CharacterAdded:Connect(onChar)
+    if p.Character then onChar(p.Character) end
+end
+
 local function setupLogger(targetName)
-    if animConn then animConn:Disconnect() end
-    if charConn then charConn:Disconnect() end
+    disconnectAllPlayers()
+    clearLogs()
+
+    -- ALL Players Logic
+    if string.lower(targetName) == "all" then
+        selectedPlayerLabel.Text = "Selected: ALL PLAYERS"
+        for _, p in pairs(Players:GetPlayers()) do
+            hookPlayer(p)
+        end
+        globalPlayerAdded = Players.PlayerAdded:Connect(function(p)
+            hookPlayer(p)
+        end)
+        return
+    end
+
+    -- Specific Player Logic
     local targetPlr
     for _, p in pairs(Players:GetPlayers()) do
         if string.lower(p.Name) == string.lower(targetName) or string.lower(p.DisplayName) == string.lower(targetName) then targetPlr = p; break end
     end
     if not targetPlr then return end
     
-    -- Clear previous logs when switching target
-    clearLogs()
-
     selectedPlayerLabel.Text = "Selected Player: " .. targetPlr.Name
-    local function onChar(char)
-        local h = char:WaitForChild("Humanoid", 5)
-        if h then
-            local a = h:WaitForChild("Animator", 5)
-            if a then animConn = a.AnimationPlayed:Connect(logAnim) end
-        end
-    end
-    charConn = targetPlr.CharacterAdded:Connect(onChar)
-    if targetPlr.Character then onChar(targetPlr.Character) end
+    hookPlayer(targetPlr)
 end
 
 targetBox:GetPropertyChangedSignal("Text"):Connect(function() targetOkBtn.Visible = true end)
 targetOkBtn.MouseButton1Click:Connect(function()
     local text = string.lower(targetBox.Text)
+    
+    if text == "all" then
+        targetBox.Text = "All"
+        setupLogger("All")
+        targetOkBtn.Visible = false
+        return
+    end
+
     local found = nil
     for _, p in pairs(Players:GetPlayers()) do
         if string.sub(string.lower(p.Name), 1, #text) == text or string.sub(string.lower(p.DisplayName), 1, #text) == text then
@@ -186,8 +262,17 @@ targetOkBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+Players.PlayerRemoving:Connect(function(p)
+    if activeConnections[p] then
+        if activeConnections[p].anim then activeConnections[p].anim:Disconnect() end
+        if activeConnections[p].char then activeConnections[p].char:Disconnect() end
+        activeConnections[p] = nil
+    end
+end)
+
 setupLogger(player.Name)
 
+-- Glitch and Media controls
 local function StartGlitchLoop(track)
     currentGlitchId = currentGlitchId + 1
     local myId = currentGlitchId
