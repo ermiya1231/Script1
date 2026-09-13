@@ -1,0 +1,176 @@
+-- FE Interactive Cigarette (Click/Tap to Smoke - Perfected Offsets & Freeze)
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Head = Character:WaitForChild("Head")
+local Humanoid = Character:WaitForChild("Humanoid")
+local HRP = Character:WaitForChild("HumanoidRootPart") -- اضافه شدن RootPart برای فریز کردن
+
+-- 1. پیدا کردن SyncAPI
+local function GetSyncAPI()
+    for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
+        if item:FindFirstChild("SyncAPI") then return item.SyncAPI end
+    end
+    for _, item in pairs(Character:GetChildren()) do
+        if item:FindFirstChild("SyncAPI") then return item.SyncAPI end
+    end
+    for _, item in pairs(workspace:GetDescendants()) do
+        if item.Name == "SyncAPI" then return item end
+    end
+    return nil
+end
+
+local SyncAPI = GetSyncAPI()
+if not SyncAPI then
+    warn("خطا: ابزار F3X پیدا نشد!")
+    return
+end
+
+local Remote = SyncAPI:WaitForChild("ServerEndpoint")
+
+-- 2. تنظیمات R15 / R6
+local isR15 = Humanoid.RigType == Enum.HumanoidRigType.R15
+local RightArm = isR15 and Character:WaitForChild("RightHand") or Character:WaitForChild("Right Arm")
+
+-- مختصات دهان
+local headY = isR15 and -0.12 or -0.28
+local headZ = isR15 and -0.65 or -0.75
+local mouthOffset = CFrame.new(0.06, headY, headZ) * CFrame.Angles(math.rad(6), math.rad(15), 0)
+
+-- مختصات دست
+local handOffset
+if isR15 then
+    handOffset = CFrame.new(0, -0.4, -0.3) * CFrame.Angles(math.rad(90), math.rad(180), 0)
+else
+    handOffset = CFrame.new(0, -1.1, -0.4) * CFrame.Angles(math.rad(90), math.rad(180), 0)
+end
+
+-- 3. ساخت پارت‌ها
+local tempCF = CFrame.new(0, 500, 0)
+local cigBody = Remote:InvokeServer("CreatePart", "Normal", tempCF, workspace)
+local cigFilter = Remote:InvokeServer("CreatePart", "Normal", tempCF, workspace)
+local cigTip = Remote:InvokeServer("CreatePart", "Normal", tempCF, workspace)
+local smokePart = Remote:InvokeServer("CreatePart", "Normal", tempCF, workspace)
+
+local cigParts = {cigBody, cigFilter, cigTip, smokePart}
+local mainParts = {cigBody, cigFilter, cigTip} 
+
+-- اعمال فوری خاموش کردن Collision به محض ساخته شدن پارت‌ها
+for _, part in ipairs(cigParts) do
+    Remote:InvokeServer("SyncCollision", {{["Part"] = part, ["CanCollide"] = false}})
+end
+
+-- 4. دیزاین و فیزیک
+Remote:InvokeServer("SyncColor", {
+    {["Part"] = cigBody, ["Color"] = Color3.fromRGB(245, 245, 245)},
+    {["Part"] = cigFilter, ["Color"] = Color3.fromRGB(195, 120, 50)},
+    {["Part"] = cigTip, ["Color"] = Color3.fromRGB(255, 50, 0)}
+})
+
+pcall(function()
+    Remote:InvokeServer("SyncMaterial", {
+        {["Part"] = cigBody, ["Material"] = Enum.Material.SmoothPlastic},
+        {["Part"] = cigFilter, ["Material"] = Enum.Material.SmoothPlastic},
+        {["Part"] = cigTip, ["Material"] = Enum.Material.Neon},
+        {["Part"] = smokePart, ["Material"] = Enum.Material.SmoothPlastic, ["Transparency"] = 1}
+    })
+end)
+
+-- تابع انتقال هوشمند سیگار 
+local function AttachCigarette(targetPart, offsetCFrame)
+    for _, part in ipairs(cigParts) do
+        for _, child in ipairs(part:GetChildren()) do
+            if child:IsA("JointInstance") or child.Name == "Weld" then
+                child:Destroy()
+            end
+        end
+    end
+    
+    local targetCF = targetPart.CFrame * offsetCFrame
+    local smokeCF
+    local smokeTarget = Head 
+    
+    if targetPart == RightArm then
+        smokeCF = Head.CFrame * mouthOffset * CFrame.new(0, 0, -0.6)
+    else
+        smokeCF = targetCF * CFrame.new(0, 0, -0.75)
+    end
+    
+    local syncData = {
+        {["Part"] = cigBody, ["CFrame"] = targetCF, ["Size"] = Vector3.new(0.07, 0.07, 0.5)},
+        {["Part"] = cigFilter, ["CFrame"] = targetCF * CFrame.new(0, 0, 0.2), ["Size"] = Vector3.new(0.08, 0.08, 0.15)},
+        {["Part"] = cigTip, ["CFrame"] = targetCF * CFrame.new(0, 0, -0.27), ["Size"] = Vector3.new(0.06, 0.06, 0.05)},
+        {["Part"] = smokePart, ["CFrame"] = smokeCF, ["Size"] = Vector3.new(0.05, 0.05, 0.05)}
+    }
+    
+    task.spawn(function() Remote:InvokeServer("SyncResize", syncData) end)
+    task.spawn(function() 
+        Remote:InvokeServer("CreateWelds", mainParts, targetPart) 
+        Remote:InvokeServer("CreateWelds", {smokePart}, smokeTarget)
+    end)
+end
+
+-- 5. اتصال اولیه به دست
+AttachCigarette(RightArm, handOffset)
+task.wait(0.5)
+for _, part in ipairs(cigParts) do
+    Remote:InvokeServer("SyncAnchor", {{["Part"] = part, ["Anchored"] = false}})
+end
+
+-- اضافه کردن افکت دود
+pcall(function()
+    Remote:InvokeServer("CreateDecorations", {{ Part = smokePart, DecorationType = "Smoke" }})
+    task.wait(0.2)
+    Remote:InvokeServer("SyncDecorate", {{
+        Part = smokePart, DecorationType = "Smoke", Color = Color3.fromRGB(220, 220, 230),
+        Opacity = 0.2, RiseVelocity = 3, Size = 0.1
+    }})
+end)
+
+-- 6. لود انیمیشن
+local anim = Instance.new("Animation")
+anim.AnimationId = "rbxassetid://61914540"
+local animator = Humanoid:FindFirstChildOfClass("Animator") or Humanoid
+local animTrack = animator:LoadAnimation(anim)
+
+-- 7. سیستم تعاملی با فریز شدن کاراکتر
+local isSmoking = false
+local isAnimating = false
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if isAnimating then return end 
+        isAnimating = true
+        
+        -- فریز کردن بازیکن قبل از محاسبات سیگار
+        if HRP then HRP.Anchored = true end
+        
+        animTrack:Play()
+        task.wait(0.7) 
+        
+        if isSmoking then
+            AttachCigarette(RightArm, handOffset)
+            isSmoking = false
+        else
+            AttachCigarette(Head, mouthOffset)
+            isSmoking = true
+        end
+        
+        task.wait(0.5) 
+        
+        -- خارج کردن بازیکن از فریز
+        if HRP then HRP.Anchored = false end
+        
+        isAnimating = false
+    end
+end)
+
+-- 8. سیستم پاکسازی موقع مرگ
+Humanoid.Died:Connect(function()
+    pcall(function()
+        Remote:InvokeServer("Remove", cigParts)
+    end)
+end)
