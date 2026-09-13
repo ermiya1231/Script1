@@ -1,0 +1,116 @@
+
+		local Players = game:GetService("Players")
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local player = Players.LocalPlayer
+		local char = player.Character or player.CharacterAdded:Wait()
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandModification
+		pcall(function() RequestCommand:InvokeServer(";btools") end)
+	
+		local f3x
+		while not f3x do
+			for _, v in ipairs(player.Backpack:GetChildren()) do
+				if v:FindFirstChild("SyncAPI") then f3x = v break end
+			end
+			if not f3x and player.Character then
+				for _, v in ipairs(player.Character:GetChildren()) do
+					if v:FindFirstChild("SyncAPI") then f3x = v break end
+				end
+			end
+			task.wait(0.1)
+		end
+	
+		local ep = f3x.SyncAPI.ServerEndpoint
+		local function _(cmd, ...) ep:InvokeServer(cmd, ...) end
+		local function _r(cmd, ...) return ep:InvokeServer(cmd, ...) end
+	
+		local function syncAnchor(p, b)   _("SyncAnchor",   {{Part=p, Anchored=b}}) end
+		local function syncCollision(p,b)  _("SyncCollision",{{Part=p, CanCollide=b}}) end
+		local function syncResize(p,sz,cf) _("SyncResize",   {{Part=p, Size=sz, CFrame=cf}}) end
+		local function syncTrans(p,t)      _("SyncMaterial",  {{Part=p, Transparency=t}}) end
+		local function syncName(p,n)       _("SetName",       {p}, n) end
+		local function createMesh(p)       _("CreateMeshes",  {{Part=p}}) end
+		local function syncMeshId(p,id)    _("SyncMesh",      {{Part=p, MeshId="rbxassetid://"..id}}) end
+		local function syncMeshTex(p,id)   _("SyncMesh",      {{Part=p, TextureId="rbxassetid://"..id}}) end
+		local function syncMeshScale(p,v)  _("SyncMesh",      {{Part=p, Scale=v}}) end
+		local function weld(p1,p2,lead)    _("CreateWelds",   {p1, p2}, lead) end
+		local function remove(p)           _("Remove",        {p}) end
+		local function createLight(p)      _("CreateLights", {{Part=p, LightType="SpotLight"}}) end
+		local function syncLight(p)
+			_("SyncLighting", {{
+				Part       = p,
+				LightType  = "SpotLight",
+				Brightness = 14,
+				Range      = 16,
+				Color      = Color3.new(1, 1, 1),
+				Shadows    = false,
+				Face       = Enum.NormalId.Front,
+				Angle      = 90,
+			}})
+		end
+	
+		local function addFire(p, col, sec, sz, ht)
+			_("CreateDecorations", {{Part=p, DecorationType="Fire"}})
+			_("SyncDecorate", {{
+				Part           = p,
+				DecorationType = "Fire",
+				Color          = col,
+				SecondaryColor = sec,
+				Size           = sz,
+				Heat           = ht,
+			}})
+		end
+		task.wait(0.7)
+		pcall(function() RequestCommand:InvokeServer(";invisible") end)
+	
+		for _, v in ipairs(char:GetChildren()) do
+			if v:IsA("BasePart") then
+				task.spawn(function() pcall(function() syncTrans(v, 1) end) end)
+			end
+		end
+	
+		task.spawn(function()
+			local ll = char:FindFirstChild("Left Leg")  or char:FindFirstChild("LeftLowerLeg")
+			local rl = char:FindFirstChild("Right Leg") or char:FindFirstChild("RightLowerLeg")
+			if ll then pcall(function() addFire(ll, Color3.fromRGB(255,40,0), Color3.fromRGB(255,140,0), 5, 9) end) end
+			if rl then pcall(function() addFire(rl, Color3.fromRGB(255,40,0), Color3.fromRGB(255,140,0), 5, 9) end) end
+		end)
+	
+		task.wait(0.5)
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		pcall(function() syncAnchor(hrp, true) end)
+	
+		local train = _r("CreatePart", "Normal", hrp.CFrame, workspace)
+		if type(train) == "table" then train = train[1] end
+		if not train then pcall(function() syncAnchor(hrp, false) end) return end
+	
+		pcall(function()
+			syncName(train, "sigmatrain")
+			syncCollision(train, false)
+			syncResize(train, Vector3.new(5,5,10), hrp.CFrame)
+			syncAnchor(train, true)
+			createMesh(train)
+			syncMeshScale(train, Vector3.new(2, 2, 1.5))
+			syncMeshId(train, "2231280549")
+			syncMeshTex(train, "2231280614")
+			createLight(train)
+			syncLight(train)
+			weld(train, hrp, train)
+		end)
+	
+		task.wait(0.3)
+		pcall(function()
+			syncAnchor(train, false)
+			syncAnchor(hrp, false)
+		end)
+		char.Humanoid.WalkSpeed = 60
+	
+		train.Touched:Connect(function(hit)
+			local hitChar = hit.Parent
+			if not hitChar or hitChar == char then return end
+			if hitChar:FindFirstChildOfClass("Humanoid") then
+				local plr = Players:GetPlayerFromCharacter(hitChar)
+				if plr then
+					pcall(function() RequestCommand:InvokeServer(";kill " .. plr.Name) end)
+				end
+			end
+		end)
