@@ -1,0 +1,190 @@
+-- =========================================================
+-- F3X Advanced Map Exporter (Pro Version)
+-- + ONLY Player Ignorer (NPCs are now exported!)
+-- + Fixed Decal Duplication Bug & Phantom Decals
+-- + MeshPart Collision Fix (No Invisible Walls)
+-- + Union Compatibility Handler
+-- =========================================================
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local exportedLines = {}
+local partIndex = 1
+local faces = {"Top", "Bottom", "Left", "Right", "Front", "Back"}
+
+
+-- [ فیکس جدید ]: شناسایی فقط و فقط پلیرهای واقعی (NPC ها نادیده گرفته نمیشن)
+local ignoredModels = {}
+for _, player in ipairs(Players:GetPlayers()) do
+    if player.Character then
+        ignoredModels[player.Character] = true
+    end
+end
+
+local function shouldIgnore(instance)
+    local current = instance
+    while current and current ~= workspace do
+        if ignoredModels[current] then return true end
+        current = current.Parent
+    end
+    return false
+end
+
+local descendants = workspace:GetDescendants()
+
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Export Started...",
+    Text = "Please Wait"
+})
+
+for i, v in ipairs(descendants) do
+    -- آزادسازی فریم برای جلوگیری از کرش
+    if i % 300 == 0 then
+        RunService.Heartbeat:Wait()
+    end
+
+    -- پشتیبانی از پارت‌ها و یونیون‌ها
+    if (v:IsA("BasePart") or v:IsA("UnionOperation")) and v.Name ~= "Terrain" then
+        
+        -- اگر قطعه متعلق به پلیر نباشد (NPC ها اکسپورت میشن)
+        if not shouldIgnore(v) then
+            local partData = {}
+            
+            table.insert(partData, string.format("Part %d:", partIndex))
+            
+            -- موقعیت و چرخش
+            local pos = v.Position
+            table.insert(partData, string.format("Position: (%.3f, %.3f, %.3f)", pos.X, pos.Y, pos.Z))
+            
+            local orient = v.Orientation
+            table.insert(partData, string.format("Rotation: (%.3f, %.3f, %.3f)", orient.X, orient.Y, orient.Z))
+            
+            -- اندازه
+            local size = v.Size
+            table.insert(partData, string.format("Size: (%.3f, %.3f, %.3f)", size.X, size.Y, size.Z))
+            
+            -- نوع شکل (Shape)
+            local shapeName = "Normal"
+            if v:IsA("WedgePart") then shapeName = "Wedge"
+            elseif v:IsA("CornerWedgePart") then shapeName = "Corner"
+            elseif v:IsA("TrussPart") then shapeName = "Truss"
+            elseif v:IsA("VehicleSeat") then shapeName = "VehicleSeat"
+            elseif v:IsA("Seat") then shapeName = "Seat"
+            elseif v:IsA("SpawnLocation") then shapeName = "Spawn"
+            elseif v:IsA("Part") then
+                if v.Shape == Enum.PartType.Ball then shapeName = "Ball"
+                elseif v.Shape == Enum.PartType.Cylinder then shapeName = "Cylinder"
+                end
+            end
+            table.insert(partData, string.format("Shape: %s", shapeName))
+            
+            -- مدیریت ClassName برای جلوگیری از باگ تغییر سایز
+            local exportClassName = v.ClassName
+            local isConvertedMesh = false
+            
+            -- تبدیل MeshPart و Union به پارت ساده برای ایمپورت تمیزتر
+            if v:IsA("MeshPart") or v:IsA("UnionOperation") then
+                exportClassName = "Part" 
+                isConvertedMesh = true
+            end
+            table.insert(partData, string.format("ClassName: %s", exportClassName))
+            
+            if v:IsA("SpawnLocation") then table.insert(partData, "SpawnPoint: True") end
+            if v:IsA("VehicleSeat") then table.insert(partData, "VehicleSeat: True")
+            elseif v:IsA("Seat") then table.insert(partData, "Seat: True") end
+            
+            -- رنگ (RGB)
+            local col = v.Color
+            table.insert(partData, string.format("Color: %.3f, %.3f, %.3f", col.R, col.G, col.B))
+            
+            -- متریال و شفافیت
+            local matName = tostring(v.Material):gsub("Enum.Material.", "")
+            table.insert(partData, string.format("Material: %s", matName))
+            table.insert(partData, string.format("Transparency: %.3f", v.Transparency))
+            
+            -- [ فیکس کالیژن غول‌آسا ]
+            if not v.CanCollide or isConvertedMesh then 
+                table.insert(partData, "CanCollide: False") 
+            end
+            
+            if not v.Anchored and not v:IsA("Seat") then 
+                table.insert(partData, "Unanchored: True") 
+            end
+
+            -- استخراج اطلاعات MeshPart
+            if v:IsA("MeshPart") then
+                table.insert(partData, "MeshType: FileMesh")
+                if v.MeshId ~= "" then table.insert(partData, string.format("MeshId: %s", v.MeshId)) end
+                if v.TextureID ~= "" then table.insert(partData, string.format("MeshTextureId: %s", v.TextureID)) end
+                
+                local mSize = v.MeshSize
+                local sX = mSize.X > 0.001 and (v.Size.X / mSize.X) or 1
+                local sY = mSize.Y > 0.001 and (v.Size.Y / mSize.Y) or 1
+                local sZ = mSize.Z > 0.001 and (v.Size.Z / mSize.Z) or 1
+                table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", sX, sY, sZ))
+            end
+            
+            -- بررسی فرزندان (دکال، تکسچر، مش، نور و افکت‌ها)
+            local usedDecals = {}
+            local usedTextures = {}
+
+            for _, child in ipairs(v:GetChildren()) do
+                if child:IsA("Decal") then
+                    local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
+                    local idNum = (child.Texture and child.Texture ~= "") and child.Texture:match("%d+") or nil
+                    -- [ فیکس Decal ]: بررسی معتبر بودن تکسچر و جلوگیری از تکرار روی یک Face
+                    if idNum and not usedDecals[faceStr] then 
+                        table.insert(partData, string.format("Decal.%s = %s", faceStr, idNum)) 
+                        usedDecals[faceStr] = true
+                    end
+                elseif child:IsA("Texture") then
+                    local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
+                    local idNum = (child.Texture and child.Texture ~= "") and child.Texture:match("%d+") or nil
+                    if idNum and not usedTextures[faceStr] then 
+                        table.insert(partData, string.format("Texture.%s = %s", faceStr, idNum)) 
+                        usedTextures[faceStr] = true
+                    end
+                elseif child:IsA("SpecialMesh") then
+                    local mType = tostring(child.MeshType):gsub("Enum.MeshType.", "")
+                    table.insert(partData, string.format("MeshType: %s", mType))
+                    if child.MeshId ~= "" then table.insert(partData, string.format("MeshId: %s", child.MeshId)) end
+                    if child.TextureId ~= "" then table.insert(partData, string.format("MeshTextureId: %s", child.TextureId)) end
+                    local ms = child.Scale
+                    table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", ms.X, ms.Y, ms.Z))
+                elseif child:IsA("PointLight") then table.insert(partData, "Light: True")
+                elseif child:IsA("Fire") then table.insert(partData, "Fire: True")
+                elseif child:IsA("Sparkles") then table.insert(partData, "Sparkles: True")
+                elseif child:IsA("Smoke") then table.insert(partData, "Smoke: True")
+                end
+            end
+            
+            -- تنظیمات Studs 
+            if v:IsA("Part") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("SpawnLocation") then
+                for _, face in ipairs(faces) do
+                    if v[face .. "Surface"] == Enum.SurfaceType.Studs then
+                        table.insert(partData, string.format("Stud.%s: True", face))
+                    end
+                end
+            end
+            
+            table.insert(exportedLines, table.concat(partData, "\n") .. "\n")
+            partIndex = partIndex + 1
+        end
+    end
+end
+
+local finalResult = table.concat(exportedLines, "\n")
+
+if setclipboard then
+    setclipboard(finalResult)
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Success✅",
+    Text = "Copied To Clipboard"
+})
+else
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Error❌",
+    Text = "Cant Copy"
+})
+end
