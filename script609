@@ -158,7 +158,7 @@ function CreateSky()
 
     local cf = hrp.CFrame
     -- ساخت پارت در ارتفاع ۲۰۰۰ استود بالاتر
-    local targetPos = cf.Position + Vector3.new(0, 1000, 0)
+    local targetPos = cf.Position + Vector3.new(0, 700, 0)
     CreatePart(CFrame.new(targetPos), workspace)
 
     local found = false
