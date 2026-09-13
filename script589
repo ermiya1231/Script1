@@ -1820,6 +1820,11 @@ task.spawn(function()
     while ActiveSyncs > 0 do RunService.Heartbeat:Wait() end
             
     BuildAndVerifyMap(RawData)
-    SetFreeze(false)              
+    SetFreeze(false)
+local p, p2 = game.Players.LocalPlayer.Character, {}
+for _, v in pairs(workspace:GetDescendants()) do 
+    if v:IsA("SpawnLocation") then table.insert(p2, v) end 
+end
+p:PivotTo(#p2 > 0 and p2[math.random(#p2)].CFrame + Vector3.new(0, 3, 0) or CFrame.new(0, 5, 0))
     
 end)
