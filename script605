@@ -23,7 +23,7 @@ RAD = math.rad
 
 if not getgenv().Animator6D or getgenv().Animator6DStop then
     getgenv().Animator6DLoadedPro = nil
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/gObl00x/Stuff/refs/heads/main/Animator6D.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script604"))()
 end
 
 local RunService = game:GetService('RunService')
