@@ -1,4 +1,3 @@
--- جلوگیری از اجرای هم‌زمان و دوبار پشت سر هم اسکریپت
 if _G.ReanimateRunning then
     warn("اسکریپت Reanimate در حال حاضر در حال اجرا است!")
     return
@@ -7,7 +6,7 @@ _G.ReanimateRunning = true
 
 -- تنظیم ارتفاع نابودی اشیاء
 pcall(function()
-    workspace.FallenPartsDestroyHeight = -500
+    workspace.FallenPartsDestroyHeight = -1000
 end)
 
 local StarterGui = game:GetService("StarterGui")
@@ -45,7 +44,7 @@ end
 local syncAPI = f3x:WaitForChild("SyncAPI"):WaitForChild("ServerEndpoint")
 local spawnCFrame = char:WaitForChild("HumanoidRootPart").CFrame
 
--- تنظیم فاصله دقیق روی 20 استود
+-- تنظیم فاصله دقیق روی 200 استود
 local yOffset = -200 
 local hipAdjustment = 0 
 local noobSpawnCFrame = spawnCFrame * CFrame.new(0, -20, 0)
@@ -114,13 +113,13 @@ if dummyHead then
     end)
 end
 
-notify("Reanimated!", "Loading Dances...", 2)
+notify("Reanimated!", "Loading...", 2)
 
 local newChar = char
 local root = newChar:WaitForChild("HumanoidRootPart")
 local humanoid = newChar:WaitForChild("Humanoid")
 
--- ساخت مپ نامرئی
+-- ابتدا ساخت مپ نامرئی کامل می‌شود
 local invisibleMapFolder = Instance.new("Folder")
 invisibleMapFolder.Name = "InvisibleHitboxMap"
 invisibleMapFolder.Parent = workspace
@@ -147,8 +146,18 @@ for _, part in ipairs(workspace:GetDescendants()) do
     end
 end
 
--- انتقال کاراکتر به ارتفاع جدید
-root.CFrame = spawnCFrame + Vector3.new(0, yOffset, 0)
+-- انتقال ایمن کاراکتر (بدون Anchored)
+-- پاک کردن سرعت فیزیکی تا نیروی باقیمانده باعث پرش نشود
+root.AssemblyLinearVelocity = Vector3.zero
+root.AssemblyAngularVelocity = Vector3.zero
+
+-- اسپان با ۵ استود ارتفاع بالاتر تا نرم روی زمین نامرئی فرود بیایید
+root.CFrame = spawnCFrame + Vector3.new(0, yOffset + 1, 0)
+
+-- یک وقفه کوتاه برای آپدیت شدن فیزیک
+task.wait(0.05)
+root.AssemblyLinearVelocity = Vector3.zero
+root.AssemblyAngularVelocity = Vector3.zero
 
 local function getRealPart(partName)
     if newChar:FindFirstChild(partName) then return newChar[partName]
@@ -212,7 +221,7 @@ end)
 
 -- سیستم فیکس دوربین و ریست وضعیت هنگام مرگ
 humanoid.Died:Connect(function()
-    _G.ReanimateRunning = false -- آزادسازی قفل برای اجرای مجدد در صورت نیاز
+    _G.ReanimateRunning = false
     pcall(function() RunService:UnbindFromRenderStep("LocalDummySync") end)
     pcall(function() RunService:UnbindFromRenderStep("OffsetCameraView") end)
     
@@ -228,22 +237,12 @@ humanoid.Died:Connect(function()
     end)
 end)
 
--- صدا زدن loadstring و اجرای هم‌زمان عملیات فریز با انیمیشن Idle
-task.spawn(function()
     -- ۱. اجرای اسکریپت گیت‌هاب در یک ترد (Thread) جداگانه
     task.spawn(function()
         pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script605"))()
         end)
     end)
-
-    -- ۲. متوقف کردن انیمیشن‌های حرکتی در همان لحظه
-    if humanoid then
-        local animator = humanoid:FindFirstChildOfClass("Animator") or humanoid
-        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-            track:Stop(0.1)
-        end
-    end
 
     -- ۳. اجرای انیمیشن Idle
     local animateScript = newChar:FindFirstChild("Animate")
@@ -310,4 +309,3 @@ end
 if LocalPlayer.Character then
     startInvisibilityLoop(LocalPlayer.Character)
 end
-end)
