@@ -119,7 +119,7 @@ if dummyHead then
     end)
 end
 
-notify("Reanimated!", "Loading...", 2)
+notify("Reanimated!", "Enjoy!", 2)
 
 local newChar = char
 local root = newChar:WaitForChild("HumanoidRootPart")
