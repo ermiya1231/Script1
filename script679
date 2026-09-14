@@ -1,4 +1,3 @@
--- جلوگیری از اجرای هم‌زمان و دوبار پشت سر هم اسکریپت
 if _G.ReanimateRunning then
     warn("اسکریپت Reanimate در حال حاضر در حال اجرا است!")
     return
@@ -7,7 +6,7 @@ _G.ReanimateRunning = true
 
 -- تنظیم ارتفاع نابودی اشیاء
 pcall(function()
-    workspace.FallenPartsDestroyHeight = -500
+    workspace.FallenPartsDestroyHeight = -1000
 end)
 
 local StarterGui = game:GetService("StarterGui")
@@ -45,7 +44,7 @@ end
 local syncAPI = f3x:WaitForChild("SyncAPI"):WaitForChild("ServerEndpoint")
 local spawnCFrame = char:WaitForChild("HumanoidRootPart").CFrame
 
--- تنظیم فاصله دقیق روی 20 استود
+-- تنظیم فاصله دقیق روی 200 استود
 local yOffset = -200 
 local hipAdjustment = 0 
 local noobSpawnCFrame = spawnCFrame * CFrame.new(0, -20, 0)
@@ -114,13 +113,13 @@ if dummyHead then
     end)
 end
 
-notify("Reanimated!", "Loading Dances...", 2)
+notify("Reanimated!", "Loading...", 2)
 
 local newChar = char
 local root = newChar:WaitForChild("HumanoidRootPart")
 local humanoid = newChar:WaitForChild("Humanoid")
 
--- ساخت مپ نامرئی
+-- ابتدا ساخت مپ نامرئی کامل می‌شود
 local invisibleMapFolder = Instance.new("Folder")
 invisibleMapFolder.Name = "InvisibleHitboxMap"
 invisibleMapFolder.Parent = workspace
@@ -147,8 +146,18 @@ for _, part in ipairs(workspace:GetDescendants()) do
     end
 end
 
--- انتقال کاراکتر به ارتفاع جدید
-root.CFrame = spawnCFrame + Vector3.new(0, yOffset, 0)
+-- انتقال ایمن کاراکتر (بدون Anchored)
+-- پاک کردن سرعت فیزیکی تا نیروی باقیمانده باعث پرش نشود
+root.AssemblyLinearVelocity = Vector3.zero
+root.AssemblyAngularVelocity = Vector3.zero
+
+-- اسپان با ۵ استود ارتفاع بالاتر تا نرم روی زمین نامرئی فرود بیایید
+root.CFrame = spawnCFrame + Vector3.new(0, yOffset + 5, 0)
+
+-- یک وقفه کوتاه برای آپدیت شدن فیزیک
+task.wait(0.05)
+root.AssemblyLinearVelocity = Vector3.zero
+root.AssemblyAngularVelocity = Vector3.zero
 
 local function getRealPart(partName)
     if newChar:FindFirstChild(partName) then return newChar[partName]
@@ -212,7 +221,7 @@ end)
 
 -- سیستم فیکس دوربین و ریست وضعیت هنگام مرگ
 humanoid.Died:Connect(function()
-    _G.ReanimateRunning = false -- آزادسازی قفل برای اجرای مجدد در صورت نیاز
+    _G.ReanimateRunning = false
     pcall(function() RunService:UnbindFromRenderStep("LocalDummySync") end)
     pcall(function() RunService:UnbindFromRenderStep("OffsetCameraView") end)
     
@@ -228,47 +237,41 @@ humanoid.Died:Connect(function()
     end)
 end)
 
+-- سیستم نامرئی‌سازی محلی
 task.spawn(function()
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
 
-local LocalPlayer = Players.LocalPlayer
+    local function startInvisibilityLoop(character)
+        local hum = character:WaitForChild("Humanoid")
+        local connection
 
-local function startInvisibilityLoop(character)
-    local humanoid = character:WaitForChild("Humanoid")
-    local connection
+        connection = RunService.RenderStepped:Connect(function()
+            if hum.Health <= 0 then
+                if connection then
+                    connection:Disconnect()
+                    connection = nil
+                end
+                return
+            end
 
-    connection = RunService.RenderStepped:Connect(function()
-        -- اگر سلامت کاراکتر صفر شده باشد، لوپ قطع می‌شود
-        if humanoid.Health <= 0 then
+            for _, object in ipairs(character:GetDescendants()) do
+                if object:IsA("BasePart") or object:IsA("Decal") then
+                    if object.LocalTransparencyModifier ~= 1 then
+                        object.LocalTransparencyModifier = 1
+                    end
+                end
+            end
+        end)
+
+        hum.Died:Once(function()
             if connection then
                 connection:Disconnect()
                 connection = nil
             end
-            return
-        end
+        end)
+    end
 
-        -- بررسی و اعمال نامرئی‌سازی روی تمام اجزا و بافت‌ها
-        for _, object in ipairs(character:GetDescendants()) do
-            if object:IsA("BasePart") or object:IsA("Decal") then
-                if object.LocalTransparencyModifier ~= 1 then
-                    object.LocalTransparencyModifier = 1
-                end
-            end
-        end
-    end)
-
-    -- قطع اتصال به محض وقوع رویداد مرگ
-    humanoid.Died:Once(function()
-        if connection then
-            connection:Disconnect()
-            connection = nil
-        end
-    end)
-end
-
--- اجرا برای کاراکتر فعلی
-if LocalPlayer.Character then
-    startInvisibilityLoop(LocalPlayer.Character)
-end
+    if LocalPlayer.Character then
+        startInvisibilityLoop(LocalPlayer.Character)
+    end
 end)
