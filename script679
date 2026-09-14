@@ -152,7 +152,7 @@ root.AssemblyLinearVelocity = Vector3.zero
 root.AssemblyAngularVelocity = Vector3.zero
 
 -- اسپان با ۵ استود ارتفاع بالاتر تا نرم روی زمین نامرئی فرود بیایید
-root.CFrame = spawnCFrame + Vector3.new(0, yOffset + 5, 0)
+root.CFrame = spawnCFrame + Vector3.new(0, yOffset + 3, 0)
 
 -- یک وقفه کوتاه برای آپدیت شدن فیزیک
 task.wait(0.05)
@@ -237,41 +237,48 @@ humanoid.Died:Connect(function()
     end)
 end)
 
--- سیستم نامرئی‌سازی محلی
+    -- ۱. اجرای اسکریپت گیت‌هاب در یک ترد (Thread) جداگانه
 task.spawn(function()
-    local LocalPlayer = Players.LocalPlayer
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
-    local function startInvisibilityLoop(character)
-        local hum = character:WaitForChild("Humanoid")
-        local connection
+local LocalPlayer = Players.LocalPlayer
 
-        connection = RunService.RenderStepped:Connect(function()
-            if hum.Health <= 0 then
-                if connection then
-                    connection:Disconnect()
-                    connection = nil
-                end
-                return
-            end
+local function startInvisibilityLoop(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    local connection
 
-            for _, object in ipairs(character:GetDescendants()) do
-                if object:IsA("BasePart") or object:IsA("Decal") then
-                    if object.LocalTransparencyModifier ~= 1 then
-                        object.LocalTransparencyModifier = 1
-                    end
-                end
-            end
-        end)
-
-        hum.Died:Once(function()
+    connection = RunService.RenderStepped:Connect(function()
+        -- اگر سلامت کاراکتر صفر شده باشد، لوپ قطع می‌شود
+        if humanoid.Health <= 0 then
             if connection then
                 connection:Disconnect()
                 connection = nil
             end
-        end)
-    end
+            return
+        end
 
-    if LocalPlayer.Character then
-        startInvisibilityLoop(LocalPlayer.Character)
-    end
+        -- بررسی و اعمال نامرئی‌سازی روی تمام اجزا و بافت‌ها
+        for _, object in ipairs(character:GetDescendants()) do
+            if object:IsA("BasePart") or object:IsA("Decal") then
+                if object.LocalTransparencyModifier ~= 1 then
+                    object.LocalTransparencyModifier = 1
+                end
+            end
+        end
+    end)
+
+    -- قطع اتصال به محض وقوع رویداد مرگ
+    humanoid.Died:Once(function()
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+    end)
+end
+
+-- اجرا برای کاراکتر فعلی
+if LocalPlayer.Character then
+    startInvisibilityLoop(LocalPlayer.Character)
+end
 end)
