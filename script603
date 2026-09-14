@@ -1,0 +1,313 @@
+-- جلوگیری از اجرای هم‌زمان و دوبار پشت سر هم اسکریپت
+if _G.ReanimateRunning then
+    warn("اسکریپت Reanimate در حال حاضر در حال اجرا است!")
+    return
+end
+_G.ReanimateRunning = true
+
+-- تنظیم ارتفاع نابودی اشیاء
+pcall(function()
+    workspace.FallenPartsDestroyHeight = -500
+end)
+
+local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- پاک‌سازی RenderStepهای قبلی در صورت وجود
+pcall(function() RunService:UnbindFromRenderStep("LocalDummySync") end)
+pcall(function() RunService:UnbindFromRenderStep("OffsetCameraView") end)
+
+local function notify(title, text, duration)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = duration or 4
+        })
+    end)
+end
+
+notify("Reanimate System", "در حال بررسی ابزار F3X...", 3)
+
+local char = player.Character or player.CharacterAdded:Wait()
+local f3x = player.Backpack:FindFirstChild("Building Tools") or char:FindFirstChild("Building Tools")
+
+if not f3x then
+    notify("خطا!", "ابزار F3X پیدا نشد! لطفا ابزار را در کیف (Backpack) داشته باشید.", 5)
+    _G.ReanimateRunning = false
+    return
+end
+
+local syncAPI = f3x:WaitForChild("SyncAPI"):WaitForChild("ServerEndpoint")
+local spawnCFrame = char:WaitForChild("HumanoidRootPart").CFrame
+
+-- تنظیم فاصله دقیق روی 20 استود
+local yOffset = -200 
+local hipAdjustment = 0 
+local noobSpawnCFrame = spawnCFrame * CFrame.new(0, -20, 0)
+
+local colors = {
+    Yellow = Color3.fromRGB(244, 233, 26),
+    Blue = Color3.fromRGB(13, 105, 172),
+    Green = Color3.fromRGB(40, 127, 71)
+}
+
+local function createNoobLimb(name, size, offset, color)
+    local targetCFrame = noobSpawnCFrame * CFrame.new(offset)
+    
+    local success, created = pcall(function()
+        return syncAPI:InvokeServer("CreatePart", "Normal", targetCFrame, workspace)
+    end)
+    
+    if not success or not created then 
+        warn("خطا در ساخت پارت: " .. tostring(name))
+        return nil 
+    end
+    
+    local part = (type(created) == "table") and created[1] or created
+    
+    if part and typeof(part) == "Instance" then
+        part.Name = name
+        task.wait(0.05)
+        
+        pcall(function() syncAPI:InvokeServer("SyncResize", {{["Part"] = part, ["Size"] = size, ["CFrame"] = targetCFrame}}) end)
+        pcall(function() syncAPI:InvokeServer("SyncColor", {{["Part"] = part, ["Color"] = color}}) end)
+        pcall(function() syncAPI:InvokeServer("SyncAnchor", {{["Part"] = part, ["Anchored"] = true}}) end)
+        pcall(function() syncAPI:InvokeServer("SyncCollision", {{["Part"] = part, ["CanCollide"] = true}}) end)
+        
+        pcall(function() 
+            part.CanCollide = false
+            part.Massless = true
+        end)
+    end
+    
+    return part
+end
+
+notify("Please Wait", "Reanimating...", 3)
+
+local dummyTorso = createNoobLimb("DummyTorso", Vector3.new(2, 2, 1), Vector3.new(0, 0, 0), colors.Blue)
+local dummyHead = createNoobLimb("DummyHead", Vector3.new(1.25, 1.25, 1.25), Vector3.new(0, 1.5, 0), colors.Yellow)
+local dummyLeftArm = createNoobLimb("DummyLeftArm", Vector3.new(1, 2, 1), Vector3.new(-1.5, 0, 0), colors.Yellow)
+local dummyRightArm = createNoobLimb("DummyRightArm", Vector3.new(1, 2, 1), Vector3.new(1.5, 0, 0), colors.Yellow)
+local dummyLeftLeg = createNoobLimb("DummyLeftLeg", Vector3.new(1, 2, 1), Vector3.new(-0.5, -2, 0), colors.Green)
+local dummyRightLeg = createNoobLimb("DummyRightLeg", Vector3.new(1, 2, 1), Vector3.new(0.5, -2, 0), colors.Green)
+
+if dummyHead then
+    task.wait(0.1)
+    pcall(function()
+        syncAPI:InvokeServer("CreateMeshes", {{["Part"] = dummyHead}})
+        syncAPI:InvokeServer("SyncMesh", {{["Part"] = dummyHead, ["MeshType"] = Enum.MeshType.Head}})
+        syncAPI:InvokeServer("CreateTextures", {{["Part"] = dummyHead, ["Face"] = Enum.NormalId.Front, ["TextureType"] = "Decal"}})
+        syncAPI:InvokeServer("SyncTexture", {
+            {
+                ["Part"] = dummyHead,
+                ["Face"] = Enum.NormalId.Front,
+                ["TextureType"] = "Decal",
+                ["Texture"] = "rbxassetid://144080495"
+            }
+        })
+    end)
+end
+
+notify("Reanimated!", "Loading Dances...", 2)
+
+local newChar = char
+local root = newChar:WaitForChild("HumanoidRootPart")
+local humanoid = newChar:WaitForChild("Humanoid")
+
+-- ساخت مپ نامرئی
+local invisibleMapFolder = Instance.new("Folder")
+invisibleMapFolder.Name = "InvisibleHitboxMap"
+invisibleMapFolder.Parent = workspace
+
+for _, part in ipairs(workspace:GetDescendants()) do
+    if part:IsA("BasePart") 
+       and not part:IsA("Terrain") 
+       and not part:IsDescendantOf(newChar) 
+       and part.Name:sub(1, 5) ~= "Dummy" 
+       and part.CanCollide then
+        
+        local clone = part:Clone()
+        for _, child in ipairs(clone:GetChildren()) do
+            if not child:IsA("SpecialMesh") and not child:IsA("BlockMesh") and not child:IsA("CylinderMesh") then
+                child:Destroy()
+            end
+        end
+        
+        clone.CFrame = part.CFrame + Vector3.new(0, yOffset, 0)
+        clone.Transparency = 1
+        clone.Anchored = true
+        clone.CanCollide = true
+        clone.Parent = invisibleMapFolder
+    end
+end
+
+-- انتقال کاراکتر به ارتفاع جدید
+root.CFrame = spawnCFrame + Vector3.new(0, yOffset, 0)
+
+local function getRealPart(partName)
+    if newChar:FindFirstChild(partName) then return newChar[partName]
+    elseif partName == "Torso" and newChar:FindFirstChild("UpperTorso") then return newChar.UpperTorso
+    elseif partName == "Left Arm" and newChar:FindFirstChild("LeftUpperArm") then return newChar.LeftUpperArm
+    elseif partName == "Right Arm" and newChar:FindFirstChild("RightUpperArm") then return newChar.RightUpperArm
+    elseif partName == "Left Leg" and newChar:FindFirstChild("LeftUpperLeg") then return newChar.LeftUpperLeg
+    elseif partName == "Right Leg" and newChar:FindFirstChild("RightUpperLeg") then return newChar.RightUpperLeg
+    elseif partName == "Head" and newChar:FindFirstChild("Head") then return newChar.Head end
+    return nil
+end
+
+local partsToSync = {
+    ["Torso"] = dummyTorso, ["Head"] = dummyHead,
+    ["Left Arm"] = dummyLeftArm, ["Right Arm"] = dummyRightArm,
+    ["Left Leg"] = dummyLeftLeg, ["Right Leg"] = dummyRightLeg
+}
+
+RunService:BindToRenderStep("LocalDummySync", Enum.RenderPriority.Camera.Value - 1, function()
+    if not newChar or not newChar.Parent then return end
+    for realName, fakePart in pairs(partsToSync) do
+        local realPart = getRealPart(realName)
+        if realPart and fakePart and fakePart.Parent then
+            fakePart.CFrame = realPart.CFrame - Vector3.new(0, yOffset + hipAdjustment, 0)
+        end
+    end
+end)
+
+task.spawn(function()
+    local targetFPS = 30
+    local stepTime = 1 / targetFPS
+    
+    while task.wait(stepTime) do
+        if not newChar or not newChar.Parent or not dummyTorso or not dummyTorso.Parent then break end
+        
+        local f3xMoveData = {}
+        for realName, fakePart in pairs(partsToSync) do
+            local realPart = getRealPart(realName)
+            if realPart and fakePart and fakePart.Parent then
+                table.insert(f3xMoveData, {
+                    ["Part"] = fakePart,
+                    ["CFrame"] = realPart.CFrame - Vector3.new(0, yOffset + hipAdjustment, 0)
+                })
+            end
+        end
+        
+        if #f3xMoveData > 0 then
+            task.spawn(function()
+                pcall(function() syncAPI:InvokeServer("SyncMove", f3xMoveData) end)
+            end)
+        end
+    end
+end)
+
+camera.CameraSubject = humanoid
+RunService:BindToRenderStep("OffsetCameraView", Enum.RenderPriority.Camera.Value + 1, function()
+    if camera and camera.CFrame then
+        camera.CFrame = camera.CFrame - Vector3.new(0, yOffset, 0)
+    end
+end)
+
+-- سیستم فیکس دوربین و ریست وضعیت هنگام مرگ
+humanoid.Died:Connect(function()
+    _G.ReanimateRunning = false -- آزادسازی قفل برای اجرای مجدد در صورت نیاز
+    pcall(function() RunService:UnbindFromRenderStep("LocalDummySync") end)
+    pcall(function() RunService:UnbindFromRenderStep("OffsetCameraView") end)
+    
+    if invisibleMapFolder then
+        invisibleMapFolder:Destroy()
+    end
+    
+    task.delay(1, function()
+        local latestChar = player.Character
+        if latestChar then
+            camera.CameraSubject = latestChar:FindFirstChild("Humanoid")
+        end
+    end)
+end)
+
+-- صدا زدن loadstring و اجرای هم‌زمان عملیات فریز با انیمیشن Idle
+task.spawn(function()
+    -- ۱. اجرای اسکریپت گیت‌هاب در یک ترد (Thread) جداگانه
+    task.spawn(function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script605"))()
+        end)
+    end)
+
+    -- ۲. متوقف کردن انیمیشن‌های حرکتی در همان لحظه
+    if humanoid then
+        local animator = humanoid:FindFirstChildOfClass("Animator") or humanoid
+        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+            track:Stop(0.1)
+        end
+    end
+
+    -- ۳. اجرای انیمیشن Idle
+    local animateScript = newChar:FindFirstChild("Animate")
+    if animateScript and animateScript:FindFirstChild("idle") then
+        local idleAnimation = animateScript.idle:FindFirstChildOfClass("Animation")
+        if idleAnimation and humanoid then
+            local animator = humanoid:FindFirstChildOfClass("Animator") or humanoid
+            local idleTrack = animator:LoadAnimation(idleAnimation)
+            idleTrack:Play()
+        end
+    end
+
+    -- ۴. فریز کردن فور‌ی کاراکتر
+    if root then
+        root.Anchored = true
+    end
+
+    -- ۵. ۱ ثانیه صبر
+    task.wait(3)
+
+    -- ۶. آن‌فریز کردن کاراکتر
+    if root then
+        root.Anchored = false
+    end
+    local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local function startInvisibilityLoop(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    local connection
+
+    connection = RunService.RenderStepped:Connect(function()
+        -- اگر سلامت کاراکتر صفر شده باشد، لوپ قطع می‌شود
+        if humanoid.Health <= 0 then
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            return
+        end
+
+        -- بررسی و اعمال نامرئی‌سازی روی تمام اجزا و بافت‌ها
+        for _, object in ipairs(character:GetDescendants()) do
+            if object:IsA("BasePart") or object:IsA("Decal") then
+                if object.LocalTransparencyModifier ~= 1 then
+                    object.LocalTransparencyModifier = 1
+                end
+            end
+        end
+    end)
+
+    -- قطع اتصال به محض وقوع رویداد مرگ
+    humanoid.Died:Once(function()
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+    end)
+end
+
+-- اجرا برای کاراکتر فعلی
+if LocalPlayer.Character then
+    startInvisibilityLoop(LocalPlayer.Character)
+end
+end)
