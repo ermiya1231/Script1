@@ -1989,7 +1989,7 @@ tool19.Equipped:Connect(function()
        getgenv().Animator6D(animthingy28, 1, true)
 -- Music
 Music19.Parent = Character
-Music19.SoundId = getcustomasset("SillyBilly.mp3")
+Music19.SoundId = getcustomasset("Assumptions.mp3")
 Music19.Looped = true
 Music19:Play()
 end
