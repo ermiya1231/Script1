@@ -1,0 +1,93 @@
+-- Classic Retro GUI Script (No UICorner)
+
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+
+-- تعیین محل قرارگیری GUI (سازگار با انواع اکسکیوترها و روبلاکس استودیو)
+local parent = (gethui and gethui()) or CoreGui or Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- حذف نسخه قبلی در صورت وجود
+if parent:FindFirstChild("ClassicRetroMenu") then
+    parent.ClassicRetroMenu:Destroy()
+end
+
+-- ۱. ساخت ScreenGui اصلی
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ClassicRetroMenu"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = parent
+
+-- ۲. فریم اصلی (طراحی کلاسیک و قدیمی)
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 320, 0, 180)
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
+mainFrame.BackgroundColor3 = Color3.fromRGB(192, 192, 192) -- خاکستری کلاسیک ویندوز 95/قدیمی
+mainFrame.BorderSizePixel = 3
+mainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0) -- حاشیه مشکی پررنگ و تیز
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+
+-- ۳. نوار بالای پنجره (Header)
+local titleBar = Instance.new("TextLabel")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 28)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 128) -- آبی سرمه‌ای کلاسیک
+titleBar.BorderSizePixel = 0
+titleBar.Text = " Select Reanimate Mode:"
+titleBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleBar.TextXAlignment = Enum.TextXAlignment.Left
+titleBar.Font = Enum.Font.SourceSansBold
+titleBar.TextSize = 16
+titleBar.Parent = mainFrame
+
+-- ۴. دکمه Normal
+local normalBtn = Instance.new("TextButton")
+normalBtn.Name = "NormalButton"
+normalBtn.Size = UDim2.new(0, 260, 0, 42)
+normalBtn.Position = UDim2.new(0.5, -130, 0, 48)
+normalBtn.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+normalBtn.BorderSizePixel = 2
+normalBtn.BorderColor3 = Color3.fromRGB(0, 0, 0)
+normalBtn.Text = "Normal"
+normalBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+normalBtn.Font = Enum.Font.SourceSansBold
+normalBtn.TextSize = 18
+normalBtn.Parent = mainFrame
+
+-- ۵. دکمه Custom
+local customBtn = Instance.new("TextButton")
+customBtn.Name = "CustomButton"
+customBtn.Size = UDim2.new(0, 260, 0, 42)
+customBtn.Position = UDim2.new(0.5, -130, 0, 108)
+customBtn.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+customBtn.BorderSizePixel = 2
+customBtn.BorderColor3 = Color3.fromRGB(0, 0, 0)
+customBtn.Text = "Custom"
+customBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+customBtn.Font = Enum.Font.SourceSansBold
+customBtn.TextSize = 18
+customBtn.Parent = mainFrame
+
+-- ==========================================
+-- عملکرد دکمه‌ها (فراخوانی Loadstring و ناپدید شدن)
+-- ==========================================
+
+-- عملکرد دکمه Normal
+normalBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy() -- ناپدید شدن و حذف GUI
+    task.spawn(function()
+        -- لینک Raw اسکریپت Normal را در خط زیر جایگزین کنید:
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script603"))()
+    end)
+end)
+
+-- عملکرد دکمه Custom
+customBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy() -- ناپدید شدن و حذف GUI
+    task.spawn(function()
+        -- لینک Raw اسکریپت Custom را در خط زیر جایگزین کنید:
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script679"))()
+    end)
+end)
