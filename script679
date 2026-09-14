@@ -228,47 +228,8 @@ humanoid.Died:Connect(function()
     end)
 end)
 
--- صدا زدن loadstring و اجرای هم‌زمان عملیات فریز با انیمیشن Idle
 task.spawn(function()
-    -- ۱. اجرای اسکریپت گیت‌هاب در یک ترد (Thread) جداگانه
-    task.spawn(function()
-        pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script605"))()
-        end)
-    end)
-
-    -- ۲. متوقف کردن انیمیشن‌های حرکتی در همان لحظه
-    if humanoid then
-        local animator = humanoid:FindFirstChildOfClass("Animator") or humanoid
-        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-            track:Stop(0.1)
-        end
-    end
-
-    -- ۳. اجرای انیمیشن Idle
-    local animateScript = newChar:FindFirstChild("Animate")
-    if animateScript and animateScript:FindFirstChild("idle") then
-        local idleAnimation = animateScript.idle:FindFirstChildOfClass("Animation")
-        if idleAnimation and humanoid then
-            local animator = humanoid:FindFirstChildOfClass("Animator") or humanoid
-            local idleTrack = animator:LoadAnimation(idleAnimation)
-            idleTrack:Play()
-        end
-    end
-
-    -- ۴. فریز کردن فور‌ی کاراکتر
-    if root then
-        root.Anchored = true
-    end
-
-    -- ۵. ۱ ثانیه صبر
-    task.wait(3)
-
-    -- ۶. آن‌فریز کردن کاراکتر
-    if root then
-        root.Anchored = false
-    end
-    local Players = game:GetService("Players")
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
