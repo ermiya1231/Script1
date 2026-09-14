@@ -1,0 +1,150 @@
+-- متغیرهای اصلی
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+-- پیدا کردن مکان مناسب برای ساخت GUI
+local guiParent = pcall(function() return CoreGui.Name end) and CoreGui or player:WaitForChild("PlayerGui")
+
+-- ساخت ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AntiBangGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = guiParent
+
+-- ساخت فریم اصلی
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 200, 0, 110)
+Frame.Position = UDim2.new(0.5, -100, 0.5, -55)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Parent = ScreenGui
+
+-- =========================================
+-- سیستم درگ (Drag) سفارشی با انیمیشن (Tween)
+-- =========================================
+local function dragify(dragFrame)
+	local dragToggle = nil
+	local dragSpeed = 0.15
+	local dragInput = nil
+	local dragStart = nil
+	local startPos = nil
+
+	local function updateInput(input)
+		local Delta = input.Position - dragStart
+		local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+		TweenService:Create(dragFrame, TweenInfo.new(dragSpeed), {Position = Position}):Play()
+	end
+
+	dragFrame.InputBegan:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
+			dragToggle = true
+			dragStart = input.Position
+			startPos = dragFrame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragToggle = false
+				end
+			end)
+		end
+	end)
+
+	dragFrame.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragToggle then
+			updateInput(input)
+		end
+	end)
+end
+
+-- اعمال سیستم درگ روی فریم اصلی
+dragify(Frame)
+
+-- =========================================
+-- ادامه طراحی GUI و سیستم انیمیشن
+-- =========================================
+
+-- گرد کردن گوشه های فریم
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = Frame
+
+-- ساخت تایتل
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.BackgroundTransparency = 1
+Title.Text = "Simple Anti Bang"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.Parent = Frame
+
+-- خط زیر تایتل
+local Line = Instance.new("Frame")
+Line.Size = UDim2.new(1, 0, 0, 2)
+Line.Position = UDim2.new(0, 0, 0, 35)
+Line.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+Line.BorderSizePixel = 0
+Line.Parent = Frame
+
+-- ساخت دکمه ON/OFF
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 120, 0, 40)
+ToggleBtn.Position = UDim2.new(0.5, -60, 0, 55)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50) -- رنگ قرمز
+ToggleBtn.Text = "OFF"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 18
+ToggleBtn.Parent = Frame
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 6)
+BtnCorner.Parent = ToggleBtn
+
+-- تنظیمات انیمیشن
+local isOn = false
+local anim = Instance.new("Animation")
+anim.AnimationId = "rbxassetid://215384594"
+local loadedAnim = nil
+
+-- عملکرد دکمه
+ToggleBtn.MouseButton1Click:Connect(function()
+	isOn = not isOn
+
+	local char = player.Character
+	if not char then return end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
+
+	if isOn then
+		-- حالت روشن
+		ToggleBtn.Text = "ON"
+		ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 220, 50) -- سبز
+
+		local animator = hum:FindFirstChildOfClass("Animator") or hum
+		loadedAnim = animator:LoadAnimation(anim)
+
+		loadedAnim:Play()
+		loadedAnim:AdjustSpeed(0)
+		loadedAnim.TimePosition = 0.50
+	else
+		-- حالت خاموش
+		ToggleBtn.Text = "OFF"
+		ToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50) -- قرمز
+
+		if loadedAnim then
+			loadedAnim:Stop()
+			loadedAnim = nil
+		end
+	end
+end)
