@@ -41,7 +41,13 @@ if not f3x then
     return
 end
 
-local syncAPI = f3x:WaitForChild("SyncAPI"):WaitForChild("ServerEndpoint")
+local syncAPI = f3x:WaitForChild("SyncAPI", 5):WaitForChild("ServerEndpoint", 5)
+if not syncAPI then
+    notify("خطا!", "سرویس F3X SyncAPI یافت نشد!", 5)
+    _G.ReanimateRunning = false
+    return
+end
+
 local spawnCFrame = char:WaitForChild("HumanoidRootPart").CFrame
 
 -- تنظیم فاصله دقیق روی 200 استود
@@ -119,42 +125,109 @@ local newChar = char
 local root = newChar:WaitForChild("HumanoidRootPart")
 local humanoid = newChar:WaitForChild("Humanoid")
 
--- ابتدا ساخت مپ نامرئی کامل می‌شود
+-- ساخت پوشه مپ نامرئی
 local invisibleMapFolder = Instance.new("Folder")
 invisibleMapFolder.Name = "InvisibleHitboxMap"
 invisibleMapFolder.Parent = workspace
 
-for _, part in ipairs(workspace:GetDescendants()) do
-    if part:IsA("BasePart") 
-       and not part:IsA("Terrain") 
-       and not part:IsDescendantOf(newChar) 
-       and part.Name:sub(1, 5) ~= "Dummy" 
-       and part.CanCollide then
-        
+local trackedParts = {}
+local addedConnection, removedConnection
+
+local function isValidPart(part)
+    if not (part and part.Parent) then return false end
+    local isBasePart = false
+    pcall(function() isBasePart = part:IsA("BasePart") end)
+    if not isBasePart then return false end
+    if part:IsA("Terrain") then return false end
+    if part:IsDescendantOf(newChar) then return false end
+    if part:IsDescendantOf(invisibleMapFolder) then return false end
+    if part.Name:sub(1, 5) == "Dummy" then return false end
+    
+    -- بررسی CanCollide حذف شد تا هنگام درگ کردن با F3X پارت کپی شده نابود نشود
+    return true
+end
+
+local function addPartToMap(part)
+    if not isValidPart(part) or trackedParts[part] then return end
+    
+    pcall(function()
         local clone = part:Clone()
+        if not clone then return end
+        
         for _, child in ipairs(clone:GetChildren()) do
             if not child:IsA("SpecialMesh") and not child:IsA("BlockMesh") and not child:IsA("CylinderMesh") then
-                child:Destroy()
+                pcall(function() child:Destroy() end)
             end
         end
         
         clone.CFrame = part.CFrame + Vector3.new(0, yOffset, 0)
         clone.Transparency = 1
         clone.Anchored = true
-        clone.CanCollide = true
+        clone.CanCollide = part.CanCollide
         clone.Parent = invisibleMapFolder
+        
+        trackedParts[part] = clone
+    end)
+end
+
+local function removePartFromMap(part)
+    if trackedParts[part] then
+        pcall(function() trackedParts[part]:Destroy() end)
+        trackedParts[part] = nil
     end
 end
 
--- انتقال ایمن کاراکتر (بدون Anchored)
--- پاک کردن سرعت فیزیکی تا نیروی باقیمانده باعث پرش نشود
+for _, part in ipairs(workspace:GetDescendants()) do
+    addPartToMap(part)
+end
+
+addedConnection = workspace.DescendantAdded:Connect(function(part)
+    task.defer(function() addPartToMap(part) end)
+end)
+
+removedConnection = workspace.DescendantRemoving:Connect(function(part)
+    removePartFromMap(part)
+end)
+
+-- حلقه آپدیت موقعیت و سایز
+task.spawn(function()
+    while task.wait(0.1) do
+        if not _G.ReanimateRunning then break end
+        
+        local toRemove = {}
+        for realPart, clone in pairs(trackedParts) do
+            if realPart and realPart.Parent and isValidPart(realPart) and clone and clone.Parent then
+                pcall(function()
+                    -- آپدیت سایز
+                    if clone.Size ~= realPart.Size then
+                        clone.Size = realPart.Size
+                    end
+                    -- آپدیت وضعیت کالیژن (سینک دقیق با پارت اصلی هنگام جابجایی)
+                    if clone.CanCollide ~= realPart.CanCollide then
+                        clone.CanCollide = realPart.CanCollide
+                    end
+                    -- آپدیت مکان بهینه (فقط در صورت تغییر مکان آپدیت می‌شود)
+                    local targetCFrame = realPart.CFrame + Vector3.new(0, yOffset, 0)
+                    if clone.CFrame ~= targetCFrame then
+                        clone.CFrame = targetCFrame
+                    end
+                end)
+            else
+                table.insert(toRemove, realPart)
+            end
+        end
+        
+        for _, badPart in ipairs(toRemove) do
+            removePartFromMap(badPart)
+        end
+    end
+end)
+
+-- انتقال ایمن کاراکتر
 root.AssemblyLinearVelocity = Vector3.zero
 root.AssemblyAngularVelocity = Vector3.zero
-
--- اسپان با ۵ استود ارتفاع بالاتر تا نرم روی زمین نامرئی فرود بیایید
 root.CFrame = spawnCFrame + Vector3.new(0, yOffset + 3, 0)
 
--- یک وقفه کوتاه برای آپدیت شدن فیزیک
 task.wait(0.05)
 root.AssemblyLinearVelocity = Vector3.zero
 root.AssemblyAngularVelocity = Vector3.zero
@@ -225,8 +298,11 @@ humanoid.Died:Connect(function()
     pcall(function() RunService:UnbindFromRenderStep("LocalDummySync") end)
     pcall(function() RunService:UnbindFromRenderStep("OffsetCameraView") end)
     
+    if addedConnection then addedConnection:Disconnect() end
+    if removedConnection then removedConnection:Disconnect() end
+    
     if invisibleMapFolder then
-        invisibleMapFolder:Destroy()
+        pcall(function() invisibleMapFolder:Destroy() end)
     end
     
     task.delay(1, function()
@@ -237,48 +313,41 @@ humanoid.Died:Connect(function()
     end)
 end)
 
-    -- ۱. اجرای اسکریپت گیت‌هاب در یک ترد (Thread) جداگانه
+-- اجرای نامرئی‌سازی local
 task.spawn(function()
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+    local function startInvisibilityLoop(character)
+        local hum = character:WaitForChild("Humanoid")
+        local connection
 
-local LocalPlayer = Players.LocalPlayer
+        connection = RunService.RenderStepped:Connect(function()
+            if not hum or hum.Health <= 0 then
+                if connection then
+                    connection:Disconnect()
+                    connection = nil
+                end
+                return
+            end
 
-local function startInvisibilityLoop(character)
-    local humanoid = character:WaitForChild("Humanoid")
-    local connection
+            for _, object in ipairs(character:GetDescendants()) do
+                if object:IsA("BasePart") or object:IsA("Decal") then
+                    pcall(function()
+                        if object.LocalTransparencyModifier ~= 1 then
+                            object.LocalTransparencyModifier = 1
+                        end
+                    end)
+                end
+            end
+        end)
 
-    connection = RunService.RenderStepped:Connect(function()
-        -- اگر سلامت کاراکتر صفر شده باشد، لوپ قطع می‌شود
-        if humanoid.Health <= 0 then
+        hum.Died:Connect(function()
             if connection then
                 connection:Disconnect()
                 connection = nil
             end
-            return
-        end
+        end)
+    end
 
-        -- بررسی و اعمال نامرئی‌سازی روی تمام اجزا و بافت‌ها
-        for _, object in ipairs(character:GetDescendants()) do
-            if object:IsA("BasePart") or object:IsA("Decal") then
-                if object.LocalTransparencyModifier ~= 1 then
-                    object.LocalTransparencyModifier = 1
-                end
-            end
-        end
-    end)
-
-    -- قطع اتصال به محض وقوع رویداد مرگ
-    humanoid.Died:Once(function()
-        if connection then
-            connection:Disconnect()
-            connection = nil
-        end
-    end)
-end
-
--- اجرا برای کاراکتر فعلی
-if LocalPlayer.Character then
-    startInvisibilityLoop(LocalPlayer.Character)
-end
+    if player.Character then
+        startInvisibilityLoop(player.Character)
+    end
 end)
