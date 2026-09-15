@@ -286,13 +286,15 @@ HackBtn.MouseButton1Click:Connect(function()
             end
         end
         
-        local nameLower = string.lower(obj.Name)
-        if nameLower == "open" then
-            if interactWithTarget(obj) then
-                addLog("Fired Physical Open")
-                foundActions = foundActions + 1
-            end
-        end
+local nameLower = string.lower(obj.Name)
+
+-- بررسی هر دو حالت به صورت کامل و فقط با حروف کوچک
+if nameLower == "open" or nameLower == "openbutton" then
+    if interactWithTarget(obj) then
+        addLog("Fired Physical Open")
+        foundActions = foundActions + 1
+    end
+end
         
         if nameLower == "code" and (obj:IsA("StringValue") or obj:IsA("IntValue") or obj:IsA("NumberValue")) then
             local passcode = tostring(obj.Value)
