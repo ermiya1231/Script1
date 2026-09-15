@@ -15,41 +15,41 @@ local soundsMuted = false
 local SQUIDWARD_MESH = "rbxassetid://430074487"
 local SQUIDWARD_TEX = "rbxassetid://430074495"
 local SQUIDWARD_SOUNDS = {
-	"rbxassetid://84984963760283",
-	"rbxassetid://110605406065847",
-	"rbxassetid://79603536441856",
-	"rbxassetid://105114600855336"
+    "rbxassetid://84984963760283",
+    "rbxassetid://110605406065847",
+    "rbxassetid://79603536441856",
+    "rbxassetid://105114600855336"
 }
 
 local SPONGEBOB_DECALS = {
-	"rbxassetid://10729455634",
-	"rbxassetid://10312956955",
-	"rbxassetid://5617677048",
-	"rbxassetid://8239271444",
-	"rbxassetid://7527565728"
+    "rbxassetid://10729455634",
+    "rbxassetid://10312956955",
+    "rbxassetid://5617677048",
+    "rbxassetid://8239271444",
+    "rbxassetid://7527565728"
 }
 
 local SPONGEBOB_SOUNDS = {
-	"rbxassetid://91754532443101",
-	"rbxassetid://18382193546",
-	"rbxassetid://9061674082",
-	"rbxassetid://135664626841213"
+    "rbxassetid://91754532443101",
+    "rbxassetid://18382193546",
+    "rbxassetid://9061674082",
+    "rbxassetid://135664626841213"
 }
 
 local followMeMode = false
 
--- Client 60 FPS Cap Loop
+-- Client Loop
 task.spawn(function()
-	local targetFPS = 60
-	local frameInterval = 1 / targetFPS
-	while true do
-		local startTime = os.clock()
-		RunService.Heartbeat:Wait()
-		local elapsed = os.clock() - startTime
-		if elapsed < frameInterval then
-			task.wait(frameInterval - elapsed)
-		end
-	end
+    local targetFPS = 120
+    local frameInterval = 1 / targetFPS
+    while true do
+        local startTime = os.clock()
+        RunService.Heartbeat:Wait()
+        local elapsed = os.clock() - startTime
+        if elapsed < frameInterval then
+            task.wait(frameInterval - elapsed)
+        end
+    end
 end)
 
 -- Create Fade Text UI on the Right Side
@@ -64,7 +64,7 @@ textLabel.Size = UDim2.new(0, 300, 0, 130)
 textLabel.Position = UDim2.new(1, -320, 0.4, 0)
 textLabel.BackgroundTransparency = 1
 textLabel.Font = Enum.Font.GothamBold
-textLabel.Text = "Bombs Loaded\n[Z] Spawn Controlled Squidward\n[C] Spawn Controlled Spongebob\n[Space] Jump | [L] Speed Up\n[F] Toggle Follow me \n[M] Mute/Unmute Sounds (Off)"
+textLabel.Text = "Bombs Loaded (2x Turbo)\n[Z] Spawn Controlled Squidward\n[C] Spawn Controlled Spongebob\n[Space] Jump | [L] Speed Up\n[F] Toggle Follow me \n[M] Mute/Unmute Sounds (Off)"
 textLabel.TextColor3 = Color3.fromRGB(90, 140, 200)
 textLabel.TextSize = 14
 textLabel.TextXAlignment = Enum.TextXAlignment.Right
@@ -72,613 +72,626 @@ textLabel.Parent = screenGui
 
 -- Fade effect loop
 task.spawn(function()
-	while true do
-		for i = 0, 1, 0.05 do
-			textLabel.TextTransparency = i
-			textLabel.TextStrokeTransparency = i
-			task.wait(0.05)
-		end
-		for i = 1, 0, -0.05 do
-			textLabel.TextTransparency = i
-			textLabel.TextStrokeTransparency = i
-			task.wait(0.05)
-		end
-		task.wait(1)
-	end
+    while true do
+        for i = 0, 1, 0.05 do
+            textLabel.TextTransparency = i
+            textLabel.TextStrokeTransparency = i
+            task.wait(0.025)
+        end
+        for i = 1, 0, -0.05 do
+            textLabel.TextTransparency = i
+            textLabel.TextStrokeTransparency = i
+            task.wait(0.025)
+        end
+        task.wait(0.5)
+    end
 end)
 
 local function getF3X()
-	local char = LocalPlayer.Character
-	for _, v in ipairs(LocalPlayer.Backpack:GetChildren()) do
-		if v:FindFirstChild("SyncAPI") then return v end
-	end
-	if char then
-		for _, v in ipairs(char:GetChildren()) do
-			if v:FindFirstChild("SyncAPI") then return v end
-		end
-	end
-	for _, v in ipairs(LocalPlayer:GetDescendants()) do
-		if v.Name == "SyncAPI" then return v.Parent end
-	end
-	for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
-		if v.Name == "SyncAPI" then return v.Parent end
-	end
-	return nil
+    local char = LocalPlayer.Character
+    for _, v in ipairs(LocalPlayer.Backpack:GetChildren()) do
+        if v:FindFirstChild("SyncAPI") then return v end
+    end
+    if char then
+        for _, v in ipairs(char:GetChildren()) do
+            if v:FindFirstChild("SyncAPI") then return v end
+        end
+    end
+    for _, v in ipairs(LocalPlayer:GetDescendants()) do
+        if v.Name == "SyncAPI" then return v.Parent end
+    end
+    for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
+        if v.Name == "SyncAPI" then return v.Parent end
+    end
+    return nil
 end
 
 local f3x = getF3X()
 if not f3x then
-	warn("Equip F3X first!")
-	return
+    warn("Equip F3X first!")
+    return
 end
 
 local remote = f3x.SyncAPI.ServerEndpoint
+
+-- Synchronous Invoke (for return values like CreatePart)
 local function inv(...)
-	local args = {...}
-	local result
-	pcall(function()
-		result = remote:InvokeServer(unpack(args))
-	end)
-	return result
+    local args = {...}
+    local result
+    pcall(function()
+        result = remote:InvokeServer(unpack(args))
+    end)
+    return result
+end
+
+-- Fast Non-blocking Async Invoke (for movement/updates)
+local function invAsync(...)
+    local args = {...}
+    task.spawn(function()
+        pcall(function()
+            remote:InvokeServer(unpack(args))
+        end)
+    end)
 end
 
 -- silent hd request
 local function explodePlayer(plr)
-	if not plr or plr == LocalPlayer then return end
-	pcall(function()
-		local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient") or ReplicatedStorage:FindFirstChild("HD Admin")
-		if hd then
-			local signals = hd:FindFirstChild("Signals")
-			if signals then
-				local reqSilent = signals:FindFirstChild("RequestCommandSilent")
-				if reqSilent then
-					reqSilent:InvokeServer(";explode " .. plr.Name)
-				end
-			end
-		end
-	end)
+    if not plr or plr == LocalPlayer then return end
+    task.spawn(function()
+        pcall(function()
+            local hd = ReplicatedStorage:FindFirstChild("HDAdminHDClient") or ReplicatedStorage:FindFirstChild("HD Admin")
+            if hd then
+                local signals = hd:FindFirstChild("Signals")
+                if signals then
+                    local reqSilent = signals:FindFirstChild("RequestCommandSilent")
+                    if reqSilent then
+                        reqSilent:InvokeServer(";explode " .. plr.Name)
+                    end
+                end
+            end
+        end)
+    end)
 end
 
 -- shake
 local function triggerScreenShake(originPos, intensity, duration)
-	task.spawn(function()
-		if not Camera then return end
-		local char = LocalPlayer.Character
-		if not char then return end
-		local root = char:FindFirstChild("HumanoidRootPart")
-		if not root then return end
+    task.spawn(function()
+        if not Camera then return end
+        local char = LocalPlayer.Character
+        if not char then return end
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if not root then return end
 
-		local dist = (root.Position - originPos).Magnitude
-		if dist > 200 then return end
+        local dist = (root.Position - originPos).Magnitude
+        if dist > 200 then return end
 
-		local falloff = math.clamp(1 - (dist / 200), 0.1, 1)
-		local currentIntensity = intensity * falloff
-		local startTime = tick()
+        local falloff = math.clamp(1 - (dist / 200), 0.1, 1)
+        local currentIntensity = intensity * falloff
+        local startTime = tick()
 
-		local shakeConn
-		shakeConn = RunService.RenderStepped:Connect(function()
-			local elapsed = tick() - startTime
-			if elapsed >= duration then
-				shakeConn:Disconnect()
-				return
-			end
+        local shakeConn
+        shakeConn = RunService.RenderStepped:Connect(function()
+            local elapsed = tick() - startTime
+            if elapsed >= duration then
+                shakeConn:Disconnect()
+                return
+            end
 
-			local rx = (math.random() - 0.5) * currentIntensity
-			local ry = (math.random() - 0.5) * currentIntensity
-			local rz = (math.random() - 0.5) * currentIntensity
+            local rx = (math.random() - 0.5) * currentIntensity
+            local ry = (math.random() - 0.5) * currentIntensity
+            local rz = (math.random() - 0.5) * currentIntensity
 
-			Camera.CFrame = Camera.CFrame * CFrame.Angles(math.rad(rx), math.rad(ry), math.rad(rz))
-		end)
-	end)
+            Camera.CFrame = Camera.CFrame * CFrame.Angles(math.rad(rx), math.rad(ry), math.rad(rz))
+        end)
+    end)
 end
 
 local function getRandomTarget()
-	local validTargets = {}
-	for _, plr in ipairs(Players:GetPlayers()) do
-		if plr ~= LocalPlayer and plr.Character then
-			local root = plr.Character:FindFirstChild("HumanoidRootPart")
-			local hum = plr.Character:FindFirstChildOfClass("Humanoid")
-			if root and hum and hum.Health > 0 then
-				table.insert(validTargets, plr)
-			end
-		end
-	end
-	if #validTargets > 0 then
-		return validTargets[math.random(1, #validTargets)]
-	end
-	return nil
+    local validTargets = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character then
+            local root = plr.Character:FindFirstChild("HumanoidRootPart")
+            local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+            if root and hum and hum.Health > 0 then
+                table.insert(validTargets, plr)
+            end
+        end
+    end
+    if #validTargets > 0 then
+        return validTargets[math.random(1, #validTargets)]
+    end
+    return nil
 end
 
 local function spawnControlledCharacter(isSpongeBob)
-	local char = LocalPlayer.Character
-	if not char or not char:FindFirstChild("HumanoidRootPart") or not char:FindFirstChildOfClass("Humanoid") then return end
-	local rootPart = char.HumanoidRootPart
-	local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") or not char:FindFirstChildOfClass("Humanoid") then return end
+    local rootPart = char.HumanoidRootPart
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
 
-	humanoid.WalkSpeed = 0
-	humanoid.JumpPower = 0
+    humanoid.WalkSpeed = 0
+    humanoid.JumpPower = 0
 
-	local spawnCF = rootPart.CFrame + Vector3.new(0, 3, -5)
+    local spawnCF = rootPart.CFrame + Vector3.new(0, 3, -5)
 
-	local part = inv("CreatePart", "Normal", spawnCF, workspace)
-	if not part then 
-		humanoid.WalkSpeed = 16
-		humanoid.JumpPower = 50
-		return 
-	end
+    local part = inv("CreatePart", "Normal", spawnCF, workspace)
+    if not part then 
+        humanoid.WalkSpeed = 16
+        humanoid.JumpPower = 50
+        return 
+    end
 
-	local charName = isSpongeBob and "ControlledSpongeBob" or "ControlledSquidward"
-	local soundList = isSpongeBob and SPONGEBOB_SOUNDS or SQUIDWARD_SOUNDS
+    local charName = isSpongeBob and "ControlledSpongeBob" or "ControlledSquidward"
+    local soundList = isSpongeBob and SPONGEBOB_SOUNDS or SQUIDWARD_SOUNDS
 
-	inv("SetName", {part}, charName)
-	inv("SyncResize", {{Part = part, CFrame = part.CFrame, Size = Vector3.new(5, 8, isSpongeBob and 1 or 5)}})
-	inv("SyncAnchor", {{Part = part, Anchored = true}})
-	inv("SyncCollision", {{Part = part, CanCollide = false}})
-	inv("SyncColor", {{Part = part, Color = isSpongeBob and Color3.fromRGB(255, 230, 100) or Color3.fromRGB(200, 140, 90)}})
-	inv("SyncMaterial", {{Part = part, Material = Enum.Material.SmoothPlastic, Transparency = isSpongeBob and 1 or 0}}) -- Invisible part for Spongebob
+    invAsync("SetName", {part}, charName)
+    invAsync("SyncResize", {{Part = part, CFrame = part.CFrame, Size = Vector3.new(5, 8, isSpongeBob and 1 or 5)}})
+    invAsync("SyncAnchor", {{Part = part, Anchored = true}})
+    invAsync("SyncCollision", {{Part = part, CanCollide = false}})
+    invAsync("SyncColor", {{Part = part, Color = isSpongeBob and Color3.fromRGB(255, 230, 100) or Color3.fromRGB(200, 140, 90)}})
+    invAsync("SyncMaterial", {{Part = part, Material = Enum.Material.SmoothPlastic, Transparency = isSpongeBob and 1 or 0}})
 
-	if not isSpongeBob then
-		inv("CreateMeshes", {{Part = part}})
-		inv("SyncMesh", {{
-			Part = part,
-			MeshId = SQUIDWARD_MESH,
-			TextureId = SQUIDWARD_TEX,
-			Scale = Vector3.new(3.5, 3.5, 3.5)
-		}})
-	else
-		pcall(function()
-			local randomDecalId = SPONGEBOB_DECALS[math.random(1, #SPONGEBOB_DECALS)]
-			local frontDecal = Instance.new("Decal")
-			frontDecal.Face = Enum.NormalId.Front
-			frontDecal.Texture = randomDecalId
-			frontDecal.Parent = part
+    if not isSpongeBob then
+        invAsync("CreateMeshes", {{Part = part}})
+        invAsync("SyncMesh", {{
+            Part = part,
+            MeshId = SQUIDWARD_MESH,
+            TextureId = SQUIDWARD_TEX,
+            Scale = Vector3.new(3.5, 3.5, 3.5)
+        }})
+    else
+        pcall(function()
+            local randomDecalId = SPONGEBOB_DECALS[math.random(1, #SPONGEBOB_DECALS)]
+            local frontDecal = Instance.new("Decal")
+            frontDecal.Face = Enum.NormalId.Front
+            frontDecal.Texture = randomDecalId
+            frontDecal.Parent = part
 
-			local backDecal = Instance.new("Decal")
-			backDecal.Face = Enum.NormalId.Back
-			backDecal.Texture = randomDecalId
-			backDecal.Parent = part
-		end)
-	end
+            local backDecal = Instance.new("Decal")
+            backDecal.Face = Enum.NormalId.Back
+            backDecal.Texture = randomDecalId
+            backDecal.Parent = part
+        end)
+    end
 
-	inv("CreateDecorations", {{Part = part, DecorationsType = "Fire"}})
-	inv("SyncDecorate", {{
-		Part = part,
-		DecorationType = "Fire",
-		Size = 25,
-		Heat = 40
-	}})
+    invAsync("CreateDecorations", {{Part = part, DecorationsType = "Fire"}})
+    invAsync("SyncDecorate", {{
+        Part = part,
+        DecorationType = "Fire",
+        Size = 25,
+        Heat = 40
+    }})
 
-	local walkSound = Instance.new("Sound")
-	walkSound.SoundId = "rbxassetid://130457939732600"
-	walkSound.Volume = soundsMuted and 0 or 10
-	walkSound.PlaybackSpeed = 1.8
-	walkSound.Parent = part
+    local walkSound = Instance.new("Sound")
+    walkSound.SoundId = "rbxassetid://130457939732600"
+    walkSound.Volume = soundsMuted and 0 or 10
+    walkSound.PlaybackSpeed = 1.8
+    walkSound.Parent = part
 
-	Camera.CameraType = Enum.CameraType.Scriptable
-	UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+    Camera.CameraType = Enum.CameraType.Scriptable
+    UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 
-	local currentPos = spawnCF.Position
-	local controlledConn
-	local normalSpeed = 40
-	local boostSpeed = 80
-	local lastNetworkUpdate = 0
-	local networkRate = 1 / 60
+    local currentPos = spawnCF.Position
+    local controlledConn
+    local normalSpeed = 80 -- 2x Speed (Was 40)
+    local boostSpeed = 160 -- 2x Speed (Was 80)
+    local lastNetworkUpdate = 0
+    local networkRate = 1 / 120 -- 2x Frequency (Was 1/60)
 
-	local yVelocity = 0
-	local jumpPower = 75
-	local isGrounded = false
+    local yVelocity = 0
+    local jumpPower = 75
+    local isGrounded = false
 
-	local camAngleX = 0
-	local camAngleY = math.rad(25)
-	local camDistance = 14
+    local camAngleX = 0
+    local camAngleY = math.rad(25)
+    local camDistance = 14
 
-	local bombData = {
-		part = part,
-		sound = walkSound,
-		exploded = false
-	}
+    local bombData = {
+        part = part,
+        sound = walkSound,
+        exploded = false
+    }
 
-	controlledConn = RunService.Heartbeat:Connect(function(dt)
-		if bombData.exploded or not part or not part.Parent then
-			if controlledConn then controlledConn:Disconnect() end
-			return
-		end
+    controlledConn = RunService.Heartbeat:Connect(function(dt)
+        if bombData.exploded or not part or not part.Parent then
+            if controlledConn then controlledConn:Disconnect() end
+            return
+        end
 
-		local mouseDelta = UserInputService:GetMouseDelta()
-		camAngleX = camAngleX - mouseDelta.X * 0.005
-		camAngleY = math.clamp(camAngleY - mouseDelta.Y * 0.005, math.rad(-75), math.rad(80))
+        local mouseDelta = UserInputService:GetMouseDelta()
+        camAngleX = camAngleX - mouseDelta.X * 0.005
+        camAngleY = math.clamp(camAngleY - mouseDelta.Y * 0.005, math.rad(-75), math.rad(80))
 
-		local camRotation = CFrame.Angles(0, camAngleX, 0) * CFrame.Angles(camAngleY, 0, 0)
-		local forwardDir = (camRotation * Vector3.new(0, 0, -1))
-		local rightDir = (camRotation * Vector3.new(1, 0, 0))
-		
-		local flatForward = Vector3.new(forwardDir.X, 0, forwardDir.Z).Unit
-		local flatRight = Vector3.new(rightDir.X, 0, rightDir.Z).Unit
+        local camRotation = CFrame.Angles(0, camAngleX, 0) * CFrame.Angles(camAngleY, 0, 0)
+        local forwardDir = (camRotation * Vector3.new(0, 0, -1))
+        local rightDir = (camRotation * Vector3.new(1, 0, 0))
+        
+        local flatForward = Vector3.new(forwardDir.X, 0, forwardDir.Z).Unit
+        local flatRight = Vector3.new(rightDir.X, 0, rightDir.Z).Unit
 
-		local moveDir = Vector3.zero
-		if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + flatForward end
-		if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - flatForward end
-		if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - flatRight end
-		if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + flatRight end
+        local moveDir = Vector3.zero
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + flatForward end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - flatForward end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - flatRight end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + flatRight end
 
-		local currentSpeed = UserInputService:IsKeyDown(Enum.KeyCode.L) and boostSpeed or normalSpeed
+        local currentSpeed = UserInputService:IsKeyDown(Enum.KeyCode.L) and boostSpeed or normalSpeed
 
-		if UserInputService:IsKeyDown(Enum.KeyCode.Space) and isGrounded then
-			yVelocity = jumpPower
-			isGrounded = false
-		end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) and isGrounded then
+            yVelocity = jumpPower
+            isGrounded = false
+        end
 
-		yVelocity = yVelocity - (Workspace.Gravity * dt)
+        yVelocity = yVelocity - (Workspace.Gravity * dt)
 
-		if moveDir.Magnitude > 0 then
-			moveDir = moveDir.Unit
-			currentPos = currentPos + (moveDir * currentSpeed * dt)
-			
-			if isGrounded and not walkSound.IsPlaying then
-				walkSound:Play()
-			end
-		else
-			if walkSound.IsPlaying then
-				walkSound:Stop()
-			end
-		end
+        if moveDir.Magnitude > 0 then
+            moveDir = moveDir.Unit
+            currentPos = currentPos + (moveDir * currentSpeed * dt)
+            
+            if isGrounded and not walkSound.IsPlaying then
+                walkSound:Play()
+            end
+        else
+            if walkSound.IsPlaying then
+                walkSound:Stop()
+            end
+        end
 
-		if not isGrounded and walkSound.IsPlaying then
-			walkSound:Stop()
-		end
+        if not isGrounded and walkSound.IsPlaying then
+            walkSound:Stop()
+        end
 
-		currentPos = currentPos + Vector3.new(0, yVelocity * dt, 0)
+        currentPos = currentPos + Vector3.new(0, yVelocity * dt, 0)
 
-		local rayParams = RaycastParams.new()
-		rayParams.FilterType = Enum.RaycastFilterType.Exclude
-		rayParams.FilterDescendantsInstances = {part, LocalPlayer.Character}
-		
-		local rayResult = Workspace:Raycast(currentPos + Vector3.new(0, 2, 0), Vector3.new(0, -6.5, 0), rayParams)
-		if rayResult then
-			if yVelocity <= 0 then
-				isGrounded = true
-				yVelocity = 0
-				currentPos = Vector3.new(currentPos.X, rayResult.Position.Y + 4, currentPos.Z) 
-			end
-		else
-			isGrounded = false
-		end
+        local rayParams = RaycastParams.new()
+        rayParams.FilterType = Enum.RaycastFilterType.Exclude
+        rayParams.FilterDescendantsInstances = {part, LocalPlayer.Character}
+        
+        local rayResult = Workspace:Raycast(currentPos + Vector3.new(0, 2, 0), Vector3.new(0, -6.5, 0), rayParams)
+        if rayResult then
+            if yVelocity <= 0 then
+                isGrounded = true
+                yVelocity = 0
+                currentPos = Vector3.new(currentPos.X, rayResult.Position.Y + 4, currentPos.Z) 
+            end
+        else
+            isGrounded = false
+        end
 
-		local targetFocus = currentPos + Vector3.new(0, 3, 0)
-		local camPos = targetFocus + (camRotation * Vector3.new(0, 0, camDistance))
-		Camera.CFrame = CFrame.lookAt(camPos, targetFocus)
+        local targetFocus = currentPos + Vector3.new(0, 3, 0)
+        local camPos = targetFocus + (camRotation * Vector3.new(0, 0, camDistance))
+        Camera.CFrame = CFrame.lookAt(camPos, targetFocus)
 
-		local now = tick()
-		if now - lastNetworkUpdate >= networkRate then
-			lastNetworkUpdate = now
-			local lookCF = CFrame.lookAt(currentPos, currentPos + (moveDir.Magnitude > 0 and moveDir or flatForward)) * CFrame.Angles(0, math.rad(180), 0)
-			inv("SyncMove", {{Part = part, CFrame = lookCF}})
-		end
+        local now = tick()
+        if now - lastNetworkUpdate >= networkRate then
+            lastNetworkUpdate = now
+            local lookCF = CFrame.lookAt(currentPos, currentPos + (moveDir.Magnitude > 0 and moveDir or flatForward)) * CFrame.Angles(0, math.rad(180), 0)
+            invAsync("SyncMove", {{Part = part, CFrame = lookCF}})
+        end
 
-		for _, plr in ipairs(Players:GetPlayers()) do
-			if plr ~= LocalPlayer and plr.Character then
-				local root = plr.Character:FindFirstChild("HumanoidRootPart")
-				if root and (root.Position - currentPos).Magnitude < 6 and not bombData.exploded then
-					bombData.exploded = true
-					if controlledConn then controlledConn:Disconnect() end
-					if walkSound then walkSound:Stop() end
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character then
+                local root = plr.Character:FindFirstChild("HumanoidRootPart")
+                if root and (root.Position - currentPos).Magnitude < 6 and not bombData.exploded then
+                    bombData.exploded = true
+                    if controlledConn then controlledConn:Disconnect() end
+                    if walkSound then walkSound:Stop() end
 
-					local boomSound = Instance.new("Sound")
-					boomSound.SoundId = "rbxassetid://142070127"
-					boomSound.Volume = soundsMuted and 0 or 5
-					boomSound.Parent = game:GetService("SoundService")
-					boomSound:Play()
-					boomSound.Ended:Connect(function() boomSound:Destroy() end)
+                    local boomSound = Instance.new("Sound")
+                    boomSound.SoundId = "rbxassetid://142070127"
+                    boomSound.Volume = soundsMuted and 0 or 5
+                    boomSound.Parent = game:GetService("SoundService")
+                    boomSound:Play()
+                    boomSound.Ended:Connect(function() boomSound:Destroy() end)
 
-					local voiceSound = Instance.new("Sound")
-					voiceSound.SoundId = soundList[math.random(1, #soundList)]
-					voiceSound.Volume = soundsMuted and 0 or 8
-					voiceSound.Parent = game:GetService("SoundService")
-					voiceSound:Play()
-					voiceSound.Ended:Connect(function() voiceSound:Destroy() end)
+                    local voiceSound = Instance.new("Sound")
+                    voiceSound.SoundId = soundList[math.random(1, #soundList)]
+                    voiceSound.Volume = soundsMuted and 0 or 8
+                    voiceSound.Parent = game:GetService("SoundService")
+                    voiceSound:Play()
+                    voiceSound.Ended:Connect(function() voiceSound:Destroy() end)
 
-					triggerScreenShake(currentPos, 3.5, 0.5)
-					explodePlayer(plr)
+                    triggerScreenShake(currentPos, 3.5, 0.5)
+                    explodePlayer(plr)
 
-					inv("SyncDecorate", {{Part = part, DecorationType = "Fire", Size = 60, Heat = 80}})
+                    invAsync("SyncDecorate", {{Part = part, DecorationType = "Fire", Size = 60, Heat = 80}})
 
-					task.delay(0.4, function()
-						pcall(function() 
-							inv("Remove", {part}) 
-							part:Destroy()
-						end)
-					end)
-					break
-				end
-			end
-		end
-	end)
+                    task.delay(0.2, function()
+                        pcall(function() 
+                            invAsync("Remove", {part}) 
+                            part:Destroy()
+                        end)
+                    end)
+                    break
+                end
+            end
+        end
+    end)
 
-	task.spawn(function()
-		while part and part.Parent and not bombData.exploded do
-			task.wait(0.1)
-		end
-		Camera.CameraType = Enum.CameraType.Custom
-		UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-		if char and char:FindFirstChildOfClass("Humanoid") then
-			local hum = char:FindFirstChildOfClass("Humanoid")
-			hum.WalkSpeed = 16
-			hum.JumpPower = 50
-		end
-	end)
+    task.spawn(function()
+        while part and part.Parent and not bombData.exploded do
+            task.wait(0.05)
+        end
+        Camera.CameraType = Enum.CameraType.Custom
+        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+        if char and char:FindFirstChildOfClass("Humanoid") then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+        end
+    end)
 end
 
 -- Keybind listener
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then return end
-	if input.KeyCode == Enum.KeyCode.Z then
-		spawnControlledCharacter(false)
-	elseif input.KeyCode == Enum.KeyCode.C then
-		spawnControlledCharacter(true)
-	elseif input.KeyCode == Enum.KeyCode.F then
-		followMeMode = not followMeMode
-	elseif input.KeyCode == Enum.KeyCode.M then
-		soundsMuted = not soundsMuted
-		textLabel.Text = "Bombs Loaded\n[Z] Spawn Controlled Squidward\n[C] Spawn Controlled Spongebob\n[Space] Jump | [L] Speed Up\n[F] Toggle Follow Me\n[M] Mute/Unmute Sounds (" .. (soundsMuted and "Muted" or "Off") .. ")"
-	end
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.Z then
+        spawnControlledCharacter(false)
+    elseif input.KeyCode == Enum.KeyCode.C then
+        spawnControlledCharacter(true)
+    elseif input.KeyCode == Enum.KeyCode.F then
+        followMeMode = not followMeMode
+    elseif input.KeyCode == Enum.KeyCode.M then
+        soundsMuted = not soundsMuted
+        textLabel.Text = "Bombs Loaded (2x Turbo)\n[Z] Spawn Controlled Squidward\n[C] Spawn Controlled Spongebob\n[Space] Jump | [L] Speed Up\n[F] Toggle Follow Me\n[M] Mute/Unmute Sounds (" .. (soundsMuted and "Muted" or "Off") .. ")"
+    end
 end)
 
--- Function to create a Bomb Tool (Squidward or SpongeBob)
+-- Function to create a Bomb Tool
 local function createBombTool(toolName, isSpongeBob, soundList)
-	local tool = Instance.new("Tool")
-	tool.Name = toolName
-	tool.RequiresHandle = false
-	tool.CanBeDropped = false
-	tool.Parent = LocalPlayer.Backpack
+    local tool = Instance.new("Tool")
+    tool.Name = toolName
+    tool.RequiresHandle = false
+    tool.CanBeDropped = false
+    tool.Parent = LocalPlayer.Backpack
 
-	local handle = Instance.new("Part")
-	handle.Name = "Handle"
-	handle.Size = Vector3.new(0.2, 0.2, 0.2)
-	handle.Transparency = 1
-	handle.CanCollide = false
-	handle.Parent = tool
+    local handle = Instance.new("Part")
+    handle.Name = "Handle"
+    handle.Size = Vector3.new(0.2, 0.2, 0.2)
+    handle.Transparency = 1
+    handle.CanCollide = false
+    handle.Parent = tool
 
-	local feHeldPart = nil
-	local feWeldConnection = nil
+    local feHeldPart = nil
+    local feWeldConnection = nil
 
-	local function createFeHandMesh()
-		local char = LocalPlayer.Character
-		if not char then return end
-		
-		local rightHand = char:FindFirstChild("RightHand") or char:FindFirstChild("Right Arm")
-		if not rightHand then return end
+    local function createFeHandMesh()
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        local rightHand = char:FindFirstChild("RightHand") or char:FindFirstChild("Right Arm")
+        if not rightHand then return end
 
-		local p = inv("CreatePart", "Normal", rightHand.CFrame, workspace)
-		if not p then return end
-		
-		feHeldPart = p
+        local p = inv("CreatePart", "Normal", rightHand.CFrame, workspace)
+        if not p then return end
+        
+        feHeldPart = p
 
-		inv("SetName", {p}, "FE_" .. toolName .. "Hand")
-		inv("SyncResize", {{Part = p, CFrame = p.CFrame, Size = Vector3.new(1, 1, 1)}})
-		inv("SyncCollision", {{Part = p, CanCollide = false}})
-		inv("SyncAnchor", {{Part = p, Anchored = false}})
-		
-		if not isSpongeBob then
-			pcall(function()
-				inv("CreateMeshes", {{Part = p}})
-				inv("SyncMesh", {{
-					Part = p,
-					MeshId = SQUIDWARD_MESH,
-					TextureId = SQUIDWARD_TEX,
-					Scale = Vector3.new(1.2, 1.2, 1.2)
-				}})
-			end)
-		else
-			pcall(function()
-				local randomDecalId = SPONGEBOB_DECALS[math.random(1, #SPONGEBOB_DECALS)]
-				local frontDecal = Instance.new("Decal")
-				frontDecal.Face = Enum.NormalId.Front
-				frontDecal.Texture = randomDecalId
-				frontDecal.Parent = p
+        invAsync("SetName", {p}, "FE_" .. toolName .. "Hand")
+        invAsync("SyncResize", {{Part = p, CFrame = p.CFrame, Size = Vector3.new(1, 1, 1)}})
+        invAsync("SyncCollision", {{Part = p, CanCollide = false}})
+        invAsync("SyncAnchor", {{Part = p, Anchored = false}})
+        
+        if not isSpongeBob then
+            pcall(function()
+                invAsync("CreateMeshes", {{Part = p}})
+                invAsync("SyncMesh", {{
+                    Part = p,
+                    MeshId = SQUIDWARD_MESH,
+                    TextureId = SQUIDWARD_TEX,
+                    Scale = Vector3.new(1.2, 1.2, 1.2)
+                }})
+            end)
+        else
+            pcall(function()
+                local randomDecalId = SPONGEBOB_DECALS[math.random(1, #SPONGEBOB_DECALS)]
+                local frontDecal = Instance.new("Decal")
+                frontDecal.Face = Enum.NormalId.Front
+                frontDecal.Texture = randomDecalId
+                frontDecal.Parent = p
 
-				local backDecal = Instance.new("Decal")
-				backDecal.Face = Enum.NormalId.Back
-				backDecal.Texture = randomDecalId
-				backDecal.Parent = p
-			end)
-		end
+                local backDecal = Instance.new("Decal")
+                backDecal.Face = Enum.NormalId.Back
+                backDecal.Texture = randomDecalId
+                backDecal.Parent = p
+            end)
+        end
 
-		feWeldConnection = RunService.RenderStepped:Connect(function()
-			if feHeldPart and feHeldPart.Parent and rightHand and rightHand.Parent then
-				local offsetCF = rightHand.CFrame * CFrame.new(0, -1, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-				inv("SyncMove", {{Part = feHeldPart, CFrame = offsetCF}})
-			else
-				if feWeldConnection then
-					feWeldConnection:Disconnect()
-					feWeldConnection = nil
-				end
-			end
-		end)
-	end
+        feWeldConnection = RunService.RenderStepped:Connect(function()
+            if feHeldPart and feHeldPart.Parent and rightHand and rightHand.Parent then
+                local offsetCF = rightHand.CFrame * CFrame.new(0, -1, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+                invAsync("SyncMove", {{Part = feHeldPart, CFrame = offsetCF}})
+            else
+                if feWeldConnection then
+                    feWeldConnection:Disconnect()
+                    feWeldConnection = nil
+                end
+            end
+        end)
+    end
 
-	local function removeFeHandMesh()
-		if feWeldConnection then
-			feWeldConnection:Disconnect()
-			feWeldConnection = nil
-		end
-		if feHeldPart then
-			inv("Remove", {feHeldPart})
-			feHeldPart = nil
-		end
-	end
+    local function removeFeHandMesh()
+        if feWeldConnection then
+            feWeldConnection:Disconnect()
+            feWeldConnection = nil
+        end
+        if feHeldPart then
+            invAsync("Remove", {feHeldPart})
+            feHeldPart = nil
+        end
+    end
 
-	tool.Equipped:Connect(function()
-		Mouse.Icon = GUN_CURSOR
-		createFeHandMesh()
-	end)
+    tool.Equipped:Connect(function()
+        Mouse.Icon = GUN_CURSOR
+        createFeHandMesh()
+    end)
 
-	tool.Unequipped:Connect(function()
-		Mouse.Icon = ""
-		removeFeHandMesh()
-	end)
+    tool.Unequipped:Connect(function()
+        Mouse.Icon = ""
+        removeFeHandMesh()
+    end)
 
-	tool.Activated:Connect(function()
-		local hit = Mouse.Hit
-		if not hit then return end
+    tool.Activated:Connect(function()
+        local hit = Mouse.Hit
+        if not hit then return end
 
-		local spawnCF = CFrame.new(hit.Position + Vector3.new(0, 4, 0))
+        local spawnCF = CFrame.new(hit.Position + Vector3.new(0, 4, 0))
 
-		task.spawn(function()
-			local part = inv("CreatePart", "Normal", spawnCF, workspace)
-			if not part then return end
+        task.spawn(function()
+            local part = inv("CreatePart", "Normal", spawnCF, workspace)
+            if not part then return end
 
-			inv("SetName", {part}, toolName .. "Bomb")
-			inv("SyncResize", {{Part = part, CFrame = part.CFrame, Size = Vector3.new(5, 8, isSpongeBob and 1 or 5)}})
-			inv("SyncAnchor", {{Part = part, Anchored = true}})
-			inv("SyncCollision", {{Part = part, CanCollide = false}})
-			inv("SyncColor", {{Part = part, Color = isSpongeBob and Color3.fromRGB(255, 230, 100) or Color3.fromRGB(90, 140, 200)}})
-			inv("SyncMaterial", {{Part = part, Material = Enum.Material.SmoothPlastic, Transparency = isSpongeBob and 1 or 0}}) -- Invisible part for Spongebob
-			
-			if not isSpongeBob then
-				pcall(function()
-					inv("CreateMeshes", {{Part = part}})
-					inv("SyncMesh", {{
-						Part = part,
-						MeshId = SQUIDWARD_MESH,
-						TextureId = SQUIDWARD_TEX,
-						Scale = Vector3.new(3.5, 3.5, 3.5)
-					}})
-				end)
-			else
-				pcall(function()
-					local randomDecalId = SPONGEBOB_DECALS[math.random(1, #SPONGEBOB_DECALS)]
-					local frontDecal = Instance.new("Decal")
-					frontDecal.Face = Enum.NormalId.Front
-					frontDecal.Texture = randomDecalId
-					frontDecal.Parent = part
+            invAsync("SetName", {part}, toolName .. "Bomb")
+            invAsync("SyncResize", {{Part = part, CFrame = part.CFrame, Size = Vector3.new(5, 8, isSpongeBob and 1 or 5)}})
+            invAsync("SyncAnchor", {{Part = part, Anchored = true}})
+            invAsync("SyncCollision", {{Part = part, CanCollide = false}})
+            invAsync("SyncColor", {{Part = part, Color = isSpongeBob and Color3.fromRGB(255, 230, 100) or Color3.fromRGB(90, 140, 200)}})
+            invAsync("SyncMaterial", {{Part = part, Material = Enum.Material.SmoothPlastic, Transparency = isSpongeBob and 1 or 0}})
+            
+            if not isSpongeBob then
+                pcall(function()
+                    invAsync("CreateMeshes", {{Part = part}})
+                    invAsync("SyncMesh", {{
+                        Part = part,
+                        MeshId = SQUIDWARD_MESH,
+                        TextureId = SQUIDWARD_TEX,
+                        Scale = Vector3.new(3.5, 3.5, 3.5)
+                    }})
+                end)
+            else
+                pcall(function()
+                    local randomDecalId = SPONGEBOB_DECALS[math.random(1, #SPONGEBOB_DECALS)]
+                    local frontDecal = Instance.new("Decal")
+                    frontDecal.Face = Enum.NormalId.Front
+                    frontDecal.Texture = randomDecalId
+                    frontDecal.Parent = part
 
-					local backDecal = Instance.new("Decal")
-					backDecal.Face = Enum.NormalId.Back
-					backDecal.Texture = randomDecalId
-					backDecal.Parent = part
-				end)
-			end
+                    local backDecal = Instance.new("Decal")
+                    backDecal.Face = Enum.NormalId.Back
+                    backDecal.Texture = randomDecalId
+                    backDecal.Parent = part
+                end)
+            end
 
-			inv("CreateDecorations", {{Part = part, DecorationsType = "Fire"}})
-			inv("SyncDecorate", {{
-				Part = part,
-				DecorationType = "Fire",
-				Size = 25,
-				Heat = 40
-			}})
+            invAsync("CreateDecorations", {{Part = part, DecorationsType = "Fire"}})
+            invAsync("SyncDecorate", {{
+                Part = part,
+                DecorationType = "Fire",
+                Size = 25,
+                Heat = 40
+            }})
 
-			local walkSound = Instance.new("Sound")
-			walkSound.SoundId = "rbxassetid://130457939732600"
-			walkSound.Volume = soundsMuted and 0 or 10
-			walkSound.PlaybackSpeed = 1.8
-			walkSound.RollOffMinDistance = 10
-			walkSound.RollOffMaxDistance = 250
-			walkSound.Looped = true
-			walkSound.Parent = part
-			walkSound:Play()
+            local walkSound = Instance.new("Sound")
+            walkSound.SoundId = "rbxassetid://130457939732600"
+            walkSound.Volume = soundsMuted and 0 or 10
+            walkSound.PlaybackSpeed = 1.8
+            walkSound.RollOffMinDistance = 10
+            walkSound.RollOffMaxDistance = 250
+            walkSound.Looped = true
+            walkSound.Parent = part
+            walkSound:Play()
 
-			local targetPlr = getRandomTarget()
-			
-			local bombData = {
-				part = part,
-				sound = walkSound,
-				exploded = false
-			}
+            local targetPlr = getRandomTarget()
+            
+            local bombData = {
+                part = part,
+                sound = walkSound,
+                exploded = false
+            }
 
-			local connection
-			local currentPos = spawnCF.Position
-			local lastNetworkUpdate = 0
-			local networkRate = 1 / 60
+            local connection
+            local currentPos = spawnCF.Position
+            local lastNetworkUpdate = 0
+            local networkRate = 1 / 120 -- 2x Frequency (Was 1/60)
 
-			connection = RunService.Heartbeat:Connect(function(dt)
-				if bombData.exploded or not part or not part.Parent then
-					if connection then connection:Disconnect() connection = nil end
-					return
-				end
+            connection = RunService.Heartbeat:Connect(function(dt)
+                if bombData.exploded or not part or not part.Parent then
+                    if connection then connection:Disconnect() connection = nil end
+                    return
+                end
 
-				local moveTarget = nil
-				
-				if followMeMode and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-					moveTarget = LocalPlayer
-				else
-					if not targetPlr or targetPlr == LocalPlayer or not targetPlr.Character or targetPlr.Character:FindFirstChildOfClass("Humanoid").Health <= 0 then
-						targetPlr = getRandomTarget()
-					end
-					moveTarget = targetPlr
-				end
+                local moveTarget = nil
+                
+                if followMeMode and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    moveTarget = LocalPlayer
+                else
+                    if not targetPlr or targetPlr == LocalPlayer or not targetPlr.Character or targetPlr.Character:FindFirstChildOfClass("Humanoid").Health <= 0 then
+                        targetPlr = getRandomTarget()
+                    end
+                    moveTarget = targetPlr
+                end
 
-				if moveTarget and moveTarget.Character and moveTarget.Character:FindFirstChild("HumanoidRootPart") then
-					local targetPos = moveTarget.Character.HumanoidRootPart.Position
-					local distance = (targetPos - currentPos).Magnitude
-					local direction = (targetPos - currentPos).Unit
-					
-					local currentSpeed = UserInputService:IsKeyDown(Enum.KeyCode.L) and 80 or 35
+                if moveTarget and moveTarget.Character and moveTarget.Character:FindFirstChild("HumanoidRootPart") then
+                    local targetPos = moveTarget.Character.HumanoidRootPart.Position
+                    local distance = (targetPos - currentPos).Magnitude
+                    local direction = (targetPos - currentPos).Unit
+                    
+                    local currentSpeed = UserInputService:IsKeyDown(Enum.KeyCode.L) and 160 or 70 -- 2x Speed (Was 80 or 35)
 
-					if moveTarget == LocalPlayer then
-						if distance > 6 then
-							currentPos = currentPos + (direction * currentSpeed * dt)
-						end
-					else
-						if distance > 0.5 then
-							currentPos = currentPos + (direction * currentSpeed * dt)
-						end
-					end
-					
-					local now = tick()
-					if now - lastNetworkUpdate >= networkRate then
-						lastNetworkUpdate = now
-						local lookCF = CFrame.lookAt(currentPos, targetPos) * CFrame.Angles(0, math.rad(180), 0)
-						inv("SyncMove", {{Part = part, CFrame = lookCF}})
-					end
-				end
+                    if moveTarget == LocalPlayer then
+                        if distance > 6 then
+                            currentPos = currentPos + (direction * currentSpeed * dt)
+                        end
+                    else
+                        if distance > 0.5 then
+                            currentPos = currentPos + (direction * currentSpeed * dt)
+                        end
+                    end
+                    
+                    local now = tick()
+                    if now - lastNetworkUpdate >= networkRate then
+                        lastNetworkUpdate = now
+                        local lookCF = CFrame.lookAt(currentPos, targetPos) * CFrame.Angles(0, math.rad(180), 0)
+                        invAsync("SyncMove", {{Part = part, CFrame = lookCF}})
+                    end
+                end
 
-				for _, plr in ipairs(Players:GetPlayers()) do
-					if plr ~= LocalPlayer and plr.Character then
-						local checkRoot = plr.Character:FindFirstChild("HumanoidRootPart")
-						if checkRoot and (checkRoot.Position - currentPos).Magnitude < 7 and not bombData.exploded then
-							bombData.exploded = true
-							
-							if connection then 
-								connection:Disconnect() 
-								connection = nil
-							end
+                for _, plr in ipairs(Players:GetPlayers()) do
+                    if plr ~= LocalPlayer and plr.Character then
+                        local checkRoot = plr.Character:FindFirstChild("HumanoidRootPart")
+                        if checkRoot and (checkRoot.Position - currentPos).Magnitude < 7 and not bombData.exploded then
+                            bombData.exploded = true
+                            
+                            if connection then 
+                                connection:Disconnect() 
+                                connection = nil
+                            end
 
-							walkSound:Stop()
+                            walkSound:Stop()
 
-							local boomSound = Instance.new("Sound")
-							boomSound.SoundId = "rbxassetid://142070127"
-							boomSound.Volume = soundsMuted and 0 or 5
-							boomSound.Parent = game:GetService("SoundService")
-							boomSound:Play()
-							boomSound.Ended:Connect(function() boomSound:Destroy() end)
+                            local boomSound = Instance.new("Sound")
+                            boomSound.SoundId = "rbxassetid://142070127"
+                            boomSound.Volume = soundsMuted and 0 or 5
+                            boomSound.Parent = game:GetService("SoundService")
+                            boomSound:Play()
+                            boomSound.Ended:Connect(function() boomSound:Destroy() end)
 
-							local voiceSound = Instance.new("Sound")
-							voiceSound.SoundId = soundList[math.random(1, #soundList)]
-							voiceSound.Volume = soundsMuted and 0 or 8
-							voiceSound.Parent = game:GetService("SoundService")
-							voiceSound:Play()
-							voiceSound.Ended:Connect(function() voiceSound:Destroy() end)
+                            local voiceSound = Instance.new("Sound")
+                            voiceSound.SoundId = soundList[math.random(1, #soundList)]
+                            voiceSound.Volume = soundsMuted and 0 or 8
+                            voiceSound.Parent = game:GetService("SoundService")
+                            voiceSound:Play()
+                            voiceSound.Ended:Connect(function() voiceSound:Destroy() end)
 
-							triggerScreenShake(currentPos, 3.5, 0.5)
-							explodePlayer(plr)
+                            triggerScreenShake(currentPos, 3.5, 0.5)
+                            explodePlayer(plr)
 
-							inv("SyncDecorate", {{Part = part, DecorationType = "Fire", Size = 60, Heat = 80}})
+                            invAsync("SyncDecorate", {{Part = part, DecorationType = "Fire", Size = 60, Heat = 80}})
 
-							task.delay(0.4, function()
-								pcall(function() 
-									inv("Remove", {part})
-									part:Destroy() 
-								end)
-							end)
-							break
-						end
-					end
-				end
-			end)
-		end)
-	end)
+                            task.delay(0.2, function()
+                                pcall(function() 
+                                    invAsync("Remove", {part})
+                                    part:Destroy() 
+                                end)
+                            end)
+                            break
+                        end
+                    end
+                end
+            end)
+        end)
+    end)
 end
-
 
 createBombTool("Squidward Bomb", false, SQUIDWARD_SOUNDS)
 createBombTool("Spongebob Bomb", true, SPONGEBOB_SOUNDS)
