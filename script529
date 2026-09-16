@@ -1,0 +1,79 @@
+local Players = game:GetService("Players")
+
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+local char = player.Character or player.CharacterAdded:Wait()
+
+local tool
+
+for _, v in ipairs(player:GetDescendants()) do
+
+	if v.Name == "SyncAPI" then
+
+		tool = v.Parent
+
+		break
+
+	end
+
+end
+
+if not tool then
+
+	for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+
+		if v.Name == "SyncAPI" then
+
+			tool = v.Parent
+
+			break
+
+		end
+
+	end
+
+end
+
+if not tool then return end
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+local humanoid = char:WaitForChild("Humanoid")
+
+if humanoid.RigType ~= Enum.HumanoidRigType.R6 then return end
+
+local torso = char:WaitForChild("Torso")
+
+local rightShoulder = torso:WaitForChild("Right Shoulder")
+
+local leftShoulder = torso:WaitForChild("Left Shoulder")
+
+local CFNew, CFAng = CFrame.new, CFrame.Angles
+
+local forwardOffset = 0.5
+
+RunService.RenderStepped:Connect(function()
+
+	rightShoulder.C0 =
+
+		CFNew(1.4, 0.5, -forwardOffset)
+
+		* CFAng(0, 0, math.rad(90))
+
+	leftShoulder.C0 =
+
+		CFNew(-1.4, 0.5, -forwardOffset)
+
+		* CFAng(0, 0, math.rad(-90))
+
+	remote:InvokeServer("SyncJoints", {
+
+		{Joint = rightShoulder, C0 = rightShoulder.C0},
+
+		{Joint = leftShoulder, C0 = leftShoulder.C0}
+
+	})
+
+end)
