@@ -1,0 +1,12 @@
+local TextChatService = game:GetService("TextChatService")
+local Players = game:GetService("Players")
+
+local generalChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+
+generalChannel:SendAsync(";fog inf")
+generalChannel:SendAsync(";fogend inf")
+task.wait(0.5)
+
+generalChannel:SendAsync(";fogcolor black")
+
+-- هیچ وقت پنلمو نمیتونی بگیری دزد نوب
