@@ -1,0 +1,67 @@
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+
+-- find shit
+local tool
+for _, v in player:GetDescendants() do
+    if v.Name == "SyncAPI" then
+        tool = v.Parent
+        break
+    end
+end
+for _, v in game.ReplicatedStorage:GetDescendants() do
+    if v.Name == "SyncAPI" then
+        tool = v.Parent
+        break
+    end
+end
+if not tool then
+    warn("ไม่พบ SyncAPI Tool!")
+    return
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+
+local head = char:FindFirstChild("Head")
+if not head then
+    warn("fuck fagz")
+    return
+end
+local headMesh = head:FindFirstChildWhichIsA("SpecialMesh")
+if not headMesh then
+    warn("nigga")
+    return
+end
+
+
+local hats = {}
+for _, hat in pairs(char:GetChildren()) do
+    if hat:IsA("Accessory") and hat:FindFirstChild("Handle") then
+        local handleMesh = hat.Handle:FindFirstChildWhichIsA("SpecialMesh")
+        if handleMesh then
+            table.insert(hats, {Part = hat.Handle, MeshId = handleMesh.MeshId})
+        end
+    end
+end
+
+
+local amplitude = 0.6
+local frequency = 6 
+local t = 0
+
+local RunService = game:GetService("RunService")
+RunService.RenderStepped:Connect(function(dt)
+    t = t + dt * frequency
+    local offsetValue = math.sin(t) * amplitude
+
+    
+    local partsToSync = {
+        {Part = head, MeshId = headMesh.MeshId, Offset = Vector3.new(offsetValue, 0, 0)}
+    }
+    for _, h in pairs(hats) do
+        table.insert(partsToSync, {Part = h.Part, MeshId = h.MeshId, Offset = Vector3.new(offsetValue, 0, 0)})
+    end
+
+    remote:InvokeServer("SyncMesh", partsToSync)
+end)
