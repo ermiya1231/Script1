@@ -1,0 +1,67 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local RootPart = Character:WaitForChild("HumanoidRootPart")
+
+local function getSyncAPI()
+    local tool = Character:FindFirstChild("Building Tools") or LocalPlayer.Backpack:FindFirstChild("Building Tools")
+    if tool and tool:FindFirstChild("SyncAPI") then
+        return tool.SyncAPI:FindFirstChild("ServerEndpoint")
+    end
+    return nil
+end
+
+local SyncAPI = getSyncAPI()
+
+if not SyncAPI then
+    warn("ابزار F3X پیدا نشد! لطفا مطمئن شوید ابزار را در دست دارید.")
+    return
+end
+
+local function createPart(cframe)
+    local result = SyncAPI:InvokeServer("CreatePart", "Normal", cframe, workspace)
+    if typeof(result) == "table" then
+        return result[1]
+    end
+    return result
+end
+
+-- محاسبه موقعیت دقیق جلوی کاراکتر + چرخش 180 درجه حول محور Y
+local spawnPos = RootPart.CFrame * CFrame.new(0, 73, -20) * CFrame.Angles(0, math.rad(0), 0)
+
+local PatrickPart = createPart(spawnPos)
+
+if PatrickPart then
+    task.wait(0.2)
+    
+    -- تغییر نام پارت
+    SyncAPI:InvokeServer("SetName", { PatrickPart }, "Patrick")
+    
+    -- تنظیم سایز پارت
+    SyncAPI:InvokeServer("SyncResize", { 
+        { Part = PatrickPart, Size = Vector3.new(1, 1, 1) } 
+    })
+    
+    -- ساخت کامپوننت Mesh
+    SyncAPI:InvokeServer("CreateMeshes", { { Part = PatrickPart } })
+    
+    local mesh = PatrickPart:WaitForChild("Mesh", 3)
+    
+    if mesh then
+        print("در حال اعمال ظاهر و تکسچر...")
+        SyncAPI:InvokeServer("SyncMesh", {
+            {
+                Part = PatrickPart,
+                MeshType = Enum.MeshType.FileMesh,
+                MeshId = "rbxassetid://455783801",
+                TextureId = "rbxassetid://106211613892663",
+                Scale = Vector3.new(1, 1, 1)
+            }
+        })
+        print("Patrick ساخته شد")
+    else
+        warn("خطا: Mesh در پارت ایجاد نشد.")
+    end
+else
+    warn("خطا در ساخت پارت اولیه!")
+end
