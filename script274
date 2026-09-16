@@ -1,11 +1,3 @@
--- =========================================================
--- F3X Advanced Map Exporter (Pro Version)
--- + ONLY Player Ignorer (NPCs are now exported!)
--- + Fixed Decal Duplication Bug & Phantom Decals
--- + MeshPart Collision Fix (No Invisible Walls)
--- + Union Compatibility Handler
--- =========================================================
-
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
