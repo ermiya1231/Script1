@@ -1,0 +1,117 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local tool, remote
+
+local function findTool()
+    -- Check player
+    for _, v in ipairs(player:GetDescendants()) do
+        if v.Name == "SyncAPI" and v.Parent then
+            return v.Parent
+        end
+    end
+
+    for _, v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+        if v.Name == "SyncAPI" and v.Parent then
+            return v.Parent
+        end
+    end
+    return nil
+end
+
+tool = findTool()
+if not tool then
+    error("SyncAPI not found! Equip Building Tools / F3X.")
+end
+
+remote = tool.SyncAPI.ServerEndpoint
+
+local function invoke(args)
+    local success, err = pcall(function()
+        remote:InvokeServer(unpack(args))
+    end)
+    if not success then
+        warn("Invoke failed:", err)
+    end
+end
+
+local function DestroyExistingMesh(part)
+    local mesh = part:FindFirstChildOfClass("SpecialMesh") or part:FindFirstChildOfClass("BlockMesh") or part:FindFirstChildOfClass("CylinderMesh")
+    if mesh then
+        invoke({"Remove", {mesh}})
+    end
+end
+
+local function ForceSpecialMesh(part)
+    DestroyExistingMesh(part)
+    invoke({"CreateMeshes", {{ Part = part }}})
+end
+
+local function SetMeshType(part, meshType)
+    invoke({"SyncMesh", {{ Part = part, MeshType = meshType }}})
+end
+
+local function SetColor(part, color)
+    invoke({"SyncColor", {{ Part = part, Color = color, UnionColoring = false }}})
+end
+
+local randomizerConnection
+local characterParts = {}
+
+local function updateCharacterParts(char)
+    characterParts = {}
+    for _, v in ipairs(char:GetChildren()) do
+        if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
+            table.insert(characterParts, v)
+        end
+    end
+end
+
+local function startRandomizer()
+    local char = player.Character or player.CharacterAdded:Wait()
+    updateCharacterParts(char)
+
+    for _, part in ipairs(characterParts) do
+        if part.Parent then
+            ForceSpecialMesh(part)
+        end
+    end
+
+    if randomizerConnection then
+        randomizerConnection:Disconnect()
+    end
+
+    local meshTypes = {"Brick", "Cylinder", "Head", "Sphere", "Torso", "Wedge"}
+    
+    -- متغیرهای تنظیم سرعت
+    local updateDelay = 0.3 -- زمان تاخیر به ثانیه (مثلاً هر 0.5 ثانیه تغییر می‌کند)
+    local timeSinceLastUpdate = 0
+
+    randomizerConnection = RunService.Heartbeat:Connect(function(deltaTime)
+        -- محاسبه زمان سپری شده
+        timeSinceLastUpdate = timeSinceLastUpdate + deltaTime
+        
+        -- اگر زمان سپری شده از زمان تاخیر ما بیشتر شد، تغییرات را اعمال کن
+        if timeSinceLastUpdate >= updateDelay then
+            timeSinceLastUpdate = 0 -- صفر کردن تایمر برای دور بعدی
+            
+            for _, part in ipairs(characterParts) do
+                if part and part.Parent then
+                    local randomMesh = meshTypes[math.random(#meshTypes)]
+                    local randomColor = Color3.new(math.random(), math.random(), math.random())
+
+                    SetMeshType(part, randomMesh)
+                    SetColor(part, randomColor)
+                end
+            end
+        end
+    end)
+end
+
+startRandomizer()
+
+player.CharacterAdded:Connect(function()
+    task.wait(1.2)
+    startRandomizer()
+end)
