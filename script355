@@ -1,0 +1,107 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+-- หา SyncAPI
+local tool
+for _,v in ipairs(player:GetDescendants()) do
+if v.Name == "SyncAPI" then tool = v.Parent end
+end
+for _,v in ipairs(ReplicatedStorage:GetDescendants()) do
+if v.Name == "SyncAPI" then tool = v.Parent end
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+local function _(args)
+remote:InvokeServer(unpack(args))
+end
+
+-- ฟังก์ชัน F3X
+local function CreatePart(cf,parent) _( {"CreatePart","Ball",cf,parent} ) end
+local function MovePart(part,cf) _( {"SyncMove",{ {Part=part, CFrame=cf} } } ) end
+local function Resize(part,size,cf) _( {"SyncResize",{ {Part=part, Size=size, CFrame=cf} } } ) end
+local function SetAnchor(bool,part) _( {"SyncAnchor",{ {Part=part, Anchored=bool} } } ) end
+local function SetCollision(part,bool) _( {"SyncCollision",{ {Part=part, CanCollide=bool} } } ) end
+local function SetName(part,name) _( {"SetName",{part},name} ) end
+local function Color(part,color) _( {"SyncColor",{ {Part=part, Color=color, UnionColoring=false} } } ) end
+
+-- ฟังก์ชันเพิ่มไฟ SyncAPI
+function AddFire(part, size, color, color2, heat)
+local createArgs = {
+[1] = "CreateDecorations",
+[2] = {
+[1] = {
+["Part"] = part,
+["DecorationType"] = "Fire"
+}
+}
+}
+
+local syncArgs = {
+[1] = "SyncDecorate",
+[2] = {
+[1] = {
+["Part"] = part,
+["DecorationType"] = "Fire",
+["Size"] = size,
+["Heat"] = heat,
+["Color"] = color,
+["SecondaryColor"] = color2
+}
+}
+}
+
+_(createArgs)
+_(syncArgs)
+
+end
+
+-- สร้างลูกบอลหมุนรอบตัวผู้เล่นแบบวงรี/โค้ง
+local function createOrbitBall()
+local radius = 5
+local verticalAmplitude = 3 -- ความสูงแกว่งขึ้นลง
+local speed = math.rad(100)
+local angle = 0
+
+-- สร้างลูกบอล
+local initialCF = hrp.CFrame * CFrame.new(radius, -0.1, 0)
+CreatePart(initialCF, workspace)
+
+local ball
+repeat task.wait()
+for _,v in ipairs(workspace:GetDescendants()) do
+if v:IsA("BasePart") and (v.Position - initialCF.Position).Magnitude < 0.1 then
+ball = v
+break
+end
+end
+until ball
+
+SetName(ball,"OrbitBall")
+Resize(ball, Vector3.new(0.9,0.9,0.9), initialCF)
+Color(ball, Color3.new(0, 0, 0)) -- สีฟ้าอ่อน
+SetAnchor(true, ball)
+SetCollision(ball, false)
+AddFire(ball, 0.5, Color3.new(0, 0, 0), Color3.new(0, 0, 0), 15)
+
+-- หมุนรอบตัวผู้เล่นแบบลูป + เฉียงขึ้นลง
+RunService.Heartbeat:Connect(function(dt)
+angle = angle + dt * speed
+local x = math.cos(angle) * radius
+local z = math.sin(angle) * radius
+local y = 2 + math.sin(angle*2) * verticalAmplitude -- แกว่งขึ้นลงแบบวงรี
+
+-- หมุนให้ลูกบอลหันตามแนวการเคลื่อนที่    
+local lookDir = Vector3.new(-math.sin(angle), math.cos(angle*2)*0.1, math.cos(angle))    
+local newCF = CFrame.new(hrp.Position + Vector3.new(x,y,z), hrp.Position + Vector3.new(x,y,z) + lookDir)    
+MovePart(ball, newCF)
+
+end)
+
+end
+
+createOrbitBall()
