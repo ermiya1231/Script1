@@ -3,14 +3,18 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- [ ساخت GUI به صورت امن برای هم استودیو و هم بازی ] --
+-- [ حل مشکل پیدا کردن GUI در محیط‌های مختلف (استودیو/بازی) ] --
 local guiParent = nil
 pcall(function() guiParent = game:GetService("CoreGui") end)
-if not guiParent then
-    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+if not guiParent or not pcall(function() return guiParent.Name end) then
+    if LocalPlayer then
+        guiParent = LocalPlayer:WaitForChild("PlayerGui")
+    else
+        guiParent = game:GetService("StarterGui")
+    end
 end
 
--- حذف نسخه قبلی اگر روی صفحه مانده باشد
+-- حذف نسخه قبلی
 if guiParent:FindFirstChild("ExportMapGUI") then
     guiParent:FindFirstChild("ExportMapGUI"):Destroy()
 end
@@ -22,14 +26,14 @@ screenGui.Parent = guiParent
 
 -- پنجره اصلی
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 500, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
+mainFrame.Size = UDim2.new(0, 520, 0, 450)
+mainFrame.Position = UDim2.new(0.5, -260, 0.5, -225)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Parent = screenGui
 
--- [ سیستم درگ حرفه‌ای برای پشتیبانی از PC و موبایل (Touch) ] --
+-- [ سیستم درگ حرفه‌ای ] --
 local dragging, dragInput, dragStart, startPos
 local function update(input)
     local delta = input.Position - dragStart
@@ -57,14 +61,13 @@ UserInputService.InputChanged:Connect(function(input)
         update(input)
     end
 end)
---------------------------------------------------------------
 
 -- نوار عنوان
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Text = "  F3X Map Exporter By C00LHACK"
+title.Text = "  F3X Map Exporter By C00LHACK (Paged)"
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
@@ -81,27 +84,57 @@ closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 14
 closeBtn.BorderSizePixel = 0
 closeBtn.Parent = mainFrame
+closeBtn.MouseButton1Click:Connect(function() screenGui:Destroy() end)
 
-closeBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-end)
-
--- کادر متنی (TextBox) - جایگزین اسکرول فریم شد
+-- کادر متنی
 local textBox = Instance.new("TextBox")
-textBox.Size = UDim2.new(1, -20, 1, -100) 
+textBox.Size = UDim2.new(1, -20, 1, -130) 
 textBox.Position = UDim2.new(0, 10, 0, 40)
 textBox.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
 textBox.TextColor3 = Color3.fromRGB(0, 255, 128)
-textBox.Text = "" -- کادر در ابتدا کاملا خالی است
+textBox.Text = "Ready to export..."
 textBox.TextXAlignment = Enum.TextXAlignment.Left
 textBox.TextYAlignment = Enum.TextYAlignment.Top
 textBox.ClearTextOnFocus = false 
-textBox.TextEditable = false -- غیرقابل ویرایش کردن متن توسط کاربر
+textBox.TextEditable = false 
 textBox.MultiLine = true
 textBox.TextWrapped = true
 textBox.Font = Enum.Font.Code
 textBox.TextSize = 13
-textBox.Parent = mainFrame -- مستقیم به کادر اصلی متصل شد
+textBox.Parent = mainFrame 
+
+-- [ پنل صفحه‌بندی ] --
+local pageFrame = Instance.new("Frame")
+pageFrame.Size = UDim2.new(1, -20, 0, 30)
+pageFrame.Position = UDim2.new(0, 10, 1, -85)
+pageFrame.BackgroundTransparency = 1
+pageFrame.Parent = mainFrame
+
+local prevBtn = Instance.new("TextButton")
+prevBtn.Size = UDim2.new(0.2, 0, 1, 0)
+prevBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+prevBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+prevBtn.Text = "< Prev"
+prevBtn.Font = Enum.Font.GothamBold
+prevBtn.Parent = pageFrame
+
+local pageLabel = Instance.new("TextLabel")
+pageLabel.Size = UDim2.new(0.6, 0, 1, 0)
+pageLabel.Position = UDim2.new(0.2, 0, 0, 0)
+pageLabel.BackgroundTransparency = 1
+pageLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+pageLabel.Text = "Page: 0 / 0"
+pageLabel.Font = Enum.Font.GothamBold
+pageLabel.Parent = pageFrame
+
+local nextBtn = Instance.new("TextButton")
+nextBtn.Size = UDim2.new(0.2, 0, 1, 0)
+nextBtn.Position = UDim2.new(0.8, 0, 0, 0)
+nextBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+nextBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+nextBtn.Text = "Next >"
+nextBtn.Font = Enum.Font.GothamBold
+nextBtn.Parent = pageFrame
 
 -- دکمه سبز اکسپورت
 local exportBtn = Instance.new("TextButton")
@@ -115,181 +148,217 @@ exportBtn.TextSize = 16
 exportBtn.BorderSizePixel = 0
 exportBtn.Parent = mainFrame
 
--- [ کدهای اصلی شما برای استخراج مپ ] --
+-- متغیرهای سیستم صفحه بندی
+local exportedPages = {}
+local currentPage = 1
+local PARTS_PER_PAGE = 650 
+
+local function updatePageDisplay()
+    if #exportedPages == 0 then return end
+    currentPage = math.clamp(currentPage, 1, #exportedPages)
+    pageLabel.Text = "Page: " .. currentPage .. " / " .. #exportedPages
+    textBox.Text = exportedPages[currentPage]
+
+    if setclipboard then
+        setclipboard(exportedPages[currentPage])
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Page Copied!✅",
+            Text = "Page " .. currentPage .. " has been copied to your clipboard."
+        })
+    end
+end
+
+prevBtn.MouseButton1Click:Connect(function()
+    if currentPage > 1 then
+        currentPage = currentPage - 1
+        updatePageDisplay()
+    end
+end)
+
+nextBtn.MouseButton1Click:Connect(function()
+    if currentPage < #exportedPages then
+        currentPage = currentPage + 1
+        updatePageDisplay()
+    end
+end)
+
+local function safeNotify(title, text)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title = title, Text = text})
+    end)
+end
+
+-- [ کدهای اصلی استخراج مپ ] --
 local function runExport()
     exportBtn.Text = "Exporting... Please Wait!"
     exportBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 40)
     task.wait(0.1)
 
-    local exportedLines = {}
+    exportedPages = {}
+    currentPage = 1
+
+    local currentBuffer = {}
     local partIndex = 1
+    local partsInCurrentPage = 0
     local faces = {"Top", "Bottom", "Left", "Right", "Front", "Back"}
 
     local ignoredModels = {}
     for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character then
-            ignoredModels[player.Character] = true
-        end
+        if player.Character then ignoredModels[player.Character] = true end
     end
 
     local function shouldIgnore(instance)
         local current = instance
         while current and current ~= workspace do
-            if ignoredModels[current] then return true end
+            if ignoredModels[current] or current:FindFirstChildOfClass("Humanoid") then 
+                return true 
+            end
             current = current.Parent
         end
         return false
     end
 
     local descendants = workspace:GetDescendants()
-
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Export Started...",
-        Text = "Please Wait"
-    })
+    safeNotify("Export Started...", "Processing Large Map...")
 
     for i, v in ipairs(descendants) do
-        if i % 300 == 0 then
-            RunService.Heartbeat:Wait()
-        end
+        if i % 400 == 0 then RunService.Heartbeat:Wait() end
 
         if (v:IsA("BasePart") or v:IsA("UnionOperation")) and v.Name ~= "Terrain" then
             if not shouldIgnore(v) then
-                local partData = {}
-                table.insert(partData, string.format("Part %d:", partIndex))
-                
-                local pos = v.Position
-                table.insert(partData, string.format("Position: (%.3f, %.3f, %.3f)", pos.X, pos.Y, pos.Z))
-                
-                local orient = v.Orientation
-                table.insert(partData, string.format("Rotation: (%.3f, %.3f, %.3f)", orient.X, orient.Y, orient.Z))
-                
-                local size = v.Size
-                table.insert(partData, string.format("Size: (%.3f, %.3f, %.3f)", size.X, size.Y, size.Z))
-                
-                local shapeName = "Normal"
-                if v:IsA("WedgePart") then shapeName = "Wedge"
-                elseif v:IsA("CornerWedgePart") then shapeName = "Corner"
-                elseif v:IsA("TrussPart") then shapeName = "Truss"
-                elseif v:IsA("VehicleSeat") then shapeName = "VehicleSeat"
-                elseif v:IsA("Seat") then shapeName = "Seat"
-                elseif v:IsA("SpawnLocation") then shapeName = "Spawn"
-                elseif v:IsA("Part") then
-                    if v.Shape == Enum.PartType.Ball then shapeName = "Ball"
-                    elseif v.Shape == Enum.PartType.Cylinder then shapeName = "Cylinder"
-                    end
-                end
-                table.insert(partData, string.format("Shape: %s", shapeName))
-                
-                local exportClassName = v.ClassName
-                local isConvertedMesh = false
-                
-                if v:IsA("MeshPart") or v:IsA("UnionOperation") then
-                    exportClassName = "Part" 
-                    isConvertedMesh = true
-                end
-                table.insert(partData, string.format("ClassName: %s", exportClassName))
-                
-                if v:IsA("SpawnLocation") then table.insert(partData, "SpawnPoint: True") end
-                if v:IsA("VehicleSeat") then table.insert(partData, "VehicleSeat: True")
-                elseif v:IsA("Seat") then table.insert(partData, "Seat: True") end
-                
-                local col = v.Color
-                table.insert(partData, string.format("Color: %.3f, %.3f, %.3f", col.R, col.G, col.B))
-                
-                local matName = tostring(v.Material):gsub("Enum.Material.", "")
-                table.insert(partData, string.format("Material: %s", matName))
-                table.insert(partData, string.format("Transparency: %.3f", v.Transparency))
-                
-                if not v.CanCollide or isConvertedMesh then 
-                    table.insert(partData, "CanCollide: False") 
-                end
-                
-                if not v.Anchored and not v:IsA("Seat") then 
-                    table.insert(partData, "Unanchored: True") 
-                end
 
-                if v:IsA("MeshPart") then
-                    table.insert(partData, "MeshType: FileMesh")
-                    if v.MeshId ~= "" then table.insert(partData, string.format("MeshId: %s", v.MeshId)) end
-                    if v.TextureID ~= "" then table.insert(partData, string.format("MeshTextureId: %s", v.TextureID)) end
-                    
-                    local mSize = v.MeshSize
-                    local sX = mSize.X > 0.001 and (v.Size.X / mSize.X) or 1
-                    local sY = mSize.Y > 0.001 and (v.Size.Y / mSize.Y) or 1
-                    local sZ = mSize.Z > 0.001 and (v.Size.Z / mSize.Z) or 1
-                    table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", sX, sY, sZ))
-                end
-                
-                local usedDecals = {}
-                local usedTextures = {}
+                local success, partInfo = pcall(function()
+                    local partData = {}
+                    table.insert(partData, string.format("Part %d:", partIndex))
 
-                for _, child in ipairs(v:GetChildren()) do
-                    if child:IsA("Decal") then
-                        local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
-                        local idNum = (child.Texture and child.Texture ~= "") and child.Texture:match("%d+") or nil
-                        if idNum and not usedDecals[faceStr] then 
-                            table.insert(partData, string.format("Decal.%s = %s", faceStr, idNum)) 
-                            usedDecals[faceStr] = true
-                        end
-                    elseif child:IsA("Texture") then
-                        local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
-                        local idNum = (child.Texture and child.Texture ~= "") and child.Texture:match("%d+") or nil
-                        if idNum and not usedTextures[faceStr] then 
-                            table.insert(partData, string.format("Texture.%s = %s", faceStr, idNum)) 
-                            usedTextures[faceStr] = true
-                        end
-                    elseif child:IsA("SpecialMesh") then
-                        local mType = tostring(child.MeshType):gsub("Enum.MeshType.", "")
-                        table.insert(partData, string.format("MeshType: %s", mType))
-                        if child.MeshId ~= "" then table.insert(partData, string.format("MeshId: %s", child.MeshId)) end
-                        if child.TextureId ~= "" then table.insert(partData, string.format("MeshTextureId: %s", child.TextureId)) end
-                        local ms = child.Scale
-                        table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", ms.X, ms.Y, ms.Z))
-                    elseif child:IsA("PointLight") then table.insert(partData, "Light: True")
-                    elseif child:IsA("Fire") then table.insert(partData, "Fire: True")
-                    elseif child:IsA("Sparkles") then table.insert(partData, "Sparkles: True")
-                    elseif child:IsA("Smoke") then table.insert(partData, "Smoke: True")
-                    end
-                end
-                
-                if v:IsA("Part") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("SpawnLocation") then
-                    for _, face in ipairs(faces) do
-                        if v[face .. "Surface"] == Enum.SurfaceType.Studs then
-                            table.insert(partData, string.format("Stud.%s: True", face))
+                    local pos = v.Position
+                    table.insert(partData, string.format("Position: (%.3f, %.3f, %.3f)", pos.X, pos.Y, pos.Z))
+
+                    local orient = v.Orientation
+                    table.insert(partData, string.format("Rotation: (%.3f, %.3f, %.3f)", orient.X, orient.Y, orient.Z))
+
+                    local size = v.Size
+                    table.insert(partData, string.format("Size: (%.3f, %.3f, %.3f)", size.X, size.Y, size.Z))
+
+                    local shapeName = "Normal"
+                    if v:IsA("WedgePart") then shapeName = "Wedge"
+                    elseif v:IsA("CornerWedgePart") then shapeName = "Corner"
+                    elseif v:IsA("TrussPart") then shapeName = "Truss"
+                    elseif v:IsA("VehicleSeat") then shapeName = "VehicleSeat"
+                    elseif v:IsA("Seat") then shapeName = "Seat"
+                    elseif v:IsA("SpawnLocation") then shapeName = "Spawn"
+                    elseif v:IsA("Part") then
+                        if v.Shape == Enum.PartType.Ball then shapeName = "Ball"
+                        elseif v.Shape == Enum.PartType.Cylinder then shapeName = "Cylinder"
                         end
                     end
+                    table.insert(partData, string.format("Shape: %s", shapeName))
+
+                    local exportClassName = v.ClassName
+                    local isConvertedMesh = false
+
+                    if v:IsA("MeshPart") or v:IsA("UnionOperation") then
+                        exportClassName = "Part" 
+                        isConvertedMesh = true
+                    end
+                    table.insert(partData, string.format("ClassName: %s", exportClassName))
+
+                    if v:IsA("SpawnLocation") then table.insert(partData, "SpawnPoint: True") end
+                    if v:IsA("VehicleSeat") then table.insert(partData, "VehicleSeat: True")
+                    elseif v:IsA("Seat") then table.insert(partData, "Seat: True") end
+
+                    local col = v.Color
+                    table.insert(partData, string.format("Color: %.3f, %.3f, %.3f", col.R, col.G, col.B))
+
+                    local matName = tostring(v.Material):gsub("Enum.Material.", "")
+                    table.insert(partData, string.format("Material: %s", matName))
+                    table.insert(partData, string.format("Transparency: %.3f", v.Transparency))
+
+                    if not v.CanCollide or isConvertedMesh then table.insert(partData, "CanCollide: False") end
+                    if not v.Anchored and not v:IsA("Seat") then table.insert(partData, "Unanchored: True") end
+
+                    if v:IsA("MeshPart") then
+                        table.insert(partData, "MeshType: FileMesh")
+                        if v.MeshId ~= "" then table.insert(partData, string.format("MeshId: %s", v.MeshId)) end
+                        if v.TextureID ~= "" then table.insert(partData, string.format("MeshTextureId: %s", v.TextureID)) end
+
+                        local mSize = v.MeshSize
+                        local sX = mSize.X > 0.001 and (v.Size.X / mSize.X) or 1
+                        local sY = mSize.Y > 0.001 and (v.Size.Y / mSize.Y) or 1
+                        local sZ = mSize.Z > 0.001 and (v.Size.Z / mSize.Z) or 1
+                        table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", sX, sY, sZ))
+                    end
+
+                    local usedDecals, usedTextures = {}, {}
+                    for _, child in ipairs(v:GetChildren()) do
+                        if child:IsA("Decal") then
+                            local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
+                            local idNum = (child.Texture and child.Texture ~= "") and child.Texture:match("%d+") or nil
+                            if idNum and not usedDecals[faceStr] then 
+                                table.insert(partData, string.format("Decal.%s = %s", faceStr, idNum)) 
+                                usedDecals[faceStr] = true
+                            end
+                        elseif child:IsA("Texture") then
+                            local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
+                            local idNum = (child.Texture and child.Texture ~= "") and child.Texture:match("%d+") or nil
+                            if idNum and not usedTextures[faceStr] then 
+                                table.insert(partData, string.format("Texture.%s = %s", faceStr, idNum)) 
+                                usedTextures[faceStr] = true
+                            end
+                        elseif child:IsA("SpecialMesh") then
+                            local mType = tostring(child.MeshType):gsub("Enum.MeshType.", "")
+                            table.insert(partData, string.format("MeshType: %s", mType))
+                            if child.MeshId ~= "" then table.insert(partData, string.format("MeshId: %s", child.MeshId)) end
+                            if child.TextureId ~= "" then table.insert(partData, string.format("MeshTextureId: %s", child.TextureId)) end
+                            local ms = child.Scale
+                            table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", ms.X, ms.Y, ms.Z))
+                        -- اضافه‌شدن افکت‌ها در اینجا
+                        elseif child:IsA("PointLight") then table.insert(partData, "Light: True")
+                        elseif child:IsA("Fire") then table.insert(partData, "Fire: True")
+                        elseif child:IsA("Sparkles") then table.insert(partData, "Sparkles: True")
+                        elseif child:IsA("Smoke") then table.insert(partData, "Smoke: True")
+                        end
+                    end
+
+                    if v:IsA("Part") or v:IsA("WedgePart") or v:IsA("CornerWedgePart") or v:IsA("SpawnLocation") then
+                        for _, face in ipairs(faces) do
+                            if v[face .. "Surface"] == Enum.SurfaceType.Studs then
+                                table.insert(partData, string.format("Stud.%s: True", face))
+                            end
+                        end
+                    end
+
+                    return table.concat(partData, "\n") .. "\n"
+                end)
+
+                if success and partInfo then
+                    table.insert(currentBuffer, partInfo)
+                    partIndex = partIndex + 1
+                    partsInCurrentPage = partsInCurrentPage + 1
+
+                    if partsInCurrentPage >= PARTS_PER_PAGE then
+                        table.insert(exportedPages, table.concat(currentBuffer, "\n"))
+                        currentBuffer = {}
+                        partsInCurrentPage = 0
+                    end
                 end
-                
-                table.insert(exportedLines, table.concat(partData, "\n") .. "\n")
-                partIndex = partIndex + 1
             end
         end
     end
 
-    local finalResult = table.concat(exportedLines, "\n")
-    
-    -- ریختن متن در کادر GUI (برای کپی دستی)
-    textBox.Text = finalResult
-
-    -- تلاش برای کپی خودکار (اگر ساپورت بشه)
-    if setclipboard then
-        setclipboard(finalResult)
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Success✅",
-            Text = "Copied to Clipboard AND sent to TextBox!"
-        })
-    else
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Partial Success✅",
-            Text = "Data ready in GUI! Press Ctrl+A then Ctrl+C to copy."
-        })
+    if #currentBuffer > 0 then
+        table.insert(exportedPages, table.concat(currentBuffer, "\n"))
     end
 
-    -- برگرداندن دکمه به حالت اولیه
+    if #exportedPages > 0 then
+        updatePageDisplay()
+    else
+        textBox.Text = "No parts found to export!"
+        pageLabel.Text = "Page: 0 / 0"
+    end
+
     exportBtn.Text = "Export Map"
     exportBtn.BackgroundColor3 = Color3.fromRGB(40, 200, 80)
 end
 
--- اتصال تابع به کلیک دکمه
 exportBtn.MouseButton1Click:Connect(runExport)
