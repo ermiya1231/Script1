@@ -1,0 +1,52 @@
+local player = game.Players.LocalPlayer
+-- پیدا کردن SyncAPI در بک‌پک پلیر یا در کاراکتر (در صورت دست گرفتن ابزار)
+local syncAPI = player:FindFirstChild("SyncAPI", true) or player.Character:FindFirstChild("SyncAPI", true)
+
+if not syncAPI then
+    warn("خطا: SyncAPI پیدا نشد. ابزار F3X را در اینونتوری خود چک کنید.")
+    return
+end
+
+local serverEndpoint = syncAPI:FindFirstChild("ServerEndpoint")
+if not serverEndpoint then
+    warn("خطا: ServerEndpoint پیدا نشد!")
+    return
+end
+
+local partsTable = {}
+
+-- جمع‌آوری قطعات معتبر
+for _, item in ipairs(workspace:GetDescendants()) do
+    --Terrain را حذف می‌کنیم چون قابل Unanchor نیست و باعث خطای سرور F3X می‌شود
+    if item:IsA("BasePart") and not item:IsA("Terrain") then
+        -- فقط قطعاتی که Anchored هستند را به لیست اضافه می‌کنیم تا ترافیک بیهوده ارسال نشود
+        if item.Anchored == true then
+            table.insert(partsTable, {
+                Part = item,
+                Anchored = false
+            })
+        end
+    end
+end
+
+print("تعداد کل قطعات برای Unanchor: " .. #partsTable)
+
+-- ارسال پکت‌ها به صورت دسته‌ای (Batching) برای جلوگیری از قطع ارتباط (Kick)
+local batchSize = 500
+for i = 1, #partsTable, batchSize do
+    local batch = {}
+    for j = i, math.min(i + batchSize - 1, #partsTable) do
+        table.insert(batch, partsTable[j])
+    end
+    
+    -- ارسال دستور به سرور F3X
+    if serverEndpoint:IsA("RemoteFunction") then
+        serverEndpoint:InvokeServer("SyncAnchor", batch)
+    elseif serverEndpoint:IsA("RemoteEvent") then
+        serverEndpoint:FireServer("SyncAnchor", batch)
+    end
+    
+    task.wait(0.1) -- وقفه کوتاه بین هر پکت تا سرور پردازش کند
+end
+
+print("عملیات Unanchor با موفقیت به پایان رسید.")
