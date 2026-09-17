@@ -1,0 +1,200 @@
+loadstring([[
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+local flinging = false
+local guiVisible = true
+local flingConn = nil
+
+pcall(function()
+    StarterGui:SetCore("SendNotification", {
+        Title = "Walk Fling",
+        Text = "Pulse version | F = Toggle | Z = GUI",
+        Duration = 5
+    })
+end)
+print("✅ Walk Fling Pulse loaded")
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "WalkFlingGui"
+ScreenGui.ResetOnSpawn = false
+pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
+if not ScreenGui.Parent then
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 200, 0, 100)
+Main.Position = UDim2.new(0.5, -100, 0.82, 0)
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+Main.BorderSizePixel = 1
+Main.BorderColor3 = Color3.fromRGB(45, 45, 55)
+Main.Parent = ScreenGui
+
+-- System Drag (Mobile + PC)
+local function dragify(Frame)
+    local dragToggle = false
+    local dragInput, dragStart, startPos
+
+    local function updateInput(input)
+        local Delta = input.Position - dragStart
+        local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+        TweenService:Create(Frame, TweenInfo.new(0.15), {Position = Position}):Play()
+    end
+
+    Frame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = Frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+
+    Frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then
+            updateInput(input)
+        end
+    end)
+end
+
+dragify(Main)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -35, 0, 24)
+Title.Position = UDim2.new(0, 8, 0, 6)
+Title.BackgroundTransparency = 1
+Title.Text = "WALK FLING"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Main
+
+local Status = Instance.new("TextLabel")
+Status.Size = UDim2.new(1, -14, 0, 16)
+Status.Position = UDim2.new(0, 8, 0, 30)
+Status.BackgroundTransparency = 1
+Status.Text = "Status: OFF"
+Status.TextColor3 = Color3.fromRGB(160,160,170)
+Status.Font = Enum.Font.Gotham
+Status.TextSize = 12
+Status.TextXAlignment = Enum.TextXAlignment.Left
+Status.Parent = Main
+
+local FlingBtn = Instance.new("TextButton")
+FlingBtn.Size = UDim2.new(1, -16, 0, 32)
+FlingBtn.Position = UDim2.new(0, 8, 0, 56)
+FlingBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+FlingBtn.BorderSizePixel = 0
+FlingBtn.Text = "ENABLE"
+FlingBtn.TextColor3 = Color3.new(1,1,1)
+FlingBtn.Font = Enum.Font.GothamBold
+FlingBtn.TextSize = 13
+FlingBtn.Parent = Main
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseBtn.Position = UDim2.new(1, -26, 0, 8)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+CloseBtn.BorderSizePixel = 0
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.new(1,1,1)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 11
+CloseBtn.Parent = Main
+
+local function startFling()
+    flinging = true
+    FlingBtn.Text = "DISABLE"
+    FlingBtn.BackgroundColor3 = Color3.fromRGB(35, 150, 55)
+    Status.Text = "Status: ON"
+    Status.TextColor3 = Color3.fromRGB(80, 220, 100)
+
+    flingConn = RunService.Heartbeat:Connect(function()
+        if not flinging then return end
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local old = hrp.AssemblyLinearVelocity
+        hrp.AssemblyLinearVelocity = old * 8000 + Vector3.new(0, 12000, 0)
+        
+        RunService.RenderStepped:Wait()
+        
+        if hrp and hrp.Parent then
+            hrp.AssemblyLinearVelocity = old
+        end
+
+        if hrp.AssemblyLinearVelocity.Magnitude > 150 then
+            hrp.AssemblyLinearVelocity = Vector3.zero
+        end
+    end)
+end
+
+local function stopFling()
+    flinging = false
+    FlingBtn.Text = "ENABLE"
+    FlingBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    Status.Text = "Status: OFF"
+    Status.TextColor3 = Color3.fromRGB(170,170,180)
+
+    if flingConn then
+        flingConn:Disconnect()
+        flingConn = nil
+    end
+
+    local char = LocalPlayer.Character
+    if char then
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.AssemblyLinearVelocity = Vector3.zero
+        end
+    end
+end
+
+local function toggleGui()
+    guiVisible = not guiVisible
+    Main.Visible = guiVisible
+end
+
+FlingBtn.MouseButton1Click:Connect(function()
+    if flinging then stopFling() else startFling() end
+end)
+
+CloseBtn.MouseButton1Click:Connect(toggleGui)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        if flinging then stopFling() else startFling() end
+    elseif input.KeyCode == Enum.KeyCode.Z then
+        toggleGui()
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if flinging then
+        stopFling()
+        task.wait(0.5)
+        startFling()
+    end
+end)
+]])()
