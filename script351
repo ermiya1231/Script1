@@ -23,7 +23,7 @@ local function createPart(cframe)
     return result
 end
 
-local spawnPos = RootPart.CFrame * CFrame.new(0, 73, -20) * CFrame.Angles(0, math.rad(180), 0)
+local spawnPos = RootPart.CFrame * CFrame.new(0, 73, -20) * CFrame.Angles(0, math.rad(0), 0)
 local krustyKrabPart = createPart(spawnPos)
 
 if krustyKrabPart then
