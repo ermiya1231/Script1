@@ -13,10 +13,7 @@ end
 
 local SyncAPI = getSyncAPI()
 
-if not SyncAPI then
-    warn("ابزار F3X پیدا نشد! لطفا مطمئن شوید ابزار را در دست دارید.")
-    return
-end
+if not SyncAPI then return end
 
 local function createPart(cframe)
     local result = SyncAPI:InvokeServer("CreatePart", "Normal", cframe, workspace)
@@ -26,30 +23,28 @@ local function createPart(cframe)
     return result
 end
 
--- محاسبه موقعیت دقیق جلوی کاراکتر + چرخش 180 درجه حول محور Y
 local spawnPos = RootPart.CFrame * CFrame.new(0, 17, -20) * CFrame.Angles(0, math.rad(180), 0)
-
-print("در حال ساخت Krusty Krab در جلوی شما...")
 local krustyKrabPart = createPart(spawnPos)
 
 if krustyKrabPart then
     task.wait(0.2)
     
-    -- تغییر نام پارت
     SyncAPI:InvokeServer("SetName", { krustyKrabPart }, "Krusty Krab")
     
-    -- تنظیم سایز پارت
+    -- حل مشکل خط 34: اضافه کردن CFrame به درخواست تغییر سایز
     SyncAPI:InvokeServer("SyncResize", { 
-        { Part = krustyKrabPart, Size = Vector3.new(1, 1, 1) } 
+        { 
+            Part = krustyKrabPart, 
+            Size = Vector3.new(1, 1, 1), 
+            CFrame = krustyKrabPart.CFrame 
+        } 
     })
     
-    -- ساخت کامپوننت Mesh
     SyncAPI:InvokeServer("CreateMeshes", { { Part = krustyKrabPart } })
     
-    local mesh = krustyKrabPart:WaitForChild("Mesh", 3)
+    local mesh = krustyKrabPart:WaitForChild("Mesh", 10)
     
     if mesh then
-        print("در حال اعمال ظاهر و تکسچر...")
         SyncAPI:InvokeServer("SyncMesh", {
             {
                 Part = krustyKrabPart,
@@ -59,10 +54,5 @@ if krustyKrabPart then
                 Scale = Vector3.new(1, 1, 1)
             }
         })
-        print("رستوران Krusty Krab با موفقیت ساخته شد!")
-    else
-        warn("خطا: Mesh در پارت ایجاد نشد.")
     end
-else
-    warn("خطا در ساخت پارت اولیه!")
 end
