@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- [ حل مشکل پیدا کردن GUI در محیط‌های مختلف (استودیو/بازی) ] --
+-- [ پیدا کردن GUI ] --
 local guiParent = nil
 pcall(function() guiParent = game:GetService("CoreGui") end)
 if not guiParent or not pcall(function() return guiParent.Name end) then
@@ -33,7 +33,7 @@ mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Parent = screenGui
 
--- [ سیستم درگ حرفه‌ای ] --
+-- [ سیستم درگ ] --
 local dragging, dragInput, dragStart, startPos
 local function update(input)
     local delta = input.Position - dragStart
@@ -67,7 +67,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Text = "  F3X Map Exporter By C00LHACK (Paged)"
+title.Text = "   F3X Map Exporter By C00LHACK (Paged)"
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
@@ -119,7 +119,7 @@ prevBtn.Font = Enum.Font.GothamBold
 prevBtn.Parent = pageFrame
 
 local pageLabel = Instance.new("TextLabel")
-pageLabel.Size = UDim2.new(0.6, 0, 1, 0)
+pageLabel.Size = UDim2.new(0.4, 0, 1, 0)
 pageLabel.Position = UDim2.new(0.2, 0, 0, 0)
 pageLabel.BackgroundTransparency = 1
 pageLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -129,12 +129,22 @@ pageLabel.Parent = pageFrame
 
 local nextBtn = Instance.new("TextButton")
 nextBtn.Size = UDim2.new(0.2, 0, 1, 0)
-nextBtn.Position = UDim2.new(0.8, 0, 0, 0)
+nextBtn.Position = UDim2.new(0.6, 0, 0, 0)
 nextBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 nextBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 nextBtn.Text = "Next >"
 nextBtn.Font = Enum.Font.GothamBold
 nextBtn.Parent = pageFrame
+
+-- دکمه Copy Pages (تغییر نام دکمه)
+local copyPageBtn = Instance.new("TextButton")
+copyPageBtn.Size = UDim2.new(0.2, 0, 1, 0)
+copyPageBtn.Position = UDim2.new(0.8, 0, 0, 0)
+copyPageBtn.BackgroundColor3 = Color3.fromRGB(40, 120, 200)
+copyPageBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+copyPageBtn.Text = "Copy All"
+copyPageBtn.Font = Enum.Font.GothamBold
+copyPageBtn.Parent = pageFrame
 
 -- دکمه سبز اکسپورت
 local exportBtn = Instance.new("TextButton")
@@ -148,24 +158,22 @@ exportBtn.TextSize = 16
 exportBtn.BorderSizePixel = 0
 exportBtn.Parent = mainFrame
 
+local function safeNotify(title, text)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title = title, Text = text})
+    end)
+end
+
 -- متغیرهای سیستم صفحه بندی
 local exportedPages = {}
 local currentPage = 1
-local PARTS_PER_PAGE = 650 
+local PARTS_PER_PAGE = 500 -- کاهش برای جلوگیری از فریز شدن UI
 
 local function updatePageDisplay()
     if #exportedPages == 0 then return end
     currentPage = math.clamp(currentPage, 1, #exportedPages)
     pageLabel.Text = "Page: " .. currentPage .. " / " .. #exportedPages
     textBox.Text = exportedPages[currentPage]
-
-    if setclipboard then
-        setclipboard(exportedPages[currentPage])
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Page Copied!✅",
-            Text = "Page " .. currentPage .. " has been copied to your clipboard."
-        })
-    end
 end
 
 prevBtn.MouseButton1Click:Connect(function()
@@ -182,11 +190,19 @@ nextBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-local function safeNotify(title, text)
-    pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", {Title = title, Text = text})
-    end)
-end
+-- عملکرد دکمه Copy Pages (تغییر یافته برای کپی تمام صفحات)
+copyPageBtn.MouseButton1Click:Connect(function()
+    if #exportedPages > 0 then
+        if setclipboard then
+            -- متصل کردن تمام صفحات با استفاده از table.concat
+            local allPagesData = table.concat(exportedPages, "\n")
+            setclipboard(allPagesData)
+            safeNotify("All Pages Copied! ✅", "All " .. #exportedPages .. " pages copied to clipboard.")
+        else
+            safeNotify("Error ❌", "Clipboard not supported!")
+        end
+    end
+end)
 
 -- [ کدهای اصلی استخراج مپ ] --
 local function runExport()
@@ -219,10 +235,11 @@ local function runExport()
     end
 
     local descendants = workspace:GetDescendants()
-    safeNotify("Export Started...", "Processing Large Map...")
+    safeNotify("Export Started...", "Processing Map...")
 
     for i, v in ipairs(descendants) do
-        if i % 400 == 0 then RunService.Heartbeat:Wait() end
+        -- برای جلوگیری از لگ در مپ‌های بزرگ هر ۱۰۰ آیتم استراحت کوتاه می‌دهد
+        if i % 100 == 0 then task.wait() end
 
         if (v:IsA("BasePart") or v:IsA("UnionOperation")) and v.Name ~= "Terrain" then
             if not shouldIgnore(v) then
@@ -312,8 +329,11 @@ local function runExport()
                             if child.TextureId ~= "" then table.insert(partData, string.format("MeshTextureId: %s", child.TextureId)) end
                             local ms = child.Scale
                             table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", ms.X, ms.Y, ms.Z))
-                        -- اضافه‌شدن افکت‌ها در اینجا
-                        elseif child:IsA("PointLight") then table.insert(partData, "Light: True")
+                        -- تنظیمات نور و افکت‌ها
+                        elseif child:IsA("PointLight") then 
+                            table.insert(partData, "Light: True")
+                            table.insert(partData, string.format("LightRange: %.2f", child.Range))
+                            table.insert(partData, string.format("LightBrightness: %.2f", child.Brightness))
                         elseif child:IsA("Fire") then table.insert(partData, "Fire: True")
                         elseif child:IsA("Sparkles") then table.insert(partData, "Sparkles: True")
                         elseif child:IsA("Smoke") then table.insert(partData, "Smoke: True")
@@ -352,13 +372,15 @@ local function runExport()
 
     if #exportedPages > 0 then
         updatePageDisplay()
+        exportBtn.Text = "Exported! ✅"
+        exportBtn.BackgroundColor3 = Color3.fromRGB(40, 200, 80)
+        safeNotify("Export Complete! ✅", "Map exported successfully.")
     else
         textBox.Text = "No parts found to export!"
         pageLabel.Text = "Page: 0 / 0"
+        exportBtn.Text = "Export Map"
+        exportBtn.BackgroundColor3 = Color3.fromRGB(40, 200, 80)
     end
-
-    exportBtn.Text = "Export Map"
-    exportBtn.BackgroundColor3 = Color3.fromRGB(40, 200, 80)
 end
 
 exportBtn.MouseButton1Click:Connect(runExport)
