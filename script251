@@ -13520,17 +13520,6 @@ while lightPending > 0 do task.wait() end
 local G = {}
 local groupPending = 0
 do
-	for _, part in ipairs(character:GetDescendants()) do
-    if part:IsA("BasePart") then
-        part.Anchored = false
-    end
-end
-task.wait(0.1)
-    local p, p2 = game.Players.LocalPlayer.Character, {}
-    for _, v in pairs(workspace:GetDescendants()) do 
-        if v:IsA("SpawnLocation") then table.insert(p2, v) end 
-    end
-    p:PivotTo(#p2 > 0 and p2[math.random(#p2)].CFrame + Vector3.new(0, 3, 0) or CFrame.new(0, 5, 0))  
  local _mems = {}
  for _, v in ipairs({P[1],P[2],P[3],P[4],P[5],P[6],P[7],P[8],P[9]}) do if v then _mems[#_mems+1] = v end end
  if #_mems > 0 then
@@ -14571,3 +14560,14 @@ while created < expected and waited < 8 do
   if part and part.Parent then created = created + 1 end
  end
 end
+	for _, part in ipairs(character:GetDescendants()) do
+    if part:IsA("BasePart") then
+        part.Anchored = false
+    end
+end
+task.wait(0.2)
+    local p, p2 = game.Players.LocalPlayer.Character, {}
+    for _, v in pairs(workspace:GetDescendants()) do 
+        if v:IsA("SpawnLocation") then table.insert(p2, v) end 
+    end
+    p:PivotTo(#p2 > 0 and p2[math.random(#p2)].CFrame + Vector3.new(0, 3, 0) or CFrame.new(0, 5, 0))  
