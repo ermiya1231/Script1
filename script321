@@ -1,0 +1,254 @@
+--==================================================
+-- F3X Floating Rainbow Pad + Slider Control Panel
+--==================================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Player = Players.LocalPlayer
+local char = Player.Character or Player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+--==================================================
+-- Get F3X
+--==================================================
+local function getF3X()
+	for _, v in ipairs(Player.Backpack:GetChildren()) do
+		if v:FindFirstChild("SyncAPI") then return v end
+	end
+	for _, v in ipairs(char:GetChildren()) do
+		if v:FindFirstChild("SyncAPI") then return v end
+	end
+end
+
+local f3x = getF3X()
+if not f3x then
+	warn("F3X Tool not found in Backpack or Character!")
+	return
+end
+
+local remote = f3x.SyncAPI.ServerEndpoint
+local function _(args)
+	remote:InvokeServer(unpack(args))
+end
+
+--==================================================
+-- Variables & Initial States
+--==================================================
+local currentYOffset = -3.24
+local currentSize = 8
+local minSize, maxSize = 2, 25 -- حداقل و حداکثر سایز برای اسلایدر
+local padOffset = CFrame.new(0, currentYOffset, 0) * CFrame.Angles(0, 0, math.rad(90))
+
+--==================================================
+-- Create GUI (Classic & Draggable)
+--==================================================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "PadControllerGUI"
+screenGui.Parent = Player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 260, 0, 180)
+frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+frame.BorderSizePixel = 2
+frame.Active = true
+frame.Parent = screenGui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 25)
+title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+title.BorderSizePixel = 1
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 16
+title.Text = "Floating Pad Controller"
+title.Parent = frame
+
+-- Panel Dragging Logic
+local draggingPanel, dragInputPanel, dragStartPanel, startPosPanel
+title.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingPanel = true
+		dragStartPanel = input.Position
+		startPosPanel = frame.Position
+	end
+end)
+title.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInputPanel = input
+	end
+end)
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputPanel and draggingPanel then
+		local delta = input.Position - dragStartPanel
+		frame.Position = UDim2.new(startPosPanel.X.Scale, startPosPanel.X.Offset + delta.X, startPosPanel.Y.Scale, startPosPanel.Y.Offset + delta.Y)
+	end
+end)
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingPanel = false
+	end
+end)
+
+-- Height Controls (3 Exact Buttons)
+local yLabel = Instance.new("TextLabel")
+yLabel.Size = UDim2.new(1, -20, 0, 20)
+yLabel.Position = UDim2.new(0, 10, 0, 35)
+yLabel.BackgroundTransparency = 1
+yLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+yLabel.Font = Enum.Font.SourceSansBold
+yLabel.TextSize = 16
+yLabel.Text = "Height Offset: " .. currentYOffset
+yLabel.Parent = frame
+
+local btnH1 = Instance.new("TextButton")
+btnH1.Size = UDim2.new(0, 75, 0, 30)
+btnH1.Position = UDim2.new(0, 10, 0, 60)
+btnH1.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+btnH1.BorderColor3 = Color3.fromRGB(0,0,0)
+btnH1.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnH1.Font = Enum.Font.SourceSansBold
+btnH1.TextSize = 25
+btnH1.Text = "+"
+btnH1.Parent = frame
+
+local btnH2 = Instance.new("TextButton")
+btnH2.Size = UDim2.new(0, 75, 0, 30)
+btnH2.Position = UDim2.new(0, 92, 0, 60)
+btnH2.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+btnH2.BorderColor3 = Color3.fromRGB(0,0,0)
+btnH2.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnH2.Font = Enum.Font.SourceSansBold
+btnH2.TextSize = 16
+btnH2.Text = "Reset"
+btnH2.Parent = frame
+
+local btnH3 = Instance.new("TextButton")
+btnH3.Size = UDim2.new(0, 75, 0, 30)
+btnH3.Position = UDim2.new(0, 175, 0, 60)
+btnH3.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+btnH3.BorderColor3 = Color3.fromRGB(0,0,0)
+btnH3.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnH3.Font = Enum.Font.SourceSansBold
+btnH3.TextSize = 30
+btnH3.Text = "-"
+btnH3.Parent = frame
+
+-- Size Controls (Draggable Slider)
+local sizeLabel = Instance.new("TextLabel")
+sizeLabel.Size = UDim2.new(1, -20, 0, 20)
+sizeLabel.Position = UDim2.new(0, 10, 0, 100)
+sizeLabel.BackgroundTransparency = 1
+sizeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+sizeLabel.Font = Enum.Font.SourceSansBold
+sizeLabel.TextSize = 16
+sizeLabel.Text = "Pad Size: " .. currentSize
+sizeLabel.Parent = frame
+
+local sliderBg = Instance.new("Frame")
+sliderBg.Size = UDim2.new(1, -20, 0, 25)
+sliderBg.Position = UDim2.new(0, 10, 0, 125)
+sliderBg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+sliderBg.BorderColor3 = Color3.fromRGB(0, 0, 0)
+sliderBg.BorderSizePixel = 1
+sliderBg.Active = true
+sliderBg.Parent = frame
+
+local sliderFill = Instance.new("Frame")
+local initialPct = (currentSize - minSize) / (maxSize - minSize)
+sliderFill.Size = UDim2.new(initialPct, 0, 1, 0)
+sliderFill.Position = UDim2.new(0, 0, 0, 0)
+sliderFill.BackgroundColor3 = Color3.fromRGB(150, 0, 255) -- Purple fill
+sliderFill.BorderSizePixel = 0
+sliderFill.Parent = sliderBg
+
+--==================================================
+-- Pad Logic
+--==================================================
+local padCFrame = hrp.CFrame * padOffset
+local pad = remote:InvokeServer("CreatePart", "Cylinder", padCFrame, workspace)
+
+_( {"SyncResize", {{ Part = pad, CFrame = padCFrame, Size = Vector3.new(0.5, currentSize, currentSize) }}} )
+_( {"SyncMaterial", {{ Part = pad, Material = Enum.Material.Neon, Transparency = 0.1 }}} )  
+_( {"SyncCollision", {{ Part = pad, CanCollide = true }}} ) 
+_( {"SyncAnchor", {{ Part = pad, Anchored = true }}} ) 
+
+--==================================================
+-- Button Functions (Height)
+--==================================================
+local function setYOffset(val)
+	currentYOffset = val
+	padOffset = CFrame.new(0, currentYOffset, 0) * CFrame.Angles(0, 0, math.rad(90))
+	yLabel.Text = "Height Offset: " .. currentYOffset
+end
+
+btnH1.MouseButton1Click:Connect(function() setYOffset(-2.2) end)
+btnH2.MouseButton1Click:Connect(function() setYOffset(-3.24) end)
+btnH3.MouseButton1Click:Connect(function() setYOffset(-4.7) end)
+
+--==================================================
+-- Slider Functions (Size)
+--==================================================
+local draggingSlider = false
+
+local function updateSlider(input)
+	local clampX = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
+	sliderFill.Size = UDim2.new(clampX, 0, 1, 0)
+	
+	local newSize = math.floor(minSize + ((maxSize - minSize) * clampX))
+	if newSize ~= currentSize then
+		currentSize = newSize
+		sizeLabel.Text = "Pad Size: " .. currentSize
+		if pad then
+			_( {"SyncResize", {{ Part = pad, CFrame = hrp.CFrame * padOffset, Size = Vector3.new(0.5, currentSize, currentSize) }}} )
+		end
+	end
+end
+
+sliderBg.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingSlider = true
+		updateSlider(input)
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if draggingSlider and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		updateSlider(input)
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingSlider = false
+	end
+end)
+
+--==================================================
+-- Rainbow Loop (Every 0.4 Seconds)
+--==================================================
+local hue = 0
+task.spawn(function()
+	while pad and pad.Parent do
+		hue = hue + 0.05
+		if hue > 1 then hue = 0 end
+		
+		local rainbowColor = Color3.fromHSV(hue, 1, 1)
+		_( {"SyncColor", {{ Part = pad, Color = rainbowColor, UnionColoring = false }}} )
+		
+		task.wait(0.4)
+	end
+end)
+
+--==================================================
+-- Follow Player Loop
+--==================================================
+RunService.RenderStepped:Connect(function()
+	if hrp and hrp.Parent and pad then
+		local currentCFrame = hrp.CFrame * padOffset
+		_( {"SyncMove", {{ Part = pad, CFrame = currentCFrame }}} )
+	end
+end)
