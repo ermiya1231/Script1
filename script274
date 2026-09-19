@@ -67,7 +67,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Text = "   F3X Map Exporter By C00LHACK (Paged)"
+title.Text = "   F3X Map Exporter By C00LHACK (Paged & Anchored Fix)"
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
@@ -136,7 +136,7 @@ nextBtn.Text = "Next >"
 nextBtn.Font = Enum.Font.GothamBold
 nextBtn.Parent = pageFrame
 
--- دکمه Copy Pages (تغییر نام دکمه)
+-- دکمه کپی
 local copyPageBtn = Instance.new("TextButton")
 copyPageBtn.Size = UDim2.new(0.2, 0, 1, 0)
 copyPageBtn.Position = UDim2.new(0.8, 0, 0, 0)
@@ -146,7 +146,7 @@ copyPageBtn.Text = "Copy All"
 copyPageBtn.Font = Enum.Font.GothamBold
 copyPageBtn.Parent = pageFrame
 
--- دکمه سبز اکسپورت
+-- دکمه اکسپورت
 local exportBtn = Instance.new("TextButton")
 exportBtn.Size = UDim2.new(1, -20, 0, 40)
 exportBtn.Position = UDim2.new(0, 10, 1, -50)
@@ -167,7 +167,7 @@ end
 -- متغیرهای سیستم صفحه بندی
 local exportedPages = {}
 local currentPage = 1
-local PARTS_PER_PAGE = 500 -- کاهش برای جلوگیری از فریز شدن UI
+local PARTS_PER_PAGE = 500
 
 local function updatePageDisplay()
     if #exportedPages == 0 then return end
@@ -190,11 +190,9 @@ nextBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- عملکرد دکمه Copy Pages (تغییر یافته برای کپی تمام صفحات)
 copyPageBtn.MouseButton1Click:Connect(function()
     if #exportedPages > 0 then
         if setclipboard then
-            -- متصل کردن تمام صفحات با استفاده از table.concat
             local allPagesData = table.concat(exportedPages, "\n")
             setclipboard(allPagesData)
             safeNotify("All Pages Copied! ✅", "All " .. #exportedPages .. " pages copied to clipboard.")
@@ -226,7 +224,7 @@ local function runExport()
     local function shouldIgnore(instance)
         local current = instance
         while current and current ~= workspace do
-            if ignoredModels[current] or current:FindFirstChildOfClass("Humanoid") then 
+            if ignoredModels[current] then 
                 return true 
             end
             current = current.Parent
@@ -238,7 +236,6 @@ local function runExport()
     safeNotify("Export Started...", "Processing Map...")
 
     for i, v in ipairs(descendants) do
-        -- برای جلوگیری از لگ در مپ‌های بزرگ هر ۱۰۰ آیتم استراحت کوتاه می‌دهد
         if i % 100 == 0 then task.wait() end
 
         if (v:IsA("BasePart") or v:IsA("UnionOperation")) and v.Name ~= "Terrain" then
@@ -291,13 +288,39 @@ local function runExport()
                     table.insert(partData, string.format("Material: %s", matName))
                     table.insert(partData, string.format("Transparency: %.3f", v.Transparency))
 
+                    -- === [ بخش مهم: حل مشکل افتادن NPC و SpecialMesh ها ] ===
+                    local isNPC = false
+                    local checkParent = v.Parent
+                    -- پیدا کردن Humanoid برای تشخیص NPC
+                    while checkParent and checkParent ~= workspace do
+                        if checkParent:FindFirstChildOfClass("Humanoid") then
+                            isNPC = true
+                            break
+                        end
+                        checkParent = checkParent.Parent
+                    end
+
+                    -- بررسی وجود SpecialMesh در پارت
+                    local hasSpecialMesh = v:FindFirstChildOfClass("SpecialMesh") ~= nil
+
                     if not v.CanCollide or isConvertedMesh then table.insert(partData, "CanCollide: False") end
-                    if not v.Anchored and not v:IsA("Seat") then table.insert(partData, "Unanchored: True") end
+                    
+                    -- اگر پارت صندلی نبود و NPC هم نبود و SpecialMesh هم نداشت، حق داره Unanchored بشه
+                    if not v.Anchored and not v:IsA("Seat") and not isNPC and not hasSpecialMesh then 
+                        table.insert(partData, "Unanchored: True") 
+                    end
+                    -- ========================================================
 
                     if v:IsA("MeshPart") then
                         table.insert(partData, "MeshType: FileMesh")
-                        if v.MeshId ~= "" then table.insert(partData, string.format("MeshId: %s", v.MeshId)) end
-                        if v.TextureID ~= "" then table.insert(partData, string.format("MeshTextureId: %s", v.TextureID)) end
+                        if v.MeshId ~= "" then 
+                            local meshIdNum = v.MeshId:match("%d+") or v.MeshId
+                            table.insert(partData, string.format("MeshId: %s", meshIdNum)) 
+                        end
+                        if v.TextureID ~= "" then 
+                            local texIdNum = v.TextureID:match("%d+") or v.TextureID
+                            table.insert(partData, string.format("MeshTextureId: %s", texIdNum)) 
+                        end
 
                         local mSize = v.MeshSize
                         local sX = mSize.X > 0.001 and (v.Size.X / mSize.X) or 1
@@ -310,26 +333,49 @@ local function runExport()
                     for _, child in ipairs(v:GetChildren()) do
                         if child:IsA("Decal") then
                             local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
-                            local idNum = (child.Texture and child.Texture ~= "") and child.Texture:match("%d+") or nil
+                            
+                            local idNum
+                            if child.Texture == "rbxasset://textures/SpawnLocation.png" then
+                                idNum = "6045248793"
+                            else
+                                if child.Texture and child.Texture ~= "" then
+                                    idNum = child.Texture:match("%d+")
+                                    if not idNum then idNum = child.Texture end
+                                end
+                            end
+
                             if idNum and not usedDecals[faceStr] then 
                                 table.insert(partData, string.format("Decal.%s = %s", faceStr, idNum)) 
                                 usedDecals[faceStr] = true
                             end
+                            
                         elseif child:IsA("Texture") then
                             local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
-                            local idNum = (child.Texture and child.Texture ~= "") and child.Texture:match("%d+") or nil
+                            local idNum
+                            if child.Texture and child.Texture ~= "" then
+                                idNum = child.Texture:match("%d+")
+                                if not idNum then idNum = child.Texture end
+                            end
                             if idNum and not usedTextures[faceStr] then 
                                 table.insert(partData, string.format("Texture.%s = %s", faceStr, idNum)) 
                                 usedTextures[faceStr] = true
                             end
+                            
                         elseif child:IsA("SpecialMesh") then
-                            local mType = tostring(child.MeshType):gsub("Enum.MeshType.", "")
-                            table.insert(partData, string.format("MeshType: %s", mType))
-                            if child.MeshId ~= "" then table.insert(partData, string.format("MeshId: %s", child.MeshId)) end
-                            if child.TextureId ~= "" then table.insert(partData, string.format("MeshTextureId: %s", child.TextureId)) end
+                            table.insert(partData, "MeshType: FileMesh")
+                            
+                            if child.MeshId and child.MeshId ~= "" then 
+                                local meshIdNum = child.MeshId:match("%d+") or child.MeshId
+                                table.insert(partData, string.format("MeshId: %s", meshIdNum)) 
+                            end
+                            if child.TextureId and child.TextureId ~= "" then 
+                                local texIdNum = child.TextureId:match("%d+") or child.TextureId
+                                table.insert(partData, string.format("MeshTextureId: %s", texIdNum)) 
+                            end
+                            
                             local ms = child.Scale
                             table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", ms.X, ms.Y, ms.Z))
-                        -- تنظیمات نور و افکت‌ها
+                            
                         elseif child:IsA("PointLight") then 
                             table.insert(partData, "Light: True")
                             table.insert(partData, string.format("LightRange: %.2f", child.Range))
