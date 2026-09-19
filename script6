@@ -367,9 +367,9 @@ end
 -- پیکربندی دکمه‌ها
 local buttonConfigs = {
     {Name="رقص", AnimId="rbxassetid://75202452138001", Speed=1.6},
-    {Name="هکر", AnimId="rbxassetid://33796059", Speed=99},
+    {Name="روانی", AnimId="rbxassetid://33796059", Speed=99},
     {Name="چرخش", AnimId="rbxassetid://188632011", Speed=2},
-    {Name="هکر 2", AnimId="rbxassetid://215384594", Speed=22},
+    {Name="خطای دید", AnimId="rbxassetid://215384594", Speed=22},
     {Name="MoonDance", AnimId="rbxassetid://27789359", Speed=1.1},
     {Name="Charleston Dance", AnimId="rbxassetid://429703734", Speed=1.1},
     {Name="شناور", AnimId="rbxassetid://313762630", Speed=1},
@@ -378,6 +378,7 @@ local buttonConfigs = {
     {Name="Slap", AnimId="rbxassetid://243827693", Speed=10},
     {Name="خنده", AnimId="rbxassetid://129423131", Speed=1.25},
     {Name="احترام نظامی", AnimId="rbxassetid://79094862", Speed=1},
+    {Name="روانی 2", AnimId="rbxassetid://184574340", Speed=999},
     {Name="Dia Delicia", AnimId="rbxassetid://115314801778772", Speed=1},
     {Name="Aura Crouch", AnimId={"rbxassetid://287325678", "rbxassetid://70439247"}, Speed=1}
 }
