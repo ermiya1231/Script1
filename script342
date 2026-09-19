@@ -20,12 +20,18 @@ if not f3x then warn("You Dont Have F3X") return end
 local syncapi = f3x.SyncAPI
 local endpoint = syncapi.ServerEndpoint
 
+for _, part in ipairs(character:GetDescendants()) do
+    if part:IsA("BasePart") then
+        part.Anchored = true
+    end
+end
+
 for _, v in ipairs(workspace:GetDescendants()) do
- if v:IsA("BasePart") and not v:IsA("Terrain") then
- task.spawn(function()
- pcall(function() endpoint:InvokeServer("Remove", {v}) end)
- end)
- end
+    if v:IsA("BasePart") and not v:IsA("Terrain") and not v:IsDescendantOf(character) then
+        task.spawn(function()
+            pcall(function() endpoint:InvokeServer("Remove", {v}) end)
+        end)
+    end
 end
 task.wait(0.3)
 
