@@ -1,0 +1,417 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local TS = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+if CoreGui:FindFirstChild("ToolRotatorGUI") then
+    CoreGui.ToolRotatorGUI:Destroy()
+end
+
+local rotationStep = 15
+local selectedTool = nil
+local isInternalEquipping = false 
+local uiItems = {} 
+
+-- ساخت رابط کاربری
+local sg = Instance.new("ScreenGui")
+sg.Name = "ToolRotatorGUI"
+sg.Parent = CoreGui 
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 440, 0, 310)
+frame.Position = UDim2.new(0.5, -220, 0.5, -155)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
+frame.Active = true
+-- درگ پیش‌فرض حذف شد تا درگ Smooth شما جایگزین شود
+frame.Parent = sg
+
+---------------------------------------------------------
+-- سیستم Dragify اختصاصی (نرم و Smooth) ساپورت PC & Mobile
+---------------------------------------------------------
+local function dragify(dragFrame)
+    local dragToggle = nil
+    local dragSpeed = 0.15
+    local dragInput = nil
+    local dragStart = nil
+    local startPos = nil
+    
+    local function updateInput(input)
+        local Delta = input.Position - dragStart
+        local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+        TS:Create(dragFrame, TweenInfo.new(dragSpeed), {Position = Position}):Play()
+    end
+    
+    dragFrame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UIS:GetFocusedTextBox() == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = dragFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+    
+    dragFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then
+            updateInput(input)
+        end
+    end)
+end
+
+dragify(frame) -- اعمال سیستم درگ روی پنل اصلی
+
+-- عنوان‌ها
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(0, 200, 0, 30)
+title.Text = "Pro Tool Rotator"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.Code
+title.TextSize = 14
+title.Parent = frame
+
+local invTitle = Instance.new("TextLabel")
+invTitle.Size = UDim2.new(0, 220, 0, 30)
+invTitle.Position = UDim2.new(0, 210, 0, 0)
+invTitle.Text = "Inventory (Click to Select)"
+invTitle.TextColor3 = Color3.fromRGB(0, 200, 150)
+invTitle.BackgroundTransparency = 1
+invTitle.Font = Enum.Font.Code
+invTitle.TextSize = 13
+invTitle.Parent = frame
+
+-- تابع نمایش ارور روی دکمه‌ها
+local function flashError(btn, originalText, originalColor)
+    if btn.Text == "Please Select A Tool!" then return end
+    btn.Text = "Please Select A Tool!"
+    TS:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(180, 40, 40)}):Play()
+    task.wait(1)
+    btn.Text = originalText
+    TS:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
+end
+
+-- ساخت دکمه‌های کلیکی
+local function createButton(axisName, yPos, axis)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 160, 0, 28)
+    btn.Position = UDim2.new(0, 20, 0, yPos)
+    local defaultText = "Rotate " .. axisName .. " (Click)"
+    local defaultColor = Color3.fromRGB(55, 55, 55)
+    btn.Text = defaultText
+    btn.BackgroundColor3 = defaultColor
+    btn.TextColor3 = Color3.fromRGB(220, 220, 220)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 12
+    btn.BorderSizePixel = 0
+    btn.Parent = frame
+    
+    btn.MouseButton1Click:Connect(function()
+        if not selectedTool or not selectedTool.Parent then
+            task.spawn(flashError, btn, defaultText, defaultColor)
+            return
+        end
+        local char = player.Character
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            isInternalEquipping = true 
+            local rx = axis == "X" and math.rad(rotationStep) or 0
+            local ry = axis == "Y" and math.rad(rotationStep) or 0
+            local rz = axis == "Z" and math.rad(rotationStep) or 0
+            selectedTool.Grip = selectedTool.Grip * CFrame.Angles(rx, ry, rz)
+            humanoid:UnequipTools()
+            task.wait() 
+            humanoid:EquipTool(selectedTool)
+            isInternalEquipping = false 
+        end
+    end)
+end
+
+-- ساخت دکمه‌های لوپ
+local loopStates = {X = false, Y = false, Z = false}
+local function createToggleButton(axisName, yPos, axis)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 160, 0, 28)
+    btn.Position = UDim2.new(0, 20, 0, yPos)
+    local defaultText = "Auto Spin " .. axisName .. ": OFF"
+    local defaultColor = Color3.fromRGB(45, 45, 45)
+    btn.Text = defaultText
+    btn.BackgroundColor3 = defaultColor
+    btn.TextColor3 = Color3.fromRGB(220, 220, 220)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    btn.BorderSizePixel = 0
+    btn.Parent = frame
+    
+    btn.MouseButton1Click:Connect(function()
+        if not selectedTool or not selectedTool.Parent then
+            task.spawn(flashError, btn, defaultText, defaultColor)
+            return
+        end
+        loopStates[axis] = not loopStates[axis]
+        if loopStates[axis] then
+            btn.Text = "Auto Spin " .. axisName .. ": ON"
+            TS:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 150, 50)}):Play()
+            task.spawn(function()
+                while loopStates[axis] do
+                    if not selectedTool or not selectedTool.Parent then
+                        loopStates[axis] = false
+                        btn.Text = defaultText
+                        TS:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = defaultColor}):Play()
+                        break
+                    end
+                    local char = player.Character
+                    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        isInternalEquipping = true
+                        local rx = axis == "X" and math.rad(rotationStep) or 0
+                        local ry = axis == "Y" and math.rad(rotationStep) or 0
+                        local rz = axis == "Z" and math.rad(rotationStep) or 0
+                        selectedTool.Grip = selectedTool.Grip * CFrame.Angles(rx, ry, rz)
+                        humanoid:UnequipTools()
+                        task.wait()
+                        humanoid:EquipTool(selectedTool)
+                        isInternalEquipping = false
+                    end
+                    task.wait()
+                end
+            end)
+        else
+            btn.Text = defaultText
+            TS:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = defaultColor}):Play()
+        end
+    end)
+end
+
+createButton("X", 35, "X")
+createButton("Y", 68, "Y")
+createButton("Z", 101, "Z")
+createToggleButton("X", 140, "X")
+createToggleButton("Y", 173, "Y")
+createToggleButton("Z", 206, "Z")
+
+---------------------------------------------------------
+-- مدیریت ToolNoneAnim
+---------------------------------------------------------
+local isAnimLooping = false
+local currentAnimTrack = nil
+local animBtn = Instance.new("TextButton")
+animBtn.Size = UDim2.new(0, 160, 0, 32)
+animBtn.Position = UDim2.new(0, 20, 0, 250)
+local defaultAnimText = "ToolNoneAnim Loop: OFF"
+local defaultAnimColor = Color3.fromRGB(120, 40, 40)
+animBtn.Text = defaultAnimText
+animBtn.BackgroundColor3 = defaultAnimColor
+animBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+animBtn.Font = Enum.Font.GothamBold
+animBtn.TextSize = 11
+animBtn.BorderSizePixel = 0
+animBtn.Parent = frame
+
+local function playToolNoneAnim()
+    local char = player.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local animator = humanoid and (humanoid:FindFirstChildOfClass("Animator") or humanoid)
+    if not animator then return end
+    
+    local animId = "rbxassetid://182393478"
+    local animateScript = char:FindFirstChild("Animate")
+    if animateScript and animateScript:FindFirstChild("toolnone") then
+        local toolNoneObj = animateScript.toolnone:FindFirstChildOfClass("Animation") or animateScript.toolnone:FindFirstChild("ToolNoneAnim")
+        if toolNoneObj and toolNoneObj.AnimationId ~= "" then animId = toolNoneObj.AnimationId end
+    end
+    
+    local animObj = Instance.new("Animation")
+    animObj.AnimationId = animId
+    if currentAnimTrack then currentAnimTrack:Stop() end
+    currentAnimTrack = animator:LoadAnimation(animObj)
+    currentAnimTrack.Priority = Enum.AnimationPriority.Action4
+    currentAnimTrack.Looped = true
+    currentAnimTrack:Play()
+end
+
+animBtn.MouseButton1Click:Connect(function()
+    isAnimLooping = not isAnimLooping
+    if isAnimLooping then
+        animBtn.Text = "ToolNoneAnim Loop: ON"
+        TS:Create(animBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 150, 50)}):Play()
+        playToolNoneAnim()
+        task.spawn(function()
+            while isAnimLooping do
+                if currentAnimTrack and not currentAnimTrack.IsPlaying then playToolNoneAnim() end
+                task.wait(0.1)
+            end
+        end)
+    else
+        animBtn.Text = defaultAnimText
+        TS:Create(animBtn, TweenInfo.new(0.2), {BackgroundColor3 = defaultAnimColor}):Play()
+        if currentAnimTrack then currentAnimTrack:Stop() currentAnimTrack = nil end
+    end
+end)
+
+---------------------------------------------------------
+-- لیست اسکرول شاهکار با Hover/Touch Effects و انیمیشن رنگ
+---------------------------------------------------------
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(0, 210, 0, 250)
+scrollFrame.Position = UDim2.new(0, 210, 0, 35)
+scrollFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+scrollFrame.BorderSizePixel = 0
+scrollFrame.ScrollBarThickness = 6
+scrollFrame.Parent = frame
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = scrollFrame
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding = UDim.new(0, 5)
+
+local baseColor = Color3.fromRGB(45, 45, 45)
+local hoverColor = Color3.fromRGB(65, 65, 75) -- رنگ هنگام قرار گرفتن ماوس/دست
+local selectColor = Color3.fromRGB(0, 120, 80) -- رنگ هنگام انتخاب شدن
+
+task.spawn(function()
+    while task.wait(0.5) do
+        local currentTools = {}
+        
+        if player:FindFirstChild("Backpack") then
+            for _, item in ipairs(player.Backpack:GetChildren()) do
+                if item:IsA("Tool") then currentTools[item] = true end
+            end
+        end
+        if player.Character then
+            for _, item in ipairs(player.Character:GetChildren()) do
+                if item:IsA("Tool") then currentTools[item] = true end
+            end
+        end
+        
+        for tool, itemFrame in pairs(uiItems) do
+            if not currentTools[tool] then
+                itemFrame:Destroy()
+                uiItems[tool] = nil
+                if selectedTool == tool then
+                    selectedTool = nil
+                    for axis, _ in pairs(loopStates) do loopStates[axis] = false end 
+                end
+            end
+        end
+        
+        for tool, _ in pairs(currentTools) do
+            if not uiItems[tool] then
+                local itemFrame = Instance.new("TextButton")
+                itemFrame.Size = UDim2.new(1, -10, 0, 40)
+                itemFrame.BackgroundColor3 = (selectedTool == tool) and selectColor or baseColor
+                itemFrame.BorderSizePixel = 0
+                itemFrame.Text = ""
+                itemFrame.AutoButtonColor = false -- غیرفعال کردن رنگ پیش‌فرض کلیک روبلاکس
+                
+                local hasIcon = tool.TextureId and tool.TextureId ~= ""
+                if hasIcon then
+                    local icon = Instance.new("ImageLabel", itemFrame)
+                    icon.Size = UDim2.new(0, 30, 0, 30)
+                    icon.Position = UDim2.new(0, 5, 0, 5)
+                    icon.Image = tool.TextureId
+                    icon.BackgroundTransparency = 1
+                    
+                    local name = Instance.new("TextLabel", itemFrame)
+                    name.Size = UDim2.new(1, -45, 1, 0)
+                    name.Position = UDim2.new(0, 40, 0, 0)
+                    name.Text = tool.Name
+                    name.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    name.BackgroundTransparency = 1
+                    name.Font = Enum.Font.Gotham
+                    name.TextSize = 13
+                    name.TextXAlignment = Enum.TextXAlignment.Left
+                else
+                    local name = Instance.new("TextLabel", itemFrame)
+                    name.Size = UDim2.new(1, -10, 1, 0)
+                    name.Position = UDim2.new(0, 5, 0, 0)
+                    name.Text = tool.Name
+                    name.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    name.BackgroundTransparency = 1
+                    name.Font = Enum.Font.Gotham
+                    name.TextSize = 14
+                    name.TextXAlignment = Enum.TextXAlignment.Center
+                end
+                
+                -----------------------------------
+                -- سیستم Hover / Touch / Select
+                -----------------------------------
+                local function applyHover()
+                    if selectedTool ~= tool then
+                        TS:Create(itemFrame, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play()
+                    end
+                end
+                
+                local function removeHover()
+                    if selectedTool ~= tool then
+                        TS:Create(itemFrame, TweenInfo.new(0.2), {BackgroundColor3 = baseColor}):Play()
+                    end
+                end
+                
+                -- پشتیبانی از PC
+                itemFrame.MouseEnter:Connect(applyHover)
+                itemFrame.MouseLeave:Connect(removeHover)
+                
+                -- پشتیبانی از موبایل (لمس)
+                itemFrame.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.Touch then applyHover() end
+                end)
+                itemFrame.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.Touch then removeHover() end
+                end)
+                
+                -- سیستم کلیک / انتخاب با Tween
+                itemFrame.MouseButton1Click:Connect(function()
+                    local char = player.Character
+                    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+                    
+                    if selectedTool == tool then
+                        -- Deselect
+                        selectedTool = nil
+                        TS:Create(itemFrame, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play()
+                        if humanoid then humanoid:UnequipTools() end
+                    else
+                        -- Select (و ریست کردن بقیه)
+                        for otherTool, otherFrame in pairs(uiItems) do
+                            if otherTool ~= tool then
+                                TS:Create(otherFrame, TweenInfo.new(0.2), {BackgroundColor3 = baseColor}):Play()
+                            end
+                        end
+                        selectedTool = tool
+                        TS:Create(itemFrame, TweenInfo.new(0.2), {BackgroundColor3 = selectColor}):Play()
+                        if humanoid then humanoid:EquipTool(tool) end
+                    end
+                end)
+                
+                itemFrame.Parent = scrollFrame
+                uiItems[tool] = itemFrame
+            end
+        end
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 10)
+    end
+end)
+
+-- سیستم قفل کردن (جلوگیری از Unequip دستی توسط پلیر)
+task.spawn(function()
+    while task.wait(0.1) do
+        if selectedTool and not isInternalEquipping then
+            local char = player.Character
+            local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+            if humanoid and selectedTool.Parent == player.Backpack then
+                humanoid:EquipTool(selectedTool)
+            end
+        end
+    end
+end)
