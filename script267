@@ -1,0 +1,166 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+local tool = Instance.new("Tool")
+tool.Name = "Black Hole V3"
+tool.RequiresHandle = false
+tool.Parent = player.Backpack
+
+local blackHole = nil
+local gravityConnection = nil
+local networkConnection = nil
+local cacheLoop = nil
+
+local unanchoredParts = {}
+local originalProperties = {}
+
+-- حلقه تهاجمی برای گرفتن مالکیت شبکه (الهام گرفته از اسکریپت FE)
+local function startNetworkLoop()
+    player.ReplicationFocus = workspace
+    networkConnection = RunService.Heartbeat:Connect(function()
+        pcall(function()
+            if setsimulationradius then setsimulationradius(9e9, 9e9) end
+            if sethiddenproperty then
+                sethiddenproperty(player, "SimulationRadius", math.huge)
+                sethiddenproperty(player, "MaxSimulationRadius", math.huge)
+            end
+        end)
+    end)
+end
+
+local function stopNetworkLoop()
+    if networkConnection then networkConnection:Disconnect() networkConnection = nil end
+end
+
+local function destroyBlackHole()
+    if gravityConnection then gravityConnection:Disconnect() gravityConnection = nil end
+    if cacheLoop then task.cancel(cacheLoop) cacheLoop = nil end
+    stopNetworkLoop()
+    
+    if blackHole then blackHole:Destroy() blackHole = nil end
+    
+    -- برگرداندن خواص فیزیکی پارت‌ها به حالت اولیه
+    for part, data in pairs(originalProperties) do
+        if part and part.Parent then
+            part.CanCollide = data.CanCollide
+            if data.CustomPhysicalProperties then
+                part.CustomPhysicalProperties = data.CustomPhysicalProperties
+            else
+                -- اگر از قبل خواص سفارشی نداشت، بر اساس متریال ریست می‌شود
+                part.CustomPhysicalProperties = PhysicalProperties.new(part.Material)
+            end
+        end
+    end
+    unanchoredParts = {}
+    originalProperties = {}
+end
+
+local function isCharacter(part)
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character and part:IsDescendantOf(p.Character) then return true end
+    end
+    if part.Parent:FindFirstChildOfClass("Humanoid") or (part.Parent.Parent and part.Parent.Parent:FindFirstChildOfClass("Humanoid")) then return true end
+    return false
+end
+
+local function updatePartsCache()
+    local newCache = {}
+    for _, part in ipairs(workspace:GetDescendants()) do
+        if part:IsA("BasePart") and part ~= blackHole then
+            local isAnchored = part.Anchored or (part.AssemblyRootPart and part.AssemblyRootPart.Anchored)
+            
+            if not isAnchored and not isCharacter(part) then
+                if originalProperties[part] == nil then
+                    originalProperties[part] = {
+                        CanCollide = part.CanCollide,
+                        CustomPhysicalProperties = part.CustomPhysicalProperties
+                    }
+                end
+                
+                part.CanCollide = false 
+                -- تکنیک صفر کردن فیزیک برای شناور شدن کامل پارت‌ها
+                part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+                
+                table.insert(newCache, part)
+            end
+        end
+    end
+    unanchoredParts = newCache
+end
+
+tool.Activated:Connect(function()
+    local targetPos = mouse.Hit.Position
+
+    if blackHole and blackHole.Parent then
+        if (targetPos - blackHole.Position).Magnitude <= 5 then
+            destroyBlackHole()
+            return
+        end
+        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        TweenService:Create(blackHole, tweenInfo, {Position = targetPos}):Play()
+        return
+    end
+
+    blackHole = Instance.new("Part")
+    blackHole.Name = "DoomHole_ZeroLag"
+    blackHole.Shape = Enum.PartType.Ball
+    blackHole.Size = Vector3.new(5, 5, 5)
+    blackHole.Color = Color3.fromRGB(0, 0, 0)
+    blackHole.Material = Enum.Material.Neon
+    blackHole.Transparency = 0.4
+    blackHole.Anchored = true
+    blackHole.CanCollide = false
+    blackHole.Position = targetPos
+    blackHole.Parent = workspace
+
+    local highlight = Instance.new("Highlight", blackHole)
+    highlight.FillColor = Color3.new(0, 0, 0)
+    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+    highlight.OutlineTransparency = 0.2
+
+    -- شروع اسپم مالکیت شبکه و کشف پارت‌ها
+    startNetworkLoop()
+    updatePartsCache()
+
+    cacheLoop = task.spawn(function()
+        while blackHole and blackHole.Parent do
+            task.wait(1.5)
+            updatePartsCache()
+        end
+    end)
+
+    gravityConnection = RunService.Heartbeat:Connect(function()
+        if not blackHole or not blackHole.Parent then return end
+        local bhPos = blackHole.Position
+
+        for i = #unanchoredParts, 1, -1 do
+            local part = unanchoredParts[i]
+
+            if not part or not part.Parent or part.Anchored or (part.AssemblyRootPart and part.AssemblyRootPart.Anchored) then
+                table.remove(unanchoredParts, i)
+                continue
+            end
+
+            local delta = bhPos - part.Position
+            local distance = delta.Magnitude
+
+            if distance < 10 then
+                part.AssemblyLinearVelocity = Vector3.zero
+                part.AssemblyAngularVelocity = Vector3.zero
+                part.CFrame = part.CFrame:Lerp(CFrame.new(bhPos), 0.15)
+            else
+                local direction = delta.Unit
+                -- اعمال سرعت بسیار بالا به سبک اسکریپت FE برای کشش خشن
+                local pullSpeed = math.clamp(500 + (distance * 3), 1000, 3000)
+                part.AssemblyLinearVelocity = direction * pullSpeed
+                part.AssemblyAngularVelocity = Vector3.zero 
+            end
+        end
+    end)
+end)
+
+player.CharacterRemoving:Connect(destroyBlackHole)
