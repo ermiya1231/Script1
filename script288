@@ -1,0 +1,170 @@
+local ShoveForce = 250 -- قدرت هل دادن (قابل تنظیم)
+local PushDuration = 1 -- مدت زمان فعال بودن حالت هل دادن (به ثانیه)
+local AnimDuration = 1 -- مدت زمان پخش انیمیشن (به ثانیه)
+
+local RunService = game:GetService("RunService")
+local PlayerService = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local LocalPlayer = PlayerService.LocalPlayer
+
+-- تابع برای ارسال نوتیفیکیشن ایمن
+local function sendNotification(title, text)
+	pcall(function()
+		StarterGui:SetCore("SendNotification", {
+			Title = title,
+			Text = text,
+			Duration = 4
+		})
+	end)
+end
+
+-- متغیری برای ذخیره نتیجه بررسی (فقط یک بار انجام می‌شود)
+local hasCheckedGame = false
+local isGameCompatible = true
+
+local function checkGameCompatibility()
+	if hasCheckedGame then return isGameCompatible end
+	hasCheckedGame = true
+
+	-- پیدا کردن یک بازیکن دیگر به صورت رندوم
+	local otherPlayers = {}
+	for _, p in ipairs(PlayerService:GetPlayers()) do
+		if p ~= LocalPlayer and p.Character then
+			table.insert(otherPlayers, p)
+		end
+	end
+	
+	if #otherPlayers > 0 then
+		isGameCompatible = false
+		local randomPlayer = otherPlayers[math.random(1, #otherPlayers)]
+		local targetChar = randomPlayer.Character
+		
+		if targetChar then
+			local hasCollisionPart = false
+			
+			-- مرحله اول: جستجوی پارت با کلمه Collision و CanCollide برابر با true
+			for _, part in ipairs(targetChar:GetDescendants()) do
+				if part:IsA("BasePart") then
+					if string.find(part.Name:lower(), "collision") and part.CanCollide then
+						hasCollisionPart = true
+						break
+					end
+				end
+			end
+			
+			-- اگر پارتِ collision پیدا شد، تنه مهم نیست و کار تمام است (Success)
+			if hasCollisionPart then
+				isGameCompatible = true
+			else
+				-- مرحله دوم: بررسی CollisionGroup تنه (Torso / UpperTorso)
+				local targetTorso = targetChar:FindFirstChild("UpperTorso") or targetChar:FindFirstChild("Torso")
+				if targetTorso then
+					if targetTorso.CollisionGroupId == 0 or targetTorso.CollisionGroup == "Default" then
+						isGameCompatible = true
+					else
+						isGameCompatible = false
+					end
+				else
+					isGameCompatible = false
+				end
+			end
+		end
+	end
+	
+	return isGameCompatible
+end
+
+local function setupShoveTool()
+	-- اول کار بازی را بررسی می‌کنیم (فقط بار اول اسکن انجام می‌شود)
+	local compatible = checkGameCompatibility()
+	
+	if compatible then
+		-- فقط اولین باری که اسکریپت لود می‌شود نوتیفیکیشن Injected را می‌دهد
+		if not hasCheckedGame or LocalPlayer.Character.Parent == workspace then
+			-- نوتیفیکیشن موفقیت‌آمیز
+		end
+	else
+		sendNotification("Error", "Inject Not Successful")
+		return -- متوقف کردن اسکریپت و عدم ساخت ابزار
+	end
+
+	local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local Humanoid = Character:WaitForChild("Humanoid")
+
+	-- تشخیص نوع ریگ (R15 یا R6) و تنظیم انیمیشن مناسب
+	local Animation = Instance.new("Animation")
+	if Humanoid.RigType == Enum.HumanoidRigType.R15 then
+		Animation.AnimationId = "rbxassetid://82070755455634"
+	else
+		Animation.AnimationId = "rbxassetid://73177702"
+	end
+
+	local track = Humanoid:LoadAnimation(Animation)
+	track.Priority = Enum.AnimationPriority.Action
+	track.Looped = false
+
+	-- پاکسازی ابزار قبلی در صورت وجود
+	local oldTool = LocalPlayer.Backpack:FindFirstChild("Shove") or Character:FindFirstChild("Shove")
+	if oldTool then oldTool:Destroy() end
+
+	local ShoveTool = Instance.new("Tool", LocalPlayer.Backpack)
+	ShoveTool.Name = "Shove"
+	ShoveTool.RequiresHandle = false
+
+	local isShoving = false
+
+	-- با کلیک روی صفحه (Activated) قابلیت فعال می‌شود
+	ShoveTool.Activated:Connect(function()
+		if isShoving then return end
+		isShoving = true
+
+		-- پخش انیمیشن با سرعت عادی
+		track:Play()
+		track:AdjustSpeed(1)
+
+		-- متوقف کردن انیمیشن دقیقاً پس از ۱ ثانیه
+		task.delay(AnimDuration, function()
+			if track.IsPlaying then
+				track:Stop()
+			end
+		end)
+
+		-- اعمال نیروی هل دادن روی کل مجموعه بدن به مدت ۲ ثانیه
+		local startTime = tick()
+		local connection
+		connection = RunService.Heartbeat:Connect(function()
+			if tick() - startTime >= PushDuration then
+				connection:Disconnect()
+				isShoving = false
+			else
+				local currentRoot = Character:FindFirstChild("HumanoidRootPart")
+				if currentRoot then
+					local Velocity = currentRoot.Velocity
+					currentRoot.Velocity = currentRoot.CFrame.LookVector * ShoveForce
+
+					RunService.RenderStepped:Wait()
+					currentRoot.Velocity = Velocity
+
+					RunService.Stepped:Wait()
+					currentRoot.Velocity = Velocity
+				end
+			end
+		end)
+	end)
+end
+
+-- اجرای اولیه برای کاراکتر فعلی
+if checkGameCompatibility() then
+	sendNotification("Success", "Injected")
+	setupShoveTool()
+else
+	sendNotification("Error", "Inject Not Successful")
+end
+
+-- مدیریت ریست شدن (Respawing) بازیکن (دیگر اسکن نمی‌کند، فقط ابزار را می‌سازد)
+LocalPlayer.CharacterAdded:Connect(function(newChar)
+	task.wait(0.5) -- کمی صبر تا لود کامل کاراکتر جدید
+	if isGameCompatible then
+		setupShoveTool()
+	end
+end)
