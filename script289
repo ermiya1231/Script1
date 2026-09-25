@@ -6,7 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 
 -- ساخت رابط کاربری اصلی پنل
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "GuiToLuaDumperV3"
+ScreenGui.Name = "GuiToLuaDumperV6"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
@@ -40,7 +40,7 @@ Title.BackgroundTransparency = 1
 Title.Text = "GUI 2 Lua By C00LHACK"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
+Title.TextSize = 13
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
@@ -81,10 +81,23 @@ CoreGuiToggleBtn.TextSize = 14
 CoreGuiToggleBtn.Parent = MainFrame
 Instance.new("UICorner", CoreGuiToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- اسکرول فریم
+-- تاگل سیستم درگ اختصاصی
+local dragSystemToggle = true
+local DragToggleBtn = Instance.new("TextButton")
+DragToggleBtn.Size = UDim2.new(1, -20, 0, 35)
+DragToggleBtn.Position = UDim2.new(0, 10, 0, 125)
+DragToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 200, 80)
+DragToggleBtn.Text = "Make Draggable Gui: ON"
+DragToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DragToggleBtn.Font = Enum.Font.GothamBold
+DragToggleBtn.TextSize = 14
+DragToggleBtn.Parent = MainFrame
+Instance.new("UICorner", DragToggleBtn).CornerRadius = UDim.new(0, 6)
+
+-- اسکرول فریم 
 local ScrollFrame = Instance.new("ScrollingFrame")
-ScrollFrame.Size = UDim2.new(1, -20, 0, 315)
-ScrollFrame.Position = UDim2.new(0, 10, 0, 125)
+ScrollFrame.Size = UDim2.new(1, -20, 0, 275)
+ScrollFrame.Position = UDim2.new(0, 10, 0, 165)
 ScrollFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 ScrollFrame.ScrollBarThickness = 4
 ScrollFrame.BorderSizePixel = 0
@@ -107,7 +120,7 @@ CopyButton.TextSize = 16
 CopyButton.Parent = MainFrame
 Instance.new("UICorner", CopyButton).CornerRadius = UDim.new(0, 6)
 
--- سیستم درگ پنل
+-- سیستم درگ پنل (برای خود پنل)
 local dragging, dragInput, dragStart, startPos
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -160,37 +173,47 @@ CoreGuiToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- سیستم هایلایت آبی روشن برای عناصر انتخاب‌شده
+DragToggleBtn.MouseButton1Click:Connect(function()
+    dragSystemToggle = not dragSystemToggle
+    if dragSystemToggle then
+        DragToggleBtn.Text = "Make Draggable Gui: ON"
+        TweenService:Create(DragToggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 200, 80)}):Play()
+    else
+        DragToggleBtn.Text = "Make Draggable Gui: OFF"
+        TweenService:Create(DragToggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(200, 40, 40)}):Play()
+    end
+end)
+
+-- سیستم مدیریت هایلایت آبی روشن برای انتخاب
 local currentHighlights = {}
+local selectedGui = nil
+local selectedButton = nil
 
 local function clearHighlights()
     for _, stroke in ipairs(currentHighlights) do
-        if stroke and stroke.Parent then
-            stroke:Destroy()
-        end
+        if stroke and stroke.Parent then stroke:Destroy() end
     end
     table.clear(currentHighlights)
 end
 
-local function highlightGui(guiElement)
+local function highlightGui(targetGui)
     clearHighlights()
-    if not guiElement then return end
+    if not targetGui then return end
     
-    for _, obj in ipairs(guiElement:GetDescendants()) do
-        if obj:IsA("Frame") or obj:IsA("TextButton") or obj:IsA("ImageButton") or obj:IsA("ScrollingFrame") then
-            local stroke = Instance.new("UIStroke")
-            stroke.Name = "__SelectionHighlightStroke"
-            stroke.Color = Color3.fromRGB(0, 200, 255) -- آبی روشن (Cyan/Light Blue)
-            stroke.Thickness = 2.5
-            stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-            stroke.Parent = obj
-            table.insert(currentHighlights, stroke)
-        end
+    local function createStroke(parent)
+        local stroke = Instance.new("UIStroke")
+        stroke.Name = "G2L_Highlight_Stroke"
+        stroke.Color = Color3.fromRGB(0, 200, 255)
+        stroke.Thickness = 2.5
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        stroke.Parent = parent
+        table.insert(currentHighlights, stroke)
+    end
+    
+    for _, child in ipairs(targetGui:GetChildren()) do
+        if child:IsA("GuiObject") then createStroke(child) end
     end
 end
-
-local selectedGui = nil
-local selectedButton = nil
 
 local function addHeader(text)
     local header = Instance.new("TextLabel")
@@ -205,33 +228,50 @@ local function addHeader(text)
 end
 
 local function addGuiItem(guiObject)
-    if guiObject.Name == "GuiToLuaDumperV3" then return end
+    if string.find(guiObject.Name, "GuiToLuaDumper") then return end
     
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 30)
-    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    btn.Text = guiObject.Name
-    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 14
+    btn.Text = guiObject.Name
     btn.Parent = ScrollFrame
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
     
-    btn.MouseButton1Click:Connect(function()
-        if selectedButton then
-            TweenService:Create(selectedButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 40), TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
-        end
+    if guiObject == selectedGui then
         selectedButton = btn
-        selectedGui = guiObject
-        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 200, 128), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-        
-        -- ایجاد حاشیه آبی روشن روی فریم‌ها و دکمه‌های GUI انتخاب‌شده
-        highlightGui(selectedGui)
+        btn.BackgroundColor3 = Color3.fromRGB(0, 200, 128)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    end
+    
+    btn.MouseButton1Click:Connect(function()
+        if selectedGui == guiObject then
+            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 40), TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
+            selectedGui = nil
+            selectedButton = nil
+            clearHighlights()
+        else
+            if selectedButton and selectedButton ~= btn then
+                TweenService:Create(selectedButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 40), TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
+            end
+            selectedButton = btn
+            selectedGui = guiObject
+            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 200, 128), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+            highlightGui(selectedGui)
+        end
     end)
 end
 
 local function RefreshList()
-    clearHighlights()
+    if selectedGui and not selectedGui.Parent then
+        selectedGui = nil
+        selectedButton = nil
+        clearHighlights()
+    end
+    
     for _, v in pairs(ScrollFrame:GetChildren()) do
         if not v:IsA("UIListLayout") then v:Destroy() end
     end
@@ -251,21 +291,52 @@ local function RefreshList()
 end
 
 RefreshList()
-CoreGui.ChildAdded:Connect(function(c) if c:IsA("ScreenGui") then RefreshList() end end)
-CoreGui.ChildRemoved:Connect(function(c) if c:IsA("ScreenGui") then RefreshList() end end)
 
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-PlayerGui.ChildAdded:Connect(function(c) if c:IsA("ScreenGui") then RefreshList() end end)
-PlayerGui.ChildRemoved:Connect(function(c) if c:IsA("ScreenGui") then RefreshList() end end)
+-- 🔥 اتصال ایونت‌ها برای بروزرسانی خودکار لیست در هنگام ساخت یا حذف ScreenGui
+local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+playerGui.ChildAdded:Connect(function(child)
+    if child:IsA("ScreenGui") then RefreshList() end
+end)
+
+playerGui.ChildRemoved:Connect(function(child)
+    if child:IsA("ScreenGui") then RefreshList() end
+end)
+
+CoreGui.ChildAdded:Connect(function(child)
+    if child:IsA("ScreenGui") then RefreshList() end
+end)
+
+CoreGui.ChildRemoved:Connect(function(child)
+    if child:IsA("ScreenGui") then RefreshList() end
+end)
 
 local function serializeType(val)
-    if typeof(val) == "UDim2" then return string.format("UDim2.new(%s, %s, %s, %s)", val.X.Scale, val.X.Offset, val.Y.Scale, val.Y.Offset)
-    elseif typeof(val) == "Color3" then return string.format("Color3.new(%s, %s, %s)", val.R, val.G, val.B)
-    elseif typeof(val) == "string" then return string.format("%q", val)
-    elseif typeof(val) == "boolean" then return tostring(val)
-    elseif typeof(val) == "number" then return tostring(val)
-    elseif typeof(val) == "EnumItem" then return tostring(val)
-    elseif typeof(val) == "Vector2" then return string.format("Vector2.new(%s, %s)", val.X, val.Y)
+    if typeof(val) == "UDim2" then 
+        return string.format("UDim2.new(%s, %s, %s, %s)", val.X.Scale, val.X.Offset, val.Y.Scale, val.Y.Offset)
+    elseif typeof(val) == "UDim" then
+        return string.format("UDim.new(%s, %s)", val.Scale, val.Offset)
+    elseif typeof(val) == "Color3" then 
+        return string.format("Color3.fromRGB(%d, %d, %d)", math.round(val.R * 255), math.round(val.G * 255), math.round(val.B * 255))
+    elseif typeof(val) == "string" then 
+        return string.format("%q", val)
+    elseif typeof(val) == "boolean" then 
+        return tostring(val)
+    elseif typeof(val) == "number" then 
+        return tostring(val)
+    elseif typeof(val) == "EnumItem" then 
+        local str = tostring(val)
+        if str:find("Unknown") then return nil end
+        return str
+    elseif typeof(val) == "Vector2" then 
+        return string.format("Vector2.new(%s, %s)", val.X, val.Y)
+    elseif typeof(val) == "Rect" then
+        return string.format("Rect.new(%s, %s, %s, %s)", val.Min.X, val.Min.Y, val.Max.X, val.Max.Y)
+    elseif typeof(val) == "Font" then
+        local success, str = pcall(function()
+            return string.format("Font.new(%q, Enum.FontWeight.%s, Enum.FontStyle.%s)", val.Family, val.Weight.Name, val.Style.Name)
+        end)
+        if success then return str end
     end
     return nil
 end
@@ -285,20 +356,17 @@ local function generateLuaCode(guiElement)
     local parentStr = coreGuiToggle and "game:GetService('CoreGui')" or "game.Players.LocalPlayer.PlayerGui"
     code = code .. "local ScreenGui = Instance.new('ScreenGui')\nScreenGui.Parent = " .. parentStr .. "\nScreenGui.Name = " .. string.format("%q", guiElement.Name) .. "\n\n"
     
-    local objects = {}
+    code = code .. "local G2L = {}\n\n"
     local counter = 1
     
     local function recurse(obj, parentName)
-        -- نادیده گرفتن استروک‌های موقت هایلایت در خروجی
-        if obj.Name == "__SelectionHighlightStroke" then return end
-        if not obj:IsA("GuiObject") and not obj:IsA("UIComponent") and not obj:IsA("LocalScript") and not obj:IsA("Folder") then return end
+        if obj.Name == "G2L_Highlight_Stroke" then return end
         
-        local objVar = "Obj_" .. counter
+        local objVar = "G2L[" .. counter .. "]"
         counter = counter + 1
-        objects[obj] = objVar
         
-        if obj:IsA("LocalScript") then
-            code = code .. "-- LocalScript: " .. obj.Name .. "\n"
+        if obj:IsA("LocalScript") or obj:IsA("ModuleScript") then
+            code = code .. "-- " .. obj.ClassName .. ": " .. obj.Name .. "\n"
             if decompile then
                 local success, src = pcall(decompile, obj)
                 if success and src then
@@ -312,36 +380,68 @@ local function generateLuaCode(guiElement)
             return
         end
         
-        code = code .. string.format("local %s = Instance.new('%s')\n", objVar, obj.ClassName)
+        code = code .. string.format("%s = Instance.new('%s')\n", objVar, obj.ClassName)
         code = code .. string.format("%s.Parent = %s\n", objVar, parentName)
         
         local propertiesToDump = {
             "Name", "Size", "Position", "AnchorPoint", "BackgroundColor3", "BackgroundTransparency", 
-            "Text", "TextColor3", "TextSize", "Font", "TextScaled", "TextWrapped", "TextXAlignment", "TextYAlignment",
-            "Visible", "ZIndex", "ClipsDescendants", "BorderSizePixel", "BorderColor3",
+            "Visible", "ZIndex", "LayoutOrder", "ClipsDescendants", "BorderSizePixel", "BorderColor3", "BorderMode", "Rotation",
+            "Text", "TextColor3", "TextTransparency", "TextSize", "Font", "FontFace", "TextScaled", "TextWrapped", 
+            "TextXAlignment", "TextYAlignment", "RichText", "TextStrokeColor3", "TextStrokeTransparency", 
+            "LineHeight", "MaxVisibleGraphemes", "TextTruncate", "TextDirection",
+            "PlaceholderText", "PlaceholderColor3", "ClearTextOnFocus", "MultiLine", "TextEditable",
+            "Image", "ImageColor3", "ImageTransparency", "ImageRectOffset", "ImageRectSize", 
+            "ScaleType", "SliceCenter", "SliceScale", "TileSize", "ResampleMode", "HoverImage", "PressedImage",
+            "AutoButtonColor", "Selected",
+            "CanvasSize", "CanvasPosition", "ScrollBarImageColor3", "ScrollBarImageTransparency", 
+            "ScrollBarThickness", "ScrollingDirection", "ElasticBehavior", "AutomaticCanvasSize", 
+            "VerticalScrollBarInset", "VerticalScrollBarPosition",
             "CornerRadius", "Thickness", "Color", "Transparency", "ApplyStrokeMode", "LineJoinMode",
-            "Color", "Rotation", "Offset", "PaddingTop", "PaddingBottom", "PaddingLeft", "PaddingRight",
-            "Image", "ImageColor3", "ImageTransparency", "ScaleType", "SliceCenter"
+            "PaddingTop", "PaddingBottom", "PaddingLeft", "PaddingRight",
+            "Padding", "FillDirection", "HorizontalAlignment", "VerticalAlignment", "SortOrder", "ItemLineAlignment",
+            "CellPadding", "CellSize", "FillDirectionMaxCells", "StartCorner",
+            "AspectRatio", "AspectType", "DominantAxis", "Scale", "MaxTextSize", "MinTextSize", "Value"
         }
         
         for _, prop in pairs(propertiesToDump) do
-            local success, val = pcall(function() return obj[prop] end)
-            if success and val ~= nil then
-                local serialized = serializeType(val)
-                if serialized then
-                    code = code .. string.format("%s.%s = %s\n", objVar, prop, serialized)
+            local skipProperty = false
+            if prop == "Transparency" and obj:IsA("GuiObject") then
+                skipProperty = true
+            end
+            
+            if not skipProperty then
+                local success, val = pcall(function() return obj[prop] end)
+                
+                if prop == "Text" and (val == "" or val == nil) and obj:IsA("TextLabel") then
+                    pcall(function()
+                        if obj.ContentText and obj.ContentText ~= "" then
+                            val = obj.ContentText
+                            success = true
+                        end
+                    end)
+                end
+
+                if success and val ~= nil then
+                    local serialized = serializeType(val)
+                    if serialized then
+                        code = code .. string.format("%s.%s = %s\n", objVar, prop, serialized)
+                    end
                 end
             end
         end
         code = code .. "\n"
         
         for _, child in pairs(obj:GetChildren()) do
-            recurse(child, objVar)
+            pcall(function()
+                recurse(child, objVar)
+            end)
         end
     end
     
     for _, child in pairs(guiElement:GetChildren()) do
-        recurse(child, "ScreenGui")
+        pcall(function()
+            recurse(child, "ScreenGui")
+        end)
     end
     
     if centerPanelToggle then
@@ -357,43 +457,64 @@ end
 ]]
     end
 
-    code = code .. [[
--- Injected Universal Drag System
-local UserInputService = game:GetService("UserInputService")
-local function makeDraggable(gui)
-    local dragging, dragInput, dragStart, startPos
-    gui.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = gui.Position
+    if dragSystemToggle then
+        code = code .. [[
+-- Injected Custom Tween Drag System
+local function FOSWQR_fake_script(targetFrame)
+    local script = Instance.new('LocalScript', targetFrame)
+    local UIS = game:GetService("UserInputService")
+    
+    local function dragify(Frame)
+        local dragToggle = nil
+        local dragSpeed = 0.15
+        local dragInput = nil
+        local dragStart = nil
+        local startPos = nil
+        
+        local function updateInput(input)
+            local Delta = input.Position - dragStart
+            local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+            game:GetService("TweenService"):Create(Frame, TweenInfo.new(dragSpeed), {Position = Position}):Play()
         end
-    end)
-    gui.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
+        
+        Frame.InputBegan:Connect(function(input)
+            if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UIS:GetFocusedTextBox() == nil then
+                dragToggle = true
+                dragStart = input.Position
+                startPos = Frame.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then
+                        dragToggle = false
+                    end
+                end)
+            end
+        end)
+        
+        Frame.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                dragInput = input
+            end
+        end)
+        
+        UIS.InputChanged:Connect(function(input)
+            if input == dragInput and dragToggle then
+                updateInput(input)
+            end
+        end)
+    end
+    
+    dragify(script.Parent)
 end
 
 for _, child in pairs(ScreenGui:GetChildren()) do
     if child:IsA("Frame") or child:IsA("ImageLabel") then
-        makeDraggable(child)
+        FOSWQR_fake_script(child)
         break
     end
 end
 ]]
+    end
+
     return code
 end
 
