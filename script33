@@ -382,18 +382,19 @@ end)
 
 glitchtoolBtn.MouseButton1Click:Connect(function()
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
-    local humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-    local root = Character and Character:FindFirstChild("HumanoidRootPart")
+local humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+local root = Character and Character:FindFirstChild("HumanoidRootPart")
     
     if root and humanoid then
         for _, item in pairs(Workspace:GetDescendants()) do
             if item:IsA("Tool") and not item:IsDescendantOf(Character) and not item:IsDescendantOf(LocalPlayer:FindFirstChild("Backpack")) then
                 local handle = item:FindFirstChild("Handle") or item:FindFirstChildWhichIsA("BasePart")
-                if handle then
+                if handle.Anchored then
                     handle.CFrame = root.CFrame
                     task.wait(0.05)
                     humanoid:EquipTool(item)
