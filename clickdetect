@@ -1,0 +1,7 @@
+fireBtn.MouseButton1Click:Connect(function()
+	for _, d in ipairs(workspace:GetDescendants()) do
+		if d:IsA("ClickDetector") then
+			pcall(function() fireclickdetector(d) end)
+		end
+	end
+end)
