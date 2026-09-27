@@ -15,9 +15,3 @@ end
 workspace.DescendantAdded:Connect(function(obj)
 	if obj:IsA("ProximityPrompt") then task.wait() applyPromptState(obj) end
 end)
-promptBtn.MouseButton1Click:Connect(function()
-	instantPromptEnabled = not instantPromptEnabled
-	promptBtn.Text = instantPromptEnabled and "⚡ Instant Prompt: ON" or "⚡ Instant Prompt: OFF"
-	promptBtn.BackgroundColor3 = instantPromptEnabled and Color3.fromRGB(80,200,120) or Color3.fromRGB(255,90,90)
-	refreshAllPrompts()
-end)
