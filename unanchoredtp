@@ -1,0 +1,62 @@
+    local speaker = Players.LocalPlayer
+    local players = {speaker.Name}
+    
+    -- 📡 حفظ نتورک با قدرت بی‌نهایت (آپدیت شده)
+    task.spawn(function()
+        for _ = 1, 30 do
+            pcall(function()
+                settings().Physics.AllowSleep = false
+                
+                -- تنظیمات عادی
+                speaker.SimulationRadius = math.huge
+                speaker.MaximumSimulationRadius = math.huge
+                
+                -- 👇 تزریق قدرت حداکثری از طریق توابع مخفی اکسپلویت
+                if sethiddenproperty then
+                    sethiddenproperty(speaker, "SimulationRadius", math.huge)
+                    sethiddenproperty(speaker, "MaxSimulationRadius", math.huge)
+                end
+            end)
+            task.wait(0.2)
+        end
+    end)
+    
+    -- 🚀 منطق اصلی (دقیقاً همون کد خودت بدون هیچ تغییری)
+    task.spawn(function()
+        for i,v in pairs(players) do
+            local Forces = {}
+            local count = 0 
+            
+            for _,part in pairs(workspace:GetDescendants()) do
+                count = count + 1
+                if count % 500 == 0 then task.wait() end 
+                
+                if Players[v].Character:FindFirstChild('Head') and part:IsA("BasePart" or "UnionOperation" or "Model") and part.Anchored == false and not part:IsDescendantOf(speaker.Character) and part.Name == "Torso" == false and part.Name == "Head" == false and part.Name == "Right Arm" == false and part.Name == "Left Arm" == false and part.Name == "Right Leg" == false and part.Name == "Left Leg" == false and part.Name == "HumanoidRootPart" == false then
+                    
+                    for i,c in pairs(part:GetChildren()) do
+                        if c:IsA("BodyPosition") or c:IsA("BodyGyro") then
+                            c:Destroy()
+                        end
+                    end
+                    
+                    local ForceInstance = Instance.new("BodyPosition")
+                    -- 👇 خط طلایی خودت
+                    ForceInstance.Position = Players[v].Character.Head.Position 
+                    ForceInstance.Parent = part
+                    ForceInstance.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                    table.insert(Forces, ForceInstance)
+                    
+                    if not table.find(frozenParts,part) then
+                        table.insert(frozenParts,part)
+                    end
+                end
+            end
+            
+            -- حلقه آخر (سر جای خودش)
+            for i,c in pairs(Forces) do
+                c.Position = Players[v].Character.Head.Position
+            end
+        end
+    end)
+    
+    notify("TP Unanchored (Max Network Power) Executed! 📦⚡")
