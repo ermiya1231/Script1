@@ -1,4 +1,27 @@
-    local speaker = Players.LocalPlayer
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 10)
+local workspace = game:GetService("Workspace")
+local xrayEnabled = false
+local originalTransparency = {}
+local noclipEnabled = false
+local noclipConn = nil
+
+-- Helper Functions
+local function partowner(part)
+    return part.ReceiveAge == 0
+end
+
+local function isnpc(ins)
+    local humanoid = ins:FindFirstChildOfClass("Humanoid")
+    local player = Players:GetPlayerFromCharacter(ins)
+    return humanoid and not player
+end
+local speaker = Players.LocalPlayer
     local players = {speaker.Name}
     
     -- 📡 حفظ نتورک با قدرت بی‌نهایت (آپدیت شده)
