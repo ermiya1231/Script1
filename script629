@@ -1,0 +1,468 @@
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+local Fly = {}
+Fly.__index = Fly
+
+function Fly.new()
+    local self = setmetatable({}, Fly)
+    
+    self.Speed = 50
+    self.Smoothness = 0.1
+    self.Offset = -3.5
+    
+    self.Active = false
+    self.Recentering = false
+    self.Target = nil
+    self.Inputs = {Fwd=false, Bwd=false, Left=false, Right=false, Up=false, Down=false}
+    self.Velocity = Vector3.new(0,0,0)
+    
+    self.BodyVel = nil
+    self.BodyGyro = nil
+    self.NoclipConnection = nil
+    self.VisualField = nil -- Stores the force field part
+    
+    self.Gui = self:CreateUI()
+    self:Events()
+    
+    return self
+end
+
+-- VISUALS: Creates the glowing force field
+function Fly:ToggleVisuals(enabled)
+    if self.VisualField then 
+        self.VisualField:Destroy() 
+        self.VisualField = nil
+    end
+
+    if enabled then
+        local char = LocalPlayer.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        if root then
+            local ff = Instance.new("Part")
+            ff.Name = "GhostField"
+            ff.Shape = Enum.PartType.Ball
+            -- Size: Slightly bigger than character (Character is roughly 5-6 studs tall)
+            ff.Size = Vector3.new(9, 9, 9) 
+            ff.Material = Enum.Material.ForceField
+            ff.Color = Color3.fromRGB(0, 255, 255) -- Cyan/Blue glow
+            ff.Transparency = 0 -- ForceField material handles transparency automatically
+            ff.CanCollide = false
+            ff.Massless = true
+            ff.CastShadow = false
+            ff.Parent = char
+
+            -- Weld it to the player so it moves with you
+            local weld = Instance.new("WeldConstraint")
+            weld.Part0 = root
+            weld.Part1 = ff
+            weld.Parent = ff
+            
+            self.VisualField = ff
+        end
+    end
+end
+
+function Fly:HandleNoclip()
+    if self.NoclipConnection then self.NoclipConnection:Disconnect() end
+
+    self.NoclipConnection = RunService.Stepped:Connect(function()
+        if not self.Active then 
+            if self.NoclipConnection then self.NoclipConnection:Disconnect() end
+            return 
+        end
+
+        local char = LocalPlayer.Character
+        if not char then return end
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+
+        local fullNoclipMode = self.Recentering or self.Inputs.Up
+
+        -- 1. Character Collision
+        for _, p in pairs(char:GetDescendants()) do
+            if p:IsA("BasePart") and p.Name ~= "GhostField" then 
+                p.CanCollide = not fullNoclipMode 
+            end
+        end
+
+        -- 2. Map Collision (Increased radius to 50 for smoother walking through walls)
+        local parts = Workspace:GetPartBoundsInRadius(root.Position, 50)
+        
+        for _, part in pairs(parts) do
+            if part:IsA("BasePart") and not part:IsDescendantOf(char) then
+                if fullNoclipMode then
+                    part.CanCollide = false
+                else
+                    -- Check if it is a player
+                    local isPlayer = false
+                    for _, pl in pairs(Players:GetPlayers()) do
+                        if pl.Character and part:IsDescendantOf(pl.Character) then
+                            isPlayer = true
+                            break
+                        end
+                    end
+                    
+                    if isPlayer then
+                        part.CanCollide = true
+                    else
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end
+    end)
+end
+
+function Fly:Start(target)
+    local char = LocalPlayer.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChild("Humanoid")
+    
+    if root and hum and target.Character then
+        self.Active = true
+        self.Target = target
+        
+        hum.PlatformStand = true
+        
+        self.BodyGyro = Instance.new("BodyGyro")
+        self.BodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        self.BodyGyro.P = 20000
+        self.BodyGyro.Parent = root
+        
+        self.BodyVel = Instance.new("BodyVelocity")
+        self.BodyVel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        self.BodyVel.Velocity = Vector3.new(0,0,0)
+        self.BodyVel.Parent = root
+        
+        self:ToggleVisuals(true) -- Turn on Force Field
+        self:HandleNoclip()
+        
+        task.spawn(function()
+            if target.Character:FindFirstChild("HumanoidRootPart") then
+                root.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, self.Offset, 0)
+            end
+        end)
+    end
+end
+
+function Fly:Fix()
+    if not self.Active or not self.Target then return end
+    local char = LocalPlayer.Character
+    local tChar = self.Target.Character
+    
+    if char and tChar and tChar:FindFirstChild("HumanoidRootPart") then
+        local root = char:FindFirstChild("HumanoidRootPart")
+        
+        root.CFrame = tChar.HumanoidRootPart.CFrame * CFrame.new(0, self.Offset, 0)
+        
+        task.spawn(function()
+            self.Recentering = true
+            -- Change visual color to Red during recenter to show "Full Noclip"
+            if self.VisualField then self.VisualField.Color = Color3.fromRGB(255, 0, 0) end
+            
+            local duration = 3
+            local startTime = os.clock()
+            
+            while (os.clock() - startTime) < duration do
+                local remaining = duration - (os.clock() - startTime)
+                self.FixBtn.Text = string.format("%.2f", math.max(0, remaining))
+                RunService.RenderStepped:Wait()
+            end
+            
+            -- Revert color
+            if self.VisualField then self.VisualField.Color = Color3.fromRGB(0, 255, 255) end
+            
+            self.FixBtn.Text = "RECENTER"
+            self.Recentering = false
+        end)
+    end
+end
+
+function Fly:Stop()
+    self.Active = false
+    self.Target = nil
+    self.Recentering = false
+    
+    if self.NoclipConnection then 
+        self.NoclipConnection:Disconnect() 
+        self.NoclipConnection = nil
+    end
+    
+    if self.BodyVel then self.BodyVel:Destroy() end
+    if self.BodyGyro then self.BodyGyro:Destroy() end
+    
+    self:ToggleVisuals(false) -- Turn off Force Field
+    
+    local char = LocalPlayer.Character
+    if char then
+        local root = char:FindFirstChild("HumanoidRootPart")
+        local hum = char:FindFirstChild("Humanoid")
+        
+        if hum then 
+            hum.PlatformStand = false 
+            hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+        
+        for _, p in pairs(char:GetDescendants()) do
+            if p:IsA("BasePart") then p.CanCollide = true end
+        end
+
+        -- GLOBAL FIX: Reset everything in a massive radius
+        if root then
+            local parts = Workspace:GetPartBoundsInRadius(root.Position, 500)
+            for _, part in pairs(parts) do
+                if part:IsA("BasePart") and not part:IsDescendantOf(char) then
+                    part.CanCollide = true
+                end
+            end
+
+            -- Safety Raycast for the floor directly under
+            local params = RaycastParams.new()
+            params.FilterDescendantsInstances = {char}
+            params.FilterType = Enum.RaycastFilterType.Exclude
+            
+            local ray = Workspace:Raycast(root.Position, Vector3.new(0, -1000, 0), params)
+            if ray and ray.Instance then
+                ray.Instance.CanCollide = true
+            end
+        end
+    end
+end
+
+function Fly:Update()
+    if not self.Active or not self.BodyVel or not self.BodyGyro then return end
+    
+    local cf = Camera.CFrame
+    local dir = Vector3.new(0,0,0)
+    
+    local flatLook = (cf.LookVector * Vector3.new(1,0,1)).Unit
+    local flatRight = (cf.RightVector * Vector3.new(1,0,1)).Unit
+    
+    if self.Inputs.Fwd then dir = dir + flatLook end
+    if self.Inputs.Bwd then dir = dir - flatLook end
+    if self.Inputs.Left then dir = dir - flatRight end
+    if self.Inputs.Right then dir = dir + flatRight end
+    if self.Inputs.Up then dir = dir + Vector3.new(0,1,0) end
+    if self.Inputs.Down then dir = dir - Vector3.new(0,1,0) end
+    
+    if dir.Magnitude > 0 then
+        dir = dir.Unit * self.Speed
+    end
+    
+    self.Velocity = self.Velocity:Lerp(dir, self.Smoothness)
+    self.BodyVel.Velocity = self.Velocity
+    
+    local _, y, _ = cf:ToEulerAnglesYXZ()
+    self.BodyGyro.CFrame = CFrame.Angles(0, y, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+end
+
+function Fly:Events()
+    RunService.RenderStepped:Connect(function() self:Update() end)
+    
+    local function Find(txt)
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and (string.sub(string.lower(p.Name), 1, #txt) == string.lower(txt) or string.sub(string.lower(p.DisplayName), 1, #txt) == string.lower(txt)) then
+                return p
+            end
+        end
+    end
+    
+    self.MainBtn.MouseButton1Click:Connect(function()
+        if self.Active then
+            self:Stop()
+            self.MainBtn.Text = "START"
+            self.MainBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        else
+            local t = Find(self.Box.Text)
+            if t then
+                self:Start(t)
+                self.MainBtn.Text = "STOP"
+                self.MainBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+            else
+                self.MainBtn.Text = "INVALID"
+                task.wait(0.5)
+                self.MainBtn.Text = "START"
+            end
+        end
+    end)
+    
+    self.FixBtn.MouseButton1Click:Connect(function()
+        self:Fix()
+    end)
+    
+    self.SpeedBtn.MouseButton1Click:Connect(function()
+        if self.Speed == 20 then 
+            self.Speed = 50
+            self.SpeedBtn.Text = "SPEED: 50"
+        elseif self.Speed == 50 then 
+            self.Speed = 100
+            self.SpeedBtn.Text = "SPEED: 100"
+        else 
+            self.Speed = 20
+            self.SpeedBtn.Text = "SPEED: 20" 
+        end
+    end)
+    
+    local function Bind(btn, key)
+        btn.MouseButton1Down:Connect(function() self.Inputs[key] = true end)
+        btn.MouseButton1Up:Connect(function() self.Inputs[key] = false end)
+        btn.MouseLeave:Connect(function() self.Inputs[key] = false end)
+    end
+    
+    Bind(self.W, "Fwd")
+    Bind(self.S, "Bwd")
+    Bind(self.A, "Left")
+    Bind(self.D, "Right")
+    Bind(self.U, "Up")
+    Bind(self.Dwn, "Down")
+    
+    LocalPlayer.CharacterAdded:Connect(function() self:Stop() end)
+end
+
+function Fly:CreateUI()
+    if LocalPlayer.PlayerGui:FindFirstChild("FlyInterface") then LocalPlayer.PlayerGui.FlyInterface:Destroy() end
+    
+    local Gui = Instance.new("ScreenGui")
+    Gui.Name = "FlyInterface"
+    Gui.ResetOnSpawn = false
+    Gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    
+    local Main = Instance.new("Frame")
+    Main.Size = UDim2.new(0, 200, 0, 300)
+    Main.Position = UDim2.new(0.05, 0, 0.3, 0)
+    Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    Main.BorderSizePixel = 2
+    Main.BorderColor3 = Color3.fromRGB(60, 60, 60)
+    Main.Active = true
+    Main.Draggable = true
+    Main.Parent = Gui
+    
+    local Title = Instance.new("TextLabel")
+    Title.Text = "CONTROLLER"
+    Title.Size = UDim2.new(1, 0, 0, 25)
+    Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Title.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Title.Font = Enum.Font.SourceSansBold
+    Title.TextSize = 14
+    Title.BorderSizePixel = 0
+    Title.Parent = Main
+    
+    self.Box = Instance.new("TextBox")
+    self.Box.Size = UDim2.new(0.9, 0, 0, 30)
+    self.Box.Position = UDim2.new(0.05, 0, 0.1, 0)
+    self.Box.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    self.Box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.Box.PlaceholderText = "User"
+    self.Box.BorderSizePixel = 1
+    self.Box.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.Box.Parent = Main
+    
+    self.MainBtn = Instance.new("TextButton")
+    self.MainBtn.Text = "START"
+    self.MainBtn.Size = UDim2.new(0.9, 0, 0, 35)
+    self.MainBtn.Position = UDim2.new(0.05, 0, 0.22, 0)
+    self.MainBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    self.MainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.MainBtn.Font = Enum.Font.SourceSansBold
+    self.MainBtn.TextSize = 18
+    self.MainBtn.BorderSizePixel = 1
+    self.MainBtn.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.MainBtn.Parent = Main
+    
+    self.FixBtn = Instance.new("TextButton")
+    self.FixBtn.Text = "RECENTER"
+    self.FixBtn.Size = UDim2.new(0.9, 0, 0, 30)
+    self.FixBtn.Position = UDim2.new(0.05, 0, 0.36, 0)
+    self.FixBtn.BackgroundColor3 = Color3.fromRGB(180, 100, 0)
+    self.FixBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.FixBtn.Font = Enum.Font.SourceSansBold
+    self.FixBtn.BorderSizePixel = 1
+    self.FixBtn.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.FixBtn.Parent = Main
+    
+    self.SpeedBtn = Instance.new("TextButton")
+    self.SpeedBtn.Text = "SPEED: 50"
+    self.SpeedBtn.Size = UDim2.new(0.9, 0, 0, 25)
+    self.SpeedBtn.Position = UDim2.new(0.05, 0, 0.48, 0)
+    self.SpeedBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    self.SpeedBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    self.SpeedBtn.Font = Enum.Font.SourceSans
+    self.SpeedBtn.BorderSizePixel = 1
+    self.SpeedBtn.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.SpeedBtn.Parent = Main
+    
+    self.U = Instance.new("TextButton")
+    self.U.Text = "^"
+    self.U.Size = UDim2.new(0.42, 0, 0, 30)
+    self.U.Position = UDim2.new(0.05, 0, 0.58, 0)
+    self.U.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+    self.U.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.U.BorderSizePixel = 1
+    self.U.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.U.Parent = Main
+    
+    self.Dwn = Instance.new("TextButton")
+    self.Dwn.Text = "v"
+    self.Dwn.Size = UDim2.new(0.42, 0, 0, 30)
+    self.Dwn.Position = UDim2.new(0.53, 0, 0.58, 0)
+    self.Dwn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+    self.Dwn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.Dwn.BorderSizePixel = 1
+    self.Dwn.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.Dwn.Parent = Main
+    
+    local Pad = Instance.new("Frame")
+    Pad.Size = UDim2.new(0.8, 0, 0.25, 0)
+    Pad.Position = UDim2.new(0.1, 0, 0.7, 0)
+    Pad.BackgroundTransparency = 1
+    Pad.Parent = Main
+    
+    self.W = Instance.new("TextButton")
+    self.W.Text = "W"
+    self.W.Size = UDim2.new(0.3, 0, 0.45, 0)
+    self.W.Position = UDim2.new(0.35, 0, 0, 0)
+    self.W.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    self.W.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.W.BorderSizePixel = 1
+    self.W.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.W.Parent = Pad
+    
+    self.S = Instance.new("TextButton")
+    self.S.Text = "S"
+    self.S.Size = UDim2.new(0.3, 0, 0.45, 0)
+    self.S.Position = UDim2.new(0.35, 0, 0.55, 0)
+    self.S.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    self.S.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.S.BorderSizePixel = 1
+    self.S.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.S.Parent = Pad
+    
+    self.A = Instance.new("TextButton")
+    self.A.Text = "A"
+    self.A.Size = UDim2.new(0.3, 0, 0.45, 0)
+    self.A.Position = UDim2.new(0, 0, 0.55, 0)
+    self.A.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    self.A.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.A.BorderSizePixel = 1
+    self.A.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.A.Parent = Pad
+    
+    self.D = Instance.new("TextButton")
+    self.D.Text = "D"
+    self.D.Size = UDim2.new(0.3, 0, 0.45, 0)
+    self.D.Position = UDim2.new(0.7, 0, 0.55, 0)
+    self.D.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    self.D.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.D.BorderSizePixel = 1
+    self.D.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.D.Parent = Pad
+
+    return Gui
+end
+
+local Controller = Fly.new()
