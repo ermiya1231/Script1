@@ -1,17 +1,22 @@
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
 -- Variables
 local animId = "rbxassetid://12874447851"
-local anim
+local currentTrack = nil
 local playing = false
 local stopLoop = false
 local speed = 1.5
 
--- Función para crear el GUI después de la notificación
-local function createTwerkGUI()
+-- دریافت Animator کاراکتر فعلی
+local function getAnimator()
 	local character = player.Character or player.CharacterAdded:Wait()
 	local humanoid = character:WaitForChild("Humanoid")
+	return humanoid:WaitForChild("Animator")
+end
 
+-- تابع ساخت GUI
+local function createTwerkGUI()
 	local ScreenGui = Instance.new("ScreenGui")
 	ScreenGui.Name = "TwerkGUI"
 	ScreenGui.ResetOnSpawn = false
@@ -40,25 +45,25 @@ local function createTwerkGUI()
 		stroke.Thickness = 1.3
 	end
 
-	local onButton = Instance.new("TextButton", Frame)
+	local onButton = Instance.new("TextButton")
 	onButton.Position = UDim2.new(0, 5, 0, 5)
 	onButton.Text = "Start Twerk"
 	styleButton(onButton, Color3.fromRGB(255, 182, 193))
 	onButton.Parent = Frame
 
-	local offButton = Instance.new("TextButton", Frame)
+	local offButton = Instance.new("TextButton")
 	offButton.Position = UDim2.new(0, 5, 0, 35)
 	offButton.Text = "Stop Twerk"
 	styleButton(offButton, Color3.fromRGB(255, 160, 122))
 	offButton.Parent = Frame
 
-	local speedSlider = Instance.new("TextButton", Frame)
+	local speedSlider = Instance.new("TextButton")
 	speedSlider.Position = UDim2.new(0, 5, 0, 65)
 	speedSlider.Text = "Speed: " .. speed
 	styleButton(speedSlider, Color3.fromRGB(255, 222, 173))
 	speedSlider.Parent = Frame
 
-	local creditsLabel = Instance.new("TextLabel", Frame)
+	local creditsLabel = Instance.new("TextLabel")
 	creditsLabel.Size = UDim2.new(1, -10, 0, 20)
 	creditsLabel.Position = UDim2.new(0, 5, 0, 100)
 	creditsLabel.Text = "Leaked By C00LHACK"
@@ -71,53 +76,61 @@ local function createTwerkGUI()
 	Instance.new("UIStroke", creditsLabel).Color = Color3.fromRGB(200, 200, 255)
 	creditsLabel.Parent = Frame
 
+	local animObject = Instance.new("Animation")
+	animObject.AnimationId = animId
+
+	local function stopAnimation()
+		stopLoop = true
+		playing = false
+		if currentTrack then
+			currentTrack:Stop()
+			currentTrack = nil
+		end
+	end
+
 	speedSlider.MouseButton1Click:Connect(function()
 		speed = speed + 0.5
 		if speed > 3 then speed = 0.5 end
 		speedSlider.Text = "Speed: " .. speed
+		if currentTrack then
+			currentTrack:AdjustSpeed(speed)
+		end
 	end)
 
 	local function playLoop()
 		stopLoop = false
-		while not stopLoop and humanoid and humanoid.Parent do
-			anim = Instance.new("Animation")
-			anim.AnimationId = animId
-			local track = humanoid:LoadAnimation(anim)
-			track:Play()
-			track.TimePosition = 3.9
-			track:AdjustSpeed(speed)
-			wait(0.6)
-			track:Stop()
+		local animator = getAnimator()
+
+		while not stopLoop and animator and animator.Parent do
+			currentTrack = animator:LoadAnimation(animObject)
+			currentTrack:Play()
+			currentTrack.TimePosition = 3.9
+			currentTrack:AdjustSpeed(speed)
+			
+			task.wait(0.6)
+			
+			if currentTrack then
+				currentTrack:Stop()
+			end
 		end
+
+		stopAnimation()
 	end
 
 	onButton.MouseButton1Click:Connect(function()
 		if not playing then
 			playing = true
-			coroutine.wrap(playLoop)()
+			task.spawn(playLoop)
 		end
 	end)
 
 	offButton.MouseButton1Click:Connect(function()
-		playing = false
-		stopLoop = true
-		if humanoid then
-			for _, tr in ipairs(humanoid:GetPlayingAnimationTracks()) do
-				if tr.Animation.AnimationId == animId then
-					tr:Stop()
-				end
-			end
-		end
+		stopAnimation()
 	end)
 
 	player.CharacterAdded:Connect(function()
-		if ScreenGui then
-			ScreenGui:Destroy()
-		end
+		stopAnimation()
 	end)
 end
 
 createTwerkGUI()
-
-
-
