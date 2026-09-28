@@ -1,0 +1,3767 @@
+
+local G2L = {};
+
+-- StarterGui.she grip on my tool till I hub
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"]["Name"] = [[Leaked By C00LHACK]];
+G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+G2L["1"]["ResetOnSpawn"] = false;
+
+
+-- StarterGui.she grip on my tool till I hub.Scrollup
+G2L["2"] = Instance.new("LocalScript", G2L["1"]);
+G2L["2"]["Name"] = [[Scrollup]];
+
+
+-- StarterGui.she grip on my tool till I hub.list
+G2L["3"] = Instance.new("LocalScript", G2L["1"]);
+G2L["3"]["Name"] = [[list]];
+
+
+-- StarterGui.she grip on my tool till I hub.LocalScript
+G2L["4"] = Instance.new("LocalScript", G2L["1"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.SimulationRadius
+G2L["5"] = Instance.new("LocalScript", G2L["1"]);
+G2L["5"]["Name"] = [[SimulationRadius]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main
+G2L["6"] = Instance.new("Frame", G2L["1"]);
+G2L["6"]["BorderSizePixel"] = 0;
+G2L["6"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["6"]["Size"] = UDim2.new(0, 532, 0, 310);
+G2L["6"]["Position"] = UDim2.new(0.04968, 0, 0.07314, 0);
+G2L["6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["6"]["Name"] = [[Main]];
+G2L["6"]["BackgroundTransparency"] = 1;
+
+
+-- StarterGui.she grip on my tool till I hub.Main.Smooth GUI Dragging
+G2L["7"] = Instance.new("LocalScript", G2L["6"]);
+G2L["7"]["Name"] = [[Smooth GUI Dragging]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain
+G2L["8"] = Instance.new("ScrollingFrame", G2L["6"]);
+G2L["8"]["Active"] = true;
+G2L["8"]["BorderSizePixel"] = 0;
+G2L["8"]["CanvasSize"] = UDim2.new(0, 0, 2.665, 0);
+-- [ERROR] cannot convert TopImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["8"]["TopImage"] = [[]];
+G2L["8"]["Name"] = [[ScrollingMain]];
+G2L["8"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["8"]["MidImage"] = [[]];
+-- [ERROR] cannot convert MidImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+-- [ERROR] cannot convert BottomImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["8"]["BottomImage"] = [[]];
+G2L["8"]["Size"] = UDim2.new(0, 532, 0, 269);
+G2L["8"]["ScrollBarImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["8"]["Position"] = UDim2.new(0, 0, 0.12903, 0);
+G2L["8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["8"]["ScrollBarThickness"] = 5;
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47
+G2L["9"] = Instance.new("Frame", G2L["8"]);
+G2L["9"]["BorderSizePixel"] = 0;
+G2L["9"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["9"]["Size"] = UDim2.new(0, 197, 0, 217);
+G2L["9"]["Position"] = UDim2.new(0.5, 0, 0.03, 0);
+G2L["9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9"]["Name"] = [[ak47]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Title
+G2L["a"] = Instance.new("TextLabel", G2L["9"]);
+G2L["a"]["TextWrapped"] = true;
+G2L["a"]["BorderSizePixel"] = 0;
+G2L["a"]["TextSize"] = 48;
+G2L["a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["a"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["a"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["a"]["BackgroundTransparency"] = 1;
+G2L["a"]["Size"] = UDim2.new(0, 185, 0, 29);
+G2L["a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["a"]["Text"] = [[ak47]];
+G2L["a"]["Name"] = [[Title]];
+G2L["a"]["Position"] = UDim2.new(0.12646, 0, 0.07711, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Description
+G2L["b"] = Instance.new("TextLabel", G2L["9"]);
+G2L["b"]["TextWrapped"] = true;
+G2L["b"]["BorderSizePixel"] = 0;
+G2L["b"]["TextSize"] = 18;
+G2L["b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["b"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["b"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["b"]["BackgroundTransparency"] = 1;
+G2L["b"]["Size"] = UDim2.new(0, 173, 0, 39);
+G2L["b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["b"]["Text"] = [[russia]];
+G2L["b"]["Name"] = [[Description]];
+G2L["b"]["Position"] = UDim2.new(0.15691, 0, 0.20686, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Start
+G2L["c"] = Instance.new("TextButton", G2L["9"]);
+G2L["c"]["TextWrapped"] = true;
+G2L["c"]["BorderSizePixel"] = 0;
+G2L["c"]["TextSize"] = 38;
+G2L["c"]["TextScaled"] = true;
+G2L["c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["c"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["c"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["c"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["c"]["ClipsDescendants"] = true;
+G2L["c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["c"]["Text"] = [[Start (28)]];
+G2L["c"]["Name"] = [[Start]];
+G2L["c"]["Position"] = UDim2.new(0.15184, 0, 0.48317, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Start.LocalScript
+G2L["d"] = Instance.new("LocalScript", G2L["c"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Start (sword)
+G2L["e"] = Instance.new("TextButton", G2L["9"]);
+G2L["e"]["TextWrapped"] = true;
+G2L["e"]["BorderSizePixel"] = 0;
+G2L["e"]["TextSize"] = 38;
+G2L["e"]["TextScaled"] = true;
+G2L["e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["e"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["e"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["e"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["e"]["ClipsDescendants"] = true;
+G2L["e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["e"]["Text"] = [[Start (sword) (19)]];
+G2L["e"]["Name"] = [[Start (sword)]];
+G2L["e"]["Position"] = UDim2.new(0.15184, 0, 0.63527, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Start (sword).LocalScript
+G2L["f"] = Instance.new("LocalScript", G2L["e"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Start (boombox)
+G2L["10"] = Instance.new("TextButton", G2L["9"]);
+G2L["10"]["TextWrapped"] = true;
+G2L["10"]["BorderSizePixel"] = 0;
+G2L["10"]["TextSize"] = 38;
+G2L["10"]["TextScaled"] = true;
+G2L["10"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["10"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["10"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["10"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["10"]["ClipsDescendants"] = true;
+G2L["10"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["10"]["Text"] = [[Start (boombox) (23)]];
+G2L["10"]["Name"] = [[Start (boombox)]];
+G2L["10"]["Position"] = UDim2.new(0.15184, 0, 0.78734, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Start (boombox).LocalScript
+G2L["11"] = Instance.new("LocalScript", G2L["10"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend
+G2L["12"] = Instance.new("Frame", G2L["8"]);
+G2L["12"]["BorderSizePixel"] = 0;
+G2L["12"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["12"]["Size"] = UDim2.new(0, 197, 0, 217);
+G2L["12"]["Position"] = UDim2.new(0.11466, 0, 0.13774, 0);
+G2L["12"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["12"]["Name"] = [[friend]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Title
+G2L["13"] = Instance.new("TextLabel", G2L["12"]);
+G2L["13"]["TextWrapped"] = true;
+G2L["13"]["BorderSizePixel"] = 0;
+G2L["13"]["TextSize"] = 48;
+G2L["13"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["13"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["13"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["13"]["BackgroundTransparency"] = 1;
+G2L["13"]["Size"] = UDim2.new(0, 148, 0, 29);
+G2L["13"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["13"]["Text"] = [[friend]];
+G2L["13"]["Name"] = [[Title]];
+G2L["13"]["Position"] = UDim2.new(0.21383, 0, 0.07711, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Description
+G2L["14"] = Instance.new("TextLabel", G2L["12"]);
+G2L["14"]["TextWrapped"] = true;
+G2L["14"]["BorderSizePixel"] = 0;
+G2L["14"]["TextSize"] = 18;
+G2L["14"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["14"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["14"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["14"]["BackgroundTransparency"] = 1;
+G2L["14"]["Size"] = UDim2.new(0, 173, 0, 39);
+G2L["14"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["14"]["Text"] = [[the stand user could be anyone]];
+G2L["14"]["Name"] = [[Description]];
+G2L["14"]["Position"] = UDim2.new(0.15291, 0, 0.20686, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Start
+G2L["15"] = Instance.new("TextButton", G2L["12"]);
+G2L["15"]["TextWrapped"] = true;
+G2L["15"]["BorderSizePixel"] = 0;
+G2L["15"]["TextSize"] = 38;
+G2L["15"]["TextScaled"] = true;
+G2L["15"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["15"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["15"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["15"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["15"]["ClipsDescendants"] = true;
+G2L["15"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["15"]["Text"] = [[Start (52)]];
+G2L["15"]["Name"] = [[Start]];
+G2L["15"]["Position"] = UDim2.new(0.14784, 0, 0.48317, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Start.LocalScript
+G2L["16"] = Instance.new("LocalScript", G2L["15"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Start (sword)
+G2L["17"] = Instance.new("TextButton", G2L["12"]);
+G2L["17"]["TextWrapped"] = true;
+G2L["17"]["BorderSizePixel"] = 0;
+G2L["17"]["TextSize"] = 38;
+G2L["17"]["TextScaled"] = true;
+G2L["17"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["17"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["17"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["17"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["17"]["ClipsDescendants"] = true;
+G2L["17"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["17"]["Text"] = [[Start (sword) (18)]];
+G2L["17"]["Name"] = [[Start (sword)]];
+G2L["17"]["Position"] = UDim2.new(0.14784, 0, 0.63527, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Start (sword).LocalScript
+G2L["18"] = Instance.new("LocalScript", G2L["17"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Start (boombox)
+G2L["19"] = Instance.new("TextButton", G2L["12"]);
+G2L["19"]["TextWrapped"] = true;
+G2L["19"]["BorderSizePixel"] = 0;
+G2L["19"]["TextSize"] = 38;
+G2L["19"]["TextScaled"] = true;
+G2L["19"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["19"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["19"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["19"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["19"]["ClipsDescendants"] = true;
+G2L["19"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["19"]["Text"] = [[Start (boombox) (14)]];
+G2L["19"]["Name"] = [[Start (boombox)]];
+G2L["19"]["Position"] = UDim2.new(0.14784, 0, 0.78734, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Start (boombox).LocalScript
+G2L["1a"] = Instance.new("LocalScript", G2L["19"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG
+G2L["1b"] = Instance.new("Frame", G2L["8"]);
+G2L["1b"]["BorderSizePixel"] = 0;
+G2L["1b"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["1b"]["Size"] = UDim2.new(0, 197, 0, 217);
+G2L["1b"]["Position"] = UDim2.new(0.115, 0, 0.1025, 0);
+G2L["1b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1b"]["Name"] = [[RPG]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Title
+G2L["1c"] = Instance.new("TextLabel", G2L["1b"]);
+G2L["1c"]["TextWrapped"] = true;
+G2L["1c"]["BorderSizePixel"] = 0;
+G2L["1c"]["TextSize"] = 48;
+G2L["1c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1c"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["1c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1c"]["BackgroundTransparency"] = 1;
+G2L["1c"]["Size"] = UDim2.new(0, 148, 0, 29);
+G2L["1c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1c"]["Text"] = [[ RPG]];
+G2L["1c"]["Name"] = [[Title]];
+G2L["1c"]["Position"] = UDim2.new(0.22183, 0, 0.07711, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Description
+G2L["1d"] = Instance.new("TextLabel", G2L["1b"]);
+G2L["1d"]["TextWrapped"] = true;
+G2L["1d"]["BorderSizePixel"] = 0;
+G2L["1d"]["TextSize"] = 18;
+G2L["1d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1d"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["1d"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1d"]["BackgroundTransparency"] = 1;
+G2L["1d"]["Size"] = UDim2.new(0, 173, 0, 39);
+G2L["1d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1d"]["Text"] = [[boom]];
+G2L["1d"]["Name"] = [[Description]];
+G2L["1d"]["Position"] = UDim2.new(0.16091, 0, 0.20686, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Start (sword)
+G2L["1e"] = Instance.new("TextButton", G2L["1b"]);
+G2L["1e"]["TextWrapped"] = true;
+G2L["1e"]["BorderSizePixel"] = 0;
+G2L["1e"]["TextSize"] = 38;
+G2L["1e"]["TextScaled"] = true;
+G2L["1e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1e"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["1e"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["1e"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["1e"]["ClipsDescendants"] = true;
+G2L["1e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1e"]["Text"] = [[Start (sword) (24)]];
+G2L["1e"]["Name"] = [[Start (sword)]];
+G2L["1e"]["Position"] = UDim2.new(0.15584, 0, 0.63527, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Start (sword).LocalScript
+G2L["1f"] = Instance.new("LocalScript", G2L["1e"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Start (boombox)
+G2L["20"] = Instance.new("TextButton", G2L["1b"]);
+G2L["20"]["TextWrapped"] = true;
+G2L["20"]["BorderSizePixel"] = 0;
+G2L["20"]["TextSize"] = 38;
+G2L["20"]["TextScaled"] = true;
+G2L["20"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["20"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["20"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["20"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["20"]["ClipsDescendants"] = true;
+G2L["20"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["20"]["Text"] = [[Start (boombox) (11)]];
+G2L["20"]["Name"] = [[Start (boombox)]];
+G2L["20"]["Position"] = UDim2.new(0.15584, 0, 0.78734, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Start (boombox).LocalScript
+G2L["21"] = Instance.new("LocalScript", G2L["20"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Start
+G2L["22"] = Instance.new("TextButton", G2L["1b"]);
+G2L["22"]["TextWrapped"] = true;
+G2L["22"]["BorderSizePixel"] = 0;
+G2L["22"]["TextSize"] = 38;
+G2L["22"]["TextScaled"] = true;
+G2L["22"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["22"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["22"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["22"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["22"]["ClipsDescendants"] = true;
+G2L["22"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["22"]["Text"] = [[Start (22)]];
+G2L["22"]["Name"] = [[Start]];
+G2L["22"]["Position"] = UDim2.new(0.15584, 0, 0.48317, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Start.LocalScript
+G2L["23"] = Instance.new("LocalScript", G2L["22"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.layout
+G2L["24"] = Instance.new("UIGridLayout", G2L["8"]);
+G2L["24"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
+G2L["24"]["CellSize"] = UDim2.new(0, 250, 0, 200);
+G2L["24"]["FillDirectionMaxCells"] = 2;
+G2L["24"]["Name"] = [[layout]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe
+G2L["25"] = Instance.new("Frame", G2L["8"]);
+G2L["25"]["BorderSizePixel"] = 0;
+G2L["25"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["25"]["Size"] = UDim2.new(0, 100, 0, 100);
+G2L["25"]["Position"] = UDim2.new(0.50846, 0, 0.00645, 0);
+G2L["25"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["25"]["Name"] = [[ADupe]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Title
+G2L["26"] = Instance.new("TextLabel", G2L["25"]);
+G2L["26"]["TextWrapped"] = true;
+G2L["26"]["BorderSizePixel"] = 0;
+G2L["26"]["TextSize"] = 48;
+G2L["26"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["26"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["26"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["26"]["BackgroundTransparency"] = 1;
+G2L["26"]["Size"] = UDim2.new(0, 238, 0, 53);
+G2L["26"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["26"]["Text"] = [[dupe your items]];
+G2L["26"]["Name"] = [[Title]];
+G2L["26"]["Position"] = UDim2.new(0.01846, 0, 0.015, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Description
+G2L["27"] = Instance.new("TextLabel", G2L["25"]);
+G2L["27"]["TextWrapped"] = true;
+G2L["27"]["BorderSizePixel"] = 0;
+G2L["27"]["TextSize"] = 18;
+G2L["27"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["27"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["27"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["27"]["BackgroundTransparency"] = 1;
+G2L["27"]["Size"] = UDim2.new(0, 89, 0, 14);
+G2L["27"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["27"]["Text"] = [[items MUST:]];
+G2L["27"]["Name"] = [[Description]];
+G2L["27"]["Position"] = UDim2.new(-0.00309, 0, 0.27686, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Description
+G2L["28"] = Instance.new("TextLabel", G2L["25"]);
+G2L["28"]["TextWrapped"] = true;
+G2L["28"]["BorderSizePixel"] = 0;
+G2L["28"]["TextSize"] = 18;
+G2L["28"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["28"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["28"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["28"]["BackgroundTransparency"] = 1;
+G2L["28"]["Size"] = UDim2.new(0, 89, 0, 14);
+G2L["28"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["28"]["Text"] = [[be droppable]];
+G2L["28"]["Name"] = [[Description]];
+G2L["28"]["Position"] = UDim2.new(-0.00309, 0, 0.34186, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Description
+G2L["29"] = Instance.new("TextLabel", G2L["25"]);
+G2L["29"]["TextWrapped"] = true;
+G2L["29"]["BorderSizePixel"] = 0;
+G2L["29"]["TextSize"] = 18;
+G2L["29"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["29"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["29"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["29"]["BackgroundTransparency"] = 1;
+G2L["29"]["Size"] = UDim2.new(0, 114, 0, 14);
+G2L["29"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["29"]["Text"] = [[be in the starterpack]];
+G2L["29"]["Name"] = [[Description]];
+G2L["29"]["Position"] = UDim2.new(0.03291, 0, 0.41186, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Start
+G2L["2a"] = Instance.new("TextButton", G2L["25"]);
+G2L["2a"]["BorderSizePixel"] = 0;
+G2L["2a"]["TextSize"] = 38;
+G2L["2a"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["2a"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["2a"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["2a"]["Size"] = UDim2.new(0, 218, 0, 27);
+G2L["2a"]["ClipsDescendants"] = true;
+G2L["2a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2a"]["Text"] = [[dupe 'em]];
+G2L["2a"]["Name"] = [[Start]];
+G2L["2a"]["Position"] = UDim2.new(0.07184, 0, 0.76817, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Start.LocalScript
+G2L["2b"] = Instance.new("LocalScript", G2L["2a"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Description
+G2L["2c"] = Instance.new("TextLabel", G2L["25"]);
+G2L["2c"]["TextWrapped"] = true;
+G2L["2c"]["BorderSizePixel"] = 0;
+G2L["2c"]["TextSize"] = 18;
+G2L["2c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["2c"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["2c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["2c"]["BackgroundTransparency"] = 1;
+G2L["2c"]["Size"] = UDim2.new(0, 89, 0, 14);
+G2L["2c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2c"]["Text"] = [[0m 0s]];
+G2L["2c"]["Name"] = [[Description]];
+G2L["2c"]["Position"] = UDim2.new(0.32091, 0, 0.51186, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Description.LocalScript
+G2L["2d"] = Instance.new("LocalScript", G2L["2c"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Number
+G2L["2e"] = Instance.new("TextBox", G2L["25"]);
+G2L["2e"]["Name"] = [[Number]];
+G2L["2e"]["BorderSizePixel"] = 0;
+G2L["2e"]["TextSize"] = 41;
+G2L["2e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["2e"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["2e"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["2e"]["ClipsDescendants"] = true;
+G2L["2e"]["Size"] = UDim2.new(0, 200, 0, 31);
+G2L["2e"]["Position"] = UDim2.new(0.104, 0, 0.59, 0);
+G2L["2e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2e"]["Text"] = [[]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.top spacing
+G2L["2f"] = Instance.new("UIPadding", G2L["8"]);
+G2L["2f"]["PaddingTop"] = UDim.new(0, 5);
+G2L["2f"]["Name"] = [[top spacing]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun
+G2L["30"] = Instance.new("Frame", G2L["8"]);
+G2L["30"]["BorderSizePixel"] = 0;
+G2L["30"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["30"]["Size"] = UDim2.new(0, 197, 0, 217);
+G2L["30"]["Position"] = UDim2.new(0.5, 0, 0.10297, 0);
+G2L["30"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["30"]["Name"] = [[handgun]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Title
+G2L["31"] = Instance.new("TextLabel", G2L["30"]);
+G2L["31"]["TextWrapped"] = true;
+G2L["31"]["BorderSizePixel"] = 0;
+G2L["31"]["TextSize"] = 48;
+G2L["31"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["31"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["31"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["31"]["BackgroundTransparency"] = 1;
+G2L["31"]["Size"] = UDim2.new(0, 197, 0, 29);
+G2L["31"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["31"]["Text"] = [[handgun]];
+G2L["31"]["Name"] = [[Title]];
+G2L["31"]["Position"] = UDim2.new(0.15446, 0, 0.07759, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Description
+G2L["32"] = Instance.new("TextLabel", G2L["30"]);
+G2L["32"]["TextWrapped"] = true;
+G2L["32"]["BorderSizePixel"] = 0;
+G2L["32"]["TextSize"] = 18;
+G2L["32"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["32"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["32"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["32"]["BackgroundTransparency"] = 1;
+G2L["32"]["Size"] = UDim2.new(0, 173, 0, 39);
+G2L["32"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["32"]["Text"] = [[its a pretty big handgun]];
+G2L["32"]["Name"] = [[Description]];
+G2L["32"]["Position"] = UDim2.new(0.17291, 0, 0.17873, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Start
+G2L["33"] = Instance.new("TextButton", G2L["30"]);
+G2L["33"]["TextWrapped"] = true;
+G2L["33"]["BorderSizePixel"] = 0;
+G2L["33"]["TextSize"] = 38;
+G2L["33"]["TextScaled"] = true;
+G2L["33"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["33"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["33"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["33"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["33"]["ClipsDescendants"] = true;
+G2L["33"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["33"]["Text"] = [[Start (14)]];
+G2L["33"]["Name"] = [[Start]];
+G2L["33"]["Position"] = UDim2.new(0.17184, 0, 0.51317, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Start.LocalScript
+G2L["34"] = Instance.new("LocalScript", G2L["33"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Start (sword)
+G2L["35"] = Instance.new("TextButton", G2L["30"]);
+G2L["35"]["TextWrapped"] = true;
+G2L["35"]["BorderSizePixel"] = 0;
+G2L["35"]["TextSize"] = 38;
+G2L["35"]["TextScaled"] = true;
+G2L["35"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["35"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["35"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["35"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["35"]["ClipsDescendants"] = true;
+G2L["35"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["35"]["Text"] = [[Start (sword) (27)]];
+G2L["35"]["Name"] = [[Start (sword)]];
+G2L["35"]["Position"] = UDim2.new(0.17184, 0, 0.66527, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Start (sword).LocalScript
+G2L["36"] = Instance.new("LocalScript", G2L["35"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Start (boombox)
+G2L["37"] = Instance.new("TextButton", G2L["30"]);
+G2L["37"]["TextWrapped"] = true;
+G2L["37"]["BorderSizePixel"] = 0;
+G2L["37"]["TextSize"] = 38;
+G2L["37"]["TextScaled"] = true;
+G2L["37"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["37"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["37"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["37"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["37"]["ClipsDescendants"] = true;
+G2L["37"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["37"]["Text"] = [[Start (boombox) (9)]];
+G2L["37"]["Name"] = [[Start (boombox)]];
+G2L["37"]["Position"] = UDim2.new(0.17184, 0, 0.81734, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Start (boombox).LocalScript
+G2L["38"] = Instance.new("LocalScript", G2L["37"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2
+G2L["39"] = Instance.new("Frame", G2L["8"]);
+G2L["39"]["BorderSizePixel"] = 0;
+G2L["39"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["39"]["Size"] = UDim2.new(0, 197, 0, 217);
+G2L["39"]["Position"] = UDim2.new(0.5, 0, 0.10297, 0);
+G2L["39"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["39"]["Name"] = [[ak47 v2]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Title
+G2L["3a"] = Instance.new("TextLabel", G2L["39"]);
+G2L["3a"]["TextWrapped"] = true;
+G2L["3a"]["BorderSizePixel"] = 0;
+G2L["3a"]["TextSize"] = 48;
+G2L["3a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["3a"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["3a"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["3a"]["BackgroundTransparency"] = 1;
+G2L["3a"]["Size"] = UDim2.new(0, 197, 0, 29);
+G2L["3a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3a"]["Text"] = [[ak47 v2]];
+G2L["3a"]["Name"] = [[Title]];
+G2L["3a"]["Position"] = UDim2.new(0.15446, 0, 0.07759, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Description
+G2L["3b"] = Instance.new("TextLabel", G2L["39"]);
+G2L["3b"]["TextWrapped"] = true;
+G2L["3b"]["BorderSizePixel"] = 0;
+G2L["3b"]["TextSize"] = 18;
+G2L["3b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["3b"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["3b"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["3b"]["BackgroundTransparency"] = 1;
+G2L["3b"]["Size"] = UDim2.new(0, 173, 0, 39);
+G2L["3b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3b"]["Text"] = [[its better]];
+G2L["3b"]["Name"] = [[Description]];
+G2L["3b"]["Position"] = UDim2.new(0.17291, 0, 0.17873, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Start
+G2L["3c"] = Instance.new("TextButton", G2L["39"]);
+G2L["3c"]["TextWrapped"] = true;
+G2L["3c"]["BorderSizePixel"] = 0;
+G2L["3c"]["TextSize"] = 38;
+G2L["3c"]["TextScaled"] = true;
+G2L["3c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["3c"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["3c"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["3c"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["3c"]["ClipsDescendants"] = true;
+G2L["3c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3c"]["Text"] = [[Start (27)]];
+G2L["3c"]["Name"] = [[Start]];
+G2L["3c"]["Position"] = UDim2.new(0.17184, 0, 0.51317, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Start.LocalScript
+G2L["3d"] = Instance.new("LocalScript", G2L["3c"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Start (sword)
+G2L["3e"] = Instance.new("TextButton", G2L["39"]);
+G2L["3e"]["TextWrapped"] = true;
+G2L["3e"]["BorderSizePixel"] = 0;
+G2L["3e"]["TextSize"] = 38;
+G2L["3e"]["TextScaled"] = true;
+G2L["3e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["3e"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["3e"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["3e"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["3e"]["ClipsDescendants"] = true;
+G2L["3e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3e"]["Text"] = [[Start (sword) (38)]];
+G2L["3e"]["Name"] = [[Start (sword)]];
+G2L["3e"]["Position"] = UDim2.new(0.17184, 0, 0.66527, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Start (sword).LocalScript
+G2L["3f"] = Instance.new("LocalScript", G2L["3e"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Start (boombox)
+G2L["40"] = Instance.new("TextButton", G2L["39"]);
+G2L["40"]["TextWrapped"] = true;
+G2L["40"]["BorderSizePixel"] = 0;
+G2L["40"]["TextSize"] = 38;
+G2L["40"]["TextScaled"] = true;
+G2L["40"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["40"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["40"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["40"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["40"]["ClipsDescendants"] = true;
+G2L["40"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["40"]["Text"] = [[Start (boombox) (8)]];
+G2L["40"]["Name"] = [[Start (boombox)]];
+G2L["40"]["Position"] = UDim2.new(0.17184, 0, 0.81734, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Start (boombox).LocalScript
+G2L["41"] = Instance.new("LocalScript", G2L["40"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic
+G2L["42"] = Instance.new("Frame", G2L["8"]);
+G2L["42"]["BorderSizePixel"] = 0;
+G2L["42"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["42"]["Size"] = UDim2.new(0, 197, 0, 217);
+G2L["42"]["Position"] = UDim2.new(0.5, 0, 0.03, 0);
+G2L["42"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["42"]["Name"] = [[sphere dynamic]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Title
+G2L["43"] = Instance.new("TextLabel", G2L["42"]);
+G2L["43"]["TextWrapped"] = true;
+G2L["43"]["BorderSizePixel"] = 0;
+G2L["43"]["TextSize"] = 48;
+G2L["43"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["43"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["43"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["43"]["BackgroundTransparency"] = 1;
+G2L["43"]["Size"] = UDim2.new(0, 225, 0, 29);
+G2L["43"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["43"]["Text"] = [[sphere (scales)]];
+G2L["43"]["Name"] = [[Title]];
+G2L["43"]["Position"] = UDim2.new(0.05446, 0, 0.09211, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Description
+G2L["44"] = Instance.new("TextLabel", G2L["42"]);
+G2L["44"]["TextWrapped"] = true;
+G2L["44"]["BorderSizePixel"] = 0;
+G2L["44"]["TextSize"] = 18;
+G2L["44"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["44"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["44"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["44"]["BackgroundTransparency"] = 1;
+G2L["44"]["Size"] = UDim2.new(0, 173, 0, 39);
+G2L["44"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["44"]["Text"] = [[scales with how many items u have]];
+G2L["44"]["Name"] = [[Description]];
+G2L["44"]["Position"] = UDim2.new(0.14891, 0, 0.22186, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Start
+G2L["45"] = Instance.new("TextButton", G2L["42"]);
+G2L["45"]["TextWrapped"] = true;
+G2L["45"]["BorderSizePixel"] = 0;
+G2L["45"]["TextSize"] = 38;
+G2L["45"]["TextScaled"] = true;
+G2L["45"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["45"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["45"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["45"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["45"]["ClipsDescendants"] = true;
+G2L["45"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["45"]["Text"] = [[Start]];
+G2L["45"]["Name"] = [[Start]];
+G2L["45"]["Position"] = UDim2.new(0.15184, 0, 0.48317, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Start.LocalScript
+G2L["46"] = Instance.new("LocalScript", G2L["45"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Start (sword)
+G2L["47"] = Instance.new("TextButton", G2L["42"]);
+G2L["47"]["TextWrapped"] = true;
+G2L["47"]["BorderSizePixel"] = 0;
+G2L["47"]["TextSize"] = 38;
+G2L["47"]["TextScaled"] = true;
+G2L["47"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["47"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["47"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["47"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["47"]["ClipsDescendants"] = true;
+G2L["47"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["47"]["Text"] = [[Start (sword)]];
+G2L["47"]["Name"] = [[Start (sword)]];
+G2L["47"]["Position"] = UDim2.new(0.15184, 0, 0.63527, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Start (sword).LocalScript
+G2L["48"] = Instance.new("LocalScript", G2L["47"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Start (boombox)
+G2L["49"] = Instance.new("TextButton", G2L["42"]);
+G2L["49"]["TextWrapped"] = true;
+G2L["49"]["BorderSizePixel"] = 0;
+G2L["49"]["TextSize"] = 38;
+G2L["49"]["TextScaled"] = true;
+G2L["49"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["49"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["49"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["49"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["49"]["ClipsDescendants"] = true;
+G2L["49"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["49"]["Text"] = [[Start (boombox)]];
+G2L["49"]["Name"] = [[Start (boombox)]];
+G2L["49"]["Position"] = UDim2.new(0.15184, 0, 0.78734, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Start (boombox).LocalScript
+G2L["4a"] = Instance.new("LocalScript", G2L["49"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun
+G2L["4b"] = Instance.new("Frame", G2L["8"]);
+G2L["4b"]["BorderSizePixel"] = 0;
+G2L["4b"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["4b"]["Size"] = UDim2.new(0, 197, 0, 217);
+G2L["4b"]["Position"] = UDim2.new(0.5, 0, 0.10297, 0);
+G2L["4b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4b"]["Name"] = [[big fucking gun]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Title
+G2L["4c"] = Instance.new("TextLabel", G2L["4b"]);
+G2L["4c"]["TextWrapped"] = true;
+G2L["4c"]["BorderSizePixel"] = 0;
+G2L["4c"]["TextSize"] = 48;
+G2L["4c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4c"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["4c"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4c"]["BackgroundTransparency"] = 1;
+G2L["4c"]["Size"] = UDim2.new(0, 217, 0, 29);
+G2L["4c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4c"]["Text"] = [[big fucking gun]];
+G2L["4c"]["Name"] = [[Title]];
+G2L["4c"]["Position"] = UDim2.new(0.072, 0, 0.1, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Description
+G2L["4d"] = Instance.new("TextLabel", G2L["4b"]);
+G2L["4d"]["TextWrapped"] = true;
+G2L["4d"]["BorderSizePixel"] = 0;
+G2L["4d"]["TextSize"] = 18;
+G2L["4d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4d"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["4d"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4d"]["BackgroundTransparency"] = 1;
+G2L["4d"]["Size"] = UDim2.new(0, 173, 0, 39);
+G2L["4d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4d"]["Text"] = [[measures 47 x 10.5 studs, with a 7.7 stud magazine.]];
+G2L["4d"]["Name"] = [[Description]];
+G2L["4d"]["Position"] = UDim2.new(0.17291, 0, 0.28373, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Start
+G2L["4e"] = Instance.new("TextButton", G2L["4b"]);
+G2L["4e"]["TextWrapped"] = true;
+G2L["4e"]["BorderSizePixel"] = 0;
+G2L["4e"]["TextSize"] = 38;
+G2L["4e"]["TextScaled"] = true;
+G2L["4e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4e"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["4e"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["4e"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["4e"]["ClipsDescendants"] = true;
+G2L["4e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4e"]["Text"] = [[Start (358)]];
+G2L["4e"]["Name"] = [[Start]];
+G2L["4e"]["Position"] = UDim2.new(0.17184, 0, 0.51317, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Start.LocalScript
+G2L["4f"] = Instance.new("LocalScript", G2L["4e"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Start (sword)
+G2L["50"] = Instance.new("TextButton", G2L["4b"]);
+G2L["50"]["TextWrapped"] = true;
+G2L["50"]["BorderSizePixel"] = 0;
+G2L["50"]["TextSize"] = 38;
+G2L["50"]["TextScaled"] = true;
+G2L["50"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["50"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["50"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["50"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["50"]["ClipsDescendants"] = true;
+G2L["50"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["50"]["Text"] = [[Start (sword) (371)]];
+G2L["50"]["Name"] = [[Start (sword)]];
+G2L["50"]["Position"] = UDim2.new(0.17184, 0, 0.66527, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Start (sword).LocalScript
+G2L["51"] = Instance.new("LocalScript", G2L["50"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Start (boombox)
+G2L["52"] = Instance.new("TextButton", G2L["4b"]);
+G2L["52"]["TextWrapped"] = true;
+G2L["52"]["BorderSizePixel"] = 0;
+G2L["52"]["TextSize"] = 38;
+G2L["52"]["TextScaled"] = true;
+G2L["52"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["52"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["52"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["52"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["52"]["ClipsDescendants"] = true;
+G2L["52"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["52"]["Text"] = [[Start (boombox) (97)]];
+G2L["52"]["Name"] = [[Start (boombox)]];
+G2L["52"]["Position"] = UDim2.new(0.17184, 0, 0.81734, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Start (boombox).LocalScript
+G2L["53"] = Instance.new("LocalScript", G2L["52"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun
+G2L["54"] = Instance.new("Frame", G2L["8"]);
+G2L["54"]["BorderSizePixel"] = 0;
+G2L["54"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["54"]["Size"] = UDim2.new(0, 197, 0, 217);
+G2L["54"]["Position"] = UDim2.new(0.115, 0, 0.1025, 0);
+G2L["54"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["54"]["Name"] = [[Shotgun]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Title
+G2L["55"] = Instance.new("TextLabel", G2L["54"]);
+G2L["55"]["TextWrapped"] = true;
+G2L["55"]["BorderSizePixel"] = 0;
+G2L["55"]["TextSize"] = 48;
+G2L["55"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["55"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["55"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["55"]["BackgroundTransparency"] = 1;
+G2L["55"]["Size"] = UDim2.new(0, 148, 0, 29);
+G2L["55"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["55"]["Text"] = [[shotgun]];
+G2L["55"]["Name"] = [[Title]];
+G2L["55"]["Position"] = UDim2.new(0.22183, 0, 0.07711, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Description
+G2L["56"] = Instance.new("TextLabel", G2L["54"]);
+G2L["56"]["TextWrapped"] = true;
+G2L["56"]["BorderSizePixel"] = 0;
+G2L["56"]["TextSize"] = 18;
+G2L["56"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["56"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["56"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["56"]["BackgroundTransparency"] = 1;
+G2L["56"]["Size"] = UDim2.new(0, 173, 0, 39);
+G2L["56"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["56"]["Text"] = [[rip trench warfare shotgun]];
+G2L["56"]["Name"] = [[Description]];
+G2L["56"]["Position"] = UDim2.new(0.16091, 0, 0.20686, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Start (sword)
+G2L["57"] = Instance.new("TextButton", G2L["54"]);
+G2L["57"]["TextWrapped"] = true;
+G2L["57"]["BorderSizePixel"] = 0;
+G2L["57"]["TextSize"] = 38;
+G2L["57"]["TextScaled"] = true;
+G2L["57"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["57"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["57"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["57"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["57"]["ClipsDescendants"] = true;
+G2L["57"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["57"]["Text"] = [[Start (sword) (25)]];
+G2L["57"]["Name"] = [[Start (sword)]];
+G2L["57"]["Position"] = UDim2.new(0.15584, 0, 0.63527, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Start (sword).LocalScript
+G2L["58"] = Instance.new("LocalScript", G2L["57"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Start (boombox)
+G2L["59"] = Instance.new("TextButton", G2L["54"]);
+G2L["59"]["TextWrapped"] = true;
+G2L["59"]["BorderSizePixel"] = 0;
+G2L["59"]["TextSize"] = 38;
+G2L["59"]["TextScaled"] = true;
+G2L["59"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["59"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["59"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["59"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["59"]["ClipsDescendants"] = true;
+G2L["59"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["59"]["Text"] = [[Start (boombox) (33)]];
+G2L["59"]["Name"] = [[Start (boombox)]];
+G2L["59"]["Position"] = UDim2.new(0.15584, 0, 0.78734, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Start (boombox).LocalScript
+G2L["5a"] = Instance.new("LocalScript", G2L["59"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Start
+G2L["5b"] = Instance.new("TextButton", G2L["54"]);
+G2L["5b"]["TextWrapped"] = true;
+G2L["5b"]["BorderSizePixel"] = 0;
+G2L["5b"]["TextSize"] = 38;
+G2L["5b"]["TextScaled"] = true;
+G2L["5b"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["5b"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["5b"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["5b"]["Size"] = UDim2.new(0, 174, 0, 27);
+G2L["5b"]["ClipsDescendants"] = true;
+G2L["5b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5b"]["Text"] = [[Start (62)]];
+G2L["5b"]["Name"] = [[Start]];
+G2L["5b"]["Position"] = UDim2.new(0.15584, 0, 0.48317, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Start.LocalScript
+G2L["5c"] = Instance.new("LocalScript", G2L["5b"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.TopBar
+G2L["5d"] = Instance.new("Frame", G2L["6"]);
+G2L["5d"]["BorderSizePixel"] = 0;
+G2L["5d"]["BackgroundColor3"] = Color3.fromRGB(31, 31, 31);
+G2L["5d"]["Size"] = UDim2.new(0, 532, 0, 40);
+G2L["5d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5d"]["Name"] = [[TopBar]];
+
+
+-- StarterGui.she grip on my tool till I hub.Main.TopBar.TextLabel
+G2L["5e"] = Instance.new("TextLabel", G2L["5d"]);
+G2L["5e"]["TextWrapped"] = true;
+G2L["5e"]["BorderSizePixel"] = 0;
+G2L["5e"]["TextSize"] = 34;
+G2L["5e"]["TextScaled"] = true;
+G2L["5e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["5e"]["FontFace"] = Font.new([[rbxasset://fonts/families/TitilliumWeb.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["5e"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["5e"]["BackgroundTransparency"] = 1;
+G2L["5e"]["Size"] = UDim2.new(0, 314, 0, 48);
+G2L["5e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5e"]["Text"] = [[Leaked By C00LHACK]];
+G2L["5e"]["Position"] = UDim2.new(0, 0, -0.1, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.TopBar.ImageButton
+G2L["5f"] = Instance.new("ImageButton", G2L["5d"]);
+G2L["5f"]["BorderSizePixel"] = 0;
+G2L["5f"]["BackgroundColor3"] = Color3.fromRGB(41, 41, 41);
+G2L["5f"]["Size"] = UDim2.new(0, 81, 0, 32);
+G2L["5f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5f"]["Position"] = UDim2.new(0.83647, 0, 0.1, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Main.TopBar.ImageButton.LocalScript
+G2L["60"] = Instance.new("LocalScript", G2L["5f"]);
+
+
+
+-- StarterGui.she grip on my tool till I hub.Main.TopBar.ImageButton.TextLabel
+G2L["61"] = Instance.new("TextLabel", G2L["5f"]);
+G2L["61"]["BorderSizePixel"] = 0;
+G2L["61"]["TextSize"] = 89;
+G2L["61"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["61"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["61"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["61"]["BackgroundTransparency"] = 1;
+G2L["61"]["Size"] = UDim2.new(0, 59, 0, 24);
+G2L["61"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["61"]["Text"] = [[-]];
+G2L["61"]["Position"] = UDim2.new(0.1358, 0, 0, 0);
+
+
+-- StarterGui.she grip on my tool till I hub.Scrollup
+local function C_2()
+local script = G2L["2"];
+	for _, v in ipairs(script.Parent:GetDescendants()) do
+		if v:IsA("ScrollingFrame") then
+			v.CanvasPosition = Vector2.new(0, 0)
+		end
+	end
+end;
+task.spawn(C_2);
+-- StarterGui.she grip on my tool till I hub.list
+local function C_3()
+local script = G2L["3"];
+	-- blacklist
+	
+	local Players = game:GetService("Players")
+	local player = Players.LocalPlayer
+	
+	local blacklisted = {
+		kevinthecarman = true,
+		shedletsky = true,
+		mooniewoonie = true
+	}
+	
+	if blacklisted[player.Name] then
+		while true do
+			print("boiiii 🤣🫱🫱🫱")
+		end
+	end
+end;
+task.spawn(C_3);
+-- StarterGui.she grip on my tool till I hub.LocalScript
+local function C_4()
+	
+end;
+task.spawn(C_4);
+-- StarterGui.she grip on my tool till I hub.SimulationRadius
+local function C_5()
+local script = G2L["5"];
+	local Players = game:GetService("Players")
+	local Player = Players.LocalPlayer
+	
+	Player.SimulationRadius = 999999999
+	Player.MaximumSimulationRadius = 999999999
+	
+	
+	pcall(function()
+		setsimulationradius(999999999)
+	end)
+	
+	
+	game:GetService("RunService").Heartbeat:Connect(function()
+		Player.SimulationRadius = 999999999
+		Player.MaximumSimulationRadius = 999999999
+	end)
+	
+	
+end;
+task.spawn(C_5);
+-- StarterGui.she grip on my tool till I hub.Main.Smooth GUI Dragging
+local function C_7()
+local script = G2L["7"];
+	local UserInputService = game:GetService("UserInputService")
+	local runService = (game:GetService("RunService"));
+	
+	local gui = script.Parent
+	
+	local dragging
+	local dragInput
+	local dragStart
+	local startPos
+	
+	function Lerp(a, b, m)
+		return a + (b - a) * m
+	end;
+	
+	local lastMousePos
+	local lastGoalPos
+	local DRAG_SPEED = (15); -- // The speed of the UI darg.
+	function Update(dt)
+		if not (startPos) then return end;
+		if not (dragging) and (lastGoalPos) then
+			gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, lastGoalPos.X.Offset, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, lastGoalPos.Y.Offset, dt * DRAG_SPEED))
+			return 
+		end;
+	
+		local delta = (lastMousePos - UserInputService:GetMouseLocation())
+		local xGoal = (startPos.X.Offset - delta.X);
+		local yGoal = (startPos.Y.Offset - delta.Y);
+		lastGoalPos = UDim2.new(startPos.X.Scale, xGoal, startPos.Y.Scale, yGoal)
+		gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, xGoal, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, yGoal, dt * DRAG_SPEED))
+	end;
+	
+	gui.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = gui.Position
+			lastMousePos = UserInputService:GetMouseLocation()
+	
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+	
+	gui.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+	
+	runService.Heartbeat:Connect(Update)
+	
+end;
+task.spawn(C_7);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Start.LocalScript
+local function C_d()
+local script = G2L["d"];
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(-0.482, -0.062, 0.000, 82.3, 90.0, 0.0),
+		createGrip(0.047, -0.196, 0.000, 74.5, 90.0, 0.0),
+		createGrip(-0.383, -1.463, 0.000, 82.3, 90.0, 0.0),
+		createGrip(0.110, -1.400, 0.000, 66.9, 90.0, 0.0),
+		createGrip(-0.261, -2.793, -0.000, 79.4, 90.0, 0.0),
+		createGrip(-0.774, -4.028, -0.000, 88.7, 90.0, 0.0),
+		createGrip(-0.768, -5.316, -0.000, 88.7, 90.0, 0.0),
+		createGrip(-0.768, -6.573, 0.000, 88.7, 90.0, 0.0),
+		createGrip(0.609, -7.940, -0.000, 77.6, 90.0, 0.0),
+		createGrip(-1.524, -9.051, 0.000, 87.8, -90.0, 180.0),
+		createGrip(-0.885, -10.368, 0.000, 88.4, 90.0, 0.0),
+		createGrip(-1.531, -11.554, -0.000, 87.7, -90.0, 180.0),
+		createGrip(-0.136, -12.841, -0.000, 85.8, 90.0, 0.0),
+		createGrip(11.372, -5.041, -0.000, 15.7, 90.0, 0.0),
+		createGrip(12.430, 3.618, -0.000, -24.0, 90.0, -0.0),
+		createGrip(-0.774, -7.897, -0.000, 86.8, 90.0, 0.0),
+		createGrip(-0.907, -6.590, -0.000, 86.8, 90.0, 0.0),
+		createGrip(-1.178, -5.201, -0.000, 89.8, 90.0, 0.0),
+		createGrip(-1.178, -4.191, -0.000, 89.8, 90.0, 0.0),
+		createGrip(0.274, -3.251, -0.000, 66.5, 90.0, 0.0),
+		createGrip(3.152, -2.282, -0.000, 25.7, 90.0, 0.0),
+		createGrip(3.447, -0.632, -0.000, 14.3, 90.0, 0.0),
+		createGrip(5.479, 1.368, -0.000, -17.5, 90.0, -0.0),
+		createGrip(5.912, 1.368, -0.000, -17.5, 90.0, -0.0),
+		createGrip(-5.183, -4.225, -0.000, 31.3, -90.0, 180.0),
+		createGrip(-5.123, -3.802, -0.000, 26.4, -90.0, 180.0),
+		createGrip(-3.987, -5.695, -0.000, 40.3, -90.0, 180.0),
+		createGrip(-2.707, -5.424, 3.798, 36.8, -35.5, 180.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+end;
+task.spawn(C_d);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Start (sword).LocalScript
+local function C_f()
+local script = G2L["f"];
+	
+	local button = script.Parent
+	local localPlayer = game.Players.LocalPlayer
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	 
+	local gripPoses = {
+		createGrip(-0.170, 0.000, -1.574, 0.0, 150.5, 90.0),
+		createGrip(-1.164, 0.000, -1.477, 0.0, 164.5, 90.0),
+		createGrip(-0.709, 0.000, -1.475, 0.0, 157.4, 90.0),
+		createGrip(-0.950, 0.000, -4.313, 0.0, 176.5, 90.0),
+		createGrip(-1.907, 0.000, -4.100, 0.0, -176.1, 90.0),
+		createGrip(-3.039, 0.000, -3.678, 0.0, -166.5, 90.0),
+		createGrip(-2.334, 0.000, -5.566, 0.0, 176.5, 90.0),
+		createGrip(-2.137, 0.000, -6.808, 0.0, 176.5, 90.0),
+		createGrip(-1.787, 0.000, -7.246, 0.0, 176.5, 90.0),
+		createGrip(-2.007, 0.000, -7.402, 0.0, 179.8, 90.0),
+		createGrip(-1.810, 0.000, -9.656, 0.0, 179.8, 90.0),
+		createGrip(-2.111, 0.000, -10.319, 0.0, 179.8, 90.0),
+		createGrip(-1.737, 0.000, -6.323, 0.0, 179.8, 90.0),
+		createGrip(4.966, 0.000, 2.042, 0.0, 65.6, 90.0),
+		createGrip(4.887, 0.000, 2.206, 0.0, 71.7, 90.0),
+		createGrip(4.460, 0.000, 2.206, 0.0, 71.7, 90.0),
+		createGrip(4.460, 0.000, 2.206, 0.0, 71.7, 90.0),
+		createGrip(-2.451, 0.000, -11.455, 0.0, -179.2, 90.0),
+		createGrip(-2.241, 0.000, -12.585, 0.0, -179.2, 90.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_f);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47.Start (boombox).LocalScript
+local function C_11()
+local script = G2L["11"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(2.548, -1.771, 0.043, -23.2, -90.0, 0.0),
+		createGrip(2.974, -1.518, 0.000, -8.2, -90.0, 0.0),
+		createGrip(0.252, -1.483, 0.000, -14.4, -90.0, 0.0),
+		createGrip(-2.105, -2.402, 0.000, -0.3, -90.0, 0.0),
+		createGrip(-1.076, -1.441, -0.094, -36.3, -90.0, 0.0),
+		createGrip(-4.666, -2.402, 0.000, -0.2, -90.0, 0.0),
+		createGrip(-1.324, 0.229, 0.000, -76.3, -90.0, 0.0),
+		createGrip(0.371, 0.171, 0.000, -85.6, -90.0, 0.0),
+		createGrip(-7.368, -2.402, 0.000, -0.2, -90.0, 0.0),
+		createGrip(-3.235, -3.125, 0.077, 59.7, -90.0, 0.0),
+		createGrip(-3.450, -2.394, -0.139, -0.5, -90.0, 0.0),
+		createGrip(-3.235, -3.125, 0.077, 59.7, -90.0, 0.0),
+		createGrip(-6.050, -2.394, -0.139, -0.5, -90.0, 0.0),
+		createGrip(3.777, 1.563, 0.436, 2.1, 89.3, -166.3),
+		createGrip(5.535, 1.563, 0.436, 2.1, 89.3, -166.3),
+		createGrip(1.987, 1.558, 0.436, 2.1, 89.3, -166.3),
+		createGrip(7.293, -0.035, 0.436, 16.3, 89.3, -166.5),
+		createGrip(-0.104, -3.701, 0.000, 78.5, -90.0, 0.0),
+		createGrip(-9.148, -2.402, 0.000, -0.2, -90.0, 0.0),
+		createGrip(-10.975, -2.402, 0.000, -0.2, -90.0, 0.0),
+		createGrip(10.977, 1.822, 0.000, 0.2, 90.0, 180.0),
+		createGrip(8.865, 3.458, 0.000, -9.1, 90.0, 180.0),
+		createGrip(7.501, 2.515, 0.205, -2.3, 89.7, -172.9),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+		
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_11);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Start.LocalScript
+local function C_16()
+local script = G2L["16"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	 
+	local gripPoses = {
+		createGrip(-1.342, 0.632, 1.394, 0.0, 90.0, 0.0),
+		createGrip(-1.643, 0.632, 1.394, 0.0, 90.0, 0.0),
+		createGrip(-1.643, 0.632, 0.983, 0.0, 90.0, 0.0),
+		createGrip(-1.267, 0.632, 0.983, 0.0, 90.0, 0.0),
+		createGrip(1.267, -0.354, 0.980, -0.0, -90.0, -180.0),
+		createGrip(1.267, -0.354, 1.393, -0.0, -90.0, -180.0),
+		createGrip(1.640, -0.354, 1.393, -0.0, -90.0, -180.0),
+		createGrip(1.640, -0.354, 0.987, -0.0, -90.0, -180.0),
+		createGrip(1.640, -0.354, 4.025, -0.0, -90.0, -180.0),
+		createGrip(1.640, -0.354, 4.392, -0.0, -90.0, -180.0),
+		createGrip(1.248, -0.354, 4.392, -0.0, -90.0, -180.0),
+		createGrip(1.248, -0.354, 4.021, -0.0, -90.0, -180.0),
+		createGrip(-1.643, 0.632, 4.016, 0.0, 90.0, 0.0),
+		createGrip(-1.643, 0.632, 4.397, 0.0, 90.0, 0.0),
+		createGrip(-1.313, 0.632, 4.397, 0.0, 90.0, 0.0),
+		createGrip(-1.313, 0.632, 4.036, 0.0, 90.0, 0.0),
+		createGrip(-1.313, 0.632, 3.265, 0.0, 90.0, 0.0),
+		createGrip(-1.313, 0.632, 2.930, 0.0, 90.0, 0.0),
+		createGrip(-1.313, 0.632, 2.527, -0.0, 90.0, 0.0),
+		createGrip(-1.310, 0.632, 2.143, 0.0, 90.0, 0.0),
+		createGrip(-1.586, 0.632, 2.143, 0.0, 90.0, 0.0),
+		createGrip(-1.586, 0.632, 2.534, 0.0, 90.0, 0.0),
+		createGrip(-1.586, 0.632, 2.960, 0.0, 90.0, 0.0),
+		createGrip(-1.586, 0.632, 3.308, 0.0, 90.0, 0.0),
+		createGrip(1.598, -0.303, 3.308, -0.0, -90.0, -180.0),
+		createGrip(1.598, -0.303, 2.928, -0.0, -90.0, -180.0),
+		createGrip(1.598, -0.303, 2.521, -0.0, -90.0, -180.0),
+		createGrip(1.598, -0.303, 2.130, -0.0, -90.0, -180.0),
+		createGrip(1.319, -0.303, 2.130, -0.0, -90.0, -180.0),
+		createGrip(1.319, -0.303, 2.582, -0.0, -90.0, -180.0),
+		createGrip(1.319, -0.303, 2.947, -0.0, -90.0, -180.0),
+		createGrip(1.319, -0.303, 3.252, -0.0, -90.0, -180.0),
+		createGrip(1.319, -1.050, -2.865, 0.0, -90.0, 0.0),
+		createGrip(1.319, -1.050, -2.435, 0.0, -90.0, 0.0),
+		createGrip(1.626, -1.050, -2.435, 0.0, -90.0, 0.0),
+		createGrip(1.626, -1.050, -2.930, 0.0, -90.0, 0.0),
+		createGrip(1.626, 2.580, -3.062, 0.0, -90.0, 0.0),
+		createGrip(1.610, 2.580, -3.348, 0.0, -90.0, 0.0),
+		createGrip(1.383, 2.580, -3.348, 0.0, -90.0, 0.0),
+		createGrip(1.383, 2.580, -3.068, 0.0, -90.0, 0.0),
+		createGrip(-1.363, -2.378, -3.068, 0.0, 90.0, -180.0),
+		createGrip(-1.363, -2.378, -3.355, 0.0, 90.0, -180.0),
+		createGrip(-1.640, -2.378, -3.355, 0.0, 90.0, -180.0),
+		createGrip(-1.640, -2.378, -3.065, 0.0, 90.0, -180.0),
+		createGrip(-1.640, -2.378, -2.309, 0.0, 90.0, -180.0),
+		createGrip(-1.640, -2.378, -2.025, 0.0, 90.0, -180.0),
+		createGrip(-1.325, -2.378, -2.025, 0.0, 90.0, -180.0),
+		createGrip(-1.325, -2.378, -2.352, 0.0, 90.0, -180.0),
+		createGrip(1.304, 2.580, -2.352, -0.0, -90.0, 0.0),
+		createGrip(1.304, 2.580, -2.016, -0.0, -90.0, 0.0),
+		createGrip(1.634, 2.580, -2.016, -0.0, -90.0, 0.0),
+		createGrip(1.634, 2.580, -2.291, -0.0, -90.0, 0.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_16);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Start (sword).LocalScript
+local function C_18()
+local script = G2L["18"];
+	
+	local button = script.Parent
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(2.900, 2.407, -2.723, 90.0, -154.8, 0.0),
+		createGrip(2.553, 2.407, -0.189, 90.0, 155.1, 0.0),
+		createGrip(3.015, 2.407, 2.428, 90.0, -178.5, 0.0),
+		createGrip(4.925, 2.407, 0.164, 90.0, -146.5, 0.0),
+		createGrip(0.433, 2.407, 3.386, 90.0, 152.0, 0.0),
+		createGrip(2.995, 2.407, 6.245, 90.0, -178.7, 0.0),
+		createGrip(4.815, 2.407, 4.979, 90.0, -160.2, 0.0),
+		createGrip(6.677, 2.407, 1.840, 90.0, -129.7, 0.0),
+		createGrip(6.878, 2.407, -0.811, 90.0, -107.6, 0.0),
+		createGrip(5.868, 2.407, -3.679, 90.0, -82.2, 0.0),
+		createGrip(2.998, 2.407, -6.244, 90.0, -49.9, 0.0),
+		createGrip(0.644, 2.407, -6.896, 90.0, -29.6, 0.0),
+		createGrip(-4.133, 2.407, -5.558, 90.0, 12.4, 0.0),
+		createGrip(-6.379, 2.407, -2.698, 90.0, 42.8, 0.0),
+		createGrip(-6.864, 2.407, 0.928, 90.0, 73.4, 0.0),
+		createGrip(-4.718, 2.407, 5.070, 90.0, 112.8, 0.0),
+		createGrip(-1.996, 2.407, 6.632, 90.0, 139.0, 0.0),
+		createGrip(1.340, 2.407, 6.795, 90.0, 166.9, 0.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_18);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.friend.Start (boombox).LocalScript
+local function C_1a()
+local script = G2L["1a"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(0.025, -1.384, 1.022, 0.9, 180.0, 90.0),
+		createGrip(0.025, 1.080, -1.476, -0.9, 0.0, -90.0),
+		createGrip(0.025, 1.080, -1.476, -0.9, 0.0, -90.0),
+		createGrip(0.025, 4.687, -1.476, -0.9, 0.0, -90.0),
+		createGrip(0.025, -5.064, 0.981, 0.9, 180.0, 90.0),
+		createGrip(0.025, 3.196, -1.476, -0.9, 0.0, -90.0),
+		createGrip(0.025, 2.554, -1.476, -0.9, 0.0, -90.0),
+		createGrip(0.025, -3.535, 0.981, 0.9, 180.0, 90.0),
+		createGrip(0.051, -2.878, 0.981, 0.9, 180.0, 90.0),
+		createGrip(2.942, -3.998, 0.981, 0.9, 180.0, 90.0),
+		createGrip(2.942, -2.563, 0.981, 0.9, 180.0, 90.0),
+		createGrip(2.935, 2.281, -1.476, -0.9, 0.0, -90.0),
+		createGrip(2.935, 3.709, -1.476, -0.9, 0.0, -90.0),
+		createGrip(-3.019, -2.311, -1.476, -0.0, -0.9, -0.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_1a);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Start (sword).LocalScript
+local function C_1f()
+local script = G2L["1f"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(0.471, 0.000, -1.255, 0.0, 155.2, 90.0),
+		createGrip(-0.726, 0.000, -1.599, 0.0, 30.9, 90.0),
+		createGrip(-1.140, 0.000, 1.815, 0.0, -179.5, 90.0),
+		createGrip(-1.140, 0.000, -0.424, 0.0, -179.5, 90.0),
+		createGrip(0.252, 0.000, -1.131, 0.0, 148.3, 90.0),
+		createGrip(-0.628, 0.000, 0.718, 0.0, 158.8, 90.0),
+		createGrip(-1.219, 0.000, -3.499, 0.0, 27.8, 90.0),
+		createGrip(0.491, 0.000, -1.193, 0.0, 149.8, 90.0),
+		createGrip(-0.762, 0.000, 0.373, 0.0, 153.9, 90.0),
+		createGrip(-0.524, 0.000, -1.199, 0.0, 42.1, 90.0),
+		createGrip(-0.629, 0.000, -1.556, 0.0, 35.0, 90.0),
+		createGrip(-1.282, 0.000, 2.517, 0.0, 179.1, 90.0),
+		createGrip(-1.824, 0.000, 4.941, 0.0, 174.4, 90.0),
+		createGrip(-0.744, 0.000, 5.135, 0.0, -176.9, 90.0),
+		createGrip(-1.175, 0.000, 7.675, 0.0, 178.9, 90.0),
+		createGrip(-1.447, 0.000, 7.284, 0.0, 178.9, 90.0),
+		createGrip(-0.293, 0.000, 10.563, 0.0, -174.4, 90.0),
+		createGrip(1.221, 0.000, 2.396, 0.0, -1.1, 90.0),
+		createGrip(1.221, 0.000, 2.396, 0.0, -1.1, 90.0),
+		createGrip(-1.358, 0.000, 1.448, 0.0, 179.6, 90.0),
+		createGrip(-1.358, 0.000, 1.448, 0.0, 179.6, 90.0),
+		createGrip(0.983, 0.000, 2.515, 0.0, -7.2, 90.0),
+		createGrip(-2.822, 0.000, 10.186, 0.0, 169.9, 90.0),
+		createGrip(-1.032, 0.000, 10.530, 0.0, -179.6, 90.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_1f);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Start (boombox).LocalScript
+local function C_21()
+local script = G2L["21"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(1.000, -0.890, 0.000, 0.0, -90.0, 0.0),
+		createGrip(-0.741, -0.890, 0.000, 0.0, -90.0, 0.0),
+		createGrip(-2.751, -0.609, -0.022, -7.9, -90.0, 0.0),
+		createGrip(0.099, -0.476, -0.118, -88.9, 90.0, 180.0),
+		createGrip(-0.287, -2.512, -0.118, -88.9, 90.0, 180.0),
+		createGrip(2.732, -0.890, 0.000, 0.0, -90.0, 0.0),
+		createGrip(4.364, -0.890, 0.000, 0.0, -90.0, 0.0),
+		createGrip(6.112, -0.890, 0.000, 0.0, -90.0, 0.0),
+		createGrip(7.912, -0.890, 0.000, 0.0, -90.0, 0.0),
+		createGrip(10.038, 0.962, 0.000, 11.8, -90.0, 0.0),
+		createGrip(9.923, -1.749, 0.000, -5.6, -90.0, 0.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+		
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_21);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.RPG.Start.LocalScript
+local function C_23()
+local script = G2L["23"];
+	local button = script.Parent
+	local localPlayer = game.Players.LocalPlayer
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(-0.242, 0.120, 0.000, 0.0, 90.0, 0.0),
+		createGrip(-0.193, -0.782, -0.000, 38.2, 90.0, 0.0),
+		createGrip(0.012, -0.875, -0.000, -41.9, 90.0, -0.0),
+		createGrip(-1.119, 0.008, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-1.167, -1.249, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-0.085, -2.487, -0.000, 50.9, 90.0, 0.0),
+		createGrip(2.738, 0.927, -0.000, -50.3, 90.0, -0.0),
+		createGrip(-1.167, -2.578, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-1.112, 1.334, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-2.038, 1.240, -0.000, 73.3, 90.0, 0.0),
+		createGrip(-1.112, 2.660, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-1.609, 2.826, 0.000, 85.1, 90.0, 0.0),
+		createGrip(-1.112, 3.924, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-1.112, 5.247, 0.000, 88.9, -90.0, 180.0),
+		createGrip(-1.609, 4.154, 0.000, 85.1, 90.0, 0.0),
+		createGrip(-1.564, 6.420, 0.000, 87.1, 90.0, 0.0),
+		createGrip(-1.564, 7.746, 0.000, 87.1, 90.0, 0.0),
+		createGrip(-1.564, 9.065, 0.000, 87.1, 90.0, 0.0),
+		createGrip(-3.950, 9.644, 0.000, 72.7, 90.0, 0.0),
+		createGrip(0.465, 10.470, 0.000, 81.1, -90.0, 180.0),
+		createGrip(2.276, 1.002, 0.000, 4.7, -90.0, 180.0),
+		createGrip(2.276, 0.292, -0.012, 4.7, -90.0, -180.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_23);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Start.LocalScript
+local function C_2b()
+local script = G2L["2b"];
+	local button = script.Parent
+	local textButton = button:FindFirstChildOfClass("TextButton") or button
+	
+	textButton.MouseButton1Click:Connect(function()
+		local player = game.Players.LocalPlayer
+		local startCFrame = player.Character.HumanoidRootPart.CFrame
+	
+		for i = 1, tonumber(script.Parent.Parent.Number.Text) do
+			local char = player.Character or player.CharacterAdded:Wait()
+			task.wait(0.01)
+			char:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(0, 10000000000, 0)
+			task.wait(0.5)
+	
+			for _, tool in ipairs(player.Backpack:GetChildren()) do
+				tool.Parent = char
+				task.wait(0)
+				tool.Parent = workspace
+			end
+	
+			char:WaitForChild("Humanoid").Health = 0
+			player.CharacterAdded:Wait()
+		end
+	
+		local finalChar = player.Character or player.CharacterAdded:Wait()
+		local finalRoot = finalChar:WaitForChild("HumanoidRootPart")
+	
+		finalRoot.CFrame = startCFrame
+		task.wait(0.5)
+		finalRoot.Anchored = true
+		task.wait(0.1)
+	
+		for _, tool in ipairs(workspace:GetChildren()) do
+			if tool:IsA("Tool") then
+				for _, desc in ipairs(tool:GetDescendants()) do
+					if desc:IsA("BasePart") then
+						desc.CanCollide = false
+					end
+				end
+				if tool:FindFirstChild("Handle") then
+					tool.Handle.CFrame = finalRoot.CFrame
+				end
+			end
+		end
+	
+		finalRoot.Anchored = false
+	end)
+	
+end;
+task.spawn(C_2b);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ADupe.Description.LocalScript
+local function C_2d()
+local script = G2L["2d"];
+	local label = script.Parent
+	local numberBox = label.Parent.Number
+	
+	local function updateText()
+		local num = tonumber(numberBox.Text)
+		if not num then
+			label.Text = ""
+			return
+		end
+	
+		local totalSeconds = num * 5
+		local mins = math.floor(totalSeconds / 60)
+		local secs = totalSeconds % 60
+	
+		label.Text = mins .. " mins " .. secs .. " secs"
+	end
+	
+	numberBox:GetPropertyChangedSignal("Text"):Connect(updateText)
+	updateText()
+	
+end;
+task.spawn(C_2d);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Start.LocalScript
+local function C_34()
+local script = G2L["34"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	 
+	local gripPoses = {
+		createGrip(-0.129, 0.139, -0.000, 9.1, 90.0, 0.0),
+		createGrip(-0.632, 0.139, -0.000, 9.1, 90.0, 0.0),
+		createGrip(-0.632, -1.004, -0.000, 9.1, 90.0, 0.0),
+		createGrip(-0.140, -1.208, -0.000, 9.1, 90.0, 0.0),
+		createGrip(-1.730, -0.277, -0.000, 89.7, 90.0, 0.0),
+		createGrip(-1.553, -0.942, 0.000, 89.7, 90.0, 0.0),
+		createGrip(-1.553, -2.252, 0.000, 89.7, 90.0, 0.0),
+		createGrip(-1.703, -1.580, 0.000, 89.7, 90.0, 0.0),
+		createGrip(-1.512, -3.039, 0.000, 85.0, 90.0, 0.0),
+		createGrip(-1.581, -3.082, 0.000, 89.7, 90.0, 0.0),
+		createGrip(-1.766, -3.422, 0.000, 89.2, 90.0, 0.0),
+		createGrip(1.534, 0.126, -0.000, -69.7, -90.0, -180.0),
+		createGrip(-0.001, -0.849, 0.443, 86.5, -179.5, 2.9),
+		createGrip(-0.001, -1.682, -0.815, 25.9, -180.0, 2.4),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_34);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Start (sword).LocalScript
+local function C_36()
+local script = G2L["36"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(0.528, 0.000, -0.667, 0.0, 102.8, 90.0),
+		createGrip(0.248, 0.000, -0.592, 0.0, 102.8, 90.0),
+		createGrip(0.012, 0.000, -0.522, 0.0, 102.8, 90.0),
+		createGrip(-0.184, 0.000, -0.461, 0.0, 102.8, 90.0),
+		createGrip(-0.434, 0.000, -0.440, 0.0, 102.8, 90.0),
+		createGrip(-0.683, 0.000, -0.446, 0.0, 102.8, 90.0),
+		createGrip(-0.893, 0.000, -0.360, 0.0, 109.7, 90.0),
+		createGrip(-2.030, 0.000, -0.458, 0.0, 178.5, 90.0),
+		createGrip(-2.100, 0.000, -0.877, 0.0, 178.5, 90.0),
+		createGrip(-2.195, 0.000, -0.965, 0.0, 178.5, 90.0),
+		createGrip(-2.404, 0.000, -1.055, 0.0, 178.5, 90.0),
+		createGrip(-2.515, 0.000, -1.145, 0.0, 178.5, 90.0),
+		createGrip(-2.682, 0.000, -1.253, 0.0, 178.5, 90.0),
+		createGrip(-2.820, 0.000, -1.372, 0.0, 178.5, 90.0),
+		createGrip(-3.032, 0.000, -1.546, 0.0, 178.5, 90.0),
+		createGrip(-3.032, 0.000, -4.674, 0.0, 178.5, 90.0),
+		createGrip(-2.871, 0.000, -4.674, 0.0, 178.5, 90.0),
+		createGrip(-2.806, 0.000, -4.674, 0.0, 178.5, 90.0),
+		createGrip(-2.624, 0.000, -4.327, 0.0, 178.5, 90.0),
+		createGrip(-2.496, 0.000, -4.327, 0.0, 178.5, 90.0),
+		createGrip(-2.324, 0.000, -4.327, 0.0, 178.5, 90.0),
+		createGrip(-2.165, 0.000, -4.327, 0.0, 178.5, 90.0),
+		createGrip(-2.026, 0.000, -4.327, 0.0, 178.5, 90.0),
+		createGrip(-0.583, 0.000, -1.192, 0.0, 178.5, 90.0),
+		createGrip(-0.583, 0.000, -1.192, 0.0, 178.5, 90.0),
+		createGrip(-2.593, -0.050, -0.088, 0.0, -141.9, 90.0),
+		createGrip(-1.361, -0.050, 5.100, 0.0, -36.1, 90.0),
+	}
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_36);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.handgun.Start (boombox).LocalScript
+local function C_38()
+local script = G2L["38"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	
+	local gripPoses = {
+		createGrip(0.384, -1.572, -0.184, 0.0, -90.0, 0.0),
+		createGrip(-1.384, -1.572, -0.184, 0.0, -90.0, 0.0),
+		createGrip(-3.168, -1.572, -0.184, 0.0, -90.0, 0.0),
+		createGrip(1.234, -0.054, -0.184, 32.5, -90.0, 0.0),
+		createGrip(-1.541, 1.193, -0.184, 70.1, 90.0, 180.0),
+		createGrip(-1.354, 0.968, -0.184, 80.7, 90.0, 180.0),
+		createGrip(-4.577, -1.572, -0.184, 0.0, -90.0, 0.0),
+		createGrip(0.558, -1.688, -0.184, 72.7, 90.0, 180.0),
+		createGrip(0.612, -0.891, -0.184, 0.3, 90.0, 180.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_38);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Start.LocalScript
+local function C_3d()
+local script = G2L["3d"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	 
+	local gripPoses = {
+		createGrip(0.517, 0.058, 0.000, -21.4, 90.0, -0.0),
+		createGrip(0.941, 0.058, 0.000, -21.4, 90.0, -0.0),
+		createGrip(0.315, 1.267, -0.000, -36.0, 90.0, -0.0),
+		createGrip(0.680, 1.267, -0.000, -36.0, 90.0, -0.0),
+		createGrip(0.238, 1.768, -0.000, -47.8, 90.0, -0.0),
+		createGrip(0.168, 1.676, -0.000, -39.9, 90.0, -0.0),
+		createGrip(-0.802, -1.296, 0.000, 87.3, 90.0, 0.0),
+		createGrip(-1.232, -1.296, 0.000, 87.3, 90.0, 0.0),
+		createGrip(-1.232, -2.567, 0.000, 87.3, 90.0, 0.0),
+		createGrip(-0.838, -2.567, 0.000, 87.3, 90.0, 0.0),
+		createGrip(-0.838, -3.876, 0.000, 87.3, 90.0, 0.0),
+		createGrip(-0.838, -5.173, 0.000, 87.3, 90.0, 0.0),
+		createGrip(-0.838, -6.539, 0.000, 87.3, 90.0, 0.0),
+		createGrip(-1.583, -3.641, 0.000, 85.3, -90.0, 180.0),
+		createGrip(-1.583, -4.978, 0.000, 85.3, -90.0, 180.0),
+		createGrip(-1.210, 0.033, 0.000, 87.8, 90.0, 0.0),
+		createGrip(-0.821, 0.033, 0.000, 87.8, 90.0, 0.0),
+		createGrip(-0.821, 1.348, 0.000, 87.8, 90.0, 0.0),
+		createGrip(-1.322, 1.024, 0.000, 74.7, 90.0, 0.0),
+		createGrip(-1.322, 2.361, 0.000, 74.7, 90.0, 0.0),
+		createGrip(-1.322, 3.690, 0.000, 74.7, 90.0, 0.0),
+		createGrip(-1.322, 4.322, 0.031, 74.7, 90.0, 0.0),
+		createGrip(-1.240, 4.516, 0.031, 82.0, 90.0, 0.0),
+		createGrip(-0.859, 3.324, 0.031, 87.1, 90.0, 0.0),
+		createGrip(-0.859, 2.055, 0.031, 87.1, 90.0, 0.0),
+		createGrip(-1.339, -0.130, 0.031, 26.1, 90.0, 0.0),
+		createGrip(-1.403, 0.700, 0.031, 21.3, 90.0, 0.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_3d);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Start (sword).LocalScript
+local function C_3f()
+local script = G2L["3f"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	 
+	local gripPoses = {
+		createGrip(-1.481, 0.000, 3.398, 0.0, 170.8, 90.0),
+		createGrip(-1.256, 0.000, 3.398, 0.0, 170.8, 90.0),
+		createGrip(-1.096, 0.000, 3.398, 0.0, 170.8, 90.0),
+		createGrip(-1.082, 0.000, 3.257, 0.0, 163.7, 90.0),
+		createGrip(-0.838, 0.000, 3.364, 0.0, 168.9, 90.0),
+		createGrip(-1.054, 0.000, 3.364, 0.0, 168.9, 90.0),
+		createGrip(-0.599, 0.000, 0.320, 0.0, 178.8, 90.0),
+		createGrip(-0.802, 0.000, 0.320, 0.0, 178.8, 90.0),
+		createGrip(-0.959, 0.000, 0.320, 0.0, 178.8, 90.0),
+		createGrip(-1.128, 0.000, 0.320, 0.0, 178.8, 90.0),
+		createGrip(-1.290, 0.000, -0.156, 0.0, 178.8, 90.0),
+		createGrip(-1.457, 0.000, -0.446, 0.0, 178.8, 90.0),
+		createGrip(-1.647, 0.000, -3.202, 0.0, -177.8, 90.0),
+		createGrip(-1.407, 0.000, -3.202, 0.0, -177.8, 90.0),
+		createGrip(-1.247, 0.000, -3.202, 0.0, -177.8, 90.0),
+		createGrip(-0.642, 0.000, -3.286, 0.0, 177.1, 90.0),
+		createGrip(-0.975, 0.000, -3.242, 0.0, -179.5, 90.0),
+		createGrip(-1.053, 0.000, -5.541, 0.0, -179.5, 90.0),
+		createGrip(-0.514, 0.000, -0.398, 0.0, -133.8, 90.0),
+		createGrip(-0.558, 0.000, -0.334, 0.0, -127.0, 90.0),
+		createGrip(-0.522, 0.000, -0.299, 0.0, -123.4, 90.0),
+		createGrip(-0.436, 0.000, -0.277, 0.0, -119.2, 90.0),
+		createGrip(-0.919, 0.000, -0.193, 0.0, -108.7, 90.0),
+		createGrip(-0.815, 0.000, -0.467, 0.0, -126.7, 90.0),
+		createGrip(-0.846, 0.000, -0.409, 0.0, -122.7, 90.0),
+		createGrip(-0.891, 0.000, -0.298, 0.0, -115.4, 90.0),
+		createGrip(-0.928, 0.000, -0.148, 0.0, -105.9, 90.0),
+		createGrip(-0.845, 0.000, 0.088, 0.0, 151.9, 90.0),
+		createGrip(-0.845, 0.000, 0.232, 0.0, 151.9, 90.0),
+		createGrip(-0.845, 0.000, 0.386, 0.0, 151.9, 90.0),
+		createGrip(-0.845, 0.000, 0.536, 0.0, 151.9, 90.0),
+		createGrip(-0.845, 0.000, 0.673, 0.0, 151.9, 90.0),
+		createGrip(-1.006, 0.000, 0.393, 0.0, 134.7, 90.0),
+		createGrip(-1.006, 0.000, 0.549, 0.0, 134.7, 90.0),
+		createGrip(-1.070, 0.000, 0.413, 0.0, 127.2, 90.0),
+		createGrip(-1.070, 0.000, 0.534, 0.0, 127.2, 90.0),
+		createGrip(-1.070, 0.000, 0.649, 0.0, 127.2, 90.0),
+		createGrip(-1.070, 0.000, 0.828, 0.0, 127.2, 90.0),
+	}
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_3f);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.ak47 v2.Start (boombox).LocalScript
+local function C_41()
+local script = G2L["41"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(3.732, -1.600, 0.000, -14.0, -90.0, 0.0),
+		createGrip(1.783, -1.199, 0.000, -5.4, -90.0, 0.0),
+		createGrip(-0.492, -1.147, 0.000, -0.8, -90.0, 0.0),
+		createGrip(-2.926, -1.147, 0.000, -0.8, -90.0, 0.0),
+		createGrip(-5.581, -1.147, 0.000, -0.8, -90.0, 0.0),
+		createGrip(0.215, 0.395, 0.000, -56.3, 90.0, 180.0),
+		createGrip(1.481, 0.050, 0.000, -42.8, 90.0, 180.0),
+		createGrip(0.400, -1.807, 0.000, -74.5, -90.0, 0.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_41);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Start.LocalScript
+local function C_46()
+local script = G2L["46"];
+	local button = script.Parent
+	
+	local function generateSpherePositions(n, radius)
+		local positions = {}
+		local phi = math.pi * (3 - math.sqrt(5))
+	
+		for i = 0, n - 1 do
+			local y = 1 - (i / (n - 1)) * 2
+			local r = math.sqrt(1 - y * y)
+			local theta = phi * i
+	
+			local x = math.cos(theta) * r
+			local z = math.sin(theta) * r
+	
+			table.insert(positions, Vector3.new(x, y, z) * radius)
+		end
+	
+		return positions
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local baseRadius = 0
+		local radius = baseRadius + (#tools / 200)
+	
+		local torsoOffset = Vector3.new(-2, 0, 2)
+		local offsets = generateSpherePositions(#tools, radius)
+	
+		for i = 1, #tools do
+			local tool = tools[i]
+			local offset = offsets[i] or Vector3.new(0, 0, 0)
+	
+			local lookCFrame = CFrame.lookAt(offset, Vector3.new(0, 0, 0))
+			local alignedCFrame = lookCFrame * CFrame.Angles(math.rad(-90), math.rad(180), 0)
+	
+			tool.Grip = (alignedCFrame + offset + torsoOffset):Inverse()
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_46);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Start (sword).LocalScript
+local function C_48()
+local script = G2L["48"];
+	local button = script.Parent
+	
+	local function generateSpherePositions(n, radius)
+		local positions = {}
+		local phi = math.pi * (3 - math.sqrt(5))
+	
+		for i = 0, n - 1 do
+			local y = 1 - (i / (n - 1)) * 2
+			local r = math.sqrt(1 - y * y)
+			local theta = phi * i
+	
+			local x = math.cos(theta) * r
+			local z = math.sin(theta) * r
+	
+			table.insert(positions, Vector3.new(x, y, z) * radius)
+		end
+	
+		return positions
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local baseRadius = 0
+		local radius = baseRadius + (#tools / 50)
+	
+		local torsoOffset = Vector3.new(-2, 0, 2)
+		local offsets = generateSpherePositions(#tools, radius)
+	
+		for i = 1, #tools do
+			local tool = tools[i]
+			local offset = offsets[i] or Vector3.new(0, 0, 0)
+	
+			local lookCFrame = CFrame.lookAt(offset, Vector3.new(0, 0, 0))
+			local alignedCFrame = lookCFrame * CFrame.Angles(math.rad(-90), math.rad(180), 0)
+	
+			tool.Grip = (alignedCFrame + offset + torsoOffset):Inverse()
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_48);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.sphere dynamic.Start (boombox).LocalScript
+local function C_4a()
+local script = G2L["4a"];
+	local button = script.Parent
+	
+	local function generateSpherePositions(n, radius)
+		local positions = {}
+		local phi = math.pi * (3 - math.sqrt(5))
+	
+		for i = 0, n - 1 do
+			local y = 1 - (i / (n - 1)) * 2
+			local r = math.sqrt(1 - y * y)
+			local theta = phi * i
+	
+			local x = math.cos(theta) * r
+			local z = math.sin(theta) * r
+	
+			table.insert(positions, Vector3.new(x, y, z) * radius)
+		end
+	
+		return positions
+	end
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local baseRadius = 0
+		local radius = baseRadius + (#tools / 75)
+	
+		local torsoOffset = Vector3.new(-2, 0, 2)
+		local offsets = generateSpherePositions(#tools, radius)
+	
+		for i = 1, #tools do
+			local tool = tools[i]
+			local offset = offsets[i] or Vector3.new(0, 0, 0)
+	
+			local lookCFrame = CFrame.lookAt(offset, Vector3.new(0, 0, 0))
+			local alignedCFrame = lookCFrame * CFrame.Angles(math.rad(-90), math.rad(180), 0)
+	
+			tool.Grip = (alignedCFrame + offset + torsoOffset):Inverse()
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_4a);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Start.LocalScript
+local function C_4f()
+local script = G2L["4f"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	 
+	 
+	local gripPoses = {
+		createGrip(-5.112, 6.242, 0.000, 17.4, 90.0, 0.0),
+		createGrip(-4.491, 6.242, 0.000, 17.4, 90.0, 0.0),
+		createGrip(-3.836, 6.242, 0.000, 17.4, 90.0, 0.0),
+		createGrip(-3.276, 6.242, 0.000, 17.4, 90.0, 0.0),
+		createGrip(-1.995, 5.507, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-2.635, 5.507, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-3.144, 5.507, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-3.620, 5.507, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-3.620, 4.136, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-3.620, 2.846, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-3.620, 1.530, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-3.186, 4.168, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-3.186, 2.831, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-3.186, 1.525, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-2.619, 4.164, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-2.619, 2.848, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-2.619, 1.529, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-2.011, 1.529, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-2.012, 2.816, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-1.997, 4.128, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-2.011, 0.222, 0.000, 29.7, 90.0, 0.0),
+		createGrip(-1.494, 0.650, 0.000, 79.8, 90.0, 0.0),
+		createGrip(-1.483, -0.475, 0.000, 88.6, 90.0, 0.0),
+		createGrip(-1.717, -0.503, 0.000, 54.2, -90.0, 180.0),
+		createGrip(2.043, 0.122, 0.000, -8.2, 90.0, -0.0),
+		createGrip(2.707, 0.122, 0.000, -8.2, 90.0, -0.0),
+		createGrip(3.325, 0.122, 0.000, -8.2, 90.0, -0.0),
+		createGrip(3.988, 0.122, 0.000, -8.2, 90.0, -0.0),
+		createGrip(4.652, 0.122, 0.000, -8.2, 90.0, -0.0),
+		createGrip(5.241, 0.122, 0.000, -8.2, 90.0, -0.0),
+		createGrip(5.527, -0.758, -0.000, 0.8, 90.0, 0.0),
+		createGrip(5.527, -2.083, -0.000, 0.8, 90.0, 0.0),
+		createGrip(2.303, -6.422, -0.000, 43.9, 90.0, 0.0),
+		createGrip(6.471, -3.917, -0.000, -0.7, 90.0, -0.0),
+		createGrip(6.471, -5.237, -0.000, -0.7, 90.0, -0.0),
+		createGrip(8.276, 1.908, -0.000, -60.2, 90.0, -0.0),
+		createGrip(-2.590, -3.488, -0.000, -31.0, 90.0, -0.0),
+		createGrip(-0.322, -5.433, -0.000, -60.4, 90.0, -0.0),
+		createGrip(-5.396, -3.441, -0.000, -1.8, 90.0, -0.0),
+		createGrip(-5.396, -4.788, -0.000, -1.8, 90.0, -0.0),
+		createGrip(-7.499, -2.012, -0.000, 33.2, 90.0, 0.0),
+		createGrip(-6.781, 2.262, 0.000, 89.3, -90.0, 180.0),
+		createGrip(-6.781, 0.920, 0.000, 89.3, -90.0, 180.0),
+		createGrip(-6.781, -0.372, 0.000, 89.3, -90.0, 180.0),
+		createGrip(-6.781, -1.673, 0.000, 89.3, -90.0, 180.0),
+		createGrip(-6.781, -2.996, 0.000, 89.3, -90.0, 180.0),
+		createGrip(-6.898, -4.048, -0.000, 86.8, -90.0, 180.0),
+		createGrip(-7.713, -3.231, -0.000, 72.9, -90.0, 180.0),
+		createGrip(-7.727, 0.817, -0.000, 62.8, 90.0, 0.0),
+		createGrip(-7.103, 2.337, -0.000, 83.6, 90.0, 0.0),
+		createGrip(-3.410, -7.684, -0.000, 0.2, 90.0, 0.0),
+		createGrip(-2.798, -7.684, -0.000, 0.2, 90.0, 0.0),
+		createGrip(-2.179, -7.684, -0.000, 0.2, 90.0, 0.0),
+		createGrip(-1.669, -7.684, -0.000, 0.2, 90.0, 0.0),
+		createGrip(-1.669, -8.798, -0.000, 0.2, 90.0, 0.0),
+		createGrip(-2.190, -8.798, -0.000, 0.2, 90.0, 0.0),
+		createGrip(-2.788, -8.798, -0.000, 0.2, 90.0, 0.0),
+		createGrip(-5.653, -7.387, -0.000, 16.8, 90.0, 0.0),
+		createGrip(-5.653, -6.106, -0.000, 16.8, 90.0, 0.0),
+		createGrip(-9.049, 1.706, -0.000, 83.1, -90.0, 180.0),
+		createGrip(-8.739, 0.365, -0.000, 88.0, 90.0, 0.0),
+		createGrip(-8.739, -0.987, -0.000, 88.0, 90.0, 0.0),
+		createGrip(-8.739, -2.277, -0.000, 88.0, 90.0, 0.0),
+		createGrip(-8.739, -3.659, -0.000, 88.0, 90.0, 0.0),
+		createGrip(-9.009, -4.255, -0.000, 87.3, -90.0, 180.0),
+		createGrip(-9.641, 2.524, -0.000, 40.5, -90.0, 180.0),
+		createGrip(-6.608, 6.542, -0.000, 5.1, -90.0, 180.0),
+		createGrip(-8.127, 3.415, -0.000, 22.2, -90.0, 180.0),
+		createGrip(-0.927, 8.704, -0.000, -32.6, -90.0, -180.0),
+		createGrip(4.892, -1.969, -0.000, 0.0, 90.0, 0.0),
+		createGrip(4.307, -1.969, -0.000, 0.0, 90.0, 0.0),
+		createGrip(3.692, -1.965, -0.000, 0.0, 90.0, 0.0),
+		createGrip(3.056, -1.965, -0.000, 0.0, 90.0, 0.0),
+		createGrip(2.508, -1.965, -0.000, 0.0, 90.0, 0.0),
+		createGrip(1.911, -1.965, -0.000, 0.0, 90.0, 0.0),
+		createGrip(1.911, -3.279, -0.000, 0.0, 90.0, 0.0),
+		createGrip(1.911, -4.576, -0.000, 0.0, 90.0, 0.0),
+		createGrip(1.911, -5.488, -0.000, 0.0, 90.0, 0.0),
+		createGrip(1.911, -6.274, -0.000, 0.0, 90.0, 0.0),
+		createGrip(2.499, -3.269, -0.000, 0.0, 90.0, 0.0),
+		createGrip(2.499, -4.543, -0.000, 0.0, 90.0, 0.0),
+		createGrip(2.499, -5.921, -0.000, 0.0, 90.0, 0.0),
+		createGrip(3.037, -3.287, -0.000, 0.0, 90.0, 0.0),
+		createGrip(3.037, -4.598, -0.000, 0.0, 90.0, 0.0),
+		createGrip(3.037, -5.921, -0.000, 0.0, 90.0, 0.0),
+		createGrip(3.695, -3.243, -0.000, 0.0, 90.0, 0.0),
+		createGrip(3.695, -4.564, -0.000, 0.0, 90.0, 0.0),
+		createGrip(3.695, -5.892, -0.000, 0.0, 90.0, 0.0),
+		createGrip(4.279, -3.267, -0.000, 0.0, 90.0, 0.0),
+		createGrip(4.278, -4.557, -0.000, 0.0, 90.0, 0.0),
+		createGrip(4.278, -5.899, -0.000, 0.0, 90.0, 0.0),
+		createGrip(4.872, -5.899, -0.000, 0.0, 90.0, 0.0),
+		createGrip(4.872, -4.604, -0.000, 0.0, 90.0, 0.0),
+		createGrip(4.872, -3.308, -0.000, 0.0, 90.0, 0.0),
+		createGrip(5.421, -3.308, -0.000, 0.0, 90.0, 0.0),
+		createGrip(5.421, -4.636, -0.000, 0.0, 90.0, 0.0),
+		createGrip(5.421, -5.997, -0.000, 0.0, 90.0, 0.0),
+		createGrip(5.998, -5.997, -0.000, 0.0, 90.0, 0.0),
+		createGrip(5.998, -4.675, -0.000, 0.0, 90.0, 0.0),
+		createGrip(5.998, -3.765, -0.000, 0.0, 90.0, 0.0),
+		createGrip(1.307, -2.124, -0.000, 0.0, 90.0, 0.0),
+		createGrip(1.307, -3.431, -0.000, 0.0, 90.0, 0.0),
+		createGrip(1.307, -4.684, -0.000, 0.0, 90.0, 0.0),
+		createGrip(1.307, -5.976, -0.000, 0.0, 90.0, 0.0),
+		createGrip(0.652, -2.510, -0.000, 0.0, 90.0, 0.0),
+		createGrip(0.011, -2.510, -0.000, 0.0, 90.0, 0.0),
+		createGrip(-0.649, -2.510, -0.000, 0.0, 90.0, 0.0),
+		createGrip(-1.209, -2.510, -0.000, 0.0, 90.0, 0.0),
+		createGrip(0.643, -3.830, -0.000, 0.0, 90.0, 0.0),
+		createGrip(0.643, -5.167, -0.000, 0.0, 90.0, 0.0),
+		createGrip(0.643, -6.125, 0.028, 0.0, 90.0, 0.0),
+		createGrip(1.914, -5.535, -0.005, 0.0, 90.0, 0.0),
+		createGrip(0.004, -3.839, -0.005, 0.0, 90.0, 0.0),
+		createGrip(0.004, -5.113, -0.005, 0.0, 90.0, 0.0),
+		createGrip(4.738, -4.378, -0.005, -47.1, 90.0, -0.0),
+		createGrip(4.291, -4.490, -0.005, -47.1, 90.0, -0.0),
+		createGrip(-0.625, -3.789, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-0.625, -5.120, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-1.238, -3.866, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-1.238, -5.187, -0.005, 0.0, 90.0, 0.0),
+		createGrip(4.672, -4.129, -0.005, -58.5, 90.0, -0.0),
+		createGrip(4.268, -4.648, -0.005, -58.5, 90.0, -0.0),
+		createGrip(3.834, -6.280, -0.005, -58.5, 90.0, -0.0),
+		createGrip(3.834, -4.968, -0.005, -58.5, 90.0, -0.0),
+		createGrip(-1.924, -2.065, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-2.421, -1.388, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-3.002, -1.388, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-3.518, -1.832, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-4.068, -2.760, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-4.563, -3.139, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-4.983, -3.417, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-4.983, -4.719, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-4.576, -4.490, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-4.075, -4.091, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-4.075, -5.421, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-3.509, -3.152, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-3.509, -4.470, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-3.509, -5.781, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-2.991, -2.683, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-2.991, -4.022, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-2.991, -5.310, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-2.435, -2.714, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-2.435, -4.042, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-2.435, -5.364, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-1.892, -3.403, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-1.892, -4.697, -0.005, 0.0, 90.0, 0.0),
+		createGrip(-6.853, -2.804, -0.005, 28.5, 90.0, 0.0),
+		createGrip(3.850, -6.531, 0.000, -90.0, 90.0, 0.0),
+		createGrip(5.153, -6.531, 0.000, -90.0, 90.0, 0.0),
+		createGrip(5.153, -7.859, 0.000, -90.0, 90.0, 0.0),
+		createGrip(5.153, -9.243, 0.000, -90.0, 90.0, 0.0),
+		createGrip(5.153, -10.577, 0.000, -90.0, 90.0, 0.0),
+		createGrip(5.153, -11.934, 0.000, -90.0, 90.0, 0.0),
+		createGrip(5.153, -13.214, 0.000, -90.0, 90.0, 0.0),
+		createGrip(5.153, -14.533, 0.000, -90.0, 90.0, 0.0),
+		createGrip(5.153, -15.841, 0.000, -90.0, 90.0, 0.0),
+		createGrip(-5.153, 16.577, 0.000, 90.0, 90.0, 0.0),
+		createGrip(4.464, -6.572, 0.000, -90.0, 90.0, 0.0),
+		createGrip(4.464, -7.920, 0.000, -90.0, 90.0, 0.0),
+		createGrip(4.464, -9.222, 0.000, -90.0, 90.0, 0.0),
+		createGrip(4.464, -10.569, 0.000, -90.0, 90.0, 0.0),
+		createGrip(4.464, -11.907, 0.000, -90.0, 90.0, 0.0),
+		createGrip(4.464, -13.182, 0.000, -90.0, 90.0, 0.0),
+		createGrip(4.464, -14.549, 0.000, -90.0, 90.0, 0.0),
+		createGrip(4.464, -15.861, 0.000, -90.0, 90.0, 0.0),
+		createGrip(-4.661, 16.494, 0.000, 89.3, 90.0, 0.0),
+		createGrip(3.815, -7.934, 0.000, -89.8, 90.0, -0.0),
+		createGrip(3.815, -9.249, 0.000, -89.8, 90.0, -0.0),
+		createGrip(3.815, -10.576, 0.000, -89.8, 90.0, -0.0),
+		createGrip(3.815, -11.897, 0.000, -89.8, 90.0, -0.0),
+		createGrip(3.815, -13.257, 0.000, -89.8, 90.0, -0.0),
+		createGrip(3.815, -14.562, 0.000, -89.8, 90.0, -0.0),
+		createGrip(3.815, -15.864, 0.000, -89.8, 90.0, -0.0),
+		createGrip(-3.815, 16.554, 0.000, 89.8, -90.0, 180.0),
+		createGrip(-4.763, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-4.239, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-3.807, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-3.333, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-2.911, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-2.432, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-1.900, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-1.295, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-0.792, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-0.361, 16.115, -0.000, 85.0, 90.0, 0.0),
+		createGrip(-11.383, 11.831, -0.000, 38.5, 90.0, 0.0),
+		createGrip(-11.383, 10.452, -0.000, 38.5, 90.0, 0.0),
+		createGrip(-16.622, 0.971, -0.000, -1.9, 90.0, -0.0),
+		createGrip(-11.332, 9.156, -0.000, 38.9, 90.0, 0.0),
+		createGrip(-8.458, 10.033, -0.000, 50.0, 90.0, 0.0),
+		createGrip(-8.458, 8.782, -0.000, 50.0, 90.0, 0.0),
+		createGrip(-1.667, 10.966, -0.000, 87.8, 90.0, 0.0),
+		createGrip(-1.667, 9.679, -0.000, 87.8, 90.0, 0.0),
+		createGrip(-9.291, -1.097, -0.000, 4.7, 90.0, 0.0),
+		createGrip(10.644, 8.904, -0.000, 39.2, -90.0, 180.0),
+		createGrip(-0.427, 14.916, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.014, 14.916, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.014, 13.577, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.014, 12.231, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.510, 14.936, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.510, 13.619, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.510, 12.305, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.510, 10.961, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.510, 9.818, 0.016, 90.0, 90.0, 0.0),
+		createGrip(-1.913, 15.028, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.913, 13.719, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.913, 12.406, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.913, 11.117, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.913, 9.833, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.364, 15.060, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.364, 13.723, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.364, 12.428, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.364, 11.144, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.364, 9.813, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.792, 15.092, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.792, 13.763, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.792, 12.442, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.792, 11.164, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.792, 9.842, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.329, 15.154, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.329, 13.774, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.329, 12.434, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.329, 11.084, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.329, 9.793, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.329, 8.444, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.827, 8.444, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.490, -7.131, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.120, -7.131, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.721, -7.131, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.384, -7.131, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-6.018, -7.131, -0.000, 90.0, 90.0, 0.0),
+		createGrip(6.404, 8.448, -0.000, -90.0, 90.0, 0.0),
+		createGrip(5.775, 8.448, -0.000, -90.0, 90.0, 0.0),
+		createGrip(5.251, 8.448, -0.000, -90.0, 90.0, 0.0),
+		createGrip(4.726, 8.448, -0.000, -90.0, 90.0, 0.0),
+		createGrip(4.179, 8.448, -0.000, -90.0, 90.0, 0.0),
+		createGrip(3.646, 8.448, -0.000, -90.0, 90.0, 0.0),
+		createGrip(3.168, 8.448, -0.000, -90.0, 90.0, 0.0),
+		createGrip(2.752, 8.448, -0.000, -90.0, 90.0, 0.0),
+		createGrip(-2.752, -10.164, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.246, -10.164, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.740, -10.164, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.314, -10.164, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.810, -10.164, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.335, -10.164, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.764, -10.164, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-6.317, -10.164, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-6.317, -11.466, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.825, -11.489, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.272, -11.489, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.795, -11.542, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.285, -11.542, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.713, -11.542, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.297, -11.542, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-2.943, -11.542, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.062, -12.903, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.062, -14.223, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.062, -15.531, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.697, -12.856, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.697, -14.172, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-3.697, -15.486, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.369, -12.859, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.369, -14.203, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.369, -15.516, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.369, -16.834, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.768, -12.831, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.768, -14.143, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.768, -15.486, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.768, -16.795, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.318, -12.828, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.318, -14.160, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.318, -15.419, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.318, -16.744, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.876, -12.787, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.876, -14.118, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.876, -15.404, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.876, -16.678, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-6.279, -12.818, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-6.279, -14.073, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-6.279, -15.455, -0.000, 90.0, 90.0, 0.0),
+		createGrip(10.629, -13.943, -0.000, 41.7, 90.0, 0.0),
+		createGrip(10.033, -13.748, -0.000, 41.7, 90.0, 0.0),
+		createGrip(9.515, -13.745, -0.000, 41.7, 90.0, 0.0),
+		createGrip(-4.620, -18.109, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.159, -18.126, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-5.208, -18.126, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-11.020, -15.293, -0.000, 71.3, -90.0, 180.0),
+		createGrip(-11.020, -13.899, -0.000, 71.3, -90.0, 180.0),
+		createGrip(-6.108, -19.036, -0.000, 86.9, -90.0, 180.0),
+		createGrip(-0.931, -19.826, -0.000, 80.3, 90.0, -0.0),
+		createGrip(-4.621, -19.583, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.621, -20.938, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.621, -22.203, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.621, -23.578, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.621, -24.813, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.621, -26.110, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.621, -27.467, -0.000, 90.0, 90.0, 0.0),
+		createGrip(-4.912, -29.010, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-4.912, -28.217, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-5.326, -28.217, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-5.326, -29.075, -0.000, 88.9, -90.0, 180.0),
+		createGrip(-2.146, -0.257, 0.065, 1.8, -90.0, 180.0),
+		createGrip(-2.641, -0.257, 0.065, 1.8, -90.0, 180.0),
+		createGrip(-3.156, -0.257, 0.065, 1.8, -90.0, 180.0),
+		createGrip(-3.771, -0.143, 0.065, 1.8, -90.0, 180.0),
+		createGrip(-4.402, -0.018, 0.065, 1.8, -90.0, 180.0),
+		createGrip(-5.105, 0.275, 0.065, -1.5, -90.0, -180.0),
+		createGrip(4.961, 1.743, 0.003, -7.3, 90.0, -0.0),
+		createGrip(4.453, 1.743, 0.003, -7.3, 90.0, -0.0),
+		createGrip(3.858, 1.743, 0.003, -7.3, 90.0, -0.0),
+		createGrip(3.280, 1.743, 0.003, -7.3, 90.0, -0.0),
+		createGrip(2.775, 1.743, 0.003, -7.3, 90.0, -0.0),
+		createGrip(2.248, 1.743, 0.003, -7.3, 90.0, -0.0),
+		createGrip(1.968, 1.743, 0.003, -7.3, 90.0, -0.0),
+		createGrip(1.968, 3.098, 0.003, -7.3, 90.0, -0.0),
+		createGrip(2.444, 3.098, 0.003, -7.3, 90.0, -0.0),
+		createGrip(2.928, 3.098, 0.003, -7.3, 90.0, -0.0),
+		createGrip(3.250, 3.098, 0.003, -7.3, 90.0, -0.0),
+		createGrip(3.847, 3.098, 0.003, -7.3, 90.0, -0.0),
+		createGrip(4.362, 3.098, 0.003, -7.3, 90.0, -0.0),
+		createGrip(4.904, 3.098, 0.003, -7.3, 90.0, -0.0),
+		createGrip(3.293, 8.413, 0.003, -21.2, 90.0, -0.0),
+		createGrip(2.587, 8.413, 0.003, -21.2, 90.0, -0.0),
+		createGrip(2.587, 8.413, 0.003, -21.2, 90.0, -0.0),
+		createGrip(2.029, 8.413, 0.003, -21.2, 90.0, -0.0),
+		createGrip(1.421, 8.413, 0.003, -21.2, 90.0, -0.0),
+		createGrip(0.799, 8.413, 0.003, -21.2, 90.0, -0.0),
+		createGrip(0.293, 8.402, 0.003, -21.2, 90.0, -0.0),
+		createGrip(1.112, 6.919, 0.003, -14.9, 90.0, -0.0),
+		createGrip(1.681, 6.919, 0.003, -14.9, 90.0, -0.0),
+		createGrip(2.237, 6.919, 0.003, -14.9, 90.0, -0.0),
+		createGrip(2.871, 6.919, 0.003, -14.9, 90.0, -0.0),
+		createGrip(3.353, 6.919, 0.003, -14.9, 90.0, -0.0),
+		createGrip(4.037, 6.760, 0.003, -14.9, 90.0, -0.0),
+		createGrip(5.033, 4.929, 0.003, -5.0, 90.0, -0.0),
+		createGrip(4.463, 4.986, 0.003, -5.0, 90.0, -0.0),
+		createGrip(4.039, 4.986, 0.003, -5.0, 90.0, -0.0),
+		createGrip(3.529, 5.099, 0.003, -5.0, 90.0, -0.0),
+		createGrip(2.977, 5.233, 0.003, -5.0, 90.0, -0.0),
+		createGrip(2.454, 5.419, 0.003, -5.0, 90.0, -0.0),
+		createGrip(2.193, 5.421, 0.003, -5.0, 90.0, -0.0),
+		createGrip(2.193, 4.066, 0.003, -5.0, 90.0, -0.0),
+		createGrip(2.820, 3.899, 0.003, -5.0, 90.0, -0.0),
+		createGrip(3.481, 3.867, 0.003, -5.0, 90.0, -0.0),
+		createGrip(4.039, 3.705, 0.003, -5.0, 90.0, -0.0),
+		createGrip(4.416, 3.705, 0.003, -5.0, 90.0, -0.0),
+		createGrip(4.987, 3.705, 0.003, -5.0, 90.0, -0.0),
+		createGrip(12.238, -14.741, 0.003, 30.3, 90.0, 0.0),
+		createGrip(12.238, -15.949, 0.003, 30.3, 90.0, 0.0),
+		createGrip(12.238, -17.123, 0.003, 30.3, 90.0, 0.0),
+		createGrip(19.809, -8.621, 0.003, 0.7, 90.0, 0.0),
+		createGrip(19.809, -7.340, 0.003, 0.7, 90.0, 0.0),
+		createGrip(19.809, -6.158, 0.003, 0.7, 90.0, 0.0),
+		createGrip(0.908, 1.809, 0.003, 89.9, -90.0, 180.0),
+		createGrip(0.908, 0.548, 0.003, 89.9, -90.0, 180.0),
+		createGrip(0.908, -0.743, 0.003, 89.9, -90.0, 180.0),
+		createGrip(1.480, -0.857, 0.003, 44.9, 90.0, 0.0),
+		createGrip(-1.062, -0.672, 0.003, 37.2, 90.0, 0.0),
+		createGrip(-0.470, -0.674, 0.003, -24.4, 90.0, -0.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_4f);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Start (sword).LocalScript
+local function C_51()
+local script = G2L["51"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	 
+	local gripPoses = {
+		createGrip(-3.508, 0.000, 6.217, 0.0, 121.8, 90.0),
+		createGrip(-3.235, 0.000, 6.217, 0.0, 121.8, 90.0),
+		createGrip(-3.052, 0.000, 6.217, 0.0, 121.8, 90.0),
+		createGrip(-2.796, 0.000, 6.217, 0.0, 121.8, 90.0),
+		createGrip(-2.546, 0.000, 5.987, 0.0, 121.8, 90.0),
+		createGrip(-2.322, 0.000, 5.987, 0.0, 121.8, 90.0),
+		createGrip(-2.137, 0.000, 5.987, 0.0, 121.8, 90.0),
+		createGrip(-1.899, 0.000, 5.987, 0.0, 121.8, 90.0),
+		createGrip(-1.663, 0.000, 5.987, 0.0, 121.8, 90.0),
+		createGrip(-1.574, 0.000, 5.677, 0.0, 121.8, 90.0),
+		createGrip(-1.388, 0.000, 5.677, 0.0, 121.8, 90.0),
+		createGrip(-1.213, 0.000, 5.677, 0.0, 121.8, 90.0),
+		createGrip(-3.523, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-3.327, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-3.083, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-2.883, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-2.655, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-2.475, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-2.310, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-2.109, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-1.947, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-1.825, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-1.681, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-1.460, 0.000, 2.148, 0.0, 121.8, 90.0),
+		createGrip(-1.413, 0.000, 0.450, 0.0, 177.6, 90.0),
+		createGrip(1.712, 0.000, -0.724, 0.0, 69.6, 90.0),
+		createGrip(1.951, 0.000, -0.690, 0.0, 69.6, 90.0),
+		createGrip(2.126, 0.000, -0.570, 0.0, 69.6, 90.0),
+		createGrip(2.353, 0.000, -0.570, 0.0, 69.6, 90.0),
+		createGrip(2.631, 0.000, -0.429, 0.0, 69.6, 90.0),
+		createGrip(2.869, 0.000, -0.429, 0.0, 69.6, 90.0),
+		createGrip(3.121, 0.000, -0.285, 0.0, 69.6, 90.0),
+		createGrip(3.363, 0.000, -0.285, 0.0, 69.6, 90.0),
+		createGrip(3.554, 0.000, -0.269, 0.0, 69.6, 90.0),
+		createGrip(3.816, 0.000, -0.269, 0.0, 69.6, 90.0),
+		createGrip(4.066, 0.000, -0.094, 0.0, 69.6, 90.0),
+		createGrip(4.310, 0.000, -0.094, 0.0, 69.6, 90.0),
+		createGrip(4.492, 0.000, -0.094, 0.0, 69.6, 90.0),
+		createGrip(4.729, 0.000, -0.094, 0.0, 69.6, 90.0),
+		createGrip(4.968, 0.000, -0.094, 0.0, 69.6, 90.0),
+		createGrip(5.579, 0.000, -1.955, 0.0, 89.5, 90.0),
+		createGrip(5.394, 0.000, -1.138, 0.0, 81.3, 90.0),
+		createGrip(5.184, 0.000, -0.455, 0.0, 74.2, 90.0),
+		createGrip(5.290, 0.000, -0.816, 0.0, 78.2, 90.0),
+		createGrip(5.481, 0.000, -1.548, 0.0, 84.8, 90.0),
+		createGrip(-2.112, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(-1.863, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(-1.617, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(-1.298, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(-1.038, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(-0.814, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(-0.655, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(-0.382, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(-0.178, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(0.019, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(0.283, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(0.421, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(0.608, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(0.826, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(1.038, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(1.293, 0.000, -3.565, 0.0, 84.8, 90.0),
+		createGrip(5.929, 0.000, -6.101, 0.0, 92.1, 90.0),
+		createGrip(5.683, 0.000, -6.101, 0.0, 92.1, 90.0),
+		createGrip(5.421, 0.000, -6.101, 0.0, 92.1, 90.0),
+		createGrip(8.632, 0.000, 3.989, 0.0, 2.7, 90.0),
+		createGrip(8.632, 0.000, 0.005, 0.0, 2.7, 90.0),
+		createGrip(8.876, 0.000, 0.922, 0.0, 6.4, 90.0),
+		createGrip(8.876, 0.000, -2.054, 0.0, 6.4, 90.0),
+		createGrip(8.517, 0.000, -1.021, 0.0, -0.4, 90.0),
+		createGrip(-0.694, 0.000, -7.011, 0.0, 84.8, 90.0),
+		createGrip(-0.901, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-1.068, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-1.320, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-1.452, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-1.704, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-1.838, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-1.993, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-2.138, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-2.335, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-2.603, 0.000, -7.117, 0.0, 84.8, 90.0),
+		createGrip(-2.310, 0.000, -3.753, 0.0, 84.8, 90.0),
+		createGrip(-2.521, 0.000, -3.753, 0.0, 84.8, 90.0),
+		createGrip(-2.732, 0.000, -3.753, 0.0, 84.8, 90.0),
+		createGrip(-2.732, 0.000, -6.742, 0.0, 84.8, 90.0),
+		createGrip(-2.925, 0.000, -6.424, 0.0, 84.8, 90.0),
+		createGrip(-2.925, 0.000, -3.673, 0.0, 84.8, 90.0),
+		createGrip(-3.126, 0.000, -3.153, 0.0, 84.8, 90.0),
+		createGrip(-3.126, 0.000, -6.000, 0.0, 84.8, 90.0),
+		createGrip(-3.343, 0.000, -5.658, 0.0, 84.8, 90.0),
+		createGrip(-3.343, 0.000, -2.652, 0.0, 84.8, 90.0),
+		createGrip(-3.527, 0.000, -2.415, 0.0, 84.8, 90.0),
+		createGrip(-3.527, 0.000, -5.072, 0.0, 84.8, 90.0),
+		createGrip(-3.759, 0.000, -4.651, 0.0, 84.8, 90.0),
+		createGrip(-3.759, 0.000, -0.963, 0.0, 84.8, 90.0),
+		createGrip(-4.001, 0.000, -0.744, 0.0, 84.8, 90.0),
+		createGrip(-4.001, 0.000, -4.488, 0.0, 84.8, 90.0),
+		createGrip(-4.213, 0.000, -4.488, 0.0, 84.8, 90.0),
+		createGrip(-4.466, 0.000, -4.488, 0.0, 84.8, 90.0),
+		createGrip(-4.732, 0.000, -4.488, 0.0, 84.8, 90.0),
+		createGrip(-4.960, 0.000, -4.488, 0.0, 84.8, 90.0),
+		createGrip(-5.846, 0.000, -3.854, 0.0, 91.7, 90.0),
+		createGrip(-5.395, 0.000, -4.209, 0.0, 87.9, 90.0),
+		createGrip(-0.744, 0.000, -4.994, 0.0, 87.9, 90.0),
+		createGrip(-0.513, 0.000, -4.711, 0.0, 87.9, 90.0),
+		createGrip(-0.293, 0.000, -4.522, 0.0, 87.9, 90.0),
+		createGrip(-0.119, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(0.149, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(0.307, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(0.492, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(0.700, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(0.921, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(1.157, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(1.417, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(1.602, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(1.824, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(2.058, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(2.248, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(2.438, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(2.635, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(2.811, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(3.029, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(3.286, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(3.466, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(3.704, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(3.946, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(4.181, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(4.393, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(4.592, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(4.788, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(5.064, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(5.345, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(5.592, 0.000, -4.579, 0.0, 87.9, 90.0),
+		createGrip(-3.748, 0.000, 6.084, 0.0, -179.8, 90.0),
+		createGrip(-3.963, 0.000, 6.084, 0.0, -179.8, 90.0),
+		createGrip(-4.220, 0.000, 6.084, 0.0, -179.8, 90.0),
+		createGrip(-4.446, 0.000, 6.084, 0.0, -179.8, 90.0),
+		createGrip(-4.613, 0.000, 6.084, 0.0, -179.8, 90.0),
+		createGrip(-4.847, 0.000, 6.084, 0.0, -179.8, 90.0),
+		createGrip(-5.012, 0.000, 6.084, 0.0, -179.8, 90.0),
+		createGrip(-5.219, 0.000, 6.084, 0.0, -179.8, 90.0),
+		createGrip(-5.456, 0.000, 6.084, 0.0, -179.8, 90.0),
+		createGrip(-3.587, 0.000, 9.107, 0.0, -179.8, 90.0),
+		createGrip(-3.427, 0.000, 9.107, 0.0, -179.8, 90.0),
+		createGrip(-3.231, 0.000, 9.107, 0.0, -179.8, 90.0),
+		createGrip(-3.082, 0.000, 9.107, 0.0, -179.8, 90.0),
+		createGrip(-2.904, 0.000, 9.107, 0.0, -179.8, 90.0),
+		createGrip(-2.746, 0.000, 9.107, 0.0, -179.8, 90.0),
+		createGrip(-3.841, 0.000, 10.313, 0.0, -179.8, 90.0),
+		createGrip(-4.049, 0.000, 10.313, 0.0, -179.8, 90.0),
+		createGrip(-4.280, 0.000, 10.313, 0.0, -179.8, 90.0),
+		createGrip(-4.500, 0.000, 10.313, 0.0, -179.8, 90.0),
+		createGrip(-4.736, 0.000, 10.313, 0.0, -179.8, 90.0),
+		createGrip(-4.921, 0.000, 10.313, 0.0, -179.8, 90.0),
+		createGrip(-5.123, 0.000, 10.313, 0.0, -179.8, 90.0),
+		createGrip(-5.278, 0.000, 10.313, 0.0, -179.8, 90.0),
+		createGrip(-5.476, 0.000, 10.313, 0.0, -179.8, 90.0),
+		createGrip(-5.476, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-5.298, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-5.135, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-4.966, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-4.833, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-4.648, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-4.435, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-4.303, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-4.195, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-3.921, 0.000, 14.038, 0.0, -179.8, 90.0),
+		createGrip(-3.688, 0.000, 13.279, 0.0, -179.8, 90.0),
+		createGrip(-3.586, 0.000, 13.279, 0.0, -179.8, 90.0),
+		createGrip(-3.393, 0.000, 13.279, 0.0, -179.8, 90.0),
+		createGrip(-3.213, 0.000, 13.279, 0.0, -179.8, 90.0),
+		createGrip(-3.065, 0.000, 13.279, 0.0, -179.8, 90.0),
+		createGrip(-2.828, 0.000, 13.279, 0.0, -179.8, 90.0),
+		createGrip(-2.728, 0.000, 13.279, 0.0, -179.8, 90.0),
+		createGrip(-2.754, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-2.885, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-3.001, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-3.190, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-3.353, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-3.510, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-3.634, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-3.766, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-3.890, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-4.064, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-4.244, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-4.404, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-4.576, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-4.719, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-4.863, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-5.031, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-5.145, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-5.259, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-5.366, 0.000, 15.408, 0.0, -179.8, 90.0),
+		createGrip(-11.130, 0.000, 11.028, 0.0, 129.3, 90.0),
+		createGrip(-8.693, 0.000, 8.720, 0.0, 136.8, 90.0),
+		createGrip(-1.545, 0.000, 11.436, 0.0, 178.1, 90.0),
+		createGrip(9.285, 0.000, 3.235, 0.0, -89.8, 90.0),
+		createGrip(13.638, 0.000, 1.258, 0.0, -89.8, 90.0),
+		createGrip(16.870, 0.000, -0.836, 0.0, -89.8, 90.0),
+		createGrip(16.870, 0.000, 1.737, 0.0, -89.8, 90.0),
+		createGrip(16.870, 0.000, 0.729, 0.0, -89.8, 90.0),
+		createGrip(16.591, 0.000, 0.729, 0.0, -89.8, 90.0),
+		createGrip(16.399, 0.000, 0.729, 0.0, -89.8, 90.0),
+		createGrip(16.172, 0.000, 0.729, 0.0, -89.8, 90.0),
+		createGrip(16.024, 0.000, 0.729, 0.0, -89.8, 90.0),
+		createGrip(15.887, 0.000, 0.729, 0.0, -89.8, 90.0),
+		createGrip(15.670, 0.000, 0.729, 0.0, -89.8, 90.0),
+		createGrip(15.408, 0.000, 2.258, 0.0, -89.8, 90.0),
+		createGrip(15.099, 0.000, 2.258, 0.0, -89.8, 90.0),
+		createGrip(14.828, 0.000, 2.258, 0.0, -89.8, 90.0),
+		createGrip(14.608, 0.000, 2.258, 0.0, -89.8, 90.0),
+		createGrip(14.402, 0.000, 2.258, 0.0, -89.8, 90.0),
+		createGrip(14.110, 0.000, 2.258, 0.0, -89.8, 90.0),
+		createGrip(13.834, 0.000, 2.258, 0.0, -89.8, 90.0),
+		createGrip(13.387, 0.000, 1.691, 0.0, -89.8, 90.0),
+		createGrip(13.108, 0.000, 1.887, 0.0, -89.8, 90.0),
+		createGrip(12.833, 0.000, 2.218, 0.0, -89.8, 90.0),
+		createGrip(12.555, 0.000, 2.400, 0.0, -89.8, 90.0),
+		createGrip(12.275, 0.000, 2.675, 0.0, -89.8, 90.0),
+		createGrip(12.044, 0.000, 2.854, 0.0, -89.8, 90.0),
+		createGrip(11.774, 0.000, 3.135, 0.0, -89.8, 90.0),
+		createGrip(11.523, 0.000, 3.351, 0.0, -89.8, 90.0),
+		createGrip(11.272, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(11.085, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(10.868, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(10.709, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(10.514, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(10.308, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(10.144, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(9.977, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(9.834, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(9.634, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(9.497, 0.000, 3.492, 0.0, -89.8, 90.0),
+		createGrip(15.412, 0.000, 1.137, 0.0, -89.8, 90.0),
+		createGrip(15.197, 0.000, 1.391, 0.0, -89.8, 90.0),
+		createGrip(14.975, 0.000, 1.696, 0.0, -89.8, 90.0),
+		createGrip(16.546, 0.000, -0.460, 0.0, -89.8, 90.0),
+		createGrip(16.216, 0.000, -0.150, 0.0, -89.8, 90.0),
+		createGrip(-5.544, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-5.410, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-5.274, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-5.080, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-4.912, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-4.734, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-4.612, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-4.449, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-4.295, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-4.060, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-3.841, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-3.731, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-3.606, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-3.528, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-3.315, 0.000, -7.615, 0.0, -179.8, 90.0),
+		createGrip(-2.518, 0.000, -10.221, 0.0, -179.8, 90.0),
+		createGrip(-2.518, 0.000, -14.409, 0.0, -179.8, 90.0),
+		createGrip(-6.489, 0.000, -10.161, 0.0, -179.8, 90.0),
+		createGrip(-6.489, 0.000, -14.346, 0.0, -179.8, 90.0),
+		createGrip(-6.284, 0.000, -10.110, 0.0, -179.8, 90.0),
+		createGrip(-6.017, 0.000, -10.110, 0.0, -179.8, 90.0),
+		createGrip(-5.789, 0.000, -10.110, 0.0, -179.8, 90.0),
+		createGrip(-2.712, 0.000, -10.110, 0.0, -179.8, 90.0),
+		createGrip(-2.884, 0.000, -10.110, 0.0, -179.8, 90.0),
+		createGrip(-3.090, 0.000, -10.110, 0.0, -179.8, 90.0),
+		createGrip(-2.792, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-2.975, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-3.222, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-3.414, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-3.654, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-3.891, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-4.069, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-4.284, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-4.525, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-4.819, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-5.015, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-5.212, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-5.411, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-5.626, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-5.793, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-6.017, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-6.186, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-6.299, 0.000, -11.797, 0.0, -179.8, 90.0),
+		createGrip(-6.299, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-6.157, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-5.993, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-5.746, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-5.522, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-5.357, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-5.143, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-4.952, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-4.721, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-4.469, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-4.194, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-3.946, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-3.720, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-3.465, 0.000, -15.863, 0.0, -179.8, 90.0),
+		createGrip(-2.738, 0.000, -14.692, 0.0, -179.8, 90.0),
+		createGrip(-2.923, 0.000, -14.874, 0.0, -179.8, 90.0),
+		createGrip(-3.140, 0.000, -14.874, 0.0, -179.8, 90.0),
+		createGrip(-3.349, 0.000, -14.874, 0.0, -179.8, 90.0),
+		createGrip(3.198, 0.000, -18.508, 0.0, 159.0, 90.0),
+		createGrip(-12.258, 0.000, -15.007, 0.0, -157.3, 90.0),
+		createGrip(-11.030, 0.000, -15.809, 0.0, -161.2, 90.0),
+		createGrip(0.490, 0.000, -18.776, 0.0, 166.5, 90.0),
+		createGrip(-0.170, 0.000, -18.865, 0.0, 168.0, 90.0),
+		createGrip(-9.276, 0.000, -16.476, 0.0, -166.7, 90.0),
+		createGrip(-7.761, 0.000, -17.144, 0.0, -171.1, 90.0),
+		createGrip(-0.903, 0.000, -18.666, 0.0, 169.5, 90.0),
+		createGrip(-5.420, 0.000, -18.005, 0.0, -177.7, 90.0),
+		createGrip(9.335, 0.000, -17.062, 0.0, 130.6, 90.0),
+		createGrip(19.812, 0.000, -6.712, 0.0, 90.4, 90.0),
+		createGrip(-5.074, 0.000, -20.766, 0.0, -179.6, 90.0),
+		createGrip(-4.858, 0.000, -20.766, 0.0, -179.6, 90.0),
+		createGrip(-4.582, 0.000, -20.766, 0.0, -179.6, 90.0),
+		createGrip(-4.582, 0.000, -23.851, 0.0, -179.6, 90.0),
+		createGrip(-4.809, 0.000, -23.851, 0.0, -179.6, 90.0),
+		createGrip(-5.076, 0.000, -23.851, 0.0, -179.6, 90.0),
+		createGrip(4.940, 0.000, 28.812, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 28.615, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 28.495, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 28.311, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 28.136, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 27.939, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 27.694, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 27.496, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 27.268, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 27.121, 0.0, 0.4, 90.0),
+		createGrip(4.940, 0.000, 26.894, 0.0, 0.4, 90.0),
+		createGrip(4.627, 0.000, 26.705, 0.0, 0.4, 90.0),
+		createGrip(5.244, 0.000, 26.705, 0.0, 0.4, 90.0),
+		createGrip(-1.883, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-2.170, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-2.380, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-2.639, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-2.826, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-3.105, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-3.324, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-3.572, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-3.808, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-3.956, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-4.194, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-4.287, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-4.431, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-4.609, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-4.787, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-4.987, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-5.183, 0.000, -2.055, 0.0, -95.5, 90.0),
+		createGrip(-3.666, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-3.516, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-3.314, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-3.091, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-2.824, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-2.631, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-2.482, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-2.253, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-1.972, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-1.770, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-1.545, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-1.395, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-1.128, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-0.889, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-0.640, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-0.412, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-0.181, 0.000, -7.236, 0.0, -111.8, 90.0),
+		createGrip(-1.872, 0.000, -4.133, 0.0, -97.6, 90.0),
+		createGrip(-2.009, 0.000, -4.133, 0.0, -97.6, 90.0),
+		createGrip(-2.179, 0.000, -4.133, 0.0, -97.6, 90.0),
+		createGrip(-2.366, 0.000, -4.133, 0.0, -97.6, 90.0),
+		createGrip(-2.570, 0.000, -4.133, 0.0, -97.6, 90.0),
+		createGrip(-2.769, 0.000, -4.133, 0.0, -97.6, 90.0),
+		createGrip(-2.941, 0.000, -4.133, 0.0, -97.6, 90.0),
+		createGrip(-3.127, 0.000, -4.133, 0.0, -97.6, 90.0),
+		createGrip(-3.374, 0.000, -4.133, 0.0, -97.6, 90.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_51);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.big fucking gun.Start (boombox).LocalScript
+local function C_53()
+local script = G2L["53"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	
+	local gripPoses = {
+		createGrip(6.246, -2.374, 0.000, -60.9, -90.0, 0.0),
+		createGrip(6.444, -3.301, 0.000, -57.4, -90.0, 0.0),
+		createGrip(3.802, -3.301, 0.000, -57.4, -90.0, 0.0),
+		createGrip(3.802, -2.017, 0.000, -57.4, -90.0, 0.0),
+		createGrip(-0.176, -2.334, 0.000, -89.1, -90.0, 0.0),
+		createGrip(-0.413, -3.757, 0.000, -89.1, -90.0, 0.0),
+		createGrip(-4.998, -1.199, -0.000, -44.0, 90.0, -180.0),
+		createGrip(-4.421, -5.568, -0.000, -81.9, -90.0, -0.0),
+		createGrip(2.821, -6.192, -0.000, 1.3, -90.0, 0.0),
+		createGrip(0.369, -6.192, -0.000, 1.3, -90.0, 0.0),
+		createGrip(-2.185, -6.192, -0.000, 1.3, -90.0, 0.0),
+		createGrip(-4.724, -6.192, -0.000, 1.3, -90.0, 0.0),
+		createGrip(6.085, -7.264, -0.000, 77.9, -90.0, 0.0),
+		createGrip(-3.784, -8.761, -0.000, -0.2, -90.0, 0.0),
+		createGrip(-1.312, -8.761, -0.000, -0.2, -90.0, 0.0),
+		createGrip(1.239, -8.761, -0.000, -0.2, -90.0, 0.0),
+		createGrip(2.330, -7.429, -0.000, -0.2, -90.0, 0.0),
+		createGrip(-4.575, -7.436, -0.000, -53.6, -90.0, -0.0),
+		createGrip(-2.061, -7.436, -0.000, -53.6, -90.0, -0.0),
+		createGrip(2.656, -5.014, -0.000, -0.3, -90.0, 0.0),
+		createGrip(0.061, -5.014, -0.000, -0.3, -90.0, 0.0),
+		createGrip(-2.475, -5.014, -0.000, -0.3, -90.0, 0.0),
+		createGrip(-5.162, -5.014, -0.000, -0.3, -90.0, 0.0),
+		createGrip(-5.162, -3.707, -0.000, -0.3, -90.0, 0.0),
+		createGrip(-2.525, -3.707, -0.000, -0.3, -90.0, 0.0),
+		createGrip(0.110, -3.707, -0.000, -0.3, -90.0, 0.0),
+		createGrip(2.827, -3.707, -0.000, -0.3, -90.0, 0.0),
+		createGrip(2.827, -2.438, -0.000, -0.3, -90.0, 0.0),
+		createGrip(0.138, -2.438, -0.000, -0.3, -90.0, 0.0),
+		createGrip(-2.490, -2.438, -0.000, -0.3, -90.0, 0.0),
+		createGrip(-4.499, -2.438, -0.014, -0.3, -90.0, 0.0),
+		createGrip(-4.548, 0.321, -0.014, -10.3, -90.0, 0.0),
+		createGrip(-2.726, 0.321, -0.014, -10.3, -90.0, 0.0),
+		createGrip(-2.726, -0.788, -0.014, -10.3, -90.0, 0.0),
+		createGrip(-4.664, -0.788, -0.014, -10.3, -90.0, 0.0),
+		createGrip(4.328, -7.293, -0.014, 88.6, -90.0, 0.0),
+		createGrip(5.125, -8.852, -0.014, 88.6, -90.0, 0.0),
+		createGrip(3.401, -8.852, -0.014, 88.6, -90.0, 0.0),
+		createGrip(-10.025, -2.870, -0.014, -1.4, -90.0, 0.0),
+		createGrip(-12.836, -2.870, -0.014, -1.4, -90.0, 0.0),
+		createGrip(-15.602, -2.870, -0.014, -1.4, -90.0, 0.0),
+		createGrip(9.907, 5.671, -0.014, 1.4, 90.0, -180.0),
+		createGrip(12.530, 5.671, -0.014, 1.4, 90.0, -180.0),
+		createGrip(15.216, 5.671, -0.014, 1.4, 90.0, -180.0),
+		createGrip(-6.072, -16.837, -0.014, 51.5, -90.0, 0.0),
+		createGrip(-11.062, 13.401, -0.014, -63.8, -90.0, -0.0),
+		createGrip(3.960, -9.898, -0.014, 87.2, -90.0, 0.0),
+		createGrip(3.960, -11.181, -0.014, 87.2, -90.0, 0.0),
+		createGrip(3.960, -12.550, -0.014, 87.2, -90.0, 0.0),
+		createGrip(3.960, -13.784, -0.014, 87.2, -90.0, 0.0),
+		createGrip(3.960, -15.046, -0.014, 87.2, -90.0, 0.0),
+		createGrip(3.960, -16.249, -0.014, 87.2, -90.0, 0.0),
+		createGrip(3.960, -18.335, -0.014, 87.2, -90.0, 0.0),
+		createGrip(3.960, -19.577, -0.014, 87.2, -90.0, 0.0),
+		createGrip(-20.996, -4.342, -0.014, -1.5, -90.0, 0.0),
+		createGrip(-23.511, -4.342, -0.014, -1.5, -90.0, 0.0),
+		createGrip(-26.011, -4.342, -0.014, -1.5, -90.0, 0.0),
+		createGrip(-28.676, -4.655, -0.014, -1.5, -90.0, 0.0),
+		createGrip(28.676, 3.597, -0.014, 1.5, 90.0, -180.0),
+		createGrip(14.946, -10.803, -0.014, 55.4, 90.0, 180.0),
+		createGrip(17.624, -10.803, -0.014, 55.4, 90.0, 180.0),
+		createGrip(7.807, -20.349, -0.014, 88.3, -90.0, 0.0),
+		createGrip(5.966, -20.349, -0.014, 88.3, -90.0, 0.0),
+		createGrip(6.593, -5.175, -0.014, 1.7, -90.0, 0.0),
+		createGrip(6.593, -4.417, -0.014, 1.7, -90.0, 0.0),
+		createGrip(8.548, -3.600, -0.014, 1.7, -90.0, 0.0),
+		createGrip(8.283, -5.341, -0.014, -1.3, -90.0, 0.0),
+		createGrip(10.599, -5.341, -0.014, -1.3, -90.0, 0.0),
+		createGrip(13.023, -5.341, -0.014, -1.3, -90.0, 0.0),
+		createGrip(15.480, -5.341, -0.014, -1.3, -90.0, 0.0),
+		createGrip(4.906, 16.351, -0.014, 87.6, -90.0, 0.0),
+		createGrip(2.305, 16.351, -0.014, 87.6, -90.0, 0.0),
+		createGrip(-0.393, 16.351, -0.014, 87.6, -90.0, 0.0),
+		createGrip(10.168, -11.613, -0.014, -49.0, -90.0, -0.0),
+		createGrip(13.608, 3.445, -0.014, 15.0, -90.0, 0.0),
+		createGrip(8.844, -9.104, -0.014, -42.2, -90.0, -0.0),
+		createGrip(10.699, -1.810, -0.014, -1.1, -90.0, 0.0),
+		createGrip(-0.309, -9.889, -0.014, -78.7, -90.0, -0.0),
+		createGrip(10.747, -3.061, -0.014, -2.9, -90.0, 0.0),
+		createGrip(10.747, -4.381, -0.014, -2.9, -90.0, 0.0),
+		createGrip(13.371, -4.381, -0.014, -2.9, -90.0, 0.0),
+		createGrip(13.371, -3.255, -0.014, -2.9, -90.0, 0.0),
+		createGrip(13.371, -2.112, -0.014, -2.9, -90.0, 0.0),
+		createGrip(2.112, 14.889, -0.014, 87.1, -90.0, 0.0),
+		createGrip(4.075, 14.889, -0.014, 87.1, -90.0, 0.0),
+		createGrip(-4.484, 2.017, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-2.493, 2.017, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-2.493, 3.377, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-2.493, 4.550, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-2.493, 5.848, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-2.493, 7.177, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-2.493, 8.260, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-4.300, 8.260, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-4.300, 7.117, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-4.300, 6.046, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-4.300, 4.809, -0.014, -11.7, -90.0, 0.0),
+		createGrip(-4.300, 3.414, -0.014, -11.7, -90.0, 0.0),
+	}
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_53);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Start (sword).LocalScript
+local function C_58()
+local script = G2L["58"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	local gripPoses = {
+		createGrip(-1.302, 0.000, 0.811, 0.0, 121.7, 90.0),
+		createGrip(-1.051, 0.000, 0.811, 0.0, 121.7, 90.0),
+		createGrip(-0.873, 0.000, 0.811, 0.0, 121.7, 90.0),
+		createGrip(-0.646, 0.000, 0.811, 0.0, 121.7, 90.0),
+		createGrip(-1.917, 0.000, -0.744, 0.0, 178.7, 90.0),
+		createGrip(-1.703, 0.000, -0.012, 0.0, 178.7, 90.0),
+		createGrip(-1.486, 0.000, -0.012, 0.0, 178.7, 90.0),
+		createGrip(-1.254, 0.000, -0.012, 0.0, 178.7, 90.0),
+		createGrip(-1.053, 0.000, -0.218, 0.0, 178.7, 90.0),
+		createGrip(-0.880, 0.000, -0.346, 0.0, 178.7, 90.0),
+		createGrip(-0.616, 0.000, -0.365, 0.0, 178.7, 90.0),
+		createGrip(-0.666, 0.000, -4.154, 0.0, 178.7, 90.0),
+		createGrip(-0.865, 0.000, -4.154, 0.0, 178.7, 90.0),
+		createGrip(-0.862, 0.000, -6.616, 0.0, 178.7, 90.0),
+		createGrip(-0.701, 0.000, -6.616, 0.0, 178.7, 90.0),
+		createGrip(-0.506, 0.000, -6.616, 0.0, 178.7, 90.0),
+		createGrip(-1.503, 0.000, -7.123, 0.0, 178.7, 90.0),
+		createGrip(-1.661, 0.000, -3.785, 0.0, 178.7, 90.0),
+		createGrip(-1.449, 0.000, -3.785, 0.0, 178.7, 90.0),
+		createGrip(-1.235, 0.000, -3.785, 0.0, 178.7, 90.0),
+		createGrip(-1.235, 0.000, -7.123, 0.0, 178.7, 90.0),
+		createGrip(-1.503, 0.000, -7.123, 0.0, 178.7, 90.0),
+		createGrip(-1.046, -0.090, -6.525, 0.0, 178.7, 90.0),
+		createGrip(-1.046, -0.090, -3.589, 0.0, 178.7, 90.0),
+		createGrip(-0.162, -0.090, -0.544, 0.0, 154.9, 90.0),
+	}
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_58);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Start (boombox).LocalScript
+local function C_5a()
+local script = G2L["5a"];
+	
+	local button = script.Parent
+	
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	local gripPoses = {
+		createGrip(3.600, -2.939, 0.000, -66.3, -90.0, 0.0), 
+		createGrip(3.829, -2.078, 0.000, -66.3, -90.0, 0.0), 
+		createGrip(1.040, -2.939, 0.000, -66.3, -90.0, 0.0), 
+		createGrip(1.238, -2.078, 0.000, -66.3, -90.0, 0.0), 
+		createGrip(1.231, -2.109, 0.000, -0.2, -90.0, 0.0), 
+		createGrip(3.462, 0.889, 0.000, 52.4, -90.0, 0.0), 
+		createGrip(3.047, -3.539, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(1.993, -4.507, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-0.651, -4.507, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-3.272, -4.507, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-1.478, -2.146, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-4.111, -2.146, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(0.352, -3.338, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-2.139, -3.338, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-4.702, -3.338, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-6.741, -2.144, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-9.300, -2.144, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-11.899, -2.144, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-14.613, -2.144, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-17.318, -2.144, 0.000, -0.9, -90.0, 0.0), 
+		createGrip(-16.634, 4.554, 0.000, -22.6, -90.0, 0.0), 
+		createGrip(-8.647, -5.675, 0.000, 21.6, -90.0, 0.0), 
+		createGrip(-12.119, -1.801, -0.033, 0.2, -90.0, 0.0), 
+		createGrip(-14.763, -1.801, -0.033, 0.2, -90.0, 0.0), 
+		createGrip(8.663, 3.666, -0.033, -0.2, 90.0, 180.0), 
+		createGrip(11.351, 3.666, -0.033, -0.2, 90.0, 180.0), 
+		createGrip(13.998, 3.666, -0.033, -0.2, 90.0, 180.0), 
+		createGrip(16.688, 3.666, -0.033, -0.2, 90.0, 180.0), 
+		createGrip(18.704, 3.666, -0.033, -0.2, 90.0, 180.0), 
+		createGrip(-6.674, -3.465, -0.033, 0.2, -90.0, 0.0), 
+		createGrip(5.333, 4.709, -0.033, -8.3, 90.0, 180.0), 
+		createGrip(-1.779, 0.449, -0.033, -45.4, -90.0, 0.0), 
+		createGrip(0.288, -0.040, -0.033, 1.4, -90.0, 0.0), 
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local localPlayer = game.Players.LocalPlayer
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+		
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_5a);
+-- StarterGui.she grip on my tool till I hub.Main.ScrollingMain.Shotgun.Start.LocalScript
+local function C_5c()
+local script = G2L["5c"];
+	local button = script.Parent
+	local localPlayer = game.Players.LocalPlayer
+	
+	local function createGrip(x, y, z, rx, ry, rz)
+		return CFrame.new(x, y, z) * CFrame.fromOrientation(math.rad(rx), math.rad(ry), math.rad(rz))
+	end
+	
+	
+	local gripPoses = {
+		createGrip(-1.072, 0.690, 0.000, 70.8, 90.0, 0.0),
+		createGrip(-1.635, 1.351, 0.000, 44.2, 90.0, 0.0),
+		createGrip(-2.327, 1.417, 0.000, 26.1, 90.0, 0.0),
+		createGrip(-2.899, 1.493, 0.000, 26.1, 90.0, 0.0),
+		createGrip(-1.488, 4.319, 0.000, 64.0, 90.0, 0.0),
+		createGrip(-1.488, 5.656, 0.000, 64.0, 90.0, 0.0),
+		createGrip(-1.488, 6.993, 0.000, 64.0, 90.0, 0.0),
+		createGrip(-1.488, 8.278, 0.000, 64.0, 90.0, 0.0),
+		createGrip(-8.472, 3.100, 0.000, 7.4, 90.0, 0.0),
+		createGrip(-8.899, -0.016, 0.000, -6.3, 90.0, -0.0),
+		createGrip(-8.657, -2.511, 0.000, -17.0, 90.0, -0.0),
+		createGrip(-1.175, 8.456, 0.000, 83.9, 90.0, 0.0),
+		createGrip(-1.175, 7.138, 0.000, 83.9, 90.0, 0.0),
+		createGrip(-1.175, 5.844, 0.000, 83.9, 90.0, 0.0),
+		createGrip(-1.175, 4.509, 0.000, 83.9, 90.0, 0.0),
+		createGrip(0.364, 3.449, 0.000, 75.4, -90.0, 180.0),
+		createGrip(-1.469, 3.762, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-1.469, 5.100, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-1.469, 6.436, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-1.469, 7.674, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-1.992, 7.888, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-1.997, 6.609, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-1.997, 5.283, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-1.997, 4.021, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-2.373, 5.185, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-2.373, 6.446, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-2.373, 7.779, 0.000, 68.6, 90.0, 0.0),
+		createGrip(-1.026, 7.832, 0.000, 81.3, 90.0, 0.0),
+		createGrip(-1.366, 1.806, 0.000, 71.1, 90.0, 0.0),
+		createGrip(-1.579, 0.192, 0.000, 60.1, 90.0, 0.0),
+		createGrip(-1.549, -0.484, 0.000, 79.2, 90.0, 0.0),
+		createGrip(-1.689, -1.524, 0.000, 88.0, 90.0, 0.0),
+		createGrip(-1.728, -2.755, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.728, -4.089, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.728, -5.424, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.728, -6.799, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.728, -8.130, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.728, -9.432, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.728, -10.771, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.728, -12.077, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.728, -12.933, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.170, -11.260, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-0.661, -11.260, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-0.868, -11.652, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-0.654, -10.268, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.161, -10.268, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.161, -8.943, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-0.699, -8.943, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-0.699, -7.812, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.128, -7.627, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-0.866, -6.406, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-0.866, -5.084, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.102, -6.321, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.102, -5.032, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.102, -3.652, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.102, -2.304, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.102, -1.018, 0.000, 90.0, 90.0, 0.0),
+		createGrip(-1.065, -0.284, 0.000, 74.9, 90.0, 0.0),
+		createGrip(-1.418, -3.679, 0.000, 82.4, -90.0, -180.0),
+		createGrip(0.409, -1.724, 0.000, 52.8, 90.0, 0.0),
+		createGrip(-0.112, -0.606, 0.000, 86.0, 90.0, 0.0),
+		createGrip(0.113, 0.636, 0.000, 29.1, -90.0, -180.0),
+	}
+	
+	button.MouseButton1Click:Connect(function()
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+	
+		if not character or not humanoid or not backpack then return end
+	
+		humanoid:UnequipTools()
+	
+		local tools = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(tools, item)
+			end
+		end
+	
+		table.sort(tools, function(toolA, toolB)
+			return toolA.Name:lower() < toolB.Name:lower()
+		end)
+	
+		local toolsToProcess = math.min(#gripPoses, #tools)
+		for i = 1, toolsToProcess do
+			local tool = tools[i]
+			tool.Grip = gripPoses[i]
+			tool.Parent = character
+		end
+	end)
+	
+end;
+task.spawn(C_5c);
+-- StarterGui.she grip on my tool till I hub.Main.TopBar.ImageButton.LocalScript
+local function C_60()
+local script = G2L["60"];
+	local b = script.Parent
+	local mini = false
+	
+	local TweenService = game:GetService("TweenService")
+	local scrollingMain = script.Parent.Parent.Parent.ScrollingMain
+	
+	local tweenInfo = TweenInfo.new(
+		0.25,
+		Enum.EasingStyle.Sine,
+		Enum.EasingDirection.Out
+	)
+	
+	b.MouseButton1Click:Connect(function()
+		mini = not mini
+	
+		local targetSize = mini
+			and UDim2.new(0, 532, 0, 0)
+			or UDim2.new(0, 532, 0, 269)
+	
+		TweenService:Create(
+			scrollingMain,
+			tweenInfo,
+			{Size = targetSize}
+		):Play()
+	end)
+end;
+task.spawn(C_60);
+
+return G2L["1"], require;
