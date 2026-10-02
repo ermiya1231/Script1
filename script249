@@ -1,0 +1,178 @@
+-- ESP Unanchored Parts (Ultra Bright Neon Gold - Centered & 1 Min Scan)
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- 1. دریافت امن CoreGui با pcall (سازگاری با استودیو)
+local CoreGui
+pcall(function()
+    CoreGui = game:GetService("CoreGui")
+end)
+
+-- 2. پیدا کردن بهترین مکان برای ساخت پنل
+local TargetParent
+if gethui then
+    TargetParent = gethui()
+elseif CoreGui and not RunService:IsStudio() then
+    TargetParent = CoreGui
+else
+    TargetParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- حذف پنل قبلی
+if TargetParent:FindFirstChild("ESPUnanchoredGui") then
+    TargetParent.ESPUnanchoredGui:Destroy()
+end
+
+-- ایجاد ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ESPUnanchoredGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = TargetParent
+
+-- فریم اصلی پنل
+local Frame = Instance.new("Frame")
+Frame.Name = "MainFrame"
+Frame.Size = UDim2.new(0, 220, 0, 130)
+-- مرکز قرار دادن دقیق پنل با AnchorPoint
+Frame.AnchorPoint = Vector2.new(0.5, 0.5) 
+Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+Frame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = Frame
+
+-- استروک طلایی دور پنل
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(255, 215, 0)
+UIStroke.Thickness = 1.5
+UIStroke.Parent = Frame
+
+-- عنوان
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.BackgroundTransparency = 1
+Title.Text = "ESP Unanchored"
+Title.TextColor3 = Color3.fromRGB(255, 215, 0)
+Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Title.Parent = Frame
+
+-- وضعیت تعداد
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Name = "StatusLabel"
+StatusLabel.Size = UDim2.new(1, 0, 0, 20)
+StatusLabel.Position = UDim2.new(0, 0, 0, 32)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "تعداد: 0"
+StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+StatusLabel.TextSize = 12
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.Parent = Frame
+
+-- دکمه Toggle
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Size = UDim2.new(0.85, 0, 0, 38)
+ToggleButton.Position = UDim2.new(0.075, 0, 0.6, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
+ToggleButton.Text = "ESP: OFF"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 14
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.Parent = Frame
+
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(0, 8)
+ButtonCorner.Parent = ToggleButton
+
+-- متغیرها
+local isEnabled = false
+local activeHighlights = {}
+
+-- پاکسازی ESPها
+local function clearESP()
+    for _, hl in pairs(activeHighlights) do
+        if hl and hl.Parent then
+            hl:Destroy()
+        end
+    end
+    table.clear(activeHighlights)
+    StatusLabel.Text = "تعداد: 0"
+end
+
+-- به‌روزرسانی و اعمال ESP
+local function updateESP()
+    if not isEnabled then return end
+    
+    local currentParts = {}
+    local count = 0
+    local myCharacter = LocalPlayer.Character
+
+    for _, item in ipairs(Workspace:GetDescendants()) do
+        if item:IsA("BasePart") and not item.Anchored then
+            if not (myCharacter and item:IsDescendantOf(myCharacter)) then
+                currentParts[item] = true
+                count = count + 1
+                
+                if not activeHighlights[item] then
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "MaxBright_Unanchored_ESP"
+                    hl.Adornee = item
+                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    
+                    -- تنظیمات جدید برای درخشش و روشنایی حداکثری
+                    hl.FillColor = Color3.fromRGB(255, 255, 0) -- زرد خالص نئونی
+                    hl.FillTransparency = 0.15 -- شفافیت بسیار کم برای توپر و روشن شدن
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255) -- دورخط سفید درخشان برای اثر Glow
+                    hl.OutlineTransparency = 0
+                    
+                    hl.Parent = item 
+                    activeHighlights[item] = hl
+                end
+            end
+        end
+    end
+
+    -- حذف از قطعات پاک شده یا انکور شده
+    for part, hl in pairs(activeHighlights) do
+        if not currentParts[part] or not part.Parent then
+            if hl then hl:Destroy() end
+            activeHighlights[part] = nil
+        end
+    end
+
+    StatusLabel.Text = "تعداد: " .. tostring(count)
+end
+
+-- عملکرد کلیک
+ToggleButton.MouseButton1Click:Connect(function()
+    isEnabled = not isEnabled
+    
+    if isEnabled then
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(45, 180, 85)
+        ToggleButton.Text = "ESP: ON"
+        updateESP() -- اسکن اولیه به محض روشن کردن
+    else
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
+        ToggleButton.Text = "ESP: OFF"
+        clearESP()
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if isEnabled then
+            updateESP()
+        end
+    end
+end)
