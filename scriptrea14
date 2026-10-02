@@ -1032,8 +1032,8 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/e
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/scriptrea17"))()
  
 local Window = Library:CreateWindow{
-    Title = "OpenViz",
-    SubTitle = ":D",
+    Title = "OpenViz Visualizer Cracked By C00LHACK",
+    SubTitle = "",
     TabWidth = 29,
     Size = UDim2.fromOffset(494,463),
     Resize = true,
