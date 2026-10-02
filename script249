@@ -1,11 +1,11 @@
--- ESP Unanchored Parts (Ultra Bright Neon Gold - Centered & 1 Min Scan)
+-- ESP Unanchored Parts (Ultra Bright Neon Gold - Centered & 1 Min Scan - No Players)
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- 1. دریافت امن CoreGui با pcall (سازگاری با استودیو)
+-- 1. دریافت امن CoreGui با pcall
 local CoreGui
 pcall(function()
     CoreGui = game:GetService("CoreGui")
@@ -36,7 +36,6 @@ ScreenGui.Parent = TargetParent
 local Frame = Instance.new("Frame")
 Frame.Name = "MainFrame"
 Frame.Size = UDim2.new(0, 220, 0, 130)
--- مرکز قرار دادن دقیق پنل با AnchorPoint
 Frame.AnchorPoint = Vector2.new(0.5, 0.5) 
 Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
@@ -115,11 +114,31 @@ local function updateESP()
     
     local currentParts = {}
     local count = 0
-    local myCharacter = LocalPlayer.Character
+    
+    -- گرفتن لیست کاراکتر تمام پلیرهای داخل بازی برای فیلتر کردن
+    local playerCharacters = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            playerCharacters[player.Character] = true
+        end
+    end
 
     for _, item in ipairs(Workspace:GetDescendants()) do
-        if item:IsA("BasePart") and not item.Anchored then
-            if not (myCharacter and item:IsDescendantOf(myCharacter)) then
+        if item:IsA("BasePart") and not item.Anchored and not (item.AssemblyRootPart and item.AssemblyRootPart.Anchored) then
+            
+            -- بررسی سریع اینکه آیا این پارت مال هیچ پلیری هست یا نه
+            local isPlayerPart = false
+            local ancestor = item.Parent
+            while ancestor and ancestor ~= Workspace do
+                if playerCharacters[ancestor] then
+                    isPlayerPart = true
+                    break
+                end
+                ancestor = ancestor.Parent
+            end
+
+            -- اگر پارت مال پلیرها نبود، ESP را اعمال کن
+            if not isPlayerPart then
                 currentParts[item] = true
                 count = count + 1
                 
@@ -129,10 +148,9 @@ local function updateESP()
                     hl.Adornee = item
                     hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                     
-                    -- تنظیمات جدید برای درخشش و روشنایی حداکثری
-                    hl.FillColor = Color3.fromRGB(255, 255, 0) -- زرد خالص نئونی
-                    hl.FillTransparency = 0.15 -- شفافیت بسیار کم برای توپر و روشن شدن
-                    hl.OutlineColor = Color3.fromRGB(255, 255, 255) -- دورخط سفید درخشان برای اثر Glow
+                    hl.FillColor = Color3.fromRGB(255, 255, 0)
+                    hl.FillTransparency = 0.15
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
                     hl.OutlineTransparency = 0
                     
                     hl.Parent = item 
@@ -142,7 +160,7 @@ local function updateESP()
         end
     end
 
-    -- حذف از قطعات پاک شده یا انکور شده
+    -- حذف از قطعات پاک شده، انکور شده یا مال پلیرها
     for part, hl in pairs(activeHighlights) do
         if not currentParts[part] or not part.Parent then
             if hl then hl:Destroy() end
@@ -160,7 +178,7 @@ ToggleButton.MouseButton1Click:Connect(function()
     if isEnabled then
         ToggleButton.BackgroundColor3 = Color3.fromRGB(45, 180, 85)
         ToggleButton.Text = "ESP: ON"
-        updateESP() -- اسکن اولیه به محض روشن کردن
+        updateESP()
     else
         ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
         ToggleButton.Text = "ESP: OFF"
