@@ -1,0 +1,221 @@
+-- Tool Remover Script (LocalScript)
+-- این اسکریپت را داخل StarterGui یا StarterPlayerScripts قرار دهید.
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+-- ۱. ساخت رابط کاربری (GUI)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ToolRemoverScript"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 310, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -155, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+-- تنظیمات سایز واکنش‌گرا برای موبایل و پی‌سی
+local SizeConstraint = Instance.new("UISizeConstraint")
+SizeConstraint.MinSize = Vector2.new(280, 350)
+SizeConstraint.MaxSize = Vector2.new(380, 480)
+SizeConstraint.Parent = MainFrame
+
+-- عنوان پنل
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -50, 0, 45)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Client Side Tool Remover"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = MainFrame
+
+-- دکمه Collapse / Expand (کوچک و بزرگ کردن)
+local CollapseBtn = Instance.new("TextButton")
+CollapseBtn.Size = UDim2.new(0, 30, 0, 30)
+CollapseBtn.Position = UDim2.new(1, -38, 0, 7.5)
+CollapseBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+CollapseBtn.Text = "-"
+CollapseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CollapseBtn.TextSize = 16
+CollapseBtn.Font = Enum.Font.GothamBold
+CollapseBtn.Parent = MainFrame
+
+local CollapseCorner = Instance.new("UICorner")
+CollapseCorner.CornerRadius = UDim.new(0, 6)
+CollapseCorner.Parent = CollapseBtn
+
+-- منوی اسکرول هوشمند
+local ScrollFrame = Instance.new("ScrollingFrame")
+ScrollFrame.Size = UDim2.new(1, -20, 1, -115)
+ScrollFrame.Position = UDim2.new(0, 10, 0, 45)
+ScrollFrame.BackgroundTransparency = 1
+ScrollFrame.BorderSizePixel = 0
+ScrollFrame.ScrollBarThickness = 5
+ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 100)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ScrollFrame.Parent = MainFrame
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Padding = UDim.new(0, 6)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Parent = ScrollFrame
+
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+end)
+
+-- دکمه سبز حذف
+local RemoveBtn = Instance.new("TextButton")
+RemoveBtn.Size = UDim2.new(1, -20, 0, 42)
+RemoveBtn.Position = UDim2.new(0, 10, 1, -52)
+RemoveBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+RemoveBtn.Text = "Remove Selected"
+RemoveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RemoveBtn.TextSize = 15
+RemoveBtn.Font = Enum.Font.GothamBold
+RemoveBtn.Parent = MainFrame
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 8)
+BtnCorner.Parent = RemoveBtn
+
+-- ۲. منطق صحیح Collapse / Expand پنل
+local isCollapsed = false
+CollapseBtn.MouseButton1Click:Connect(function()
+    isCollapsed = not isCollapsed
+    CollapseBtn.Text = isCollapsed and "+" or "-"
+    
+    ScrollFrame.Visible = not isCollapsed
+    RemoveBtn.Visible = not isCollapsed
+    
+    local targetHeight = isCollapsed and 45 or 420
+    -- تغییر موقت حداقل سایز محدودکننده برای اجازه جمع شدن کامل پنل
+    SizeConstraint.MinSize = Vector2.new(280, isCollapsed and 45 or 350)
+    
+    TweenService:Create(MainFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.new(MainFrame.Size.X.Scale, MainFrame.Size.X.Offset, 0, targetHeight)
+    }):Play()
+end)
+
+-- ۳. مدیریت وضعیت آیتم‌ها
+local SelectedTools = {}
+
+local function RefreshInventory()
+    for _, child in ipairs(ScrollFrame:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+
+    local backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
+    local char = LocalPlayer.Character
+    local tools = {}
+
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") then table.insert(tools, tool) end
+        end
+    end
+    if char then
+        for _, tool in ipairs(char:GetChildren()) do
+            if tool:IsA("Tool") then table.insert(tools, tool) end
+        end
+    end
+
+    for _, tool in ipairs(tools) do
+        local ItemBtn = Instance.new("TextButton")
+        ItemBtn.Size = UDim2.new(1, 0, 0, 40)
+        ItemBtn.BackgroundColor3 = SelectedTools[tool] and Color3.fromRGB(40, 110, 65) or Color3.fromRGB(35, 35, 42)
+        ItemBtn.Text = ""
+        ItemBtn.Parent = ScrollFrame
+
+        local ItemCorner = Instance.new("UICorner")
+        ItemCorner.CornerRadius = UDim.new(0, 6)
+        ItemCorner.Parent = ItemBtn
+
+        -- آیکون آیتم
+        local Icon = Instance.new("ImageLabel")
+        Icon.Size = UDim2.new(0, 28, 0, 28)
+        Icon.Position = UDim2.new(0, 6, 0.5, -14)
+        Icon.BackgroundTransparency = 1
+        Icon.Image = (tool.TextureId ~= "") and tool.TextureId or "rbxassetid://0"
+        Icon.Parent = ItemBtn
+
+        -- نام آیتم
+        local NameLbl = Instance.new("TextLabel")
+        NameLbl.Size = UDim2.new(1, -45, 1, 0)
+        NameLbl.Position = UDim2.new(0, 42, 0, 0)
+        NameLbl.BackgroundTransparency = 1
+        NameLbl.Text = tool.Name
+        NameLbl.TextColor3 = Color3.fromRGB(230, 230, 230)
+        NameLbl.TextXAlignment = Enum.TextXAlignment.Left
+        NameLbl.Font = Enum.Font.GothamMedium
+        NameLbl.TextSize = 13
+        NameLbl.Parent = ItemBtn
+
+        ItemBtn.MouseButton1Click:Connect(function()
+            if SelectedTools[tool] then
+                SelectedTools[tool] = nil
+                ItemBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+            else
+                SelectedTools[tool] = true
+                ItemBtn.BackgroundColor3 = Color3.fromRGB(40, 110, 65)
+            end
+        end)
+    end
+end
+
+-- ۴. حذف تمیز و مستقیم ابزارها با متد Destroy
+local function RemoveSelected()
+    for tool, isSelected in pairs(SelectedTools) do
+        if isSelected and tool and tool.Parent then
+            tool:Destroy()
+        end
+    end
+
+    SelectedTools = {}
+    RefreshInventory()
+end
+
+RemoveBtn.MouseButton1Click:Connect(RemoveSelected)
+
+-- اتصال هوشمند برای رصد دقیق تغییرات بعد از ریسپان (Respawn Handling)
+local function SetupCharacter(char)
+    char.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") then RefreshInventory() end
+    end)
+    char.ChildRemoved:Connect(function(child)
+        if child:IsA("Tool") then RefreshInventory() end
+    end)
+
+    -- صبر برای ساخته شدن بک‌پک جدید بعد از ریسپان
+    task.spawn(function()
+        local backpack = LocalPlayer:WaitForChild("Backpack", 3)
+        if backpack then
+            backpack.ChildAdded:Connect(RefreshInventory)
+            backpack.ChildRemoved:Connect(RefreshInventory)
+        end
+        RefreshInventory()
+    end)
+end
+
+if LocalPlayer.Character then
+    SetupCharacter(LocalPlayer.Character)
+end
+LocalPlayer.CharacterAdded:Connect(SetupCharacter)
+
+RefreshInventory()
