@@ -1,0 +1,2262 @@
+--[[]]_=[==================[
+
+   Very likely that this mostly ai written code is buggy or inefficient
+    if it works it works really why do you care
+     could have used helper functions here and there
+      if skid pls credit <3
+       and v9h i love u & vsal
+        https://discord.gg/txUJ4dzfdy
+
+--[[]]_=]==================]
+
+print' >> press "p" to make preset'
+wait(.25)
+
+workspace.StreamingEnabled = false -- FE BYPASS
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local function c(v)
+	local Frame = v:WaitForChild("Frame")
+
+	if Frame:FindFirstChild("Cloose") then
+		return
+	end
+
+	local p = Instance.new("TextButton", Frame)
+	p.Name = "Cloose"
+	p.AnchorPoint = Vector2.new(0.5, 0.5)
+	p.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+	p.BackgroundTransparency = 0.3
+	p.BorderColor3 = Color3.fromRGB(255, 0, 0)
+	p.Position = UDim2.new(0.96, 0, 0.055, 0)
+	p.Size = UDim2.new(0.07, 0, 0.12, 0)
+	p.Text = "X"
+	p.TextColor3 = Color3.fromRGB(255, 225, 228)
+	p.TextScaled = true
+	p.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	p.Active = true
+
+	p.Activated:Connect(function()
+		PlayerGui:FindFirstChild("ChooseSongGui"):Destroy() -- automatic X button creator for the boombox ui
+	end)
+end 
+
+local Existing = PlayerGui:FindFirstChild("ChooseSongGui")
+       if Existing then c(Existing)
+end
+
+PlayerGui.ChildAdded:Connect(function(Child)
+	if Child.Name == "ChooseSongGui" then c(Child)
+end end)
+
+-- ai written effect below
+
+local _x = [==[
+     
+                                    @1.954 :3
+   
+       .o   .ooooo.     oooooooo       .o                                oooo  
+     o888  888' `Y88.  dP"""""""     .d88                                `888  
+      888  888    888 d88888b.     .d'888   oooo d8b  .ooooo.   .oooo.    888  
+      888   `Vbood888     `Y88b  .d'  888   `888""8P d88' `88b `'  )88b   888  
+      888        888'       ]88  88ooo888oo  888     888ooo888  .oP"888   888  
+      888      .88P'  o.   .88P       888    888     888    .o d8(  888   888  
+     o888o   .oP'     `8bd88P'       o888o  d888b    `Y8bod8P' `Y888""8o o888o
+ 
+                             -discord.gg/nnwdAaCGqx- 
+                                  = OpenViz =                                                 
+ 
+]==]
+
+local lines = {}
+for line in _x:gmatch("[^\r\n]+") do
+    table.insert(lines, line)
+end
+
+local function getClientLog()
+    local ok, clientLog = pcall(function()
+        return CoreGui.DevConsoleMaster.DevConsoleWindow.DevConsoleUI.MainView.ClientLog
+    end)
+    return ok and clientLog or nil
+end
+
+local function highestLogIndex(clientLog)
+    local highest = 0
+    for _, child in ipairs(clientLog:GetChildren()) do
+        local n = tonumber(child.Name)
+        if n and n > highest then
+            highest = n
+        end
+    end
+    return highest
+end
+
+local startIndex = 0
+do
+    local clientLog = getClientLog()
+    if clientLog then
+        startIndex = highestLogIndex(clientLog)
+    end
+end
+
+for _, line in ipairs(lines) do
+    print(line)
+end
+local entries = {}
+for i, line in ipairs(lines) do
+    table.insert(entries, { index = startIndex + i, text = line })
+end
+
+local PALETTE_STEPS = 80
+local palette = {}
+
+local PINK = Color3.fromRGB(255, 170, 255)
+local PURPLE = Color3.fromRGB(140, 100, 255)
+
+for i = 0, PALETTE_STEPS - 1 do
+    local t = i / (PALETTE_STEPS - 1)
+    local wave = (math.sin(t * math.pi * 2) + 1) / 2
+    table.insert(palette, PINK:Lerp(PURPLE, wave))
+end
+
+local BG_COLOR = Color3.fromRGB(20, 5, 25)
+local BG_TRANSPARENCY = 0.3
+
+local function toHex(c)
+    local r = math.round(c.R * 255)
+    local g = math.round(c.G * 255)
+    local b = math.round(c.B * 255)
+    return string.format("#%02X%02X%02X", r, g, b)
+end
+
+local function wrapRichText(text, color)
+    return string.format('<font color="%s">%s</font>', toHex(color), text)
+end
+
+local SPEED = 55
+local animTime = 0
+
+local heartbeatConn
+heartbeatConn = RunService.Heartbeat:Connect(function(dt)
+    animTime += dt
+    local clientLog = getClientLog()
+    if not clientLog then
+        return
+    end
+
+    local offset = math.floor(animTime * SPEED)
+
+    for i, entry in ipairs(entries) do
+        local ok, msg = pcall(function()
+            local logEntry = clientLog:FindFirstChild(tostring(entry.index))
+            return logEntry and logEntry:FindFirstChild("msg")
+        end)
+
+        if ok and msg and msg:IsA("TextLabel") then
+            if not msg.RichText then
+                msg.RichText = true
+                msg.BackgroundColor3 = BG_COLOR
+                msg.BackgroundTransparency = BG_TRANSPARENCY
+            end
+            local colorIndex = ((i + offset - 1) % #palette) + 1
+            msg.Text = wrapRichText(entry.text, palette[colorIndex])
+        end
+    end
+end)
+
+--
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/scriptrea15"))()
+-- preset maker
+
+getgenv().SecureMode = true
+getgenv().InterfaceName = "OpenViz"
+
+local orbiting = false
+local orbitStartTime = tick()
+local tracked = {}
+local idxCounter = 0
+local targetPlayer = player
+
+local audioVisualizerEnabled = true
+local maxRadiusBoost = 8
+local visualizerSensitivity = 1
+local smoothingFactor = 0.15
+local currentRadiusBoost = 0
+local loudnessThreshold = 50
+
+local currentSpeed = 2
+local currentSize = 5
+local currentHeight = 3
+local netlessEnabled = true
+local netlessVector = Vector3.new(15,15,15) -- e.b.k
+local sessionSeed = math.random(1, 100000)
+
+local audioId = nil
+local dupeTargetAmount = 3
+local dupeCancelled = false
+
+-- most code is ai.. nobody writing allat
+local BOOM_LONG  = 3.2
+local BOOM_SHORT = 1.2
+
+local boomPitch = 1
+local boomDistortion = 0
+local boomTPos = 0
+
+local placeId = game.PlaceId
+local gameConfigs = {
+    [6116002492] = { -- Free Boombox Radio (Loud Boombox)
+        fire = function(payload, raw)
+            pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BoomboxRemote")
+                    :FireServer("PlaySong", payload, boomPitch, boomTPos, boomDistortion)
+            end)
+        end,
+    },
+    [94627146701095] = { -- Dollhouse Roleplay
+        fire = function(payload, raw)
+            pcall(function()
+                local args = {"PlaySong", "Gamepass", payload, {Pitch = boomPitch, TimePos = boomTPos, Distortion = boomDistortion}}
+                player.Character:WaitForChild("Boombox"):WaitForChild("Remote"):FireServer(unpack(args))
+            end)
+        end,
+    },
+    
+    [16658586976] = { -- Boombox Hangout
+    fire = function(payload, raw)
+        pcall(function()
+            local selfchar = player.Character
+            local remotes = {}
+            for _, a in pairs(selfchar:GetDescendants()) do
+                if a:IsA("RemoteFunction") then
+                    remotes[#remotes + 1] = a
+                end
+            end
+            local random = math.random(100,500)
+            local ant = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" .. string.rep(" ",300) .. "+" .. string.rep("0",random) .. raw -- UNDECODABLE ANTILOG
+            for i = 1, #remotes do
+                task.spawn(remotes[i].InvokeServer, remotes[i], "PlayAudio", ant, boomPitch, boomTPos, boomDistortion)
+            end
+        end)
+    end,
+},
+    
+    [5484617659] = { -- Free Boombox Radio (alt / BoomBoxnew2)
+        fire = function(payload, raw)
+            pcall(function()
+                player.Character:WaitForChild("BoomBoxnew2"):WaitForChild("Remote"):FireServer("PlaySong", tonumber(raw))
+            end)
+        end,
+    },
+    [71227808846786] = { -- Public Office Simulator
+        fire = function(payload, raw)
+            pcall(function()
+                -- speed = boomPitch for this game, pitch param locked to 1
+                player.Character:WaitForChild("BoomBox"):WaitForChild("Remote")
+                    :FireServer("PlaySong", tonumber(raw), boomPitch, boomTPos, 1)
+            end)
+        end,
+    },
+}
+
+local function fireBoombox(payload, raw)
+    local cfg = gameConfigs[placeId]
+    if cfg then
+        cfg.fire(payload, raw)
+    else
+        pcall(function()
+            game.ReplicatedStorage.Events.BoomboxRemote:FireServer("PlaySong", payload)
+        end)
+        pcall(function()
+            local args = {"PlaySong", "Gamepass", payload, {Pitch = boomPitch, TimePos = boomTPos}}
+            player.Character:FindFirstChild("Boombox").Remote:FireServer(unpack(args))
+        end)
+        local rarara = {}
+
+for _, remote in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+    if remote:IsA("RemoteEvent") then
+        table.insert(rarara, remote)
+    end
+end
+
+for _, remote in pairs(rarara) do
+    task.spawn(function()
+        remote:FireServer("PlaySong", payload)
+    end)
+end
+    end
+end
+
+local antiFlingEnabled = false
+local stealToolsEnabled = false
+
+-- Antilog state
+local antiLogEnabled = true
+local showArt = true
+local showCredits = true
+local customMessage = ""
+local fakeID = "71195398854825"
+
+local clonePos = Vector3.new()
+local cloneVel = Vector3.new()
+local cloneLook = Vector3.new(0, 0, -1)
+local cloneOnGround = false
+local activeEmote = nil
+local emoteStartTime = 0
+local timeIdle = 0
+local wheelRollAngle = 0
+
+local camPart = Instance.new("Part")
+camPart.Name = "OpenVizCamPart"
+camPart.Transparency = 1
+camPart.CanCollide = false
+camPart.Anchored = true
+camPart.Size = Vector3.new(1, 1, 1)
+camPart.Parent = workspace
+
+local orbitPresets = {
+    ["Circle"]        = {radius=5,   speed=0.5, circleH=true},
+    ["R6 Clone"]      = {r6Clone=true},
+    ["Wheel"]         = {wheelClone=true},
+    ["Trefoil"]       = {radius=4,   speed=0.5, knot=true},
+    ["Wavy Circle"]   = {radius=5,   speed=0.5, wavy=true},
+    ["Back Infinity"] = {radius=4,   speed=0.52, backInfinity=true},
+    ["Line"]          = {radius=1.25,   speed=1.5, line=true},
+    ["Wings"]         = {radius=1,   speed=0.5, wings=true},
+    ["Wings2"]        = {radius=1,   speed=0.5, wingsV2=true},
+    ["Infini"]        = {radius=4,   speed=0.5, infini=true},
+    ["Wave"]          = {radius=5,   speed=0.8, wave=true},
+    ["Wobble"]        = {radius=5,   speed=0.5, wobble=true},
+    ["Spiral"]        = {radius=4,   speed=0.6, spiral=true},
+}
+local activePresetName = "Circle"
+local activePreset = orbitPresets[activePresetName]
+
+local customPresets = {}
+local customPresetNames = {"None"}
+local CustomPresetsDropdown = nil
+
+local function buildNodeMap(preset)
+    local map = {}
+    for _, node in ipairs(preset.Nodes or {}) do map[node.ID] = node end
+    for _, tool in ipairs(preset.Tools or {}) do map[tool.ID] = tool end
+    return map
+end
+
+local function getNodeWorldCF(nodeID, t, nodeMap, memo, hrpCF, audioPulse)
+    if memo[nodeID] then return memo[nodeID] end
+    if nodeID == "HRP" then
+        memo["HRP"] = hrpCF
+        return hrpCF
+    end
+    local node = nodeMap[nodeID]
+    if not node then
+        memo[nodeID] = CFrame.new()
+        return CFrame.new()
+    end
+    local parentCF = getNodeWorldCF(node.ParentID, t, nodeMap, memo, hrpCF, audioPulse)
+    local effectiveSens = 0
+    if node.Speed == nil then
+        local parentNode = nodeMap[node.ParentID]
+        if parentNode and parentNode.Sens ~= nil then
+            effectiveSens = tonumber(parentNode.Sens) or 0
+        elseif node.Sens ~= nil then
+            effectiveSens = tonumber(node.Sens) or 0
+        end
+    end
+    local pulseMult = 1 + ((audioPulse / 5) * (effectiveSens / 100))
+    local relPos = Vector3.new(node.pos.x, node.pos.y, node.pos.z) * pulseMult
+    local relCF  = CFrame.new(relPos) * CFrame.Angles(node.rot.x, node.rot.y, node.rot.z)
+    local worldCF
+    if node.Speed ~= nil then
+        local spd = (node.Speed or 2) * currentSpeed * 0.15
+        worldCF = parentCF * relCF * CFrame.Angles(0, t * spd, 0)
+    else
+        worldCF = parentCF * relCF
+    end
+    memo[nodeID] = worldCF
+    return worldCF
+end
+
+local function refreshCustomPresets()
+    table.clear(customPresets)
+    table.clear(customPresetNames)
+    table.insert(customPresetNames, "None")
+    if isfolder and isfolder("OpenViz") and listfiles then
+        for _, filePath in ipairs(listfiles("OpenViz")) do
+            if filePath:match("%.json$") then
+                local ok, fileData = pcall(function() return readfile(filePath) end)
+                if ok then
+                    local ok2, decoded = pcall(function() return HttpService:JSONDecode(fileData) end)
+                    if ok2 and decoded and decoded.Type == "NodeGraph" and decoded.Nodes and decoded.Tools then
+                        local name = decoded.Name or filePath:match("([^/\\]+)%.json$")
+                        decoded._nodeMap = buildNodeMap(decoded)
+                        customPresets[name] = decoded
+                        table.insert(customPresetNames, name)
+                    end
+                end
+            elseif filePath:match("%.preset$") then
+                local ok, fileData = pcall(function() return readfile(filePath) end)
+                if ok then
+                    local name = filePath:match("([^/\\]+)%.preset$")
+                    local ok2, compiledFunc = pcall(loadstring, fileData)
+                    if ok2 and type(compiledFunc) == "function" then
+                        local ok3, presetFunc = pcall(compiledFunc)
+                        if ok3 and type(presetFunc) == "function" then
+                            customPresets[name] = presetFunc
+                            table.insert(customPresetNames, name)
+                        else
+                            warn("OpenViz: Script preset '" .. name .. "' must return a function.")
+                        end
+                    else
+                        warn("OpenViz: Syntax error in preset '" .. name .. "': " .. tostring(compiledFunc))
+                    end
+                end
+            end
+        end
+    end
+    if CustomPresetsDropdown then
+        pcall(function() CustomPresetsDropdown:SetValues(customPresetNames) end)
+    end
+end
+refreshCustomPresets()
+
+local activeCustomPresetName = "None"
+
+task.spawn(function()
+    local lastContent = ""
+    while task.wait(1) do
+        if activeCustomPresetName ~= "None" then
+            local filePath = "OpenViz/" .. activeCustomPresetName .. ".json"
+            local isPreset = false
+            if not isfile(filePath) then
+                filePath = "OpenViz/" .. activeCustomPresetName .. ".preset"
+                isPreset = true
+            end
+            
+            if isfile and isfile(filePath) then
+                local ok, fileData = pcall(readfile, filePath)
+                if ok and fileData ~= lastContent then
+                    if isPreset then
+                        local ok2, compiledFunc = pcall(loadstring, fileData)
+                        if ok2 and type(compiledFunc) == "function" then
+                            local ok3, presetFunc = pcall(compiledFunc)
+                            if ok3 and type(presetFunc) == "function" then
+                                activePreset = presetFunc
+                                lastContent = fileData
+                                print("OpenViz: Live-reloaded Script -> " .. activeCustomPresetName)
+                            end
+                        end
+                    else
+                        local ok2, decoded = pcall(function() return HttpService:JSONDecode(fileData) end)
+                        if ok2 and decoded and decoded.Type == "NodeGraph" then
+                            decoded._nodeMap = buildNodeMap(decoded)
+                            activePreset = decoded
+                            lastContent = fileData
+                            print("OpenViz: Live-reloaded NodeGraph -> " .. activeCustomPresetName)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+local function safePcall(fn, ...) return pcall(fn, ...) end
+local function countTracked()
+    local n = 0
+    for _ in pairs(tracked) do n = n + 1 end
+    return n
+end
+
+local function getMaxLoudness()
+    local maxLoudness = 0
+
+    if targetPlayer ~= player and targetPlayer and targetPlayer.Parent and targetPlayer.Character then
+        for _, obj in ipairs(targetPlayer.Character:GetDescendants()) do
+            if obj:IsA("Sound") and obj.IsPlaying and obj.PlaybackLoudness > maxLoudness then
+                maxLoudness = obj.PlaybackLoudness
+            end
+        end
+        return maxLoudness
+    end
+
+    -- Fallback
+    for tool, data in pairs(tracked) do
+        if not data.sound or not data.sound.Parent then
+            data.sound = tool:FindFirstChildWhichIsA("Sound", true)
+        end
+        if data.sound and data.sound.IsPlaying then
+            if data.sound.PlaybackLoudness > maxLoudness then
+                maxLoudness = data.sound.PlaybackLoudness
+            end
+        end
+    end
+    return maxLoudness
+end
+
+local function setupMovers(handle)
+    local att = Instance.new("Attachment")
+    att.Name = "OrbitAtt"
+    att.Parent = handle
+    local alignPos = Instance.new("AlignPosition")
+    alignPos.Mode = Enum.PositionAlignmentMode.OneAttachment
+    alignPos.Attachment0 = att
+    alignPos.MaxForce = math.huge
+    alignPos.Responsiveness = 200
+    alignPos.ApplyAtCenterOfMass = true
+    alignPos.Parent = handle
+    local alignRot = Instance.new("AlignOrientation")
+    alignRot.Mode = Enum.OrientationAlignmentMode.OneAttachment
+    alignRot.Attachment0 = att
+    alignRot.MaxTorque = math.huge
+    alignRot.Responsiveness = 200
+    alignRot.Parent = handle
+    return alignPos, alignRot, att
+end
+
+local function trackTool(tool)
+    if not tool or not tool:IsA("Tool") then return end
+    if tracked[tool] then return end
+    local handle = tool:FindFirstChild("Handle")
+    if not handle then return end
+    local sound = tool:FindFirstChildWhichIsA("Sound", true)
+    idxCounter = idxCounter + 1
+    safePcall(function()
+        handle.Massless = true
+        handle.CanCollide = false
+        handle.AssemblyLinearVelocity = Vector3.new(0, 4, 0)
+    end)
+    local ap, ao, att = setupMovers(handle)
+    tracked[tool] = {
+        handle = handle, sound = sound,
+        alignPos = ap, alignRot = ao, att = att,
+        index = idxCounter, netlessAllowed = false, startTime = tick()
+    }
+    task.delay(0.2, function() if tracked[tool] then tracked[tool].netlessAllowed = true end end)
+end
+
+local function untrackAndDestroy(tool)
+    local data = tracked[tool]
+    if not data then return end
+    safePcall(function()
+        if data.alignPos then data.alignPos:Destroy() end
+        if data.alignRot then data.alignRot:Destroy() end
+        if data.att      then data.att:Destroy()      end
+    end)
+    tracked[tool] = nil
+end
+
+local function setToolAnim(id)
+    if not character then return end
+    local animScript = character:FindFirstChild("Animate")
+    if animScript then
+        local toolNone = animScript:FindFirstChild("toolnone")
+        if toolNone then
+            local anim = toolNone:FindFirstChild("ToolNoneAnim")
+            if anim then anim.AnimationId = id end
+        end
+    end
+end
+
+local function stopVisualizer()
+    orbiting = false
+    idxCounter = 0
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = 16
+        player.Character.Humanoid.JumpPower = 50
+        workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
+    end
+    for tool, _ in pairs(tracked) do untrackAndDestroy(tool) end
+    tracked = {}
+    for _, jjj in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+        if jjj:IsA("Tool") then jjj.Parent = game.Players.LocalPlayer.Backpack end
+    end
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        if player.Character.Humanoid.RigType == Enum.HumanoidRigType.R15 then
+            setToolAnim("http://www.roblox.com/asset/?id=507768375")
+        elseif player.Character.Humanoid.RigType == Enum.HumanoidRigType.R6 then
+            setToolAnim("rbxassetid://182393478")
+        end
+    end
+end
+
+local function rollingTilt(i, total, t, speed, phaseShift)
+    phaseShift = phaseShift or 0
+    local norm = (i - 1) / math.max(1, total - 1) * 2 - 1
+    local dir = norm >= 0 and 1 or -1
+    local osc = math.sin(t * speed * 0.5 + i * 0.4 + phaseShift)
+    return dir * math.rad(25) * math.abs(osc)
+end
+
+local function computeTargetCF(index, t, hrp)
+    local preset = activePreset
+    local total  = math.max(1, countTracked())
+    local i      = index or 1
+
+    local baseVal          = math.max(1, preset.radius or 5)
+    local radiusMultiplier = 1 + (currentRadiusBoost / baseVal)
+    local radius           = currentSize * radiusMultiplier
+
+    local jX = math.sin(i * 1.37) * 0.07
+    local jZ = math.cos(i * 0.97) * 0.05
+
+    if preset.circleH then
+        local angle = t * currentSpeed + ((2 * math.pi / total) * (i - 1))
+        local worldPos = hrp.CFrame:PointToWorldSpace(
+            Vector3.new(math.cos(angle)*radius, 0, math.sin(angle)*radius)
+            + Vector3.new(0, currentHeight, 0)
+        )
+        local tiltRoll = rollingTilt(i, total, t, currentSpeed)
+        local rot = CFrame.new(worldPos, hrp.Position) * CFrame.Angles(0, 0, tiltRoll)
+        return worldPos, rot
+    end
+
+    if preset.wavy then
+        local angle = (math.pi*2/total)*(i-1) + (t*currentSpeed)
+        local wave = math.sin(angle*2) * (currentSize*0.3)
+        local worldPos = hrp.CFrame:PointToWorldSpace(Vector3.new(math.cos(angle)*radius, currentHeight+wave, math.sin(angle)*radius))
+        local rot = CFrame.new(worldPos, hrp.Position)
+        return worldPos, rot
+    end
+
+    if preset.backInfinity then
+        local angle = (math.pi*2/total)*(i-1) + (t*currentSpeed)
+        local lx = radius * math.sin(angle)
+        local ly = radius * 0.6 * math.sin(angle) * math.cos(angle)
+        local lz = 3 - (math.abs(lx)*0.3)
+        local worldPos = hrp.CFrame:PointToWorldSpace(Vector3.new(lx, currentHeight+ly, lz))
+        local rot = CFrame.new(worldPos, hrp.Position)
+        return worldPos, rot
+    end
+
+    if preset.knot then
+        local r = currentSize * radiusMultiplier * 0.4
+        local angle = (math.pi*2/total)*(i-1) + (t*currentSpeed)
+        local lx = math.sin(angle) + 2*math.sin(2*angle)
+        local ly = math.cos(angle) - 2*math.cos(2*angle)
+        local lz = -math.sin(3*angle)
+        local worldPos = hrp.CFrame:PointToWorldSpace(Vector3.new(lx*r, currentHeight+ly*r, lz*r))
+        local rot = CFrame.new(worldPos, hrp.Position) * CFrame.Angles(i*0.5, i*0.3, i*0.7)
+        return worldPos, rot
+    end
+
+    if preset.line then
+        local lineAngle   = t * currentSpeed * 0.25
+        local lineRot     = CFrame.Angles(0, lineAngle, 0)
+        local spacing     = (radius * 0.5) + (currentRadiusBoost * 0.15)
+        local centerOff   = (i - (total / 2) - 0.5) * spacing
+        local bobPhase    = t * currentSpeed * 2 + i * 0.55
+        local bobY        = math.sin(bobPhase) * (.3 + radius * 0.12)
+        local localPos    = Vector3.new(centerOff, currentHeight + bobY, 0)
+        local worldPos    = hrp.CFrame:PointToWorldSpace(lineRot * localPos)
+        local lineDir     = (hrp.CFrame * lineRot * CFrame.new(1,0,0)).Position
+                          - (hrp.CFrame * lineRot * CFrame.new(0,0,0)).Position
+        local tiltRoll    = rollingTilt(i, total, t, currentSpeed)
+        local rot = CFrame.lookAt(worldPos, worldPos + lineDir)
+                  * CFrame.Angles(jX, 0, tiltRoll)
+        return worldPos, rot
+    end
+
+    if preset.wings then
+        local sizeScale = math.max(0.5, currentSize / 5)
+        local spacing   = BOOM_LONG * sizeScale
+
+        if i == 1 then
+            local worldPos = hrp.CFrame:PointToWorldSpace(Vector3.new(0, currentHeight + 0.25, 1.0))
+            local osc = math.sin(t * currentSpeed * 0.6) * math.rad(8)
+            local rot = hrp.CFrame * CFrame.Angles(0, math.pi, 0) * CFrame.Angles(0, 0, osc)
+            return worldPos, rot
+        end
+
+        local wingIdx  = i - 1
+        local half     = math.ceil((total - 1) / 2)
+        local isRight  = wingIdx > half
+        local side     = isRight and 1 or -1
+        local sideIdx  = isRight and (wingIdx - half) or wingIdx
+        local sideTot  = isRight and (total - 1 - half) or half
+        local progress = (sideIdx - 1) / math.max(1, sideTot - 1)
+
+        local flap    = math.sin(t * currentSpeed * 1.4 - progress * 0.6)
+        local flapAmt = flap * (0.15 + progress * 0.45)
+
+        local arcY    = math.sin(progress * math.pi)
+        local x       = side * sideIdx * spacing
+        local y       = currentHeight + 0.25
+                      + arcY * math.max(1.2, currentSize * 0.35)
+                      - progress * math.max(0.4, currentSize * 0.12)
+                      + flapAmt
+        local z       = 0.9 + progress * 0.4 + arcY * 0.2
+
+        local worldPos = hrp.CFrame:PointToWorldSpace(Vector3.new(x, y, z))
+
+        local prevX = side * (sideIdx - 1) * spacing
+        local prevY = y - flapAmt
+        local prevZ = 0.9 + math.max(0, progress - 1/math.max(1,sideTot-1)) * 0.4
+        local prevWorld = hrp.CFrame:PointToWorldSpace(Vector3.new(prevX, prevY, prevZ))
+        local featherDir = (worldPos - prevWorld)
+        if featherDir.Magnitude < 0.01 then
+            featherDir = hrp.CFrame:VectorToWorldSpace(Vector3.new(side, 0, 0))
+        end
+
+        local norm    = progress * 2 - 1
+        local oscTilt = math.sin(t * currentSpeed * 0.5 + sideIdx * 0.5)
+        local tiltRoll = side * norm * math.rad(25) * math.abs(oscTilt)
+
+        local rot = CFrame.lookAt(worldPos, worldPos + featherDir)
+                  * CFrame.Angles(jX, 0, tiltRoll + jZ)
+        return worldPos, rot
+    end
+
+    if preset.wingsV2 then
+        if i == 1 then
+            local worldPos = hrp.CFrame:PointToWorldSpace(Vector3.new(0, currentHeight + 0.25, 1.25))
+            return worldPos, hrp.CFrame * CFrame.Angles(0, math.pi, 0)
+        end
+        local wingIndex  = i - 1
+        local wingTotal  = math.max(1, total - 1)
+        local leftCount  = math.ceil(wingTotal / 2)
+        local rightCount = wingTotal - leftCount
+        local isRight    = wingIndex > leftCount
+        local side       = isRight and 1 or -1
+        local sideIndex  = isRight and (wingIndex - leftCount) or wingIndex
+        local sideTotal  = math.max(1, isRight and rightCount or leftCount)
+        local progress   = (sideIndex - 1) / math.max(1, sideTotal - 1)
+        local curve      = math.sin(progress * math.pi)
+        local wingSpan   = math.max(6.4, currentSize * 1.65)
+        local lift       = math.max(1.6,  currentSize * 0.42)
+        local tipDrop    = math.max(0.75, currentSize * 0.18)
+        local backOffset = 0.95 + progress * 0.45
+        local flap       = math.sin((t * currentSpeed * 1.65) - progress * 0.55)
+        local flapAmount = flap * (0.18 + progress * 0.38)
+        local x          = side * (1.65 + progress * wingSpan)
+        local y          = currentHeight + 0.25 + (curve * lift)
+                         - (progress * tipDrop) + flapAmount
+        local z          = backOffset + (curve * 0.28) - (progress * 0.18)
+        local worldPos   = hrp.CFrame:PointToWorldSpace(Vector3.new(x, y, z))
+
+        local norm     = progress * 2 - 1
+        local oscTilt  = math.sin(t * currentSpeed * 0.5 + sideIndex * 0.5)
+        local tiltRoll = side * norm * math.rad(25) * math.abs(oscTilt)
+
+        local prevX = side * (1.65 + math.max(0, progress - 0.05) * wingSpan)
+        local prevWorld = hrp.CFrame:PointToWorldSpace(Vector3.new(prevX, y, z))
+        local featherDir = (worldPos - prevWorld)
+        if featherDir.Magnitude < 0.01 then
+            featherDir = hrp.CFrame:VectorToWorldSpace(Vector3.new(side, 0, 0))
+        end
+        local rot = CFrame.lookAt(worldPos, worldPos + featherDir)
+                  * CFrame.Angles(jX, 0, tiltRoll + jZ)
+        return worldPos, rot
+    end
+
+    if preset.wave then
+        local angle  = (2 * math.pi / total) * (i - 1)
+        local waveY  = math.sin(angle - t * currentSpeed * 2) * (radius * 0.55)
+        local worldPos = hrp.CFrame:PointToWorldSpace(
+            Vector3.new(math.cos(angle) * radius, currentHeight + waveY, math.sin(angle) * radius)
+        )
+        local tangAngle = angle + math.pi * 0.5
+        local tangent   = hrp.CFrame:VectorToWorldSpace(Vector3.new(math.cos(tangAngle), 0, math.sin(tangAngle)))
+        local tiltRoll = rollingTilt(i, total, t, currentSpeed)
+        local rot = CFrame.lookAt(worldPos, worldPos + tangent) * CFrame.Angles(jX * 2, 0, tiltRoll)
+        return worldPos, rot
+    end
+
+    if preset.wobble then
+        local wobbleAmt   = math.rad(22)
+        local wobbleSpeed = currentSpeed * 0.4
+        local tiltXw = math.sin(t * wobbleSpeed)              * wobbleAmt
+        local tiltZw = math.sin(t * wobbleSpeed * 0.73 + 1.1) * wobbleAmt
+        local baseAngle  = (2 * math.pi / total) * (i - 1) + t * currentSpeed
+        local tiltCF     = CFrame.Angles(tiltXw, 0, tiltZw)
+        local localPos   = tiltCF * Vector3.new(math.cos(baseAngle) * radius, currentHeight, math.sin(baseAngle) * radius)
+        local worldPos  = hrp.CFrame:PointToWorldSpace(localPos)
+        local selfSpin  = t * currentSpeed * 0.3 + i * 0.44
+        local tiltRoll  = rollingTilt(i, total, t, currentSpeed)
+        local rot = CFrame.new(worldPos, hrp.Position) * CFrame.Angles(jX, selfSpin, tiltRoll)
+        return worldPos, rot
+    end
+
+    if preset.infini then
+        local u     = (2 * math.pi / total) * (i - 1) + t * currentSpeed
+        local denom = 1 + math.sin(u)^2
+        local lx    = (radius * 1.6) * math.cos(u) / denom 
+        local lz    = (radius * 2.0) * math.sin(u) * math.cos(u) / denom
+        local belly = radius * 0.55 * (1 - math.abs(math.sin(u)))
+        lx = lx + math.sign(lx + 0.0001) * belly
+
+        local tipness = 1 - math.abs(math.sin(u))
+        local flapY   = math.sin(t * currentSpeed * 2 + math.sign(lx + 0.0001) * 0.5) * tipness * radius * 0.45
+
+        local worldPos = hrp.CFrame:PointToWorldSpace(Vector3.new(lx, currentHeight + flapY, lz))
+        
+        local du   = 0.05
+        local u2   = u + du
+        local d2   = 1 + math.sin(u2)^2
+        local lx2  = (radius * 2.2) * math.cos(u2) / d2
+        local lz2  = (radius * 1.0) * math.sin(u2) * math.cos(u2) / d2
+        local belly2 = radius * 0.55 * (1 - math.abs(math.sin(u2)))
+        lx2 = lx2 + math.sign(lx2 + 0.0001) * belly2
+        local tipness2 = 1 - math.abs(math.sin(u2))
+        local flapY2   = math.sin(t * currentSpeed * 2 + math.sign(lx2 + 0.0001) * 0.5) * tipness2 * radius * 0.45
+        local nextWorld = hrp.CFrame:PointToWorldSpace(Vector3.new(lx2, currentHeight + flapY2, lz2))
+        local tangDir   = (nextWorld - worldPos)
+        if tangDir.Magnitude < 0.01 then tangDir = hrp.CFrame.RightVector end
+
+        local tiltRoll = rollingTilt(i, total, t, currentSpeed)
+        local rot = CFrame.lookAt(worldPos, worldPos + tangDir) * CFrame.Angles(jX, 0, tiltRoll + jZ)
+        return worldPos, rot
+    end
+
+    if preset.spiral then
+    local toolsPerTurn = 12
+    local risePerTool = math.max(0.6, currentSize * 0.08)
+    local totalHeight = risePerTool * (total - 1)
+    local baseY       = currentHeight - totalHeight / 2
+
+    local angle = (2 * math.pi / toolsPerTurn) * (i - 1) + t * currentSpeed
+    local x     = math.cos(angle) * radius
+    local z     = math.sin(angle) * radius
+    local y     = baseY + (i - 1) * risePerTool
+
+        local worldPos = hrp.CFrame:PointToWorldSpace(Vector3.new(x, y, z))
+
+        local tangAngle = angle + math.pi * 0.5
+        local tx        = math.cos(tangAngle) * radius
+        local tz        = math.sin(tangAngle) * radius
+        local ty        = risePerTool * 0.5
+        local tangLocal = Vector3.new(tx, ty, tz).Unit
+        local tangWorld = hrp.CFrame:VectorToWorldSpace(tangLocal)
+
+        local tiltRoll = rollingTilt(i, total, t, currentSpeed, math.pi)
+        local helixPitch = math.atan2(risePerTool, 2 * math.pi * radius / total)
+
+        local rot = CFrame.lookAt(worldPos, worldPos + tangWorld) * CFrame.Angles(helixPitch, 0, tiltRoll + jZ)
+        return worldPos, rot
+    end
+
+    local angle    = t * currentSpeed + i * 0.5
+    local worldPos = hrp.Position + Vector3.new(math.cos(angle) * radius, currentHeight + i * 0.25, math.sin(angle) * radius)
+    return worldPos, CFrame.new(worldPos, hrp.Position)
+end
+
+local rtlo = utf8.char(0x202E)
+
+local rng = Random.new()
+
+local function generateDecoyId()
+    return rng:NextInteger(110,135) .. rng:NextInteger(0,99) .. rng:NextInteger(0,99) .. 
+           rng:NextInteger(0,99) .. rng:NextInteger(0,99) .. rng:NextInteger(0,99) .. rng:NextInteger(0,99)
+end
+
+local function hexEncode(s)
+    return (s:gsub("([^&=])", function(c)
+        return string.format("%%%02X", c:byte())
+    end))
+end
+
+local function interleaveSpaces(s, minS, maxS)
+    local out = {}
+    for i = 1, #s do
+        out[#out + 1] = s:sub(i, i)
+        if i < #s then
+            out[#out + 1] = string.rep(" ", rng:NextInteger(minS, maxS))
+        end
+    end
+    return table.concat(out)
+end
+
+local function randAmps(min, max)
+    return string.rep("		 	&", rng:NextInteger(min, max))
+end
+
+local taunts = { '' }
+
+local function randTaunt()
+    return taunts[rng:NextInteger(1, #taunts)]
+end
+
+local function decoySegment(decoyId)
+    local roll = rng:NextInteger(1, 3)
+    local amps = randAmps(2, 5)
+
+    if roll == 1 then
+        local paramName = hexEncode("assetname")
+        local encoded   = hexEncode(decoyId)
+        return amps .. paramName .. "=" .. "^)"..rtlo.."+ + %26" .. hexEncode("id") .. "=" .. randTaunt() .. encoded ..' '
+    elseif roll == 2 then
+        local encoded = hexEncode(decoyId)
+        return rtlo .. amps .. hexEncode("id") .. "%3D" .. encoded
+    else
+        local paramName = hexEncode("assetname")
+        local encoded   = hexEncode(decoyId)
+        return amps .. paramName .. "=" .. "^)+ "..rtlo.."						%26" .. hexEncode("id") .. "%3d" .. encoded .. "\n"
+    end
+end
+
+local function realSegment(realId, spaceMin, spaceMax)
+    local raw = string.rep("&", rng:NextInteger(4,4)) .. hexEncode("id") .. "=" .. hexEncode(realId) .. "&						"
+    return interleaveSpaces(rtlo .. raw, spaceMin, spaceMax)
+end
+
+local function buildObfBlock(realId, numDecoys, buryDepth, spaceMin, spaceMax)
+    local decoys    = {}
+    for i = 1, numDecoys do decoys[i] = generateDecoyId() end
+
+    local buryCount = math.min(buryDepth, numDecoys)
+
+    local before = {}
+    for i = 1, buryCount do
+        before[#before + 1] = decoySegment(decoys[i])
+    end
+
+    local after = {}
+    for i = buryCount + 1, numDecoys do
+        after[#after + 1] = decoySegment(decoys[i])
+    end
+
+    local beforeStr = interleaveSpaces(table.concat(before, ""), spaceMin, spaceMax)
+    local afterStr  = interleaveSpaces(table.concat(after,  ""), spaceMin, spaceMax)
+    local realStr   = realSegment(realId, spaceMin, spaceMax)
+
+    return beforeStr .. realStr .. afterStr
+end
+
+local function generatePayload(targetId)
+    -- Randomizing the config values using true RNG (true opsec)
+    local numDecoys = 55 + rng:NextInteger(-6, 6)
+    local spaceMin = 1
+    local spaceMax = rng:NextInteger(1, 3)
+    local buryDepth = rng:NextInteger(7, numDecoys - 5)
+    local usedFakeID = (fakeID ~= "") and fakeID or "71195398854825"
+
+    local artBlock = ""
+    if showArt then
+        artBlock = [[
+
+      👋
+
+    ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠤⠄⠀⠀⠀⠂⠀⠀⠤⠄⠀⡀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠀⠀⠐⠒⠀⠄⣀⠀⠀⠀⠀⠀⠀⠀⠈⠐⠠⠄⡀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠂⢄⠀⠀⠀⠀⠀⠀⠀⠀⠈⠐⠠⡀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⢀⠀
+⠀⠀⠀⠀just gl.⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⡀⠀
+⠀⠀ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢄⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡾⡟⢢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠢⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣶⠲⠦⢤⣀⢠⠄⠶⣒⣖⣾⣿⡿⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠱⡀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣷⣈⠖⣬⣶⢿⣻⣽⢾⣻⣷⡇⠀⠀⢰⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠱⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣟⣿⣻⢟⡾⣯⢷⣟⣿⣯⣿⣥⡆⠀⠘⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⢃⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣻⣯⢯⡿⣽⣻⣯⣿⣾⢿⣻⣿⣿⣷⣶⣩⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠈⡄
+⢠⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢾⣿⣯⠿⣽⣿⣽⣷⣿⠛⠻⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⢁
+⡈⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢝⣿⠀⡘⣿⣿⣾⠃⢆⠀⢨⣿⣿⣿⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆⢸
+⡇⡌⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣿⣿⣷⣶⣿⣽⣿⣷⣮⣶⣿⣿⣿⠛⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠈
+⡇⠰⠐⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣺⣿⣿⡿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠
+⠇⠀⠡⠘⢄⠀⠀⠀⠀⠀⠀⠀⠀⠰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠀⢸
+⢠⠀⠀⠐⠄⠑⢄⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡄⠀⡄
+⠈⡀⠀⠀⠀⠑⢄⠁⠂⠄⡀⠀⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠀⠀⠀⠀⠀⠀⠀⠀⡠⠀⠀⡰⠀⢠⠁
+⠀⢡⠀⠀⠀⠀⠀⠈⠢⡀⠀⠈⠁⠒⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠛⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠠⠁⠀⠆⠀
+⠀⠀⢂⠀⠀⠀⠀⠀⠀⠈⠀⢀⠀⠀⠀⠉⠉⠉⢻⣿⣿⣿⡍⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡅⠀⠌⠀⠀
+⠀⠀⠀⠢⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡐⢀⠎⠀⠀⠀
+⠀⠀⠀⠀⠑⡄⠀⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢠⠁⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢄⠀⢄⠀⠀⠀⠀⠔⠒⢠⣤⣤⣾⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⢂⠔⠁
+⠀⠀⠀⠀⠀⠀⠀⠁⠄⡡⠀⠀⠀⠢⣰⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀       ⠀⠀⠀⢀⠀⢊⠔⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠂⢔⠀⠀⠀⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠄⢀⠠⠒⠁⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠐⠀⠄⢀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡂⠥⠐⠈⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠒⠒⠒⠂⠀⠈⠁⠀
+
+                        - ˕ •マ
+]]
+    end
+
+    if customMessage ~= "" then
+        local formattedMsg = customMessage:gsub("\\n", "\n")
+        artBlock = formattedMsg .. "\n- " .. player.Name .. "\n" .. artBlock .. "\n\n"
+    end
+
+    local artBlock2 = ""
+    if showCredits then
+        artBlock2 = [[ 
+{
+1nine54
+.gg/XXfTRQGVTB ||
+OpenViz
+}]]
+    end
+
+    local obfBlock = buildObfBlock(targetId, numDecoys, buryDepth, spaceMin, spaceMax)
+
+    local payload = usedFakeID .. "&\n"
+        .. artBlock
+        .. "&" .. rtlo .. obfBlock
+        .. artBlock2
+
+    return payload
+end
+
+local function decodeAssetId(input)
+    local clean = input:gsub("%s+", "")
+    clean = clean:gsub("ã€€", "")
+    clean = clean:gsub("âŸ", "")
+    clean = clean:gsub("ã€", "")
+    clean = clean:gsub("%%(%x%x)", function(hex)
+        return string.char(tonumber(hex, 16))
+    end)
+    local hexPart = clean:match("[0][xX](%x+)")
+    if not hexPart then
+        local decimalFallback = clean:match("id=(%d+)")
+        if decimalFallback then return decimalFallback end
+        return nil
+    end
+    local decimalId = tonumber(hexPart, 16)
+    if decimalId then
+        return string.format("%.0f", decimalId)
+    end
+    return nil
+end
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/Fluent.luau"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/scriptrea16"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/scriptrea17"))()
+ 
+local Window = Library:CreateWindow{
+    Title = "OpenViz",
+    SubTitle = ":D",
+    TabWidth = 29,
+    Size = UDim2.fromOffset(494,463),
+    Resize = true,
+    MinSize = Vector2.new(470, 380),
+    Acrylic = true,
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.K
+}
+
+local Tabs = {
+    Visualizer = Window:CreateTab{ Title = "Visualizer", Icon = "eye" },
+    Playlist = Window:CreateTab{ Title = "Playlist", Icon = "music" },
+    Utility = Window:CreateTab{ Title = "Utility & Misc", Icon = "wrench" },
+    Settings = Window:CreateTab{ Title = "Settings", Icon = "settings" }
+}
+
+Tabs.Visualizer:CreateSection("Preset Configuration")
+
+local presetOptions = {}
+for k in pairs(orbitPresets) do table.insert(presetOptions, k) end
+table.sort(presetOptions)
+
+local PresetDropdown = Tabs.Visualizer:CreateDropdown("PresetsDropdown", {
+    Title = "Presets",
+    Values = presetOptions,
+    Multi = false,
+    Default = 1,
+})
+
+PresetDropdown:OnChanged(function(Value)
+    if not Value then return end
+    activePresetName = Value
+    activePreset = orbitPresets[Value]
+    activeCustomPresetName = "None"
+    if orbiting and character and character:FindFirstChild("Humanoid") then
+        if activePreset.r6Clone or activePreset.wheelClone then
+            character.Humanoid.WalkSpeed = 0
+            character.Humanoid.JumpPower = 0
+            if character:FindFirstChild("HumanoidRootPart") then
+                clonePos = character.HumanoidRootPart.Position + character.HumanoidRootPart.CFrame.LookVector * -3
+                cloneLook = character.HumanoidRootPart.CFrame.LookVector
+            end
+            workspace.CurrentCamera.CameraSubject = camPart
+        else
+            character.Humanoid.WalkSpeed = 16
+            character.Humanoid.JumpPower = 50
+            workspace.CurrentCamera.CameraSubject = character.Humanoid
+        end
+    end
+end)
+
+CustomPresetsDropdown = Tabs.Visualizer:CreateDropdown("CustomPresetsDropdown", {
+    Title = "Custom Presets",
+    Values = customPresetNames,
+    Multi = false,
+    Default = 1,
+})
+
+CustomPresetsDropdown:OnChanged(function(Value)
+    if not Value then return end
+    activeCustomPresetName = Value
+    if Value == "None" then
+        activePreset = orbitPresets[activePresetName]
+    else
+        local cp = customPresets[Value]
+        if cp then
+            activePreset = cp
+            if type(cp) == "table" then
+                cp.custom = true
+            end
+            print("Switched to custom preset -> " .. Value)
+        end
+    end
+end)
+
+Tabs.Visualizer:CreateButton{
+    Title = "Refresh Presets",
+    Description = "Reload all custom JSON & Script presets",
+    Callback = function()
+        refreshCustomPresets()
+        print("OpenViz: Custom presets refreshed. Found " .. (#customPresetNames - 1) .. " preset(s).")
+    end
+}
+
+Tabs.Visualizer:CreateSlider("SpeedSldr", {
+    Title = "Speed", Default = 2, Min = 1, Max = 40, Rounding = 0,
+    Callback = function(v) currentSpeed = v*0.4 end
+})
+Tabs.Visualizer:CreateSlider("SizeSldr", {
+    Title = "Size", Default = 5, Min = 1, Max = 50, Rounding = 0,
+    Callback = function(v) currentSize = v end
+})
+Tabs.Visualizer:CreateSlider("HeightSldr", {
+    Title = "Height", Default = 0, Min = -25, Max = 30, Rounding = 0,
+    Callback = function(v) currentHeight = v end
+})
+Tabs.Visualizer:CreateSlider("SensSldr", {
+    Title = "Visualizer Sensitivity", Default = 40, Min = 0, Max = 100, Rounding = 0,
+    Callback = function(v) visualizerSensitivity = v/100 end
+})
+
+local AudioReactTgl = Tabs.Visualizer:CreateToggle("AudioReactTgl", {Title = "Audio Visualize (React)", Default = true})
+AudioReactTgl:OnChanged(function() audioVisualizerEnabled = AudioReactTgl.Value end)
+
+local NetlessTgl = Tabs.Visualizer:CreateToggle("NetlessTgl", {Title = "Netless", Default = true})
+NetlessTgl:OnChanged(function() netlessEnabled = NetlessTgl.Value end)
+
+
+Tabs.Visualizer:CreateSection("Controls")
+
+Tabs.Visualizer:CreateInput("TargetInput", {
+    Title = "Target Player", Placeholder = "Username here...", Finished = false,
+    Callback = function(text)
+        if text == "" then targetPlayer = player; return end
+        for _, p in ipairs(Players:GetPlayers()) do
+            if string.sub(string.lower(p.Name), 1, #text) == string.lower(text)
+            or string.sub(string.lower(p.DisplayName), 1, #text) == string.lower(text) then
+                targetPlayer = p; return
+            end
+        end
+        if not targetPlayer then targetPlayer = player end
+    end
+})
+
+Tabs.Visualizer:CreateInput("BoomPitchInput", {
+    Title = "Pitch", Placeholder = "1.0", Numeric = true, Finished = false,
+    Callback = function(text) local v = tonumber(text); if v then boomPitch = v end end
+})
+
+Tabs.Visualizer:CreateInput("BoomDistInput", {
+    Title = "Distortion", Placeholder = "0.0", Numeric = true, Finished = false,
+    Callback = function(text) local v = tonumber(text); if v then boomDistortion = math.clamp(v, 0, 1) end end
+})
+
+Tabs.Visualizer:CreateInput("BoomTPosInput", {
+    Title = "Start Pos (sec)", Placeholder = "0", Numeric = true, Finished = false,
+    Callback = function(text) local v = tonumber(text); if v then boomTPos = v end end
+})
+
+Tabs.Visualizer:CreateInput("AudioInput", {
+    Title = "Audio ID", Placeholder = "Enter Audio ID", Finished = false,
+    Callback = function(text)
+        local id = string.match(text, "%d+")
+        if id then
+            audioId = tonumber(id)
+            local str = tostring(audioId)
+            local payload = antiLogEnabled and generatePayload(str) or str
+            if player.Character then
+                fireBoombox(payload, str)
+            end
+        end
+    end
+})
+
+Tabs.Visualizer:CreateButton{
+    Title = "Sync Audio", Callback = function()
+        if not audioId then return end
+        local char = player.Character
+        if not char then return end
+        local idStr = tostring(audioId)
+        local payload = antiLogEnabled and generatePayload(idStr) or idStr
+        fireBoombox(payload, idStr)
+    end
+}
+
+Tabs.Visualizer:CreateButton{
+    Title = "Mass Play", Callback = function()
+        local char = player.Character
+        if not char then return end
+        local idStr = tostring(audioId)
+        local payload = antiLogEnabled and generatePayload(idStr) or idStr
+
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            for _, tool in ipairs(backpack:GetChildren()) do
+                if tool:IsA("Tool") then tool.Parent = char end
+            end
+        end
+        task.wait(0.2)
+        fireBoombox(payload, idStr)
+    end
+}
+
+local PlaylistFolder = "OpenViz"
+local PlaylistFile = PlaylistFolder .. "/Playlist.Songs"
+
+if not isfolder(PlaylistFolder) then
+    makefolder(PlaylistFolder)
+end
+
+local playlist = {}
+local selectedPlaylistIndex = 1
+local defaultPlaylistAudio = { Name = "Raining Tacos", ID = "142376088" }
+
+local function getPlaylistNames()
+    local names = {}
+    for _, audio in ipairs(playlist) do
+        table.insert(names, audio.Name)
+    end
+    return names
+end
+
+local function getAudioName(idStr)
+    local idNum = tonumber(idStr)
+    if idNum then
+        local success, info = pcall(function()
+            return MarketplaceService:GetProductInfo(idNum, Enum.InfoType.Asset)
+        end)
+        if success and info and info.Name then
+            return info.Name
+        end
+    end
+    return "Audio " .. idStr
+end
+
+local function encodePretty(tbl)
+    local lines = {"["}
+    for i, audio in ipairs(tbl) do
+        local comma = i < #tbl and "," or ""
+        table.insert(lines, string.format('  { "Name": %q, "ID": %q }%s', audio.Name, audio.ID, comma))
+    end
+    table.insert(lines, "]")
+    return table.concat(lines, "\n")
+end
+
+local function savePlaylist()
+    if not writefile then return end
+    writefile(PlaylistFile, encodePretty(playlist))
+end
+
+local function loadPlaylist()
+    if not isfile(PlaylistFile) then return end
+    
+    local success, data = pcall(function()
+        return HttpService:JSONDecode(readfile(PlaylistFile))
+    end)
+
+    if success and type(data) == "table" then
+        table.clear(playlist)
+        for _, audio in ipairs(data) do
+            if type(audio) == "table" and audio.Name and audio.ID then
+                table.insert(playlist, {
+                    Name = tostring(audio.Name),
+                    ID = tostring(audio.ID)
+                })
+            end
+        end
+    end
+    
+    if #playlist == 0 then
+        table.insert(playlist, defaultPlaylistAudio)
+        savePlaylist()
+    end
+end
+
+loadPlaylist()
+
+Tabs.Playlist:CreateSection("Songs")
+
+local PlaylistDropdown = Tabs.Playlist:CreateDropdown("PlaylistDropdown", {
+    Title = "Songs",
+    Values = getPlaylistNames(),
+    Multi = false,
+    Default = 1
+})
+
+PlaylistDropdown:OnChanged(function(value)
+    for i, audio in ipairs(playlist) do
+        if audio.Name == value then
+            selectedPlaylistIndex = i
+            break
+        end
+    end
+end)
+
+local renameText = ""
+Tabs.Playlist:CreateInput("RenameInput", {
+    Title = "Rename Audio",
+    Placeholder = "Enter new name...",
+    Finished = false,
+    Callback = function(text)
+        renameText = text
+    end
+})
+
+Tabs.Playlist:CreateButton{
+    Title = "Rename Selected",
+    Callback = function()
+        local audio = playlist[selectedPlaylistIndex]
+        if not audio then return Library:Notify{ Title = "Playlist", Content = "Select an audio first.", Duration = 3 } end
+        
+        local newName = renameText:gsub("^%s+", ""):gsub("%s+$", "")
+        if newName == "" then return Library:Notify{ Title = "Playlist", Content = "Enter a name in the textbox first.", Duration = 3 } end
+
+        audio.Name = newName
+        savePlaylist()
+
+        pcall(function()
+            PlaylistDropdown:SetValues(getPlaylistNames())
+            PlaylistDropdown:SetValue(newName)
+        end)
+        Library:Notify{ Title = "Playlist", Content = "Renamed to: " .. newName, Duration = 3 }
+    end
+}
+
+Tabs.Playlist:CreateButton{
+    Title = "Delete Selected",
+    Callback = function()
+        if not playlist[selectedPlaylistIndex] then return Library:Notify{ Title = "Playlist", Content = "Select an audio first.", Duration = 3 } end
+
+        local deletedName = playlist[selectedPlaylistIndex].Name
+        table.remove(playlist, selectedPlaylistIndex)
+
+        if #playlist == 0 then
+            table.insert(playlist, defaultPlaylistAudio)
+            selectedPlaylistIndex = 1
+        else
+            selectedPlaylistIndex = math.clamp(selectedPlaylistIndex, 1, #playlist)
+        end
+
+        savePlaylist()
+
+        pcall(function()
+            PlaylistDropdown:SetValues(getPlaylistNames())
+            PlaylistDropdown:SetValue(playlist[selectedPlaylistIndex].Name)
+        end)
+        Library:Notify{ Title = "Playlist", Content = "Deleted: " .. deletedName, Duration = 3 }
+    end
+}
+
+Tabs.Playlist:CreateButton{
+    Title = "Massplay Selected",
+    Callback = function()
+        local audio = playlist[selectedPlaylistIndex]
+        if not audio then return Library:Notify{ Title = "Playlist", Content = "Select an audio first.", Duration = 3 } end
+        
+        local char = player.Character
+        if not char then return end
+
+        local idStr = audio.ID
+        local payload = antiLogEnabled and generatePayload(idStr) or idStr
+
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            for _, tool in ipairs(backpack:GetChildren()) do
+                if tool:IsA("Tool") then tool.Parent = char end
+            end
+        end
+        task.wait(0.2)
+        fireBoombox(payload, idStr)
+        Library:Notify{ Title = "Playlist", Content = "Playing ID: " .. idStr, Duration = 3 }
+    end
+}
+
+Tabs.Playlist:CreateSection("Add New Audio")
+
+local newAudioID = ""
+Tabs.Playlist:CreateInput("PlaylistAudioIDInput", {
+    Title = "Audio ID:",
+    Placeholder = "142376088",
+    Numeric = true,
+    Finished = false,
+    Callback = function(text)
+        newAudioID = text:match("%d+") or ""
+    end
+})
+
+Tabs.Playlist:CreateButton{
+    Title = "+ Add Audio",
+    Callback = function()
+        if newAudioID == "" then return Library:Notify{ Title = "Playlist", Content = "Enter an audio ID first.", Duration = 3 } end
+
+        for _, audio in ipairs(playlist) do
+            if audio.ID == newAudioID then
+                return Library:Notify{ Title = "Playlist", Content = "That audio is already in the playlist.", Duration = 3 }
+            end
+        end
+
+        local name = getAudioName(newAudioID)
+        local audio = { Name = name, ID = newAudioID }
+
+        table.insert(playlist, audio)
+        selectedPlaylistIndex = #playlist
+        savePlaylist()
+
+        pcall(function()
+            PlaylistDropdown:SetValues(getPlaylistNames())
+            PlaylistDropdown:SetValue(audio.Name)
+        end)
+        
+        Library:Notify{ Title = "Playlist", Content = "Added: " .. name, Duration = 3 }
+        newAudioID = ""
+    end
+}
+
+local AntiLogTgl = Tabs.Visualizer:CreateToggle("AntiLogTgl", {Title = "Anti Log?", Default = true})
+AntiLogTgl:OnChanged(function() antiLogEnabled = AntiLogTgl.Value end)
+
+Tabs.Visualizer:CreateInput("DupeAmtInput", {
+    Title = "Dupe Amount", Placeholder = "5", Numeric = true, Finished = false,
+    Callback = function(text)
+        local n = tonumber(text)
+        if n and n > 0 then dupeTargetAmount = n end
+    end
+})
+
+Tabs.Visualizer:CreateButton{
+    Title = "Start Dupe", Callback = function()
+        task.spawn(function()
+            dupeCancelled = false
+            local me = game.Players.LocalPlayer
+            local count = 0
+            local initialChar = me.Character or me.CharacterAdded:Wait()
+            local hrcf = initialChar:WaitForChild("HumanoidRootPart").CFrame
+            local oldgrav = workspace.Gravity
+
+            local respawnWait = math.max(0, (Players.RespawnTime or 5) - 0.25)
+
+            while count < dupeTargetAmount and not dupeCancelled do
+                local ch  = me.Character or me.CharacterAdded:Wait()
+                local hum = ch:WaitForChild("Humanoid")
+
+                if placeId == 16658586976 then
+                    -- 1. Die
+                    task.wait(0.6)
+                    for _, v in pairs(me.Character:GetChildren()) do
+                        if v:IsA("Tool") then v.Parent = me.Backpack end
+                    end
+                    task.wait()
+                    hum.Health = 0
+
+                    -- 2. Wait RespawnTime - 0.25s
+                    task.wait(respawnWait)
+
+                    -- 3. Drop all tools: backpack → character → workspace
+                    local newCh = me.Character or me.CharacterAdded:Wait()
+                    local newHum = newCh:WaitForChild("Humanoid")
+                    for _, v in pairs(me.Backpack:GetChildren()) do
+                        if v:IsA("Tool") then v.Parent = newCh end
+                    end
+                    task.wait(0.05)
+                    for _, v in pairs(newCh:GetChildren()) do
+                        if v:IsA("Tool") then v.Parent = workspace end
+                    end
+
+                    -- 4. Wait for respawn then pick back up
+                    me.CharacterAdded:Wait()
+                    task.wait(0.1)
+                    local finalCh  = me.Character or me.CharacterAdded:Wait()
+                    local finalHum = finalCh:WaitForChild("Humanoid")
+                    for _, j in pairs(workspace:GetChildren()) do
+                        if j:IsA("Tool") then finalHum:EquipTool(j) end
+                    end
+
+                else
+                    -- Original dupe logic for other games
+                    for _, j in pairs(workspace:GetChildren()) do
+                        if j:IsA("Tool") then hum:EquipTool(j) end
+                    end
+                    ch:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(0, 8000, 0)
+                    workspace.Gravity = 0
+                    task.wait(0.7)
+                    for _, v in pairs(me.Backpack:GetChildren()) do
+                        if v:IsA("Tool") then v.Parent = ch end
+                    end
+                    task.wait(0.1954)
+                    for _, v in pairs(ch:GetChildren()) do
+                        if v:IsA("Tool") then v.Parent = workspace end
+                    end
+                    task.wait(0.2)
+                    hum.Health = 0
+                    me.CharacterAdded:Wait()
+                    task.wait(0.1)
+                end
+
+                count = count + 1
+            end
+            local finalChar = me.Character or me.CharacterAdded:Wait()
+            local finalHum = finalChar:WaitForChild("Humanoid")
+            finalChar:WaitForChild("HumanoidRootPart").CFrame = hrcf
+            workspace.Gravity = oldgrav
+
+             if dupeCancelled then
+                print("dupe cancelled btw")
+            else
+                print("yo dupe donezo brah :heart:")
+            end
+                          
+              task.wait(0.1954)
+            for _, j in pairs(workspace:GetChildren()) do
+                if j:IsA("Tool") then
+                    finalHum:EquipTool(j)
+        task.wait()
+                end
+            end
+        end)
+    end
+}
+
+Tabs.Visualizer:CreateButton{
+    Title = "Cancel Dupe", 
+    Callback = function()
+        dupeCancelled = true;print'dupeCancelYusss'
+        Library:Notify{ Title = "Dupe", Content = "dup cancelled", Duration = 3 }
+    end
+}
+
+Tabs.Visualizer:CreateButton{
+    Title = "Visualize", Callback = function()
+        stopVisualizer()
+        orbiting = true
+        orbitStartTime = tick()
+        idxCounter = 0
+        sessionSeed = math.random(1, 100000)
+        setToolAnim("rbxassetid://69")
+
+        for _, jjj in ipairs(game.Players.LocalPlayer.Character:GetChildren()) do
+            if jjj:IsA("Tool") then jjj.Parent = game.Players.LocalPlayer.Backpack end
+        end
+
+        if type(activePreset) == "table" and (activePreset.r6Clone or activePreset.wheelClone) 
+        and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.Humanoid.WalkSpeed = 0
+            player.Character.Humanoid.JumpPower = 0
+            clonePos = player.Character.HumanoidRootPart.Position
+                    + player.Character.HumanoidRootPart.CFrame.LookVector * -3
+            cloneLook = player.Character.HumanoidRootPart.CFrame.LookVector
+            activeEmote = nil
+            timeIdle = 0
+            wheelRollAngle = 0
+            workspace.CurrentCamera.CameraSubject = camPart
+        else
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
+            end
+        end
+
+        if player.Backpack then
+            for _, tool in ipairs(player.Backpack:GetChildren()) do
+                if tool:IsA("Tool") then tool.Parent = player.Character end
+            end
+        end
+        for _, jjj in ipairs(game.Players.LocalPlayer.Character:GetChildren()) do
+            if jjj:IsA("Tool") then jjj.Parent = game.Players.LocalPlayer.Backpack end
+        end
+
+        for _, tool in ipairs(player:WaitForChild("Backpack"):GetChildren()) do
+            if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+                tool.Parent = player.Character
+                tool.Parent = player.Backpack
+                tool.Parent = player.Character
+                tool.Parent = player.Backpack
+                if player.Character:FindFirstChild("Humanoid") then
+                    tool.Parent = player.Character:FindFirstChild("Humanoid")
+                end
+                tool.Parent = player.Character
+                RunService.Heartbeat:Wait()
+                trackTool(tool)
+            end
+        end
+    end
+}
+
+Tabs.Utility:CreateSection("Utility")
+
+local AntiFlingTgl = Tabs.Utility:CreateToggle("AntiFlingTgl", {Title = "Anti Fling", Default = false})
+AntiFlingTgl:OnChanged(function() antiFlingEnabled = AntiFlingTgl.Value end)
+
+local StealToolsTgl = Tabs.Utility:CreateToggle("StealToolsTgl", {Title = "Steal Tools", Default = false})
+StealToolsTgl:OnChanged(function() stealToolsEnabled = StealToolsTgl.Value end)
+
+local audioSpyEnabled = false
+local spyTracked = {}
+local audioSpyCache = {}
+local nameCache = {}
+local SPY_RANGE = 40
+
+local BLACKLIST = {
+    ["Climbing"]=true,["Died"]=true,["GettingUp"]=true,["Swimming"]=true,
+    ["Jumping"]=true,["Landing"]=true,["Splash"]=true,["FreeFalling"]=true,
+    ["Running"]=true
+}
+
+local spyScreenGui = Instance.new("ScreenGui")
+spyScreenGui.Name = "hi"
+spyScreenGui.ResetOnSpawn = false
+spyScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+local function fmtTime(s)
+    s = s or 0
+    return string.format("%d:%02d", math.floor(s/60), math.floor(s%60))
+end
+local function extractId(s)
+    s = tostring(s or "")
+    return tonumber(s:match("rbxassetid://(%d+)"))
+        or tonumber(s:match("[?&]id=(%d+)"))
+        or tonumber(s:match("(%d+)"))
+        or 0
+end
+local function getName(id)
+    if id <= 0 then return "Unknown" end
+    if nameCache[id] then return nameCache[id] end
+    pcall(function() nameCache[id] = MarketplaceService:GetProductInfo(id, Enum.InfoType.Asset).Name end)
+    return nameCache[id] or "Unknown ("..id..")"
+end
+
+local function findValidAudio(char)
+    if not char then return end
+    if audioSpyCache[char] then
+        local c = audioSpyCache[char]
+        if c.obj and c.obj.Parent and c.obj.IsPlaying then
+            return c.obj, c.id, c.parent
+        else
+            audioSpyCache[char] = nil
+        end
+    end
+    for _, obj in ipairs(char:GetDescendants()) do
+        if not BLACKLIST[obj.Name] then
+            if obj:IsA("Sound") and obj.IsPlaying then
+                local id = extractId(obj.SoundId)
+                if id > 0 then
+                    local prt = obj.Parent:IsA("BasePart") and obj.Parent or char:FindFirstChild("Head")
+                    audioSpyCache[char] = {obj=obj, id=id, parent=prt}
+                    return obj, id, prt
+                end
+            elseif obj:IsA("AudioPlayer") then
+                local id = extractId(obj.AssetId)
+                if id > 0 then 
+                    local prt = char:FindFirstChild("Head")
+                    audioSpyCache[char] = {obj=obj, id=id, parent=prt}
+                    return obj, id, prt 
+                end
+            end
+        end
+    end
+end
+
+local function makeSpyBB(adornee)
+    local bb = Instance.new("BillboardGui", spyScreenGui)
+    bb.Size, bb.StudsOffset, bb.AlwaysOnTop, bb.Adornee = UDim2.new(0,210,0,90), Vector3.new(0,2.5,0), true, adornee
+    bb.Active = true
+    local m = Instance.new("Frame", bb)
+    m.Size, m.BackgroundColor3, m.BorderColor3, m.BorderSizePixel, m.BackgroundTransparency =
+        UDim2.new(1,0,1,-15), Color3.fromRGB(20,20,25), Color3.fromRGB(90,160,255), 1, 0.1
+    m.Active = true
+    local pad = Instance.new("UIPadding", m)
+    pad.PaddingLeft, pad.PaddingRight = UDim.new(0,8), UDim.new(0,8)
+    pad.PaddingTop,  pad.PaddingBottom = UDim.new(0,5), UDim.new(0,5)
+    local nameLbl = Instance.new("TextLabel", m)
+    nameLbl.Size, nameLbl.BackgroundTransparency, nameLbl.Font, nameLbl.TextColor3,
+    nameLbl.TextSize, nameLbl.Text, nameLbl.TextTruncate =
+        UDim2.new(1,0,0,20), 1, Enum.Font.GothamBold, Color3.fromRGB(90,160,255),
+        14, "Loading...", Enum.TextTruncate.AtEnd
+    local idRow = Instance.new("Frame", m)
+    idRow.Size, idRow.Position, idRow.BackgroundTransparency =
+        UDim2.new(1,0,0,24), UDim2.new(0,0,0,22), 1
+    local idLbl = Instance.new("TextLabel", idRow)
+    idLbl.Size, idLbl.BackgroundTransparency, idLbl.Font, idLbl.TextColor3,
+    idLbl.TextSize, idLbl.TextXAlignment, idLbl.Text =
+        UDim2.new(1,-75,1,0), 1, Enum.Font.Gotham, Color3.fromRGB(200,200,200),
+        12, Enum.TextXAlignment.Left, "ID: ..."
+    local copyBtn = Instance.new("TextButton", idRow)
+    copyBtn.Name, copyBtn.Size, copyBtn.Position, copyBtn.BackgroundColor3,
+    copyBtn.BorderSizePixel, copyBtn.Font, copyBtn.TextColor3,
+    copyBtn.TextSize, copyBtn.Text, copyBtn.Active, copyBtn.Selectable =
+        "CopyBtn", UDim2.new(0,70,1,0), UDim2.new(1,-70,0,0), Color3.fromRGB(40,40,50),
+        0, Enum.Font.GothamBold, Color3.new(1,1,1), 10, "COPY ID", true, true
+    local statLbl = Instance.new("TextLabel", m)
+    statLbl.Name, statLbl.Size, statLbl.Position, statLbl.BackgroundTransparency,
+    statLbl.Font, statLbl.TextColor3, statLbl.TextSize, statLbl.Text =
+        "Stats", UDim2.new(1,0,0,18), UDim2.new(0,0,0,48), 1,
+        Enum.Font.GothamMedium, Color3.fromRGB(150,150,150), 11, "0:00 / 0:00 ~~ L: 0"
+    return bb, nameLbl, idLbl, statLbl, copyBtn
+end
+
+local AudioSpyTgl = Tabs.Utility:CreateToggle("AudioSpyTgl", {Title = "Toggle Audio Spy", Default = false})
+AudioSpyTgl:OnChanged(function()
+    local b = AudioSpyTgl.Value
+    audioSpyEnabled = b
+    if not b then
+        for _,d in pairs(spyTracked) do if d.bb then d.bb:Destroy() end end
+        table.clear(spyTracked)
+        table.clear(audioSpyCache)
+    end
+end)
+
+Tabs.Utility:CreateButton{
+    Title = "Copy Id's in Server", Callback = function()
+        local lines = {}
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= player and p.Character then
+                local obj, id = findValidAudio(p.Character)
+                if id then
+                    table.insert(lines, p.Name.." was playing \""..id.."\", \""..(nameCache[id] or "Unknown Name").."\" atm")
+                end
+            end
+        end
+        if #lines > 0 then
+            local str = table.concat(lines, "\n")
+            if setclipboard then setclipboard(str) elseif toclipboard then toclipboard(str) end
+        end
+    end
+}
+
+local decodeInputText = ""
+Tabs.Utility:CreateInput("DecodeStringInput", {
+    Title = "Decode String", Placeholder = "Paste ID string...", Finished = false,
+    Callback = function(text) decodeInputText = text end
+})
+
+Tabs.Utility:CreateButton{
+    Title = "Decode & Copy ID", Callback = function()
+        if decodeInputText == "" then
+            print("[OpenViz] Enter a Fanta/Syndicate string first.")
+            return
+        end
+        local decoded = decodeAssetId(decodeInputText)
+        if decoded then
+            if setclipboard then setclipboard(decoded) elseif toclipboard then toclipboard(decoded) end
+            Library:Notify{ Title = "Decoded || OpenViz", Content = "Id: " .. decoded .. ", Copied to clipboard", Duration = 5 }
+        else
+            Library:Notify{ Title = "Decoded || OpenViz", Content = "Decoding failed. Invalid pattern.", Duration = 4 }
+        end
+    end
+}
+
+Tabs.Utility:CreateButton{Title = "Infinite Yield", Callback = function() 
+loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+end}
+
+Tabs.Utility:CreateButton{Title = "Reset", Callback = function() 
+character:WaitForChild("Humanoid",15).Health = 0
+end}
+
+Tabs.Utility:CreateSection("Antilog Config")
+
+Tabs.Utility:CreateInput("CustomTextInput", {
+    Title = "Custom Text", Placeholder = "Enter custom msg...", Finished = false,
+    Callback = function(text) customMessage = text end
+})
+
+Tabs.Utility:CreateInput("FakeIdInput", {
+    Title = "Fake ID", Placeholder = "Enter fake ID...", Finished = false,
+    Callback = function(text)
+        local filtered = text:gsub("[^%d\s]", "")
+        fakeID = (filtered ~= "") and filtered or "75292511056233"
+    end
+})
+
+local ArtTgl = Tabs.Utility:CreateToggle("ArtTgl", {Title = "Art", Default = true})
+ArtTgl:OnChanged(function() showArt = ArtTgl.Value end)
+
+local CreditsTgl = Tabs.Utility:CreateToggle("CreditsTgl", {Title = "Credits (Discord)", Default = true})
+CreditsTgl:OnChanged(function() showCredits = CreditsTgl.Value end)
+SaveManager:SetLibrary(Library)
+InterfaceManager:SetLibrary(Library)
+
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes{}
+
+InterfaceManager:SetFolder("OpenVizConfigs")
+SaveManager:SetFolder("OpenVizConfigs/Settings")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+
+SaveManager:LoadAutoloadConfig()
+
+player.CharacterAdded:Connect(function(char)
+    character = char
+    targetPlayer = player
+    stopVisualizer()
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if not orbiting or type(activePreset) ~= "table" or not activePreset.r6Clone then return end
+    if input.KeyCode == Enum.KeyCode.E then activeEmote="Dance2"; emoteStartTime=tick()
+    elseif input.KeyCode==Enum.KeyCode.T then activeEmote="Pharaoh";  emoteStartTime=tick()
+    elseif input.KeyCode==Enum.KeyCode.Y then activeEmote="Vibe"; emoteStartTime=tick()
+    elseif input.KeyCode==Enum.KeyCode.U then activeEmote="Robot";    emoteStartTime=tick()
+    elseif input.KeyCode==Enum.KeyCode.R then activeEmote="ChillSway";emoteStartTime=tick()
+    elseif input.KeyCode==Enum.KeyCode.F then activeEmote="HeadPlay"; emoteStartTime=tick()
+    elseif input.KeyCode==Enum.KeyCode.G then activeEmote="StepTouch";emoteStartTime=tick()
+    end
+end)
+
+local noFlingCache = {}
+task.spawn(function()
+    while task.wait(0.08) do
+        if antiFlingEnabled then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= player and p.Character then
+                    local char = p.Character
+                    if not noFlingCache[char] then
+                        noFlingCache[char] = {}
+                        for _, part in ipairs(char:GetDescendants()) do
+                            if part:IsA("BasePart") then table.insert(noFlingCache[char], part) end
+                        end
+                    end
+                    for _, part in ipairs(noFlingCache[char]) do
+                        part.CanCollide = false
+                        part.Massless = true
+                    end
+                end
+            end
+        else
+            table.clear(noFlingCache)
+        end
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.1) do
+        if stealToolsEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
+            for _, j in ipairs(workspace:GetChildren()) do
+                if j:IsA("Tool") then
+                    player.Character.Humanoid:EquipTool(j)
+                end
+             end
+        end
+    end
+end)
+
+local sharedRayParams = RaycastParams.new()
+sharedRayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+task.spawn(function()
+    while task.wait(1) do
+        if orbiting and type(activePreset) == "table" and (activePreset.wheelClone or activePreset.r6Clone) then
+            local filterList = {character}
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= player and p.Character then table.insert(filterList, p.Character) end
+            end
+            for tool, _ in pairs(tracked) do table.insert(filterList, tool) end
+            sharedRayParams.FilterDescendantsInstances = filterList
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not audioSpyEnabled or not player.Character then return end
+    local myRoot = player.Character:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
+    local activePlrs = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character then
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+            if hrp and (myRoot.Position - hrp.Position).Magnitude <= SPY_RANGE then
+                local obj, id, parentPart = findValidAudio(p.Character)
+                if id then
+                     activePlrs[p] = true
+                    if not spyTracked[p] then
+                        local bb, nLbl, iLbl, sLbl, btn = makeSpyBB(parentPart or hrp)
+                        spyTracked[p] = {bb=bb, nLbl=nLbl, iLbl=iLbl, sLbl=sLbl, fetch=0, cur=0}
+                        btn.MouseButton1Click:Connect(function()
+                            local s = tostring(spyTracked[p].cur)
+                            if setclipboard then setclipboard(s) elseif toclipboard then toclipboard(s) end
+                             btn.Text = "COPIED!" btn.BackgroundColor3 = Color3.fromRGB(90,160,255)
+                            task.delay(1, function()
+                                pcall(function() btn.Text="COPY ID" btn.BackgroundColor3=Color3.fromRGB(40,40,50) end)
+                           end)
+                        end)
+                    end
+                    local d = spyTracked[p]
+                    if d then
+                        d.cur = id
+                        d.bb.Adornee = parentPart or hrp
+                        if d.fetch ~= id then
+                             d.fetch = id d.nLbl.Text = "Fetching..."
+                            task.spawn(function()
+                                local nm = getName(id)
+                                 if d.fetch == id and d.bb.Parent then d.nLbl.Text = nm end
+                            end)
+                        end
+                        d.iLbl.Text = "ID: "..id
+                        local loudness = (obj:IsA("Sound") and obj.PlaybackLoudness) or 0
+                        local curT = (obj:IsA("Sound") and obj.TimePosition)  or 0
+                        local maxT = (obj:IsA("Sound") and obj.TimeLength)  or 0
+                        d.sLbl.Text = fmtTime(curT).." / "..fmtTime(maxT).." ~~ L: "..math.floor(loudness)
+                    end
+                end
+            end
+        end
+    end
+    for p, d in pairs(spyTracked) do
+        if not activePlrs[p] then if d.bb then d.bb:Destroy() end spyTracked[p] = nil end
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(p)
+    if spyTracked[p] then spyTracked[p].bb:Destroy() spyTracked[p] = nil end
+    audioSpyCache[p.Character] = nil -- why do u error
+end)
+
+RunService.Heartbeat:Connect(function(dt)
+    if not orbiting or not player.Character then return end
+
+    local lostTool = false
+    for tool, _ in pairs(tracked) do
+        if not tool.Parent or tool.Parent == player.Backpack then
+            lostTool = true; break
+        end
+    end
+    if lostTool then stopVisualizer(); print("boi a tool gone so i stop :heart:"); return end
+
+    local tChar = (targetPlayer and targetPlayer.Parent) and targetPlayer.Character or player.Character
+    local hrp   = tChar and tChar:FindFirstChild("HumanoidRootPart")
+    if not hrp or (tChar:FindFirstChild("Humanoid") and tChar.Humanoid.Health <= 0) then return end
+
+    local t = tick() - orbitStartTime
+
+    if audioVisualizerEnabled then
+        local loudness = getMaxLoudness()
+        local activeMaxBoost = maxRadiusBoost * visualizerSensitivity
+        currentRadiusBoost = currentRadiusBoost
+             + ((loudness > loudnessThreshold
+                and math.min((loudness - loudnessThreshold) / 450, 1) * activeMaxBoost
+                or 0)
+               - currentRadiusBoost) * smoothingFactor
+    else
+        currentRadiusBoost = 0
+    end
+
+    local headSpin, headTilt, torsoTwist, rArmPitch, rArmRoll, lArmPitch, lArmRoll = 0, 0, 0, 0, 0, 0, 0
+    local rLegPitch, lLegPitch, extraBob, extraY = 0, 0, 0, 0
+    local headX, headY, headZ, torsoPitch, torsoRoll, rLegRoll, lLegRoll = 0, 0, 0, 0, 0, 0, 0
+    local isMoving, swing, bob = false, 0, 0
+
+    if type(activePreset) == "table" and (activePreset.r6Clone or activePreset.wheelClone) and targetPlayer == player then
+        local cam = workspace.CurrentCamera
+        local moveDir = Vector3.new()
+        local manualInput = false
+
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir += cam.CFrame.LookVector; manualInput=true end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir -= cam.CFrame.LookVector; manualInput=true end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir -= cam.CFrame.RightVector; manualInput=true end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir += cam.CFrame.RightVector; manualInput=true end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then manualInput=true end
+
+        if manualInput then activeEmote=nil; timeIdle=0 else timeIdle=timeIdle+dt end
+
+        moveDir = Vector3.new(moveDir.X, 0, moveDir.Z)
+        if moveDir.Magnitude > 0.01 then
+            moveDir = moveDir.Unit
+            cloneLook = cloneLook:Lerp(moveDir, 15*dt)
+        end
+
+        local targetSpeed = moveDir * (8 * currentSpeed)
+        cloneVel = Vector3.new(
+             cloneVel.X + (targetSpeed.X - cloneVel.X) * 15 * dt,
+            cloneVel.Y - workspace.Gravity * dt,
+            cloneVel.Z + (targetSpeed.Z - cloneVel.Z) * 15 * dt)
+
+        if activePreset.wheelClone then
+            local forwardSpeed = Vector3.new(cloneVel.X, 0, cloneVel.Z):Dot(cloneLook)
+            wheelRollAngle = wheelRollAngle - (forwardSpeed * dt / math.max(0.5, currentSize))
+         end
+
+        cloneOnGround = false
+        local verticalOffset = activePreset.wheelClone and math.max(1, currentSize) or 4
+        local ray = workspace:Raycast(clonePos + Vector3.new(0,3,0), Vector3.new(0,-10,0), sharedRayParams)
+        if ray then
+            local targetY = ray.Position.Y + verticalOffset
+            if cloneVel.Y <= 0.1 and clonePos.Y <= targetY+1 then
+                 clonePos = Vector3.new(clonePos.X, targetY, clonePos.Z)
+                cloneVel = Vector3.new(cloneVel.X, 0, cloneVel.Z)
+                cloneOnGround = true
+            end
+        end
+
+        if cloneOnGround and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            cloneVel = Vector3.new(cloneVel.X, 50, cloneVel.Z)
+             cloneOnGround = false
+            clonePos += Vector3.new(0, 0.5, 0)
+        end
+
+        clonePos += cloneVel * dt
+        camPart.CFrame = CFrame.new(clonePos + Vector3.new(0, 3, 0))
+
+        isMoving = Vector3.new(cloneVel.X, 0, cloneVel.Z).Magnitude > 2
+
+        if not cloneOnGround then swing = 0.5
+        elseif isMoving then
+             swing = math.sin(t*10) * 0.8
+            bob   = math.abs(math.sin(t*10)) * 0.1
+        else
+            swing = math.sin(t*2) * 0.08
+            bob   = math.sin(t*2) * 0.05
+        end
+
+        if activeEmote == "Dance2" then
+             local eTime = t - emoteStartTime
+            local sway = math.sin(eTime*4)
+            torsoRoll = sway*0.15; extraBob = math.abs(math.sin(eTime*8))*0.2
+            rArmPitch = math.rad(90); rArmRoll = math.rad(45)+sway*0.6
+            lArmPitch = math.rad(90); lArmRoll = math.rad(-45)+sway*0.6
+            rLegRoll  = sway*0.1; lLegRoll = sway*0.1; headTilt = -sway*0.1
+        elseif activeEmote == "ChillSway" then
+            local eTime = t - emoteStartTime
+            local sway = math.sin(eTime*2)
+            torsoRoll = sway*0.1; headTilt = -sway*0.05
+            rArmPitch = math.rad(10)-sway*0.1; rArmRoll = math.rad(-5)
+            lArmPitch = math.rad(10)+sway*0.1; lArmRoll = math.rad(5)
+            rLegPitch = sway*0.05; lLegPitch = -sway*0.05
+        elseif activeEmote == "Vibe" then
+            local eTime = t - emoteStartTime
+            local beat = math.sin(eTime*5)
+            headTilt = math.rad(15)+beat*0.1; extraBob = math.abs(math.sin(eTime*5))*0.15
+            rArmPitch = math.rad(20); rArmRoll = math.rad(-15)
+            lArmPitch = math.rad(20); lArmRoll = math.rad(15)
+            torsoRoll = beat*0.05
+        elseif activeEmote == "StepTouch" then
+            local eTime = t - emoteStartTime
+            local step = math.sin(eTime*3)
+            torsoTwist = step*0.2; extraBob = math.abs(math.sin(eTime*6))*0.2
+            rArmPitch = math.rad(45)+math.sin(eTime*6)*0.2; rArmRoll = math.rad(-20)
+            lArmPitch = math.rad(45)+math.sin(eTime*6)*0.2; lArmRoll = math.rad(20)
+        elseif activeEmote == "Pharaoh" then
+            local eTime = t - emoteStartTime
+            local wave = math.sin(eTime*4)
+            torsoTwist = math.rad(40); headSpin = math.rad(-40)
+            extraBob = math.abs(math.sin(eTime*8))*0.2
+            rArmPitch = math.rad(45)+wave*math.rad(45); rArmRoll = math.rad(45)
+            lArmPitch = math.rad(45)-wave*math.rad(45); lArmRoll = math.rad(-45)
+        elseif activeEmote == "Robot" then
+            local eTime = t - emoteStartTime
+            local snap = math.floor(eTime*5)/5
+            headSpin  = math.sin(snap*3)*0.6
+            rArmPitch = math.rad(90)+math.sin(snap*5)*0.5
+            lArmPitch = math.rad(90)+math.cos(snap*5)*0.5
+             torsoTwist = math.cos(snap*2)*0.3
+        elseif activeEmote == "HeadPlay" then
+            local eTime = t - emoteStartTime
+            local cycle = eTime % 5
+            if cycle < 1 then
+                rArmPitch = math.rad(150)*cycle; rArmRoll = math.rad(-20)*cycle
+            elseif cycle < 2.5 then
+                rArmPitch = math.rad(150)+math.sin(t*15)*0.1
+                headX = 1.2; headY = -1.2+math.sin(t*15)*0.3; headZ = -0.5
+            elseif cycle < 3.5 then
+                local tTime = cycle-2.5
+                rArmPitch = math.rad(150)-math.rad(150)*tTime
+                headX = 1.2*(1-tTime); headY = 4*math.sin(tTime*math.pi)
+                headZ = -0.5*(1-tTime); headSpin = tTime*math.pi*6
+            else
+                rArmPitch = math.rad(135); rArmRoll = math.rad(45)
+                lArmPitch = math.rad(135); lArmRoll = math.rad(-45)
+                headY = math.sin(t*5)*0.1
+            end
+        elseif activeEmote == nil and timeIdle > 10 then
+            local p = timeIdle - 10
+            if p < 5 then
+                headSpin = math.sin(p*2)*0.6
+                 if p > 1 and p < 4 then rArmPitch = math.rad(135)+math.sin(p*12)*0.4; rArmRoll = math.rad(-20) end
+            else
+                timeIdle = 0
+            end
+        end
+    end
+
+    -- 1. Raw Scripted Preset (Code)
+    if type(activePreset) == "function" then
+        local totalTools = countTracked()
+        for tool, data in pairs(tracked) do
+            local h = data.handle
+            if not (h and h.Parent) then
+                untrackAndDestroy(tool)
+            else
+                safePcall(function()
+                    h.Massless = true
+                    h.CanCollide = false
+                    if netlessEnabled and data.netlessAllowed then
+                        h.AssemblyLinearVelocity = netlessVector
+                    end
+                end)
+                
+                local ok, result1, result2 = pcall(activePreset, data.index, totalTools, t, hrp, currentRadiusBoost, currentSize, currentHeight, currentSpeed)
+                
+                if ok and result1 then
+                    if data.alignPos and data.alignRot then
+                        data.alignPos.Position = result1 + Vector3.new(math.random()*0.01-0.005, 0, 0)
+                        data.alignRot.CFrame = result2 or CFrame.new(result1)
+                    end
+                else
+                    warn("OpenViz Custom Preset Error: " .. tostring(result1))
+                    stopVisualizer()
+                    break
+                end
+            end
+        end
+
+    elseif type(activePreset) == "table" and activePreset.Type == "NodeGraph" then
+        local nodeMap  = activePreset._nodeMap
+        local tools    = activePreset.Tools or {}
+        local numSlots = #tools
+        local audioPulse = currentRadiusBoost
+        local toolSlots = {}
+        for i, toolEntry in ipairs(tools) do toolSlots[i] = toolEntry end
+        local memo = {}
+
+        for tool, data in pairs(tracked) do
+            local h = data.handle
+            if not (h and h.Parent) then
+                untrackAndDestroy(tool)
+            else
+                safePcall(function()
+                    h.Massless = true
+                    h.CanCollide = false
+                     if netlessEnabled and data.netlessAllowed then
+                        h.AssemblyLinearVelocity = netlessVector
+                    end
+                end)
+                local tPos, tRot
+                 if numSlots > 0 then
+                    local slotIdx  = ((data.index - 1) % numSlots) + 1
+                    local slotTool = toolSlots[slotIdx]
+                    local boomCF   = getNodeWorldCF(slotTool.ID, t, nodeMap, memo, hrp.CFrame, audioPulse)
+                    local finalPos = boomCF.Position + Vector3.new(0, currentHeight, 0)
+                    tPos = finalPos
+                    tRot = CFrame.new(finalPos) * boomCF.Rotation
+                else
+                     tPos = hrp.Position + Vector3.new(0, currentHeight + 3, 0)
+                    tRot = hrp.CFrame
+                end
+                
+                if data.alignPos and data.alignRot then
+                     data.alignPos.Position = tPos + Vector3.new(math.random()*0.01-0.005, 0, 0)
+                    data.alignRot.CFrame   = tRot
+                end
+            end
+        end
+
+    else
+        for tool, data in pairs(tracked) do
+             local h = data.handle
+            if not (h and h.Parent) then
+                untrackAndDestroy(tool)
+            else
+                safePcall(function()
+                    h.Massless = true
+                     h.CanCollide = false
+                    if netlessEnabled and data.netlessAllowed then
+                        h.AssemblyLinearVelocity = netlessVector
+                    end
+                end)
+                 local tPos, tRot
+
+                if type(activePreset) == "table" and activePreset.r6Clone then
+                    local map = data.index % 7
+                    if map == 0 then map = 7 end
+                     local rootRot      = CFrame.lookAt(clonePos, clonePos + cloneLook)
+                    local upperBodyRot = CFrame.Angles(torsoPitch, torsoTwist, torsoRoll)
+                    local offset = CFrame.new()
+                    if map==1 then offset = CFrame.new(0,0.25+bob+extraBob+extraY,0)*upperBodyRot*CFrame.Angles(0,0,math.rad(180))
+                     elseif map==2 then offset = CFrame.new(0,-0.75+bob+extraBob+extraY,0)*upperBodyRot
+                    elseif map==3 then offset = CFrame.new(headX,2.2+bob+extraBob+extraY+headY,headZ)*upperBodyRot*CFrame.Angles(headTilt,headSpin,0)
+                    elseif map==4 then offset = upperBodyRot*CFrame.new(1.8,1+bob+extraBob+extraY,0)*CFrame.Angles(swing+rArmPitch,0,rArmRoll)*CFrame.new(0,-1.2,0)*CFrame.Angles(0,0,math.rad(90))
+                    elseif map==5 then offset = upperBodyRot*CFrame.new(-1.8,1+bob+extraBob+extraY,0)*CFrame.Angles(-swing+lArmPitch,0,lArmRoll)*CFrame.new(0,-1.2,0)*CFrame.Angles(0,0,math.rad(-90))
+                     elseif map==6 then offset = CFrame.new(0.6,-1.5,0)*CFrame.Angles((isMoving and -swing or -swing*0.5)+rLegPitch,0,rLegRoll)*CFrame.new(0,-1.2,0)*CFrame.Angles(0,0,math.rad(90))
+                    elseif map==7 then offset = CFrame.new(-0.6,-1.5,0)*CFrame.Angles((isMoving and swing or swing*0.5)+lLegPitch,0,lLegRoll)*CFrame.new(0,-1.2,0)*CFrame.Angles(0,0,math.rad(-90))
+                    end
+                    local finalCFrame = rootRot * offset
+                     tPos = finalCFrame.Position
+                    tRot = finalCFrame
+
+                elseif type(activePreset) == "table" and activePreset.wheelClone then
+                    local total = math.max(1, countTracked())
+                    local angle = (math.pi*2/total) * (data.index-1)
+                    local rootRot   = CFrame.lookAt(clonePos, clonePos+cloneLook)
+                                    * CFrame.Angles(0, 0, isMoving and 0 or (math.sin(t*1.5)*0.08))
+                    local centerPos = rootRot * CFrame.new(0, (isMoving and 0 or math.sin(t*3)*0.1)+0.5, 0)
+                    local rollCFrame = centerPos * CFrame.Angles(wheelRollAngle, 0, 0)
+                    local finalCFrame = rollCFrame * CFrame.Angles(angle,0,0)
+                                      * CFrame.new(0, currentSize, 0)
+                                      * CFrame.Angles(0, math.rad(90), 0)
+                    tPos = finalCFrame.Position
+                    tRot = finalCFrame
+
+                else
+                    tPos, tRot = computeTargetCF(data.index, t, hrp)
+                end
+
+                if data.alignPos and data.alignRot then
+                    data.alignPos.Position = tPos + Vector3.new(math.random()*0.01-0.005, 0, 0)
+                     data.alignRot.CFrame   = tRot
+                end
+            end
+        end
+    end
+end)
+
+pcall(function()
+    local currentPlaceId = game.PlaceId
+    local gameName = MarketplaceService:GetProductInfo(currentPlaceId).Name or "This Game"
+    
+    if gameConfigs[currentPlaceId] then
+        Library:Notify{ Title = "OpenViz", Content = "Game: " .. gameName .. " is supported!", Duration = 5 }
+    else
+        Library:Notify{ Title = "OpenViz", Content = "Game: " .. gameName .. " isnt supported but may work!", Duration = 5 }
+    end
+    
+    local last = "14.08.2026 Playlists and bug fixes"
+    Library:Notify{ Title = "OpenViz", Content = "Last update: " .. last, Duration = 5 }
+end)
+
+SaveManager:SetIgnoreIndexes{}--autosave here
+
+local AUTOSAVE_NAME = "AutoSave"
+local AUTOSAVE_INTERVAL = 3
+
+task.spawn(function()
+    while true do
+        task.wait(AUTOSAVE_INTERVAL)
+
+        pcall(function()
+            SaveManager:Save(AUTOSAVE_NAME)
+        end)
+    end
+end)
+
+pcall(function()
+    SaveManager:Load(AUTOSAVE_NAME)
+end)
