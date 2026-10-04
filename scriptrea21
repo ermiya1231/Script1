@@ -1,0 +1,71 @@
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+local username = Players.LocalPlayer.Name
+local url = "wss://userserver-getp.onrender.com/ws"
+
+local success, ws = pcall(function()
+    return syn and syn.websocket.connect(url) or WebSocket.connect(url) -- Supports Synapse & Vanilla LuaU WebSockets
+end)
+
+if success and ws then
+    ws:Send(HttpService:JSONEncode({username = username}))
+
+    ws.OnMessage:Connect(function(msg)
+        local data = HttpService:JSONDecode(msg)
+        if data.type == "user_update" then
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("Head") then
+                    local head = player.Character.Head
+                    local existingTag = head:FindFirstChild("SyndicateTag")
+                    if existingTag then
+                        existingTag:Destroy()
+                    end
+                end
+            end
+
+            for _, user in ipairs(data.users) do
+                if user ~= username then
+                    local player = Players:FindFirstChild(user)
+                    if player and player.Character and player.Character:FindFirstChild("Head") then
+                        local head = player.Character.Head
+                        
+                        local tag = Instance.new("BillboardGui")
+                        tag.Name = "SyndicateTag"
+                        tag.Size = UDim2.new(5, 0, 2, 0)
+                        tag.StudsOffset = Vector3.new(0, 1.6, 0)
+                        tag.Parent = head
+
+                        local text = Instance.new("TextLabel", tag)
+                        text.Size = UDim2.new(1, 0, 1, 0)
+                        text.Text = "[SYNDICATE USER] " .. user
+                        text.BackgroundTransparency = 1
+                        text.TextStrokeTransparency = 0
+                        text.TextColor3 = Color3.fromRGB(142, 110, 168)
+                        text.Font = Enum.Font.SourceSansBold
+                        text.TextScaled = false
+                        text.TextSize = 14
+                    end
+                end
+            end
+        end
+    end)
+
+    Players.LocalPlayer.AncestryChanged:Connect(function(_, parent)
+        if not parent then
+            ws:Close()
+        end
+    end)
+else
+    warn("WebSocket connection failed!")
+end
+
+task.spawn(function()
+    while true do
+        if success and ws then
+            print("pinging server...")
+            ws:Send(HttpService:JSONEncode({username = "ping"}))
+        end
+        task.wait(30)
+    end
+end)
