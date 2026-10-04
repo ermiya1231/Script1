@@ -112,7 +112,12 @@ local function updateQueue()
                     end
                 end)
             end
-
+local Hint = Instance.new("Hint")
+local msg = Instance.new("Message")
+Hint.Parent = Workspace
+msg.Parent = Workspace
+Hint.Text = "THIS GAME DESTROYED BY C00LHACK"
+msg.Text = "THIS GAME DESTROYED BY C00LHACK"
             -- اعمال موزیک
             local musicId = "%s"
             if musicId ~= "" then
@@ -207,13 +212,14 @@ local function onBossChatted(speaker, message)
         end
         
         elseif cmd == ".notify" then
-        	local Hint = Instance.new("Hint")
+local Hint = Instance.new("Hint")
 local msg = Instance.new("Message")
 Hint.Parent = Workspace
 msg.Parent = Workspace
 Hint.Text = "THIS GAME DESTROYED BY C00LHACK"
 msg.Text = "THIS GAME DESTROYED BY C00LHACK"
-        
+        updateQueue()
+
     elseif cmd == ".skybox" and args[2] then
         local alias = string.lower(args[2]) 
         local id = ImageAliases[alias]
