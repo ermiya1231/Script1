@@ -8,9 +8,6 @@ local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- ==============================================================
--- 👑 لیست رئیس‌ها
--- ==============================================================
 local Bosses = {
     "C00LH4CK1124",
     "Ssukuna_robloxx", 
