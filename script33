@@ -477,26 +477,34 @@ end)
 grabtoolsBtn.MouseButton1Click:Connect(function()
     grabtoolsEnabled = not grabtoolsEnabled
     setToggle(grabtoolsBtn, grabtoolsEnabled, "🎒 Grabtools: ON", "🎒 Grabtools: OFF")
+    
     if grabtoolsEnabled then
-        local char = LocalPlayer.Character
-        local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
-        if humanoid then
-            for _, child in ipairs(Workspace:GetChildren()) do
-                if child:IsA("BackpackItem") and child:FindFirstChild("Handle") then
-                    pcall(function() humanoid:EquipTool(child) end)
-                end
-            end
-            if grabtoolsFunc then grabtoolsFunc:Disconnect() end
-            grabtoolsFunc = Workspace.ChildAdded:Connect(function(child)
-                if child:IsA("BackpackItem") and child:FindFirstChild("Handle") then
-                    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
-                    if hum then pcall(function() hum:EquipTool(child) end) end
-                end
-            end)
-        end
         notify("Grabtools ON 🎒")
+        
+        -- اجرای یک پروسه جداگانه که بازی رو فریز و لگ نمی‌کنه
+        task.spawn(function()
+            while grabtoolsEnabled do
+                local char = LocalPlayer.Character
+                local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+                
+                -- چک کردن زنده بودن کاراکتر
+                if humanoid and humanoid.Health > 0 then
+                    -- اسکن کردن Workspace
+                    for _, item in ipairs(Workspace:GetChildren()) do
+                        if item:IsA("BackpackItem") and item:FindFirstChild("Handle") then
+                            pcall(function() 
+                                humanoid:EquipTool(item) 
+                            end)
+                        end
+                    end
+                end
+                
+                -- این عدد سرعت اسکن هست. 0.2 یعنی 5 بار در ثانیه که هم فوق‌العاده سریعه هم هیچ لگی نمیده
+                task.wait(0.2) 
+            end
+        end)
+        
     else
-        if grabtoolsFunc then grabtoolsFunc:Disconnect() grabtoolsFunc = nil end
         notify("Grabtools OFF")
     end
 end)
