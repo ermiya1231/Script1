@@ -1,0 +1,408 @@
+-- ایجاد GUI اصلی
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "LuxuryUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Frame اصلی GUI
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 180, 0, 360)
+frame.Position = UDim2.new(0.5, -90, 0.5, -180)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BackgroundTransparency = 0.15
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 14)
+corner.Parent = frame
+
+-- Drag Bar برای حرکت دادن GUI
+local dragBar = Instance.new("Frame")
+dragBar.Size = UDim2.new(1, 0, 0, 32)
+dragBar.BackgroundTransparency = 0.2
+dragBar.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+dragBar.Parent = frame
+
+local dragCorner = Instance.new("UICorner")
+dragCorner.CornerRadius = UDim.new(0, 14)
+dragCorner.Parent = dragBar
+
+-- عنوان GUI
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -32, 1, 0)
+title.BackgroundTransparency = 1
+title.Text = "پنل دنس 666"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Position = UDim2.new(0, 10, 0, 0)
+title.Parent = dragBar
+
+-- Collapse/Expand button
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 24, 0, 24)
+toggleBtn.Position = UDim2.new(1, -28, 0, 4)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+toggleBtn.BackgroundTransparency = 0.1
+toggleBtn.Text = "▲"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 14
+toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+toggleBtn.BorderSizePixel = 0
+toggleBtn.Parent = dragBar
+
+local crnToggle = Instance.new("UICorner")
+crnToggle.CornerRadius = UDim.new(0, 6)
+crnToggle.Parent = toggleBtn
+
+-- Drag system
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+
+local dragging, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    )
+end
+
+dragBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+dragBar.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        update(input)
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+-- ScrollFrame برای دکمه‌ها
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -14, 1, -40)
+scroll.Position = UDim2.new(0, 7, 0, 35)
+scroll.ScrollBarThickness = 4
+scroll.BackgroundTransparency = 1
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.Parent = frame
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 5)
+layout.Parent = scroll
+
+local buttonHeight = 28
+
+-- جداول مدیریت دکمه‌ها
+local toggleData = {}
+local animationTracks = {}
+
+-- تابع کمکی برای پیدا کردن Humanoid
+local function getHumanoidSafe()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("Humanoid"), char
+end
+
+-- تابع خاموش کردن تمام رقص‌های دیگر
+local function resetAllToggles(exceptName)
+    for name, data in pairs(toggleData) do
+        if name ~= exceptName and data.isActive then
+            data.isActive = false
+            data.button.Text = name.." | خاموش"
+            data.button.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+            if animationTracks[name] then
+                for _, track in ipairs(animationTracks[name]) do
+                    track:Stop()
+                end
+            end
+        end
+    end
+end
+
+-- تابع ساخت دکمه‌های Toggle
+local function createToggleButton(name, animationData, speed)
+    toggleData[name] = {isActive = false}
+    animationTracks[name] = {}
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -6, 0, buttonHeight)
+    btn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+    btn.BackgroundTransparency = 0.1
+    btn.Text = name.." | خاموش"
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    btn.BorderSizePixel = 0
+    btn.Parent = scroll
+    
+    toggleData[name].button = btn
+
+    local crn = Instance.new("UICorner")
+    crn.CornerRadius = UDim.new(0, 6)
+    crn.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        local data = toggleData[name]
+        data.isActive = not data.isActive
+
+        local humanoid, char = getHumanoidSafe()
+
+        if data.isActive then
+            resetAllToggles(name)
+
+            btn.Text = name.." | روشن"
+            btn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+
+            local ids = type(animationData) == "table" and animationData or {animationData}
+            animationTracks[name] = {}
+
+            for _, id in ipairs(ids) do
+                local anim = Instance.new("Animation")
+                anim.AnimationId = id
+                local track = humanoid:LoadAnimation(anim)
+                track.Priority = Enum.AnimationPriority.Action4
+                track.Looped = true
+                table.insert(animationTracks[name], track)
+                track:Play()
+                track:AdjustSpeed(speed)
+            end
+        else
+            btn.Text = name.." | خاموش"
+            btn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+
+            for _, track in ipairs(animationTracks[name]) do
+                track:Stop()
+            end
+        end
+    end)
+end
+
+-- =======================================
+-- ساخت دکمه اختصاصی Michael Jackson Dance
+-- =======================================
+local function createMJButton()
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -6, 0, buttonHeight + 4)
+    btn.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+    btn.Text = "★ MoonWalk ★"
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBlack
+    btn.TextSize = 13
+    btn.BorderSizePixel = 0
+    btn.Parent = scroll
+
+    local crn = Instance.new("UICorner")
+    crn.CornerRadius = UDim.new(0, 6)
+    crn.Parent = btn
+
+    local isPlayingMJ = false
+
+    btn.MouseButton1Click:Connect(function()
+        if isPlayingMJ then return end
+        isPlayingMJ = true
+
+        resetAllToggles()
+
+        local humanoid, char = getHumanoidSafe()
+        local hrp = char:WaitForChild("HumanoidRootPart")
+
+        btn.Text = "در حال اجرا..."
+        btn.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+
+        task.spawn(function()
+            -- ذخیره نورپردازی قبلی بازی
+            local oldClockTime = Lighting.ClockTime
+            local oldFogColor = Lighting.FogColor
+            local oldFogEnd = Lighting.FogEnd
+            local oldAmbient = Lighting.Ambient
+            local oldOutdoorAmbient = Lighting.OutdoorAmbient
+
+            -- تغییر ساعت به نصف شب برای بهتر دیده شدن دیسکو
+            TweenService:Create(Lighting, TweenInfo.new(1.5), {
+                ClockTime = 0,
+                FogColor = Color3.fromRGB(10, 10, 10),
+                FogEnd = 150
+            }):Play()
+
+            -- سیستم نورپردازی دیسکو
+            local discoActive = true
+            task.spawn(function()
+                while discoActive do
+                    local randomColor = Color3.fromRGB(math.random(50, 255), math.random(50, 255), math.random(50, 255))
+                    TweenService:Create(Lighting, TweenInfo.new(0.35, Enum.EasingStyle.Sine), {
+                        Ambient = randomColor,
+                        OutdoorAmbient = randomColor
+                    }):Play()
+                    task.wait(0.35)
+                end
+            end)
+
+            -- 1. ساخت پارتیکل‌های بنفش درخشان
+            local particles = Instance.new("ParticleEmitter")
+            particles.Color = ColorSequence.new(Color3.fromRGB(170, 0, 255))
+            particles.LightEmission = 1
+            particles.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0)})
+            particles.Rate = 120
+            particles.Speed = NumberRange.new(5, 10)
+            particles.Lifetime = NumberRange.new(1, 1.5)
+            particles.SpreadAngle = Vector2.new(360, 360)
+            particles.Parent = hrp
+
+            -- 2. شروع لرزش دوربین خیلی نرم و Smooth با math.noise
+            local shakeName = "MJSmoothShake" .. tostring(math.random(100,999))
+            RunService:BindToRenderStep(shakeName, Enum.RenderPriority.Camera.Value + 1, function()
+                if humanoid then
+                    local t = tick() * 2 -- سرعت لرزش نرم
+                    local intensity = 0.4 -- شدت لرزش (هرچه کمتر، ملایم‌تر)
+                    humanoid.CameraOffset = Vector3.new(
+                        math.noise(t, 1, 1) * intensity,
+                        math.noise(1, t, 1) * intensity,
+                        math.noise(1, 1, t) * intensity
+                    )
+                end
+            end)
+
+            -- 3. پخش آهنگ (ولوم 10)
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://30231584"
+            sound.Volume = 10
+            sound.Parent = hrp
+            sound:Play()
+
+            -- 4. انیمیشن اول (دقیقا 0.2 ثانیه)
+            local anim1 = Instance.new("Animation")
+            anim1.AnimationId = "rbxassetid://182393478"
+            local track1 = humanoid:LoadAnimation(anim1)
+            track1.Priority = Enum.AnimationPriority.Action4
+            track1:Play()
+            task.wait(0.2)
+            track1:Stop()
+
+            -- 5. انیمیشن دوم (سرعت 0.5، بدون لوپ)
+            local anim2 = Instance.new("Animation")
+            anim2.AnimationId = "rbxassetid://186934910"
+            local track2 = humanoid:LoadAnimation(anim2)
+            track2.Priority = Enum.AnimationPriority.Action4
+            track2.Looped = false
+            track2:Play()
+            track2:AdjustSpeed(0.5)
+            track2.Stopped:Wait()
+
+            -- 6. انیمیشن سوم 
+            local anim3 = Instance.new("Animation")
+            anim3.AnimationId = "rbxassetid://79094862"
+            local track3 = humanoid:LoadAnimation(anim3)
+            track3.Priority = Enum.AnimationPriority.Action4
+            track3.Looped = true
+            track3:Play()
+
+            -- ذخیره تنظیمات اصلی راه رفتن
+            local oldSpeed = humanoid.WalkSpeed
+            local oldAutoRotate = humanoid.AutoRotate
+            
+            humanoid.WalkSpeed = 6
+            humanoid.AutoRotate = false 
+
+            local backDir = -hrp.CFrame.LookVector
+            backDir = Vector3.new(backDir.X, 0, backDir.Z).Unit
+
+            local renderName = "MJMoonwalk_"..tostring(math.random(1000,9999))
+            RunService:BindToRenderStep(renderName, Enum.RenderPriority.Character.Value + 1, function()
+                humanoid:Move(backDir, false)
+            end)
+
+            task.wait(3) -- ۳ ثانیه حرکت عقبی
+
+            -- متوقف کردن همه چیز و بازگرداندن به حالت عادی
+            RunService:UnbindFromRenderStep(renderName)
+            RunService:UnbindFromRenderStep(shakeName) -- توقف لرزش دوربین
+            humanoid.CameraOffset = Vector3.new(0, 0, 0) -- ریست کردن دوربین
+            
+            humanoid:Move(Vector3.new(0, 0, 0), false)
+            humanoid.WalkSpeed = oldSpeed
+            humanoid.AutoRotate = oldAutoRotate
+
+            track3:Stop()
+            sound:Destroy()
+            
+            -- قطع کردن تولید پارتیکل و حذف آن بعد از چند ثانیه
+            particles.Enabled = false
+            game.Debris:AddItem(particles, 2)
+
+            -- پایان دادن به حالت دیسکو و برگرداندن نور به حالت اول
+            discoActive = false
+            TweenService:Create(Lighting, TweenInfo.new(2), {
+                ClockTime = oldClockTime,
+                FogColor = oldFogColor,
+                FogEnd = oldFogEnd,
+                Ambient = oldAmbient,
+                OutdoorAmbient = oldOutdoorAmbient
+            }):Play()
+
+            -- فورا دکمه رو به حالت قبل برمیگردونیم
+            btn.Text = "★ MoonWalk ★"
+            btn.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+            isPlayingMJ = false
+        end)
+    end)
+end
+
+-- پیکربندی دکمه‌ها
+local buttonConfigs = {
+    {Name="رقص", AnimId="rbxassetid://75202452138001", Speed=1.6},
+    {Name="روانی", AnimId="rbxassetid://33796059", Speed=99},
+    {Name="چرخش", AnimId="rbxassetid://188632011", Speed=2},
+    {Name="خطای دید", AnimId="rbxassetid://215384594", Speed=22},
+    {Name="MoonDance", AnimId="rbxassetid://27789359", Speed=1.1},
+    {Name="Charleston Dance", AnimId="rbxassetid://429703734", Speed=1.1},
+    {Name="شناور", AnimId="rbxassetid://313762630", Speed=1},
+    {Name="بدون نام", AnimId="rbxassetid://148840371", Speed=14},
+    {Name="راه رفتن", AnimId="rbxassetid://180426354", Speed=1},
+    {Name="Slap", AnimId="rbxassetid://243827693", Speed=10},
+    {Name="خنده", AnimId="rbxassetid://129423131", Speed=1.25},
+    {Name="احترام نظامی", AnimId="rbxassetid://79094862", Speed=1},
+    {Name="روانی 2", AnimId="rbxassetid://184574340", Speed=999},
+    {Name="Dia Delicia", AnimId="rbxassetid://115314801778772", Speed=1},
+    {Name="Aura Crouch", AnimId={"rbxassetid://287325678", "rbxassetid://70439247"}, Speed=1}
+}
+
+-- ساخت دکمه اختصاصی MJ
+createMJButton()
+
+-- ساخت دکمه‌های معمولی
+for _, config in ipairs(buttonConfigs) do
+    createToggleButton(config.Name, config.AnimId, config.Speed)
+end
+
+-- Collapse / Expand GUI
+local collapsed = false
+toggleBtn.MouseButton1Click:Connect(function()
+    if collapsed then
+        scroll.Visible = true
+        frame.Size = UDim2.new(0, 180, 0, 360)
+        toggleBtn.Text = "▲"
+        collapsed = false
+    else
+        scroll.Visible = false
+        frame.Size = UDim2.new(0, 180, 0, 40)
+        toggleBtn.Text = "▼"
+        collapsed = true
+    end
+end)
