@@ -1,10 +1,6 @@
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local Lighting = game:GetService("Lighting")
-local SoundService = game:GetService("SoundService")
 local TextChatService = game:GetService("TextChatService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -16,28 +12,6 @@ local Bosses = {
     "Sskidv9",
     "Sskidv7"
 }
-
-local ImageAliases = {
-    ["c00lkidd"] = "158118263",
-    ["c00lhack"] = "122714132204276",
-    ["sskid"] = "74603125473840"
-}
-
-local MusicAliases = {
-    ["c00lkidd"] = {id = "104181508980428", volume = 10, pitch = 0.22},
-    ["theme"] = {id = "85390427326662", volume = 10, pitch = 0.16}
-}
-
-local isTimeLocked = false
-local timeConnection = nil
-
-local function enableTimeLock()
-    isTimeLocked = true
-    if timeConnection then timeConnection:Disconnect() end
-    timeConnection = RunService.Heartbeat:Connect(function()
-        Lighting.ClockTime = 12
-    end)
-end
 
 local function onBossChatted(speaker, message)
     local args = string.split(message, " ")
@@ -72,102 +46,6 @@ local function onBossChatted(speaker, message)
             elseif ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") then
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(textToSay, "All")
             end
-        end
-        
-    elseif cmd == ".notify" and args[2] == "sskid" then
-        local Hint = Instance.new("Hint")
-        local msg = Instance.new("Message")
-        Hint.Parent = Workspace
-        msg.Parent = Workspace
-        Hint.Text = "Team Sskid join today"
-        msg.Text = "Sskid hacked this game"
-
-    elseif cmd == ".notify" then
-        local Hint = Instance.new("Hint")
-        local msg = Instance.new("Message")
-        Hint.Parent = Workspace
-        msg.Parent = Workspace
-        Hint.Text = "THIS GAME DESTROYED BY C00LHACK"
-        msg.Text = "THIS GAME DESTROYED BY C00LHACK"
-
-    elseif cmd == ".skybox" and args[2] then
-        local alias = string.lower(args[2]) 
-        local id = ImageAliases[alias]
-        
-        if id then
-            enableTimeLock()
-            
-            for _, v in ipairs(Lighting:GetChildren()) do
-                if v:IsA("Atmosphere") or v:IsA("Clouds") or v:IsA("PostEffect") then
-                    pcall(function() v:Destroy() end)
-                end
-            end
-            
-            local sky = Lighting:FindFirstChildOfClass("Sky")
-            if not sky then
-                sky = Instance.new("Sky")
-                sky.Parent = Lighting
-            end
-            local textureUrl = "rbxassetid://" .. id
-            sky.SkyboxBk = textureUrl
-            sky.SkyboxDn = textureUrl
-            sky.SkyboxFt = textureUrl
-            sky.SkyboxLf = textureUrl
-            sky.SkyboxRt = textureUrl
-            sky.SkyboxUp = textureUrl
-        end
-        
-    elseif cmd == ".music" and args[2] then
-        local alias = string.lower(args[2])
-        local musicData = MusicAliases[alias]
-        
-        if musicData then
-            local sound = SoundService:FindFirstChild("AdminMusic")
-            if not sound then
-                sound = Instance.new("Sound")
-                sound.Name = "AdminMusic"
-                sound.Parent = SoundService
-            end
-            sound.SoundId = "rbxassetid://" .. musicData.id
-            sound.Volume = musicData.volume
-            sound.Looped = true
-            sound.PlaybackSpeed = musicData.pitch
-            sound:Play()
-        end
-        
-    elseif cmd == ".decalspam" and args[2] then
-        local alias = string.lower(args[2])
-        local id = ImageAliases[alias]
-        
-        if id then
-            local textureUrlStr = "rbxassetid://" .. id
-            local faces = {
-                Enum.NormalId.Front, Enum.NormalId.Back, 
-                Enum.NormalId.Top, Enum.NormalId.Bottom, 
-                Enum.NormalId.Left, Enum.NormalId.Right
-            }
-            
-            for _, obj in pairs(Workspace:GetDescendants()) do
-                if obj:IsA("BasePart") then
-                    for _, face in ipairs(faces) do
-                        local decal = Instance.new("Decal")
-                        decal.Texture = textureUrlStr
-                        decal.Face = face
-                        decal.Parent = obj
-                    end
-                end
-            end
-
-            Workspace.DescendantAdded:Connect(function(obj)
-                if obj:IsA("BasePart") then
-                    for _, face in ipairs(faces) do
-                        local decal = Instance.new("Decal")
-                        decal.Texture = textureUrlStr
-                        decal.Face = face
-                        decal.Parent = obj
-                    end
-                end
-            end)
         end
     end
 end
