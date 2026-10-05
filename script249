@@ -1,196 +1,302 @@
--- ESP Unanchored Parts (Ultra Bright Neon Gold - Centered & 1 Min Scan - No Players)
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
--- 1. دریافت امن CoreGui با pcall
-local CoreGui
-pcall(function()
-    CoreGui = game:GetService("CoreGui")
-end)
+-- متغیرهای اصلی
+local espEnabled = false
+local tracersEnabled = false
+local trackedParts = {}
+local trackerCount = 0
 
--- 2. پیدا کردن بهترین مکان برای ساخت پنل
-local TargetParent
-if gethui then
-    TargetParent = gethui()
-elseif CoreGui and not RunService:IsStudio() then
-    TargetParent = CoreGui
-else
-    TargetParent = LocalPlayer:WaitForChild("PlayerGui")
-end
-
--- حذف پنل قبلی
-if TargetParent:FindFirstChild("ESPUnanchoredGui") then
-    TargetParent.ESPUnanchoredGui:Destroy()
-end
-
--- ایجاد ScreenGui
+-------------------------------------------------------------------------
+-- 1. رابط کاربری (UI) با استایل دارک سایبرپانک و RGB
+-------------------------------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ESPUnanchoredGui"
+ScreenGui.Name = "NetworkOwnerPanel"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = TargetParent
+pcall(function() ScreenGui.Parent = CoreGui end)
+if ScreenGui.Parent == nil then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- فریم اصلی پنل
-local Frame = Instance.new("Frame")
-Frame.Name = "MainFrame"
-Frame.Size = UDim2.new(0, 220, 0, 130)
-Frame.AnchorPoint = Vector2.new(0.5, 0.5) 
-Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
-Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-Frame.BorderSizePixel = 0
-Frame.Active = true
-Frame.Draggable = true
-Frame.Parent = ScreenGui
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 250, 0, 165)
+MainFrame.Position = UDim2.new(0.5, -125, 0.8, -80)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
-UICorner.Parent = Frame
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
 
--- استروک طلایی دور پنل
 local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(255, 215, 0)
-UIStroke.Thickness = 1.5
-UIStroke.Parent = Frame
+UIStroke.Color = Color3.fromRGB(0, 255, 128)
+UIStroke.Thickness = 2
+UIStroke.Parent = MainFrame
 
--- عنوان
 local Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundTransparency = 1
-Title.Text = "ESP Unanchored"
-Title.TextColor3 = Color3.fromRGB(255, 215, 0)
-Title.TextSize = 15
-Title.Font = Enum.Font.GothamBold
-Title.Parent = Frame
+Title.Text = "Unanchored & Network ESP"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.Code
+Title.TextSize = 16
+Title.Parent = MainFrame
 
--- وضعیت تعداد
+-- دکمه ESP
+local EspBtn = Instance.new("TextButton")
+EspBtn.Size = UDim2.new(0, 180, 0, 35)
+EspBtn.Position = UDim2.new(0.5, -90, 0, 35)
+EspBtn.BackgroundColor3 = Color3.fromRGB(255, 40, 40)
+EspBtn.Text = "ESP: OFF"
+EspBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+EspBtn.Font = Enum.Font.GothamBold
+EspBtn.TextSize = 14
+EspBtn.Parent = MainFrame
+Instance.new("UICorner", EspBtn).CornerRadius = UDim.new(0, 6)
+
+-- دکمه Tracers
+local TracerBtn = Instance.new("TextButton")
+TracerBtn.Size = UDim2.new(0, 180, 0, 35)
+TracerBtn.Position = UDim2.new(0.5, -90, 0, 80)
+TracerBtn.BackgroundColor3 = Color3.fromRGB(255, 40, 40)
+TracerBtn.Text = "Tracers: OFF"
+TracerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TracerBtn.Font = Enum.Font.GothamBold
+TracerBtn.TextSize = 14
+TracerBtn.Parent = MainFrame
+Instance.new("UICorner", TracerBtn).CornerRadius = UDim.new(0, 6)
+
 local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Name = "StatusLabel"
-StatusLabel.Size = UDim2.new(1, 0, 0, 20)
-StatusLabel.Position = UDim2.new(0, 0, 0, 32)
+StatusLabel.Size = UDim2.new(1, 0, 0, 25)
+StatusLabel.Position = UDim2.new(0, 0, 1, -25)
 StatusLabel.BackgroundTransparency = 1
-StatusLabel.Text = "تعداد: 0"
-StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
-StatusLabel.TextSize = 12
-StatusLabel.Font = Enum.Font.Gotham
-StatusLabel.Parent = Frame
+StatusLabel.Text = "Tracking: 0 Parts"
+StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+StatusLabel.Font = Enum.Font.Code
+StatusLabel.TextSize = 13
+StatusLabel.Parent = MainFrame
 
--- دکمه Toggle
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Name = "ToggleButton"
-ToggleButton.Size = UDim2.new(0.85, 0, 0, 38)
-ToggleButton.Position = UDim2.new(0.075, 0, 0.6, 0)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
-ToggleButton.Text = "ESP: OFF"
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.TextSize = 14
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.Parent = Frame
-
-local ButtonCorner = Instance.new("UICorner")
-ButtonCorner.CornerRadius = UDim.new(0, 8)
-ButtonCorner.Parent = ToggleButton
-
--- متغیرها
-local isEnabled = false
-local activeHighlights = {}
-
--- پاکسازی ESPها
-local function clearESP()
-    for _, hl in pairs(activeHighlights) do
-        if hl and hl.Parent then
-            hl:Destroy()
-        end
+-- افکت RGB دور پنل
+task.spawn(function()
+    local hue = 0
+    while RunService.Heartbeat:Wait() do
+        hue = (hue + 1) % 360
+        UIStroke.Color = Color3.fromHSV(hue / 360, 1, 1)
     end
-    table.clear(activeHighlights)
-    StatusLabel.Text = "تعداد: 0"
-end
+end)
 
--- به‌روزرسانی و اعمال ESP
-local function updateESP()
-    if not isEnabled then return end
-    
-    local currentParts = {}
-    local count = 0
-    
-    -- گرفتن لیست کاراکتر تمام پلیرهای داخل بازی برای فیلتر کردن
-    local playerCharacters = {}
+-- سیستم Drag نرم
+local dragging, dragInput, dragStart, startPos
+Title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+Title.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        TweenService:Create(MainFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}):Play()
+    end
+end)
+
+-------------------------------------------------------------------------
+-- 2. توابع اسکنر و سیستم مانیتورینگ Anchored
+-------------------------------------------------------------------------
+local espFolder = Instance.new("Folder")
+espFolder.Name = "LiveNetworkESP"
+espFolder.Parent = ScreenGui
+
+local function isPlayerCharacter(instance)
     for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character then
-            playerCharacters[player.Character] = true
-        end
+        if player.Character and instance:IsDescendantOf(player.Character) then return true end
     end
-
-    for _, item in ipairs(Workspace:GetDescendants()) do
-        if item:IsA("BasePart") and not item.Anchored and not (item.AssemblyRootPart and item.AssemblyRootPart.Anchored) then
-            
-            -- بررسی سریع اینکه آیا این پارت مال هیچ پلیری هست یا نه
-            local isPlayerPart = false
-            local ancestor = item.Parent
-            while ancestor and ancestor ~= Workspace do
-                if playerCharacters[ancestor] then
-                    isPlayerPart = true
-                    break
-                end
-                ancestor = ancestor.Parent
-            end
-
-            -- اگر پارت مال پلیرها نبود، ESP را اعمال کن
-            if not isPlayerPart then
-                currentParts[item] = true
-                count = count + 1
-                
-                if not activeHighlights[item] then
-                    local hl = Instance.new("Highlight")
-                    hl.Name = "MaxBright_Unanchored_ESP"
-                    hl.Adornee = item
-                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                    
-                    hl.FillColor = Color3.fromRGB(255, 255, 0)
-                    hl.FillTransparency = 0.15
-                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                    hl.OutlineTransparency = 0
-                    
-                    hl.Parent = item 
-                    activeHighlights[item] = hl
-                end
-            end
-        end
-    end
-
-    -- حذف از قطعات پاک شده، انکور شده یا مال پلیرها
-    for part, hl in pairs(activeHighlights) do
-        if not currentParts[part] or not part.Parent then
-            if hl then hl:Destroy() end
-            activeHighlights[part] = nil
-        end
-    end
-
-    StatusLabel.Text = "تعداد: " .. tostring(count)
+    return false
 end
 
--- عملکرد کلیک
-ToggleButton.MouseButton1Click:Connect(function()
-    isEnabled = not isEnabled
+local function isEffectivelyAnchored(part)
+    if part.Anchored then return true end
+    local root = part.AssemblyRootPart
+    if root and root.Anchored then return true end
+    return false
+end
+
+local function checkOwnership(part)
+    if type(isnetworkowner) == "function" then return isnetworkowner(part) end
+    return part.ReceiveAge == 0
+end
+
+local function addESP(part)
+    if not espEnabled then return end
+    if not part:IsA("BasePart") then return end
+    if isEffectivelyAnchored(part) then return end
+    if isPlayerCharacter(part) then return end
+    if trackedParts[part] then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Adornee = part
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0.1
+    highlight.Parent = espFolder
     
-    if isEnabled then
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(45, 180, 85)
-        ToggleButton.Text = "ESP: ON"
-        updateESP()
+    local tracer = nil
+    if Drawing then
+        tracer = Drawing.new("Line")
+        tracer.Visible = false
+        tracer.Thickness = 1.5
+        tracer.Transparency = 0.7
+    end
+    
+    trackedParts[part] = { Highlight = highlight, Tracer = tracer }
+    trackerCount += 1
+    StatusLabel.Text = "Tracking: " .. tostring(trackerCount) .. " Parts"
+end
+
+-- سیستم هوشمند مانیتورینگ تغییر وضعیت پارت‌ها
+local function monitorPart(part)
+    if not part:IsA("BasePart") then return end
+    
+    -- جلوگیری از لگ با اطمینان از اینکه به هر پارت فقط یکبار ایونت وصل می‌شود
+    if part:GetAttribute("ESP_Hooked") then
+        if espEnabled then addESP(part) end
+        return 
+    end
+    part:SetAttribute("ESP_Hooked", true)
+    
+    -- این بخش کلیدی است: گوش دادن به لحظه‌ای که پارت Unanchored می‌شود
+    part:GetPropertyChangedSignal("Anchored"):Connect(function()
+        if espEnabled and not isEffectivelyAnchored(part) then
+            addESP(part)
+        end
+    end)
+    
+    -- چک کردن اولیه برای زمانی که اسکن اجرا می‌شود
+    if espEnabled then addESP(part) end
+end
+
+local function clearESP()
+    for part, data in pairs(trackedParts) do
+        data.Highlight:Destroy()
+        if data.Tracer then data.Tracer:Remove() end
+    end
+    table.clear(trackedParts)
+    trackerCount = 0
+    StatusLabel.Text = "Tracking: 0 Parts"
+end
+
+local function initialScan()
+    local count = 0
+    -- وقتی دکمه رو میزنید تمام مپ رو فقط اسکن نمیکنه، بلکه مانیتور هم میکنه
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if not espEnabled then break end
+        monitorPart(obj)
+        count += 1
+        if count % 300 == 0 then task.wait() end 
+    end
+end
+
+-------------------------------------------------------------------------
+-- 3. ایونت‌ها و لوپ آپدیت 
+-------------------------------------------------------------------------
+EspBtn.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    if espEnabled then
+        EspBtn.Text = "ESP: ON"
+        TweenService:Create(EspBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 255, 80)}):Play()
+        task.spawn(initialScan)
     else
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
-        ToggleButton.Text = "ESP: OFF"
+        EspBtn.Text = "ESP: OFF"
+        TweenService:Create(EspBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(255, 40, 40)}):Play()
         clearESP()
     end
 end)
 
+TracerBtn.MouseButton1Click:Connect(function()
+    tracersEnabled = not tracersEnabled
+    if tracersEnabled then
+        TracerBtn.Text = "Tracers: ON"
+        TweenService:Create(TracerBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(180, 40, 255)}):Play() 
+    else
+        TracerBtn.Text = "Tracers: OFF"
+        TweenService:Create(TracerBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(255, 40, 40)}):Play()
+        for _, data in pairs(trackedParts) do
+            if data.Tracer then data.Tracer.Visible = false end
+        end
+    end
+end)
+
+-- وقتی پارت جدیدی ساخته می‌شود (حتی اگر ESP خاموش باشد) به آن شنونده وصل می‌کند تا آماده باشد
+workspace.DescendantAdded:Connect(function(obj)
+    task.defer(function() monitorPart(obj) end)
+end)
+
+-- اسکن اولیه تمام پارت‌هایی که از قبل در مپ بوده‌اند برای مانیتورینگ آماده‌باش
 task.spawn(function()
-    while true do
-        task.wait(1)
-        if isEnabled then
-            updateESP()
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            monitorPart(obj)
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not espEnabled then return end
+    
+    local screenSize = Camera.ViewportSize
+    local originPos = Vector2.new(screenSize.X / 2, screenSize.Y)
+    
+    for part, data in pairs(trackedParts) do
+        local highlight = data.Highlight
+        local tracer = data.Tracer
+        
+        -- اگر پارت در حین بازی Anchored شد، ESP آن خاموش می‌شود
+        if not part or not part.Parent or isEffectivelyAnchored(part) then
+            highlight:Destroy()
+            if tracer then tracer:Remove() end
+            trackedParts[part] = nil
+            trackerCount -= 1
+            StatusLabel.Text = "Tracking: " .. tostring(trackerCount) .. " Parts"
+            continue
+        end
+        
+        local isOwned = checkOwnership(part)
+        local targetColor
+        if isOwned then
+            targetColor = Color3.fromRGB(0, 255, 128)
+            highlight.FillColor = targetColor
+            highlight.OutlineColor = Color3.fromRGB(0, 255, 255)
+        else
+            targetColor = Color3.fromRGB(255, 20, 20)
+            highlight.FillColor = targetColor
+            highlight.OutlineColor = Color3.fromRGB(255, 80, 0)
+        end
+        
+        if tracer then
+            if tracersEnabled then
+                local vector, onScreen = Camera:WorldToViewportPoint(part.Position)
+                if onScreen then
+                    tracer.From = originPos
+                    tracer.To = Vector2.new(vector.X, vector.Y)
+                    tracer.Color = targetColor
+                    tracer.Visible = true
+                else
+                    tracer.Visible = false
+                end
+            else
+                tracer.Visible = false
+            end
         end
     end
 end)
