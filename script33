@@ -374,12 +374,13 @@ end)
 
 -- 1) Fire ClickDetectors
 fireBtn.MouseButton1Click:Connect(function()
-    pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/clickdetect"))()
-    end)
+for _, d in ipairs(workspace:GetDescendants()) do
+		if d:IsA("ClickDetector") then
+			pcall(function() fireclickdetector(d) end)
+		end
+	end
     notify("🔥 ClickDetectors Fired!")
 end)
-
 glitchtoolBtn.MouseButton1Click:Connect(function()
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
