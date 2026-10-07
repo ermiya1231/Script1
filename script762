@@ -1,0 +1,1040 @@
+--============================================================
+-- NEON://TOUCH  v2.5-fixed  ·  CanTouch Override Panel
+-- FIX: ignore Tools inside ANY Character or Backpack
+--      (local player + all other players, hand + backpack)
+--      + auto-prune targets that get picked up
+--============================================================
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService     = game:GetService("TweenService")
+
+local LP = Players.LocalPlayer
+local WS = game:GetService("Workspace")
+
+--------------------------------------------------------------------
+-- CONFIG
+--------------------------------------------------------------------
+local CFG = {
+    SCAN_INTERVAL   = 0.1,    -- seconds between sweep ticks (as requested)
+    SCAN_BUDGET_MS  = 4,      -- max CPU time used per tick  (anti-lag)
+    IGNORE_RECHECK  = 5,      -- seconds before a rejected part is re-tested
+    ESP_REFRESH     = 0.2,    -- highlight re-budget interval
+    ESP_BUDGET      = 28,     -- Roblox renders a maximum of 31 Highlights
+    TRACER_MAX      = 45,
+    TRACER_LABELS   = true,
+    MAX_DIST        = 2000,
+    SKIP_LOCAL_CHAR = true,
+    -- ✅ FIX v2.5: inventory filter switches
+    IGNORE_PLAYER_TOOLS = true, -- ignore Tools in ANY character/backpack
+    PRUNE_EQUIPPED  = true,     -- auto-remove picked-up targets from Registry
+    EQUIP_DELAY     = 0.08,
+    KEY_SCANNER = Enum.KeyCode.X,
+    KEY_ESP     = Enum.KeyCode.C,
+    KEY_TRACER  = Enum.KeyCode.V,
+    KEY_EQUIP   = Enum.KeyCode.B,
+    KEY_RESET   = Enum.KeyCode.R,
+    KEY_HIDE    = Enum.KeyCode.Delete,
+}
+
+local COL = {
+    bg      = Color3.fromRGB(9, 13, 20),
+    panel   = Color3.fromRGB(14, 20, 31),
+    row     = Color3.fromRGB(17, 25, 38),
+    rowHov  = Color3.fromRGB(24, 36, 54),
+    line    = Color3.fromRGB(29, 51, 80),
+    cyan    = Color3.fromRGB(0, 229, 255),
+    magenta = Color3.fromRGB(255, 46, 136),
+    amber   = Color3.fromRGB(255, 176, 32),
+    lime    = Color3.fromRGB(155, 255, 90),
+    danger  = Color3.fromRGB(255, 84, 112),
+    text    = Color3.fromRGB(220, 232, 246),
+    dim     = Color3.fromRGB(109, 134, 163),
+}
+
+--------------------------------------------------------------------
+-- STATE
+--------------------------------------------------------------------
+local State = { scanner = false, esp = false, tracers = false }
+
+local Registry   = {}   -- [part] = { original = false, tool = Tool?, t = clock }
+local Watch      = {}   -- [part] = RBXScriptConnection (CanTouch watcher)
+local Highlights = {}   -- [part] = Highlight
+local ToolCache  = {}   -- [Tool] = true  (tools holding a no-touch part)
+local Ignored    = setmetatable({}, { __mode = "k" })  -- rejected parts cache
+
+local Pending, PendingSet = {}, {}   -- priority queue for new instances
+local SortedTargets = {}             -- parts sorted by distance (ESP + tracers)
+
+local Stats = { scanned = 0, flips = 0, reflips = 0, tools = 0, ignored = 0, cycles = 0 }
+
+local Sweep = { list = {}, cursor = 1 }
+
+--------------------------------------------------------------------
+-- SMALL UTILITIES
+--------------------------------------------------------------------
+local function new(class, props, children)
+    local o = Instance.new(class)
+    if props then for k, v in pairs(props) do o[k] = v end end
+    if children then for _, c in ipairs(children) do c.Parent = o end end
+    return o
+end
+
+local function guiParent()
+    local ok, res = pcall(function() return gethui() end)
+    if ok and res then return res end
+    ok, res = pcall(function() return game:GetService("CoreGui") end)
+    if ok and res then return res end
+    return LP:WaitForChild("PlayerGui")
+end
+
+local function camera()
+    return WS.CurrentCamera
+end
+
+local function lerpColor(a, b, t)
+    return Color3.new(a.R + (b.R - a.R) * t, a.G + (b.G - a.G) * t, a.B + (b.B - a.B) * t)
+end
+
+--------------------------------------------------------------------
+-- FILTER LOGIC  (the heart of the scanner)
+--------------------------------------------------------------------
+local function findToolAncestor(obj)
+    local anc = obj.Parent
+    while anc do
+        if anc:IsA("BackpackItem") then return anc end
+        anc = anc.Parent
+    end
+    return nil
+end
+
+-- ✅ FIX v2.5: true if part lives in ANY player's Character or Backpack
+-- Covers: your hand, your backpack, enemies' hands, enemies' backpacks.
+local function isInPlayerInventory(obj)
+    if not obj or not obj.Parent then return false end
+
+    -- 0) Fast path: YOUR character + YOUR backpack
+    if LP.Character then
+        local ok, res = pcall(function()
+            return obj:IsDescendantOf(LP.Character)
+        end)
+        if ok and res then return true end
+    end
+    local myBackpack = LP:FindFirstChildOfClass("Backpack")
+    if myBackpack then
+        local ok, res = pcall(function()
+            return obj:IsDescendantOf(myBackpack)
+        end)
+        if ok and res then return true end
+    end
+
+    -- 1) Walk ancestors: ANY Backpack / Player / Character-Model
+    local cur = obj.Parent
+    while cur and cur ~= game do
+        local okC, cls = pcall(function() return cur.ClassName end)
+        if okC and (cls == "Backpack" or cls == "Player") then
+            return true
+        end
+        if cur:IsA("Model") then
+            if cur:FindFirstChildOfClass("Humanoid") then
+                return true
+            end
+            local ok, plr = pcall(function()
+                return Players:GetPlayerFromCharacter(cur)
+            end)
+            if ok and plr then return true end
+        end
+        cur = cur.Parent
+    end
+    return false
+end
+
+local function hasTouchInterest(part)
+    local ok, child = pcall(function() return part:FindFirstChildOfClass("TouchInterest") end)
+    if ok and child then return true end
+    ok, child = pcall(function() return part:FindFirstChild("TouchInterest") end)
+    if ok and child then return true end
+    for _, c in ipairs(part:GetChildren()) do
+        if c.ClassName == "TouchInterest" then return true end
+    end
+    return false
+end
+
+-- returns: valid(bool), tool(Tool?)
+local function evaluate(part)
+    if part.CanTouch == true then return false, nil end
+    -- ✅ FIX: Tools in ANY character/backpack (even yours) are NOT targets
+    if CFG.IGNORE_PLAYER_TOOLS and isInPlayerInventory(part) then
+        return false, nil
+    end
+    local tool = findToolAncestor(part)
+    if tool then return true, tool end                 -- Tool exception
+    if hasTouchInterest(part) then return true, nil end -- needs TouchInterest
+    return false, nil                                   -- ignored
+end
+
+--------------------------------------------------------------------
+-- GUI BUILD
+--------------------------------------------------------------------
+local Screen = new("ScreenGui", {
+    Name = "NeonTouch_Panel",
+    ResetOnSpawn = false,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+    DisplayOrder = 99999,
+    IgnoreGuiInset = true,
+})
+Screen.Parent = guiParent()
+
+local Main = new("Frame", {
+    Name = "Main",
+    Size = UDim2.fromOffset(440, 402),
+    Position = UDim2.new(0.5, -220, 0.5, -201),
+    BackgroundColor3 = COL.bg,
+    BorderSizePixel = 0,
+    ClipsDescendants = true,
+    Parent = Screen,
+}, {
+    new("UICorner", { CornerRadius = UDim.new(0, 5) }),
+    new("UIStroke", { Color = COL.line, Thickness = 1, Transparency = 0.15 }),
+})
+
+-- header -----------------------------------------------------------
+local Header = new("Frame", {
+    Name = "Header", Size = UDim2.new(1, 0, 0, 46), Position = UDim2.new(0, 0, 0, 0),
+    BackgroundColor3 = COL.panel, BorderSizePixel = 0, LayoutOrder = 1, Parent = Main,
+})
+local Accent = new("Frame", {
+    Size = UDim2.new(1, 0, 0, 2), Position = UDim2.new(0, 0, 1, -2),
+    BackgroundColor3 = COL.cyan, BorderSizePixel = 0, Parent = Header,
+}, { new("UIGradient", { Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, COL.cyan),
+        ColorSequenceKeypoint.new(0.5, COL.magenta),
+        ColorSequenceKeypoint.new(1, COL.amber) }) }) })
+do
+    local g = Accent:FindFirstChildOfClass("UIGradient")
+    g.Offset = Vector2.new(2, 0)
+    local tw = TweenInfo.new(3.4, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1, false, 0)
+    TweenService:Create(g, tw, { Offset = Vector2.new(-2, 0) }):Play()
+end
+
+new("TextLabel", {
+    Size = UDim2.fromOffset(240, 20), Position = UDim2.new(0, 14, 0, 8),
+    BackgroundTransparency = 1, Font = Enum.Font.Code, TextSize = 15,
+    TextColor3 = COL.cyan, TextXAlignment = Enum.TextXAlignment.Left,
+    Text = "HACKER  TOUCH", Parent = Header,
+})
+new("TextLabel", {
+    Size = UDim2.fromOffset(240, 12), Position = UDim2.new(0, 14, 0, 27),
+    BackgroundTransparency = 1, Font = Enum.Font.Code, TextSize = 9,
+    TextColor3 = COL.dim, TextXAlignment = Enum.TextXAlignment.Left,
+    Text = "CANTOUCH OVERRIDE PANEL  ·  v2.5 INV-FILTER", Parent = Header,
+})
+
+local HideBtn = new("TextButton", {
+    Size = UDim2.fromOffset(26, 20), Position = UDim2.new(1, -60, 0, 13),
+    BackgroundColor3 = COL.row, BorderSizePixel = 0, Text = "—",
+    Font = Enum.Font.Code, TextSize = 12, TextColor3 = COL.dim,
+    AutoButtonColor = false, Parent = Header,
+})
+local CloseBtn = new("TextButton", {
+    Size = UDim2.fromOffset(26, 20), Position = UDim2.new(1, -32, 0, 13),
+    BackgroundColor3 = COL.row, BorderSizePixel = 0, Text = "X",
+    Font = Enum.Font.Code, TextSize = 11, TextColor3 = COL.dim,
+    AutoButtonColor = false, Parent = Header,
+})
+
+-- toast ------------------------------------------------------------
+local Toast = new("TextLabel", {
+    Name = "Toast", Size = UDim2.new(1, 0, 0, 18), Position = UDim2.new(0, 0, 0, 46),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.Code, TextSize = 10, TextColor3 = COL.lime,
+    TextXAlignment = Enum.TextXAlignment.Left, Text = " SYSTEM READY",
+    LayoutOrder = 2, Parent = Main,
+})
+
+-- body -------------------------------------------------------------
+local Body = new("Frame", {
+    Name = "Body", Size = UDim2.new(1, 0, 0, 276), Position = UDim2.new(0, 0, 0, 64),
+    BackgroundTransparency = 1, LayoutOrder = 3, Parent = Main,
+}, {
+    new("UIPadding", {
+        PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12),
+        PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 8) }),
+    new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 7) }),
+})
+
+local Rows = {}
+
+local function makeToggleRow(id, title, desc, color, keyName, order)
+    local row = new("TextButton", {
+        Name = "Row_" .. id, Size = UDim2.new(1, 0, 0, 48),
+        BackgroundColor3 = COL.row, BorderSizePixel = 0, Text = "",
+        AutoButtonColor = false, LayoutOrder = order, Parent = Body,
+    }, {
+        new("UICorner", { CornerRadius = UDim.new(0, 4) }),
+        new("UIStroke", { Color = COL.line, Thickness = 1, Transparency = 0.4 }),
+    })
+    local stroke = row:FindFirstChildOfClass("UIStroke")
+
+    new("Frame", {
+        Size = UDim2.fromOffset(3, 26), Position = UDim2.new(0, 8, 0.5, -13),
+        BackgroundColor3 = color, BorderSizePixel = 0, Parent = row,
+    })
+    new("TextLabel", {
+        Size = UDim2.fromOffset(210, 17), Position = UDim2.new(0, 19, 0, 8),
+        BackgroundTransparency = 1, Font = Enum.Font.GothamBold, TextSize = 13,
+        TextColor3 = COL.text, TextXAlignment = Enum.TextXAlignment.Left,
+        Text = title, Parent = row,
+    })
+    new("TextLabel", {
+        Size = UDim2.fromOffset(210, 13), Position = UDim2.new(0, 19, 0, 26),
+        BackgroundTransparency = 1, Font = Enum.Font.Code, TextSize = 9,
+        TextColor3 = COL.dim, TextXAlignment = Enum.TextXAlignment.Left,
+        Text = desc, Parent = row,
+    })
+    local status = new("TextLabel", {
+        Size = UDim2.fromOffset(46, 14), Position = UDim2.new(1, -152, 0.5, -7),
+        BackgroundTransparency = 1, Font = Enum.Font.Code, TextSize = 10,
+        TextColor3 = COL.dim, TextXAlignment = Enum.TextXAlignment.Right,
+        Text = "IDLE", Parent = row,
+    })
+    local badge = new("TextLabel", {
+        Size = UDim2.fromOffset(24, 18), Position = UDim2.new(1, -100, 0.5, -9),
+        BackgroundColor3 = COL.bg, BorderSizePixel = 0, Font = Enum.Font.Code,
+        TextSize = 10, TextColor3 = COL.dim, Text = keyName, Parent = row,
+    }, { new("UIStroke", { Color = COL.line, Thickness = 1 }) })
+
+    local track = new("Frame", {
+        Size = UDim2.fromOffset(42, 19), Position = UDim2.new(1, -62, 0.5, -9),
+        BackgroundColor3 = Color3.fromRGB(29, 42, 61), BorderSizePixel = 0, Parent = row,
+    }, { new("UICorner", { CornerRadius = UDim.new(0, 2) }),
+         new("UIStroke", { Color = COL.line, Thickness = 1 }) })
+    local tStroke = track:FindFirstChildOfClass("UIStroke")
+    local knob = new("Frame", {
+        Size = UDim2.fromOffset(13, 13), Position = UDim2.new(0, 3, 0.5, -6),
+        BackgroundColor3 = Color3.fromRGB(91, 115, 145), BorderSizePixel = 0, Parent = track,
+    }, { new("UICorner", { CornerRadius = UDim.new(0, 2) }) })
+
+    local tw = TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    Rows[id] = {
+        frame = row, color = color,
+        set = function(on)
+            TweenService:Create(knob, tw, { Position = UDim2.new(0, on and 26 or 3, 0.5, -6) }):Play()
+            TweenService:Create(knob, tw, { BackgroundColor3 = on and color or Color3.fromRGB(91, 115, 145) }):Play()
+            TweenService:Create(track, tw, { BackgroundColor3 = on and lerpColor(COL.row, color, 0.22) or Color3.fromRGB(29, 42, 61) }):Play()
+            TweenService:Create(tStroke, tw, { Color = on and color or COL.line }):Play()
+            TweenService:Create(stroke, tw, { Color = on and lerpColor(COL.line, color, 0.55) or COL.line }):Play()
+            TweenService:Create(badge, tw, { TextColor3 = on and color or COL.dim }):Play()
+            status.Text = on and "ACTIVE" or "IDLE"
+            TweenService:Create(status, tw, { TextColor3 = on and color or COL.dim }):Play()
+        end,
+    }
+
+    row.MouseEnter:Connect(function()
+        TweenService:Create(row, tw, { BackgroundColor3 = COL.rowHov }):Play()
+    end)
+    row.MouseLeave:Connect(function()
+        TweenService:Create(row, tw, { BackgroundColor3 = COL.row }):Play()
+    end)
+    return row
+end
+
+local function makeActionButton(id, title, sub, color, order)
+    local btn = new("TextButton", {
+        Name = "Btn_" .. id, Size = UDim2.new(1, 0, 0, 36),
+        BackgroundColor3 = Color3.fromRGB(15, 26, 41), BorderSizePixel = 0,
+        Text = "", AutoButtonColor = false, LayoutOrder = order, Parent = Body,
+    }, {
+        new("UICorner", { CornerRadius = UDim.new(0, 4) }),
+        new("UIStroke", { Color = Color3.fromRGB(35, 64, 94), Thickness = 1 }),
+    })
+    local stroke = btn:FindFirstChildOfClass("UIStroke")
+    new("TextLabel", {
+        Size = UDim2.fromOffset(250, 16), Position = UDim2.new(0, 12, 0.5, -8),
+        BackgroundTransparency = 1, Font = Enum.Font.GothamBold, TextSize = 12,
+        TextColor3 = COL.text, TextXAlignment = Enum.TextXAlignment.Left,
+        Text = title, Parent = btn,
+    })
+    new("TextLabel", {
+        Size = UDim2.fromOffset(120, 14), Position = UDim2.new(1, -150, 0.5, -7),
+        BackgroundTransparency = 1, Font = Enum.Font.Code, TextSize = 9,
+        TextColor3 = COL.dim, TextXAlignment = Enum.TextXAlignment.Right,
+        Text = sub, Parent = btn,
+    })
+    local tw = TweenInfo.new(0.2, Enum.EasingStyle.Quad)
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(stroke, tw, { Color = color }):Play()
+        TweenService:Create(btn, tw, { BackgroundColor3 = lerpColor(COL.row, color, 0.12) }):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(stroke, tw, { Color = Color3.fromRGB(35, 64, 94) }):Play()
+        TweenService:Create(btn, tw, { BackgroundColor3 = Color3.fromRGB(15, 26, 41) }):Play()
+    end)
+    return btn
+end
+
+makeToggleRow("scanner", "SCANNER", "CanTouch sweep · 0.1s · chunked", COL.cyan,    "X", 1)
+makeToggleRow("esp",     "ESP",     "highlight flipped parts",         COL.magenta, "C", 2)
+makeToggleRow("tracers", "TRACERS", "screen lines · needs ESP",        COL.amber,   "V", 3)
+local EquipBtn = makeActionButton("equip", "EQUIP NO-TOUCH TOOLS", "Equip Tool",  COL.lime,   4)
+local ResetBtn = makeActionButton("reset", "RESET TO DEFAULT",     "restore all",    COL.danger, 5)
+
+-- stats bar --------------------------------------------------------
+local StatsBar = new("Frame", {
+    Name = "Stats", Size = UDim2.new(1, 0, 0, 46), Position = UDim2.new(0, 0, 0, 340),
+    BackgroundColor3 = Color3.fromRGB(10, 17, 28), BorderSizePixel = 0,
+    LayoutOrder = 4, Parent = Main,
+}, {
+    new("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }),
+    new("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        VerticalAlignment = Enum.VerticalAlignment.Center,
+        Padding = UDim.new(0, 6) }),
+    new("UIStroke", { Color = COL.line, Thickness = 1, Transparency = 0.5 }),
+})
+
+local StatLabels = {}
+local function makeStat(id, name, color)
+    local cell = new("Frame", {
+        Size = UDim2.fromOffset(78, 32), BackgroundTransparency = 1, Parent = StatsBar,
+    })
+    new("TextLabel", {
+        Size = UDim2.new(1, 0, 0, 10), BackgroundTransparency = 1, Font = Enum.Font.Code,
+        TextSize = 8, TextColor3 = COL.dim, Text = name, Parent = cell,
+    })
+    StatLabels[id] = new("TextLabel", {
+        Size = UDim2.new(1, 0, 0, 18), Position = UDim2.new(0, 0, 0, 12),
+        BackgroundTransparency = 1, Font = Enum.Font.Code, TextSize = 14,
+        TextColor3 = color, Text = "0", Parent = cell,
+    })
+end
+makeStat("cycles",  "CYCLES",  COL.cyan)
+makeStat("targets", "TARGETS", COL.magenta)
+makeStat("tools",   "TOOLS",   COL.amber)
+makeStat("ign",     "IGNORED", COL.dim)
+makeStat("fps",     "FPS",     COL.lime)
+
+new("TextLabel", {
+    Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, 386),
+    BackgroundTransparency = 1, Font = Enum.Font.Code,
+    TextSize = 9, TextColor3 = Color3.fromRGB(65, 89, 122), LayoutOrder = 5,
+    Text = "DRAG HEADER  ·  [DEL] HIDE  ·  NEON://TOUCH", Parent = Main,
+})
+
+-- corner brackets --------------------------------------------------
+local bracketH = {
+    UDim2.new(0, 0, 0, 0),    UDim2.new(1, -16, 0, 0),
+    UDim2.new(0, 0, 1, -2),   UDim2.new(1, -16, 1, -2),
+}
+local bracketV = {
+    UDim2.new(0, 0, 0, 0),    UDim2.new(1, -2, 0, 0),
+    UDim2.new(0, 0, 1, -16),  UDim2.new(1, -2, 1, -16),
+}
+for _, pos in ipairs(bracketH) do
+    new("Frame", { Size = UDim2.fromOffset(16, 2), Position = pos,
+        BackgroundColor3 = COL.cyan, BackgroundTransparency = 0.5,
+        BorderSizePixel = 0, ZIndex = 6, Parent = Main })
+end
+for _, pos in ipairs(bracketV) do
+    new("Frame", { Size = UDim2.fromOffset(2, 16), Position = pos,
+        BackgroundColor3 = COL.cyan, BackgroundTransparency = 0.5,
+        BorderSizePixel = 0, ZIndex = 6, Parent = Main })
+end
+
+-- toast helper -----------------------------------------------------
+local toastTw = TweenInfo.new(0.25, Enum.EasingStyle.Quad)
+local function toast(msg, color)
+    Toast.Text = " " .. msg
+    Toast.TextColor3 = color or COL.lime
+    Toast.TextTransparency = 0
+    TweenService:Create(Toast, toastTw, { TextTransparency = 0 }):Play()
+    task.delay(2.6, function()
+        TweenService:Create(Toast, TweenInfo.new(0.8), { TextTransparency = 0.45 }):Play()
+    end)
+end
+
+local function updateStats()
+    local targets = 0
+    for _ in pairs(Registry) do targets += 1 end
+    StatLabels.cycles.Text  = tostring(Stats.cycles)
+    StatLabels.targets.Text = tostring(targets)
+    StatLabels.tools.Text   = tostring(Stats.tools)
+    StatLabels.ign.Text     = tostring(Stats.ignored)
+end
+
+--------------------------------------------------------------------
+-- FLIP / WATCH
+--------------------------------------------------------------------
+local function watchPart(part)
+    if Watch[part] then return end
+    local conn
+    conn = part:GetPropertyChangedSignal("CanTouch"):Connect(function()
+        if not Registry[part] then
+            conn:Disconnect(); Watch[part] = nil; return
+        end
+        if part.CanTouch == false then
+            Stats.reflips += 1
+            pcall(function() part.CanTouch = true end)   -- re-flip instantly
+        end
+    end)
+    Watch[part] = conn
+end
+
+local function flip(part, tool)
+    local ok = pcall(function() part.CanTouch = true end)
+    if not ok then Ignored[part] = os.clock(); return end
+    Registry[part] = { original = false, tool = tool, t = os.clock() }
+    Stats.flips += 1
+    if tool and not ToolCache[tool] then
+        ToolCache[tool] = true
+        Stats.tools += 1
+    end
+    watchPart(part)
+end
+
+local function processObject(obj)
+    if obj == nil or obj.Parent == nil then return end
+    if not obj:IsA("BasePart") then return end
+    if Registry[obj] then return end
+    local cached = Ignored[obj]
+    local recheck = false
+    if cached then
+        if (os.clock() - cached) < CFG.IGNORE_RECHECK then return end
+        Ignored[obj] = nil
+        recheck = true            -- already counted once, don't inflate the stat
+    end
+    -- ✅ FIX v2.5: skip ANY player inventory (hand + backpack, you + others)
+    -- Silently ignored: doesn't pollute scanned/ignored stats.
+    if CFG.IGNORE_PLAYER_TOOLS and isInPlayerInventory(obj) then return end
+    if CFG.SKIP_LOCAL_CHAR and LP.Character and obj:IsDescendantOf(LP.Character) then return end
+
+    Stats.scanned += 1
+    local valid, tool = evaluate(obj)
+    if not valid then
+        if obj.CanTouch == false then
+            Ignored[obj] = os.clock()
+            if not recheck then Stats.ignored += 1 end
+        end
+        return
+    end
+    flip(obj, tool)
+end
+
+--------------------------------------------------------------------
+-- SCANNER LOOP  (0.1s tick + time budget)
+--------------------------------------------------------------------
+local function queue(obj)
+    if PendingSet[obj] then return end
+    PendingSet[obj] = true
+    Pending[#Pending + 1] = obj
+end
+
+local function scanTick()
+    local deadline = os.clock() + (CFG.SCAN_BUDGET_MS / 1000)
+
+    while #Pending > 0 do                      -- new instances first
+        local obj = table.remove(Pending)
+        PendingSet[obj] = nil
+        processObject(obj)
+        if os.clock() > deadline then return end
+    end
+
+    local guard = 0
+    while os.clock() < deadline and guard < 40000 do
+        guard += 1
+        if Sweep.cursor > #Sweep.list then
+            Sweep.list = WS:GetDescendants()
+            Sweep.cursor = 1
+            Stats.cycles += 1
+            if #Sweep.list == 0 then break end
+        end
+        local obj = Sweep.list[Sweep.cursor]
+        Sweep.cursor += 1
+        if obj then processObject(obj) end
+    end
+end
+
+local scanAcc = 0
+RunService.Heartbeat:Connect(function(dt)
+    if not State.scanner then return end
+    scanAcc += dt
+    if scanAcc >= CFG.SCAN_INTERVAL then
+        scanAcc = 0
+        local ok, err = pcall(scanTick)
+        if not ok then warn("[NEON://TOUCH] sweep error: " .. tostring(err)) end
+    end
+end)
+
+WS.DescendantAdded:Connect(function(obj)
+    if State.scanner then queue(obj) end
+end)
+
+-- prune dead entries (cheap, 1Hz)
+task.spawn(function()
+    while true do
+        task.wait(1)
+        for part, rec in pairs(Registry) do
+            if part.Parent == nil then
+                Registry[part] = nil
+                local conn = Watch[part]
+                if conn then conn:Disconnect(); Watch[part] = nil end
+                local hl = Highlights[part]
+                if hl then hl:Destroy(); Highlights[part] = nil end
+            -- ✅ FIX v2.5: part entered someone's hand/backpack after
+            -- being registered (e.g. you picked it up) -> restore + drop
+            elseif CFG.PRUNE_EQUIPPED and isInPlayerInventory(part) then
+                pcall(function() part.CanTouch = rec.original end)
+                Registry[part] = nil
+                local conn2 = Watch[part]
+                if conn2 then conn2:Disconnect(); Watch[part] = nil end
+                local hl2 = Highlights[part]
+                if hl2 then hl2:Destroy(); Highlights[part] = nil end
+            elseif rec.tool and rec.tool.Parent == nil then
+                rec.tool = nil
+            end
+        end
+        for tool in pairs(ToolCache) do
+            if tool.Parent == nil then ToolCache[tool] = nil end
+        end
+    end
+end)
+
+--------------------------------------------------------------------
+-- ESP
+--------------------------------------------------------------------
+local function espRefresh()
+    local cam = camera()
+    if not cam then return end
+    local camPos = cam.CFrame.Position
+    local clock = os.clock()
+    local pulse = 0.52 + math.sin(clock * 3) * 0.12
+
+    local list = {}
+    for part in pairs(Registry) do
+        -- ✅ FIX v2.5: belt-and-suspenders — never draw inventory parts
+        -- (prune loop removes them within 1s; this hides them instantly)
+        if part.Parent
+        and not (CFG.IGNORE_PLAYER_TOOLS and isInPlayerInventory(part)) then
+            local ok, pos = pcall(function() return part.Position end)
+            if ok then
+                local d = (pos - camPos).Magnitude
+                if d <= CFG.MAX_DIST then
+                    list[#list + 1] = { part = part, d = d }
+                end
+            end
+        end
+    end
+    table.sort(list, function(a, b) return a.d < b.d end)
+
+    SortedTargets = {}
+    local keep = {}
+    for i = 1, math.min(#list, CFG.ESP_BUDGET) do
+        SortedTargets[#SortedTargets + 1] = list[i].part
+        keep[list[i].part] = true
+    end
+
+    for part, hl in pairs(Highlights) do
+        if not keep[part] or part.Parent == nil then
+            hl:Destroy(); Highlights[part] = nil
+        else
+            hl.FillTransparency = pulse
+        end
+    end
+    for _, part in ipairs(SortedTargets) do
+        if not Highlights[part] and part.Parent then
+            local hl = Instance.new("Highlight")
+            hl.Name = "NT_ESP"
+            hl.Adornee = part
+            hl.FillColor = COL.cyan
+            hl.OutlineColor = COL.magenta
+            hl.FillTransparency = pulse
+            hl.OutlineTransparency = 0.05
+            hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            hl.Parent = part
+            Highlights[part] = hl
+        end
+    end
+    updateStats()
+end
+
+local function clearEsp()
+    for part, hl in pairs(Highlights) do hl:Destroy() end
+    Highlights = {}
+end
+
+--------------------------------------------------------------------
+-- TRACERS  (Drawing library, with a 3D neon fallback)
+--------------------------------------------------------------------
+local DrawLib = nil
+pcall(function() DrawLib = Drawing end)
+local HasDrawing = (type(DrawLib) == "table" or type(DrawLib) == "userdata")
+    and DrawLib.new ~= nil
+
+local lines, texts = {}, {}
+local function getLine(i)
+    local l = lines[i]
+    if not l then
+        l = Drawing.new("Line")
+        l.Thickness = 1.4
+        l.Transparency = 1
+        lines[i] = l
+    end
+    return l
+end
+local function getText(i)
+    local t = texts[i]
+    if not t then
+        t = Drawing.new("Text")
+        t.Size = 12
+        t.Font = 2
+        t.Outline = true
+        t.Center = false
+        texts[i] = t
+    end
+    return t
+end
+
+-- 3D fallback pool
+local TracerFolder = nil
+local beams = {}
+local function getBeam(i)
+    if not TracerFolder then
+        TracerFolder = new("Folder", { Name = "NT_Tracers", Parent = WS })
+    end
+    local b = beams[i]
+    if not b then
+        b = Instance.new("Part")
+        b.Name = "NT_Line"
+        b.Anchored = true
+        b.CanCollide = false
+        b.CanTouch = false
+        b.CanQuery = false
+        b.Material = Enum.Material.Neon
+        b.Transparency = 0.35
+        b.Parent = TracerFolder
+        beams[i] = b
+    end
+    return b
+end
+
+local function clearDrawings()
+    for _, l in ipairs(lines) do l.Visible = false end
+    for _, t in ipairs(texts) do t.Visible = false end
+    for _, b in ipairs(beams) do b.Transparency = 1 end
+end
+
+local function drawTracers()
+    local cam = camera()
+    if not cam then return end
+
+    if HasDrawing then
+        local vp = cam.ViewportSize
+        local from = Vector2.new(vp.X * 0.5, vp.Y)
+        local camPos = cam.CFrame.Position
+        local used, usedText = 0, 0
+
+        for i = 1, #SortedTargets do
+            if used >= CFG.TRACER_MAX then break end
+            local part = SortedTargets[i]
+            if part and part.Parent then
+                local pos, onScreen = cam:WorldToViewportPoint(part.Position)
+                if onScreen and pos.Z > 0 then
+                    used += 1
+                    local l = getLine(used)
+                    local d = (part.Position - camPos).Magnitude
+                    local t = math.clamp(1 - (d / CFG.MAX_DIST), 0.12, 1)
+                    l.Visible = true
+                    l.From = from
+                    l.To = Vector2.new(pos.X, pos.Y)
+                    l.Color = lerpColor(COL.magenta, COL.cyan, t)
+                    l.Transparency = 0.3 + 0.6 * t
+                    l.Thickness = 1 + t * 1.4
+
+                    if CFG.TRACER_LABELS and usedText < 14 then
+                        usedText += 1
+                        local tx = getText(usedText)
+                        local nm = part.Name
+                        if #nm > 14 then nm = nm:sub(1, 14) end
+                        tx.Visible = true
+                        tx.Position = Vector2.new(pos.X + 7, pos.Y - 9)
+                        tx.Text = string.format("%s  %dm", nm, math.floor(d))
+                        tx.Color = lerpColor(COL.magenta, COL.cyan, t)
+                        tx.Transparency = 0.85
+                    end
+                end
+            end
+        end
+        for i = used + 1, #lines do lines[i].Visible = false end
+        for i = usedText + 1, #texts do texts[i].Visible = false end
+    else
+        local camPos = cam.CFrame.Position
+        local used = 0
+        for i = 1, #SortedTargets do
+            if used >= CFG.TRACER_MAX then break end
+            local part = SortedTargets[i]
+            if part and part.Parent then
+                used += 1
+                local b = getBeam(used)
+                local target = part.Position
+                local dir = target - camPos
+                local mag = dir.Magnitude
+                b.Size = Vector3.new(0.12, 0.12, mag)
+                b.CFrame = CFrame.lookAt(camPos, target) * CFrame.new(0, 0, -mag / 2)
+                b.Color = lerpColor(COL.magenta, COL.cyan, math.clamp(1 - mag / CFG.MAX_DIST, 0.1, 1))
+                b.Transparency = 0.45
+            end
+        end
+        for i = used + 1, #beams do beams[i].Transparency = 1 end
+    end
+end
+
+--------------------------------------------------------------------
+-- MODULE SWITCHES
+--------------------------------------------------------------------
+local setScanner, setEsp, setTracers, resetAll, equipNoTouchTools
+
+setScanner = function(on)
+    State.scanner = on
+    Rows.scanner.set(on)
+    if on then
+        scanAcc = CFG.SCAN_INTERVAL          -- fire a tick immediately
+        Sweep.list = {}
+        Sweep.cursor = 1
+        toast("SCANNER ONLINE · SWEEPING EVERY 0.1s", COL.cyan)
+    else
+        toast("SCANNER OFFLINE", COL.dim)
+    end
+end
+
+setEsp = function(on)
+    State.esp = on
+    Rows.esp.set(on)
+    if on then
+        espRefresh()
+        toast("ESP ONLINE · HIGHLIGHT BUDGET " .. CFG.ESP_BUDGET, COL.magenta)
+    else
+        clearEsp()
+        SortedTargets = {}
+        clearDrawings()
+        if State.tracers then setTracers(false) end
+        toast("ESP OFFLINE", COL.dim)
+    end
+end
+
+setTracers = function(on)
+    if on and not State.esp then
+        setEsp(true)
+        toast("TRACERS ONLINE · AUTO-ENABLED ESP", COL.amber)
+    else
+        toast(on and "TRACERS ONLINE" or "TRACERS OFFLINE", on and COL.amber or COL.dim)
+    end
+    State.tracers = on
+    Rows.tracers.set(on)
+    if not on then clearDrawings() end
+end
+
+equipNoTouchTools = function()
+    local char = LP.Character
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not hum or not root then
+        toast("NO CHARACTER / HUMANOID", COL.danger)
+        return
+    end
+
+    local function toolWasNoTouch(tool)
+        if ToolCache[tool] then return true end
+        for _, d in ipairs(tool:GetDescendants()) do
+            if d:IsA("BasePart") then
+                local rec = Registry[d]
+                if rec and rec.original == false then return true end
+                if d.CanTouch == false then return true end
+            end
+        end
+        return false
+    end
+
+    local candidates, seen = {}, {}
+    for tool in pairs(ToolCache) do
+        -- ✅ FIX v2.5: never re-equip tools already in someone's inventory
+        if tool.Parent and not seen[tool]
+        and not (CFG.IGNORE_PLAYER_TOOLS and isInPlayerInventory(tool)) then
+            seen[tool] = true
+            candidates[#candidates + 1] = tool
+        end
+    end
+    for _, d in ipairs(WS:GetDescendants()) do          -- catch un-scanned tools
+        -- ✅ FIX v2.5: skip character-held tools (they live in Workspace!)
+        if d:IsA("BackpackItem") and d.Parent and d.Parent ~= char and not seen[d] then
+            if not (CFG.IGNORE_PLAYER_TOOLS and isInPlayerInventory(d)) then
+                seen[d] = true
+                if toolWasNoTouch(d) then candidates[#candidates + 1] = d end
+            end
+        end
+    end
+
+    if #candidates == 0 then
+        toast("NO NO-TOUCH TOOLS FOUND", COL.dim)
+        return
+    end
+
+    task.spawn(function()
+        toast("EQUIPPING " .. #candidates .. " TOOL(S)...", COL.lime)
+        local done = 0
+        for _, tool in ipairs(candidates) do
+            if tool:IsA("BackpackItem") and tool.Parent then
+                local handle = tool:FindFirstChild("Handle")
+                if not handle then handle = tool:FindFirstChildWhichIsA("BasePart") end
+                if handle and handle:IsA("BasePart") then
+                    pcall(function()
+                        handle.CanCollide = false
+                        handle.CFrame = root.CFrame * CFrame.new(0, 0, -2.2)
+                    end)
+                end
+                local ok = pcall(function() hum:EquipTool(tool) end)
+                if ok then done += 1 end
+                task.wait(CFG.EQUIP_DELAY)
+            end
+        end
+        toast("EQUIPPED " .. done .. " / " .. #candidates .. " TOOLS", COL.lime)
+    end)
+end
+
+resetAll = function()
+    -- 1) modules off first so nothing re-flips while we restore
+    if State.tracers then setTracers(false) end
+    if State.esp then setEsp(false) end
+    if State.scanner then setScanner(false) end
+
+    -- 2) kill watchers BEFORE restoring values
+    for part, conn in pairs(Watch) do conn:Disconnect() end
+    Watch = {}
+
+    -- 3) destroy highlights / lines
+    clearEsp()
+    clearDrawings()
+    SortedTargets = {}
+
+    -- 4) restore original CanTouch values
+    local restored = 0
+    for part, rec in pairs(Registry) do
+        if part.Parent then
+            local ok = pcall(function() part.CanTouch = rec.original end)
+            if ok then restored += 1 end
+        end
+    end
+
+    -- 5) wipe memory + stats
+    Registry, ToolCache, Ignored = {}, {}, setmetatable({}, { __mode = "k" })
+    Sweep.list, Sweep.cursor = {}, 1
+    Pending, PendingSet = {}, {}
+    Stats.scanned, Stats.flips, Stats.reflips, Stats.tools, Stats.ignored, Stats.cycles = 0, 0, 0, 0, 0, 0
+    StatLabels.fps.Text = "0"
+    updateStats()
+    toast("RESET COMPLETE · " .. restored .. " PART(S) RESTORED", COL.lime)
+end
+
+--------------------------------------------------------------------
+-- ESP / TRACER / UI DRIVERS
+--------------------------------------------------------------------
+task.spawn(function()
+    while true do
+        task.wait(CFG.ESP_REFRESH)
+        if State.esp then espRefresh() end
+    end
+end)
+
+local tracerAcc = 0
+RunService.RenderStepped:Connect(function(dt)
+    if State.tracers and State.esp then
+        if HasDrawing then
+            drawTracers()
+        else
+            tracerAcc += dt
+            if tracerAcc >= 0.05 then tracerAcc = 0; drawTracers() end
+        end
+    end
+end)
+
+-- fps meter (1Hz, no cost)
+local frames, fpsAcc = 0, 0
+RunService.RenderStepped:Connect(function(dt)
+    frames += 1
+    fpsAcc += dt
+    if fpsAcc >= 1 then
+        StatLabels.fps.Text = tostring(math.floor(frames / fpsAcc))
+        frames, fpsAcc = 0, 0
+    end
+end)
+
+--------------------------------------------------------------------
+-- INPUT : row clicks, action buttons, keybinds, dragging
+--------------------------------------------------------------------
+Rows.scanner.frame.MouseButton1Click:Connect(function() setScanner(not State.scanner) end)
+Rows.esp.frame.MouseButton1Click:Connect(function() setEsp(not State.esp) end)
+Rows.tracers.frame.MouseButton1Click:Connect(function() setTracers(not State.tracers) end)
+EquipBtn.MouseButton1Click:Connect(equipNoTouchTools)
+ResetBtn.MouseButton1Click:Connect(resetAll)
+
+local hidden = false
+local function toggleHide()
+    hidden = not hidden
+    local target = hidden and UDim2.fromOffset(440, 46) or UDim2.fromOffset(440, 402)
+    TweenService:Create(Main, TweenInfo.new(0.28, Enum.EasingStyle.Quad), { Size = target }):Play()
+end
+HideBtn.MouseButton1Click:Connect(toggleHide)
+CloseBtn.MouseButton1Click:Connect(function()
+    resetAll()
+    TweenService:Create(Main, TweenInfo.new(0.25), { Size = UDim2.fromOffset(440, 0) }):Play()
+    task.delay(0.3, function()
+        Screen:Destroy()
+        for _, l in ipairs(lines) do pcall(function() l:Remove() end) end
+        for _, t in ipairs(texts) do pcall(function() t:Remove() end) end
+        if TracerFolder then TracerFolder:Destroy() end
+    end)
+end)
+
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if UserInputService:GetFocusedTextBox() then return end
+    local kc = input.KeyCode
+    if kc == CFG.KEY_SCANNER then setScanner(not State.scanner)
+    elseif kc == CFG.KEY_ESP then setEsp(not State.esp)
+    elseif kc == CFG.KEY_TRACER then setTracers(not State.tracers)
+    elseif kc == CFG.KEY_EQUIP then equipNoTouchTools()
+    elseif kc == CFG.KEY_RESET then resetAll()
+    elseif kc == CFG.KEY_HIDE then toggleHide()
+    end
+end)
+
+-- drag
+local dragging, dragInput, dragStart, startPos
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = Main.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if not dragging then return end
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch then
+        local d = input.Position - dragStart
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X,
+                                  startPos.Y.Scale, startPos.Y.Offset + d.Y)
+    end
+end)
+
+-- boot animation
+Main.Size = UDim2.fromOffset(440, 0)
+task.wait(0.05)
+TweenService:Create(Main, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    { Size = UDim2.fromOffset(440, 402) }):Play()
+updateStats()
+toast("TOUCH v2.5 LOADED · INV-FILTER ON · [X] SCANNER · [C] ESP · [V] TRACERS", COL.cyan)
