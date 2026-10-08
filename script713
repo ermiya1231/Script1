@@ -1,0 +1,836 @@
+-- ============================================================
+-- ⚡ UNIVERSAL HITBOX & ESP REMAKE v3.2 [HRP MASTER ENGINE + NO-FREEZE]
+-- Remake by C00LHACK | v3.2: Clean HumanoidRootPart Engine + Walk-Freeze Fix
+-- ============================================================
+
+if getgenv()._UniversalHitboxCleanup and type(getgenv()._UniversalHitboxCleanup) == "function" then
+    pcall(getgenv()._UniversalHitboxCleanup)
+end
+
+local Players      = game:GetService("Players")
+local RunService   = game:GetService("RunService")
+local UIS          = game:GetService("UserInputService")
+local SoundService = game:GetService("SoundService")
+local TS           = game:GetService("TweenService")
+local CoreGui      = game:GetService("CoreGui")
+local LocalPlayer  = Players.LocalPlayer
+local Camera       = workspace.CurrentCamera
+local HasDrawing   = (type(Drawing) == "table" and type(Drawing.new) == "function")
+
+local Connections = {}
+local function trackConn(conn)
+    table.insert(Connections, conn)
+    return conn
+end
+
+-- ============================================================
+--  CONFIG & STATE
+-- ============================================================
+getgenv().HBE = false
+
+local Config = {
+    Size             = Vector3.new(15, 15, 15),
+    Color            = Color3.fromRGB(255, 40, 40),
+    Transparency     = 0.75,
+    CanCollide       = false,
+    TeamCheck        = false,
+    ESP              = false,
+    ESPColor         = Color3.fromRGB(0, 210, 255),
+    ESPRange         = 600,
+    ESPBoxes         = true,
+    ESPName          = true,
+    ESPHealth        = true,
+    ESPDist          = true,
+    ESPTracers       = false,
+    ESPTracerColor   = Color3.fromRGB(255, 230, 0),
+    SpeedEnabled     = false,
+    WalkSpeed        = 16,
+    Noclip           = false,
+    InfJump          = false,
+    Fly              = false,
+    FlySpeed         = 50,
+    FlyKeys          = {W=false, A=false, S=false, D=false, Space=false, LeftShift=false},
+}
+
+-- ============================================================
+--  SOUNDS
+-- ============================================================
+local function makeSound(id, vol)
+    local s = Instance.new("Sound")
+    s.SoundId = id
+    s.Volume = vol or 0.35
+    pcall(function() s.Parent = SoundService end)
+    return s
+end
+local SClick  = makeSound("rbxassetid://138567614125924", 0.3)
+local SToggle = makeSound("rbxassetid://6042053626", 0.3)
+local function sClick()  pcall(function() SClick:Play()  end) end
+local function sToggle() pcall(function() SToggle:Play() end) end
+
+local function getHitboxPart(char)
+    if not char then return nil end
+    return char:FindFirstChild("HumanoidRootPart")
+        or char:FindFirstChild("Torso")
+        or char:FindFirstChild("UpperTorso")
+end
+
+-- ============================================================
+--  HITBOX ENGINE v3.2 (Clean HumanoidRootPart Dedicated)
+--  - فقط روی HumanoidRootPart اعمال می‌شود تا از باگ‌های مفاصل و لیمب‌ها جلوگیری شود
+--  - جلوگیری از فریز شدن پلیرها با setIfDiff و عدم دستکاری Massless
+--  - اجرای نرم با Heartbeat و تراتل 10Hz
+-- ============================================================
+local original = setmetatable({}, { __mode = "k" }) -- part -> props
+local modified = setmetatable({}, { __mode = "k" }) -- part -> true
+
+local function setIfDiff(part, prop, val)
+    if part[prop] ~= val then part[prop] = val end
+end
+
+local function restorePart(part)
+    local o = original[part]
+    if o and part and part.Parent then
+        pcall(function()
+            setIfDiff(part, "Size", o.Size)
+            setIfDiff(part, "Transparency", o.Transparency)
+            setIfDiff(part, "Color", o.Color)
+            setIfDiff(part, "CanCollide", o.CanCollide)
+            setIfDiff(part, "Material", o.Material)
+        end)
+    end
+    original[part] = nil
+    modified[part] = nil
+end
+
+local function expandPart(part)
+    if not original[part] then
+        original[part] = {
+            Size         = part.Size,
+            Transparency = part.Transparency,
+            Color        = part.Color,
+            CanCollide   = part.CanCollide,
+            Material     = part.Material,
+        }
+    end
+    pcall(function()
+        setIfDiff(part, "Size", Config.Size)
+        setIfDiff(part, "Transparency", Config.Transparency)
+        setIfDiff(part, "Color", Config.Color)
+        setIfDiff(part, "CanCollide", Config.CanCollide)
+        setIfDiff(part, "Material", Enum.Material.Neon)
+    end)
+    modified[part] = true
+end
+
+local function processPlayer(p)
+    if p == LocalPlayer then return end
+    local char = p.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local alive = hum and hum.Health > 0
+    local myTeam = LocalPlayer.Team
+    local isTeammate = Config.TeamCheck and myTeam ~= nil and p.Team == myTeam
+
+    local hrp = getHitboxPart(char)
+    if hrp and hrp:IsA("BasePart") then
+        if getgenv().HBE and alive and not isTeammate then
+            expandPart(hrp)
+        elseif modified[hrp] then
+            restorePart(hrp)
+        end
+    end
+end
+
+local function restoreAll()
+    for part in pairs(modified) do restorePart(part) end
+end
+
+local function forceUpdateHitboxes()
+    if not getgenv().HBE then restoreAll() return end
+    for _, p in ipairs(Players:GetPlayers()) do processPlayer(p) end
+end
+
+local acc = 0
+trackConn(RunService.Heartbeat:Connect(function(dt)
+    if not getgenv().HBE then return end
+    acc = acc + dt
+    if acc < 0.1 then return end -- 10 بار در ثانیه
+    acc = 0
+    for _, p in ipairs(Players:GetPlayers()) do processPlayer(p) end
+end))
+
+local function hookPlayerCharacter(player)
+    local function onChar(char)
+        local hum = char:WaitForChild("Humanoid", 4)
+        if hum then
+            trackConn(hum.Died:Connect(function()
+                local hrp = getHitboxPart(char)
+                if hrp and modified[hrp] then restorePart(hrp) end
+            end))
+        end
+    end
+    if player.Character then task.spawn(onChar, player.Character) end
+    trackConn(player.CharacterAdded:Connect(onChar))
+end
+for _, p in ipairs(Players:GetPlayers()) do
+    if p ~= LocalPlayer then hookPlayerCharacter(p) end
+end
+trackConn(Players.PlayerAdded:Connect(hookPlayerCharacter))
+trackConn(Players.PlayerRemoving:Connect(function(player)
+    if player.Character then
+        local hrp = getHitboxPart(player.Character)
+        if hrp and modified[hrp] then restorePart(hrp) end
+    end
+end))
+
+-- ============================================================
+--  ESP ENGINE
+-- ============================================================
+local espData = {}
+
+local function removeESP(player)
+    local data = espData[player]
+    if not data then return end
+    if data.conn then data.conn:Disconnect() end
+    for _, obj in pairs(data.drawings or {}) do pcall(function() obj:Remove() end) end
+    espData[player] = nil
+end
+
+local function createESP(player)
+    if player == LocalPlayer or not HasDrawing then return end
+    if espData[player] then removeESP(player) end
+
+    local drawings = {
+        box = Drawing.new("Square"), nameTag = Drawing.new("Text"),
+        healthBg = Drawing.new("Square"), healthBar = Drawing.new("Square"),
+        distTag = Drawing.new("Text"), tracer = Drawing.new("Line"),
+    }
+    drawings.box.Thickness = 1.5; drawings.box.Filled = false
+    drawings.nameTag.Size = 13; drawings.nameTag.Center = true; drawings.nameTag.Outline = true
+    drawings.healthBg.Filled = true; drawings.healthBg.Color = Color3.fromRGB(20, 20, 20)
+    drawings.healthBar.Filled = true
+    drawings.distTag.Size = 11; drawings.distTag.Center = true; drawings.distTag.Outline = true
+    drawings.tracer.Thickness = 1
+
+    local function hideAll() for _, d in pairs(drawings) do d.Visible = false end end
+
+    local conn = RunService.RenderStepped:Connect(function()
+        if not Config.ESP then hideAll() return end
+        local char = player.Character
+        if not char then hideAll() return end
+        local hrp  = getHitboxPart(char)
+        local hum  = char:FindFirstChildOfClass("Humanoid")
+        local head = char:FindFirstChild("Head")
+        if not hrp or not hum or not head or hum.Health <= 0 then hideAll() return end
+        local myHrp = LocalPlayer.Character and getHitboxPart(LocalPlayer.Character)
+        if not myHrp then hideAll() return end
+        local dist = (myHrp.Position - hrp.Position).Magnitude
+        if dist > Config.ESPRange then hideAll() return end
+        local hrp2D, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+        if not onScreen then hideAll() return end
+
+        local head2D = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
+        local feet2D = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+        local height = math.abs(head2D.Y - feet2D.Y)
+        local width = height * 0.6
+        local x = hrp2D.X - width / 2
+        local y = head2D.Y
+
+        drawings.box.Visible = Config.ESPBoxes
+        if Config.ESPBoxes then
+            drawings.box.Size = Vector2.new(width, height)
+            drawings.box.Position = Vector2.new(x, y)
+            drawings.box.Color = Config.ESPColor
+        end
+        drawings.nameTag.Visible = Config.ESPName
+        if Config.ESPName then
+            drawings.nameTag.Text = player.DisplayName
+            drawings.nameTag.Position = Vector2.new(hrp2D.X, y - 16)
+            drawings.nameTag.Color = Config.ESPColor
+        end
+        drawings.healthBg.Visible = Config.ESPHealth
+        drawings.healthBar.Visible = Config.ESPHealth
+        if Config.ESPHealth then
+            local r = math.clamp(hum.Health / math.max(hum.MaxHealth, 1), 0, 1)
+            drawings.healthBg.Size = Vector2.new(3, height)
+            drawings.healthBg.Position = Vector2.new(x - 6, y)
+            drawings.healthBar.Size = Vector2.new(3, height * r)
+            drawings.healthBar.Position = Vector2.new(x - 6, y + height * (1 - r))
+            drawings.healthBar.Color = Color3.fromRGB(math.floor(255 * (1 - r)), math.floor(255 * r), 0)
+        end
+        drawings.distTag.Visible = Config.ESPDist
+        if Config.ESPDist then
+            drawings.distTag.Text = tostring(math.floor(dist)) .. "m"
+            drawings.distTag.Position = Vector2.new(hrp2D.X, y + height + 2)
+            drawings.distTag.Color = Color3.fromRGB(255, 255, 255)
+        end
+        drawings.tracer.Visible = Config.ESPTracers
+        if Config.ESPTracers then
+            drawings.tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+            drawings.tracer.To = Vector2.new(hrp2D.X, hrp2D.Y)
+            drawings.tracer.Color = Config.ESPTracerColor
+        end
+    end)
+    espData[player] = {conn = conn, drawings = drawings}
+end
+
+if HasDrawing then
+    for _, p in ipairs(Players:GetPlayers()) do createESP(p) end
+    trackConn(Players.PlayerAdded:Connect(createESP))
+    trackConn(Players.PlayerRemoving:Connect(removeESP))
+end
+
+-- ============================================================
+--  MOVEMENT
+-- ============================================================
+local function applySpeed()
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = Config.SpeedEnabled and Config.WalkSpeed or 16 end
+end
+trackConn(LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    if Config.SpeedEnabled then applySpeed() end
+end))
+trackConn(RunService.Stepped:Connect(function()
+    if Config.Noclip and LocalPlayer.Character then
+        for _, v in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if v:IsA("BasePart") then v.CanCollide = false end
+        end
+    end
+end))
+trackConn(UIS.JumpRequest:Connect(function()
+    if Config.InfJump and LocalPlayer.Character then
+        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+    end
+end))
+trackConn(RunService.RenderStepped:Connect(function(dt)
+    if not Config.Fly or not LocalPlayer.Character then return end
+    local hrp = getHitboxPart(LocalPlayer.Character)
+    if not hrp then return end
+    local cam = Camera.CFrame
+    local dir = Vector3.zero
+    if Config.FlyKeys.W then dir = dir + cam.LookVector end
+    if Config.FlyKeys.S then dir = dir - cam.LookVector end
+    if Config.FlyKeys.A then dir = dir - cam.RightVector end
+    if Config.FlyKeys.D then dir = dir + cam.RightVector end
+    if Config.FlyKeys.Space then dir = dir + Vector3.new(0, 1, 0) end
+    if Config.FlyKeys.LeftShift then dir = dir - Vector3.new(0, 1, 0) end
+    hrp.AssemblyLinearVelocity = Vector3.zero
+    if dir.Magnitude > 0 then
+        hrp.CFrame = hrp.CFrame + (dir.Unit * Config.FlySpeed * dt)
+    end
+end))
+
+-- ============================================================
+--  GUI
+-- ============================================================
+local function buildGUI()
+    if CoreGui:FindFirstChild("UniversalHitboxGUI") then CoreGui.UniversalHitboxGUI:Destroy() end
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "UniversalHitboxGUI"
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    pcall(function() gui.Parent = CoreGui end)
+    if not gui.Parent then gui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+    local FULL_SIZE = UDim2.new(0, 560, 0, 390)
+    local MINI_SIZE = UDim2.new(0, 560, 0, 42)
+
+    local main = Instance.new("Frame", gui)
+    main.Name = "Main"
+    main.Size = FULL_SIZE
+    main.Position = UDim2.new(0.5, -280, 0.5, -195)
+    main.BackgroundColor3 = Color3.fromRGB(15, 15, 23)
+    main.BorderSizePixel = 0
+    main.ClipsDescendants = true
+    Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+    local mainStroke = Instance.new("UIStroke", main)
+    mainStroke.Color = Color3.fromRGB(60, 120, 255)
+    mainStroke.Thickness = 1.2
+    mainStroke.Transparency = 0.35
+
+    local titleBar = Instance.new("Frame", main)
+    titleBar.Size = UDim2.new(1, 0, 0, 42)
+    titleBar.BackgroundColor3 = Color3.fromRGB(22, 22, 34)
+    titleBar.BorderSizePixel = 0
+    Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 10)
+
+    local titleLabel = Instance.new("TextLabel", titleBar)
+    titleLabel.Size = UDim2.new(1, -120, 1, 0)
+    titleLabel.Position = UDim2.new(0, 14, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.RichText = true
+    titleLabel.Text = "💣 Universal Hitbox Expander Remake By C00LHACK <font color='#64B4FF'>v3.2</font>"
+    titleLabel.TextColor3 = Color3.fromRGB(240, 240, 255)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 14
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local body = Instance.new("Frame", main)
+    body.Size = UDim2.new(1, -16, 1, -54)
+    body.Position = UDim2.new(0, 8, 0, 48)
+    body.BackgroundTransparency = 1
+
+    local isCollapsed = false
+    local collapseBtn = Instance.new("TextButton", titleBar)
+    collapseBtn.Size = UDim2.new(0, 28, 0, 28)
+    collapseBtn.Position = UDim2.new(1, -68, 0.5, -14)
+    collapseBtn.BackgroundColor3 = Color3.fromRGB(38, 42, 60)
+    collapseBtn.Text = "—"
+    collapseBtn.TextColor3 = Color3.fromRGB(200, 220, 255)
+    collapseBtn.Font = Enum.Font.GothamBold
+    collapseBtn.TextSize = 14
+    Instance.new("UICorner", collapseBtn).CornerRadius = UDim.new(0, 6)
+    local collStroke = Instance.new("UIStroke", collapseBtn)
+    collStroke.Color = Color3.fromRGB(70, 90, 150)
+
+    local closeBtn = Instance.new("TextButton", titleBar)
+    closeBtn.Size = UDim2.new(0, 28, 0, 28)
+    closeBtn.Position = UDim2.new(1, -34, 0.5, -14)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(240, 60, 70)
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = Color3.new(1, 1, 1)
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.TextSize = 12
+    Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
+
+    collapseBtn.MouseButton1Click:Connect(function()
+        sClick()
+        isCollapsed = not isCollapsed
+        local ti = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        if isCollapsed then
+            collapseBtn.Text = "+"
+            TS:Create(main, ti, {Size = MINI_SIZE}):Play()
+            body.Visible = false
+        else
+            collapseBtn.Text = "—"
+            body.Visible = true
+            TS:Create(main, ti, {Size = FULL_SIZE}):Play()
+        end
+    end)
+    closeBtn.MouseButton1Click:Connect(function() sClick(); gui.Enabled = false end)
+
+    local dragging, dragStart, startPos
+    titleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = main.Position
+        end
+    end)
+    trackConn(UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local d = input.Position - dragStart
+            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        end
+    end))
+    trackConn(UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
+    end))
+
+    local tabBar = Instance.new("Frame", body)
+    tabBar.Size = UDim2.new(0, 130, 1, 0)
+    tabBar.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
+    Instance.new("UICorner", tabBar).CornerRadius = UDim.new(0, 8)
+    local tabLayout = Instance.new("UIListLayout", tabBar)
+    tabLayout.Padding = UDim.new(0, 5)
+    tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    local tabPad = Instance.new("UIPadding", tabBar)
+    tabPad.PaddingTop = UDim.new(0, 6); tabPad.PaddingLeft = UDim.new(0, 5); tabPad.PaddingRight = UDim.new(0, 5)
+
+    local content = Instance.new("ScrollingFrame", body)
+    content.Size = UDim2.new(1, -138, 1, 0)
+    content.Position = UDim2.new(0, 138, 0, 0)
+    content.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
+    content.BorderSizePixel = 0
+    content.ScrollBarThickness = 3
+    content.ScrollBarImageColor3 = Color3.fromRGB(60, 120, 255)
+    content.CanvasSize = UDim2.new(0, 0, 0, 0)
+    content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Instance.new("UICorner", content).CornerRadius = UDim.new(0, 8)
+    local contentPad = Instance.new("UIPadding", content)
+    contentPad.PaddingTop = UDim.new(0, 8); contentPad.PaddingBottom = UDim.new(0, 8)
+    contentPad.PaddingLeft = UDim.new(0, 8); contentPad.PaddingRight = UDim.new(0, 8)
+
+    local tabs = {}
+    local order = 0
+    local function createTab(name, icon)
+        order = order + 1
+        local btn = Instance.new("TextButton", tabBar)
+        btn.LayoutOrder = order
+        btn.Size = UDim2.new(1, 0, 0, 34)
+        btn.BackgroundColor3 = Color3.fromRGB(24, 24, 38)
+        btn.Text = icon .. " " .. name
+        btn.TextColor3 = Color3.fromRGB(160, 160, 185)
+        btn.Font = Enum.Font.GothamMedium
+        btn.TextSize = 13
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+
+        local page = Instance.new("Frame", content)
+        page.Size = UDim2.new(1, 0, 0, 0)
+        page.BackgroundTransparency = 1
+        page.Visible = false
+        page.AutomaticSize = Enum.AutomaticSize.Y
+        local pl = Instance.new("UIListLayout", page)
+        pl.Padding = UDim.new(0, 6)
+        pl.SortOrder = Enum.SortOrder.LayoutOrder
+
+        tabs[name] = {btn = btn, page = page}
+        btn.MouseButton1Click:Connect(function()
+            sClick()
+            for _, t in pairs(tabs) do
+                t.page.Visible = false
+                t.btn.BackgroundColor3 = Color3.fromRGB(24, 24, 38)
+                t.btn.TextColor3 = Color3.fromRGB(160, 160, 185)
+            end
+            page.Visible = true
+            btn.BackgroundColor3 = Color3.fromRGB(50, 90, 180)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        end)
+        return page
+    end
+
+    local itemOrder = 0
+    local function nextOrder() itemOrder = itemOrder + 1; return itemOrder end
+
+    local function addToggle(frame, title, default, callback)
+        local state = default or false
+        local card = Instance.new("Frame", frame)
+        card.LayoutOrder = nextOrder()
+        card.Size = UDim2.new(1, 0, 0, 36)
+        card.BackgroundColor3 = Color3.fromRGB(26, 26, 40)
+        Instance.new("UICorner", card).CornerRadius = UDim.new(0, 6)
+
+        local lbl = Instance.new("TextLabel", card)
+        lbl.Size = UDim2.new(1, -60, 1, 0)
+        lbl.Position = UDim2.new(0, 10, 0, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = title
+        lbl.TextColor3 = Color3.fromRGB(220, 220, 235)
+        lbl.Font = Enum.Font.Gotham
+        lbl.TextSize = 13
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+        local tog = Instance.new("TextButton", card)
+        tog.Size = UDim2.new(0, 40, 0, 20)
+        tog.Position = UDim2.new(1, -48, 0.5, -10)
+        tog.BackgroundColor3 = state and Color3.fromRGB(50, 140, 255) or Color3.fromRGB(45, 45, 60)
+        tog.Text = ""
+        Instance.new("UICorner", tog).CornerRadius = UDim.new(1, 0)
+
+        local dot = Instance.new("Frame", tog)
+        dot.Size = UDim2.new(0, 14, 0, 14)
+        dot.Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+        dot.BackgroundColor3 = Color3.new(1, 1, 1)
+        Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+
+        local api = {}
+        function api.Set(v, silent)
+            state = v
+            TS:Create(dot, TweenInfo.new(0.15), {Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}):Play()
+            TS:Create(tog, TweenInfo.new(0.15), {BackgroundColor3 = state and Color3.fromRGB(50, 140, 255) or Color3.fromRGB(45, 45, 60)}):Play()
+            if callback and not silent then callback(state) end
+        end
+        tog.MouseButton1Click:Connect(function() sToggle(); api.Set(not state) end)
+        return api
+    end
+
+    local function addSlider(frame, title, min, max, default, callback)
+        local val = default
+        local card = Instance.new("Frame", frame)
+        card.LayoutOrder = nextOrder()
+        card.Size = UDim2.new(1, 0, 0, 48)
+        card.BackgroundColor3 = Color3.fromRGB(26, 26, 40)
+        Instance.new("UICorner", card).CornerRadius = UDim.new(0, 6)
+
+        local lbl = Instance.new("TextLabel", card)
+        lbl.Size = UDim2.new(1, -60, 0, 22)
+        lbl.Position = UDim2.new(0, 10, 0, 4)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = title
+        lbl.TextColor3 = Color3.fromRGB(220, 220, 235)
+        lbl.Font = Enum.Font.Gotham
+        lbl.TextSize = 13
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+        local valLbl = Instance.new("TextLabel", card)
+        valLbl.Size = UDim2.new(0, 50, 0, 22)
+        valLbl.Position = UDim2.new(1, -58, 0, 4)
+        valLbl.BackgroundTransparency = 1
+        valLbl.Text = tostring(val)
+        valLbl.TextColor3 = Color3.fromRGB(100, 170, 255)
+        valLbl.Font = Enum.Font.GothamBold
+        valLbl.TextSize = 13
+        valLbl.TextXAlignment = Enum.TextXAlignment.Right
+
+        local bar = Instance.new("Frame", card)
+        bar.Size = UDim2.new(1, -20, 0, 6)
+        bar.Position = UDim2.new(0, 10, 0, 32)
+        bar.BackgroundColor3 = Color3.fromRGB(40, 40, 58)
+        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
+
+        local fill = Instance.new("Frame", bar)
+        fill.Size = UDim2.new(math.clamp((val - min) / (max - min), 0, 1), 0, 1, 0)
+        fill.BackgroundColor3 = Color3.fromRGB(60, 130, 255)
+        Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+
+        local ds = false
+        local function update(input)
+            local rel = math.clamp((input.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+            val = math.floor(min + rel * (max - min) + 0.5)
+            valLbl.Text = tostring(val)
+            fill.Size = UDim2.new(rel, 0, 1, 0)
+            if callback then callback(val) end
+        end
+        bar.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                ds = true; update(input)
+            end
+        end)
+        trackConn(UIS.InputChanged:Connect(function(input)
+            if ds and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then update(input) end
+        end))
+        trackConn(UIS.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then ds = false end
+        end))
+    end
+
+    local function addColorPicker(frame, title, defaultColor, callback)
+        local currentColor = defaultColor or Color3.fromRGB(255, 0, 0)
+        local h, s, v = Color3.toHSV(currentColor)
+
+        local card = Instance.new("Frame", frame)
+        card.LayoutOrder = nextOrder()
+        card.Size = UDim2.new(1, 0, 0, 38)
+        card.BackgroundColor3 = Color3.fromRGB(26, 26, 40)
+        card.ClipsDescendants = true
+        Instance.new("UICorner", card).CornerRadius = UDim.new(0, 6)
+
+        local lbl = Instance.new("TextLabel", card)
+        lbl.Size = UDim2.new(1, -80, 0, 38)
+        lbl.Position = UDim2.new(0, 10, 0, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = title
+        lbl.TextColor3 = Color3.fromRGB(220, 220, 235)
+        lbl.Font = Enum.Font.Gotham
+        lbl.TextSize = 13
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+        local preview = Instance.new("TextButton", card)
+        preview.Size = UDim2.new(0, 38, 0, 22)
+        preview.Position = UDim2.new(1, -48, 0, 8)
+        preview.BackgroundColor3 = currentColor
+        preview.Text = ""
+        Instance.new("UICorner", preview).CornerRadius = UDim.new(0, 5)
+        local ps = Instance.new("UIStroke", preview)
+        ps.Color = Color3.fromRGB(80, 80, 100)
+
+        local tray = Instance.new("Frame", card)
+        tray.Size = UDim2.new(1, -20, 0, 100)
+        tray.Position = UDim2.new(0, 10, 0, 42)
+        tray.BackgroundTransparency = 1
+
+        local isOpen = false
+        local fills = {}
+        local function applyColor()
+            currentColor = Color3.fromHSV(h, s, v)
+            preview.BackgroundColor3 = currentColor
+            if fills.h then fills.h.Size = UDim2.new(h, 0, 1, 0) end
+            if fills.s then fills.s.Size = UDim2.new(s, 0, 1, 0) end
+            if fills.v then fills.v.Size = UDim2.new(v, 0, 1, 0) end
+            if callback then callback(currentColor) end
+        end
+
+        local function mini(pY, key, labelName, getVal, onSlide)
+            local sBar = Instance.new("Frame", tray)
+            sBar.Size = UDim2.new(1, 0, 0, 16)
+            sBar.Position = UDim2.new(0, 0, 0, pY)
+            sBar.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+            Instance.new("UICorner", sBar).CornerRadius = UDim.new(0, 4)
+            local sFill = Instance.new("Frame", sBar)
+            sFill.Size = UDim2.new(getVal(), 0, 1, 0)
+            sFill.BackgroundColor3 = Color3.fromRGB(80, 140, 255)
+            Instance.new("UICorner", sFill).CornerRadius = UDim.new(0, 4)
+            fills[key] = sFill
+            local sText = Instance.new("TextLabel", sBar)
+            sText.Size = UDim2.new(1, 0, 1, 0)
+            sText.BackgroundTransparency = 1
+            sText.Text = labelName
+            sText.TextColor3 = Color3.fromRGB(240, 240, 240)
+            sText.Font = Enum.Font.GothamBold
+            sText.TextSize = 10
+
+            local dragging2 = false
+            local function slide(input)
+                onSlide(math.clamp((input.Position.X - sBar.AbsolutePosition.X) / sBar.AbsoluteSize.X, 0, 1))
+                applyColor()
+            end
+            sBar.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging2 = true; slide(input)
+                end
+            end)
+            trackConn(UIS.InputChanged:Connect(function(input)
+                if dragging2 and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then slide(input) end
+            end))
+            trackConn(UIS.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging2 = false end
+            end))
+        end
+        mini(0,  "h", "HUE",        function() return h end, function(x) h = x end)
+        mini(22, "s", "SATURATION", function() return s end, function(x) s = x end)
+        mini(44, "v", "BRIGHTNESS", function() return v end, function(x) v = x end)
+
+        local presets = {
+            Color3.fromRGB(255, 40, 40), Color3.fromRGB(0, 255, 120), Color3.fromRGB(0, 160, 255),
+            Color3.fromRGB(255, 230, 0), Color3.fromRGB(255, 0, 220), Color3.fromRGB(255, 255, 255),
+        }
+        local ph = Instance.new("Frame", tray)
+        ph.Size = UDim2.new(1, 0, 0, 20)
+        ph.Position = UDim2.new(0, 0, 0, 70)
+        ph.BackgroundTransparency = 1
+        local pLayout = Instance.new("UIListLayout", ph)
+        pLayout.FillDirection = Enum.FillDirection.Horizontal
+        pLayout.Padding = UDim.new(0, 6)
+        for _, col in ipairs(presets) do
+            local pBtn = Instance.new("TextButton", ph)
+            pBtn.Size = UDim2.new(0, 24, 0, 20)
+            pBtn.BackgroundColor3 = col
+            pBtn.Text = ""
+            Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 4)
+            pBtn.MouseButton1Click:Connect(function() h, s, v = Color3.toHSV(col); applyColor() end)
+        end
+
+        preview.MouseButton1Click:Connect(function()
+            sClick()
+            isOpen = not isOpen
+            TS:Create(card, TweenInfo.new(0.2), {Size = isOpen and UDim2.new(1, 0, 0, 148) or UDim2.new(1, 0, 0, 38)}):Play()
+        end)
+    end
+
+    -- [ TAB: Hitbox ]
+    local hbPage = createTab("Hitbox", "🎯")
+    local hbToggle = addToggle(hbPage, "Enable Hitbox Expander", getgenv().HBE, function(v)
+        getgenv().HBE = v
+        forceUpdateHitboxes()
+    end)
+    addSlider(hbPage, "Hitbox Size", 2, 60, 15, function(v)
+        Config.Size = Vector3.new(v, v, v)
+        forceUpdateHitboxes()
+    end)
+    addSlider(hbPage, "Transparency", 0, 100, 75, function(v)
+        Config.Transparency = v / 100
+        forceUpdateHitboxes()
+    end)
+    addColorPicker(hbPage, "Hitbox Color", Config.Color, function(c)
+        Config.Color = c
+        forceUpdateHitboxes()
+    end)
+    addToggle(hbPage, "Team Check", false, function(v)
+        Config.TeamCheck = v
+        forceUpdateHitboxes()
+    end)
+    addToggle(hbPage, "CanCollide", false, function(v)
+        Config.CanCollide = v
+        forceUpdateHitboxes()
+    end)
+
+    -- [ TAB: ESP ]
+    local espPage = createTab("ESP", "👁")
+    addToggle(espPage, "Enable ESP Master", Config.ESP, function(v) Config.ESP = v end)
+    addToggle(espPage, "2D Boxes", Config.ESPBoxes, function(v) Config.ESPBoxes = v end)
+    addToggle(espPage, "Names", Config.ESPName, function(v) Config.ESPName = v end)
+    addToggle(espPage, "Health Bar", Config.ESPHealth, function(v) Config.ESPHealth = v end)
+    addToggle(espPage, "Distance", Config.ESPDist, function(v) Config.ESPDist = v end)
+    addToggle(espPage, "Tracers", Config.ESPTracers, function(v) Config.ESPTracers = v end)
+    addSlider(espPage, "Max Distance", 50, 3000, 600, function(v) Config.ESPRange = v end)
+    addColorPicker(espPage, "ESP Main Color", Config.ESPColor, function(c) Config.ESPColor = c end)
+    addColorPicker(espPage, "Tracers Color", Config.ESPTracerColor, function(c) Config.ESPTracerColor = c end)
+
+    -- [ TAB: Movement ]
+    local movePage = createTab("Movement", "⚡")
+    addToggle(movePage, "Speed Modifier", false, function(v) Config.SpeedEnabled = v; applySpeed() end)
+    addSlider(movePage, "WalkSpeed Value", 16, 250, 16, function(v)
+        Config.WalkSpeed = v
+        if Config.SpeedEnabled then applySpeed() end
+    end)
+    addToggle(movePage, "Infinite Jump", false, function(v) Config.InfJump = v end)
+    addToggle(movePage, "Noclip", false, function(v) Config.Noclip = v end)
+    addToggle(movePage, "Fly Mode", false, function(v) Config.Fly = v end)
+    addSlider(movePage, "Fly Speed", 10, 200, 50, function(v) Config.FlySpeed = v end)
+
+    -- [ TAB: Settings ]
+    local infoPage = createTab("Settings", "⚙")
+    local infoCard = Instance.new("Frame", infoPage)
+    infoCard.LayoutOrder = nextOrder()
+    infoCard.Size = UDim2.new(1, 0, 0, 140)
+    infoCard.BackgroundColor3 = Color3.fromRGB(24, 24, 38)
+    Instance.new("UICorner", infoCard).CornerRadius = UDim.new(0, 6)
+    local infoTxt = Instance.new("TextLabel", infoCard)
+    infoTxt.Size = UDim2.new(1, -16, 1, -16)
+    infoTxt.Position = UDim2.new(0, 8, 0, 8)
+    infoTxt.BackgroundTransparency = 1
+    infoTxt.TextColor3 = Color3.fromRGB(180, 180, 210)
+    infoTxt.Font = Enum.Font.Gotham
+    infoTxt.TextSize = 12
+    infoTxt.TextWrapped = true
+    infoTxt.TextXAlignment = Enum.TextXAlignment.Left
+    infoTxt.TextYAlignment = Enum.TextYAlignment.Top
+    infoTxt.Text = "• [—] Collapse / جمع‌کردن منو\n• [RightShift] : مخفی/آشکار سازی پنجره\n• [F] : خاموش و روشن سریع هیت‌باکس\n• Target: فقط HumanoidRootPart (بهترین عملکرد و پایداری فیزیک)\n• کلیدهای پرواز: WASD + Space/LeftShift\n• v3.2: حذف پارت‌های اضافی + رفع کامل فریز کاراکترها\nUniversal Hitbox v3.2 by C00LHACK."
+
+    tabs["Hitbox"].page.Visible = true
+    tabs["Hitbox"].btn.BackgroundColor3 = Color3.fromRGB(50, 90, 180)
+    tabs["Hitbox"].btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+    return gui, hbToggle
+end
+
+local MainUI, HBToggle = buildGUI()
+
+-- ============================================================
+--  KEYBINDS
+-- ============================================================
+local flyMap = {
+    [Enum.KeyCode.W] = "W", [Enum.KeyCode.A] = "A", [Enum.KeyCode.S] = "S",
+    [Enum.KeyCode.D] = "D", [Enum.KeyCode.Space] = "Space", [Enum.KeyCode.LeftShift] = "LeftShift",
+}
+trackConn(UIS.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.RightShift then
+        if MainUI then MainUI.Enabled = not MainUI.Enabled; sToggle() end
+    elseif input.KeyCode == Enum.KeyCode.F then
+        getgenv().HBE = not getgenv().HBE
+        if HBToggle then HBToggle.Set(getgenv().HBE, true) end
+        forceUpdateHitboxes()
+        sToggle()
+    end
+    local k = flyMap[input.KeyCode]
+    if k and Config.Fly then Config.FlyKeys[k] = true end
+end))
+trackConn(UIS.InputEnded:Connect(function(input)
+    local k = flyMap[input.KeyCode]
+    if k then Config.FlyKeys[k] = false end
+end))
+
+-- ============================================================
+--  GLOBAL CLEANUP
+-- ============================================================
+getgenv()._UniversalHitboxCleanup = function()
+    for _, conn in ipairs(Connections) do pcall(function() conn:Disconnect() end) end
+    table.clear(Connections)
+    if HasDrawing then
+        for player in pairs(espData) do pcall(removeESP, player) end
+        table.clear(espData)
+    end
+    pcall(restoreAll)
+    pcall(function()
+        if MainUI then MainUI:Destroy() end
+        local existing = CoreGui:FindFirstChild("UniversalHitboxGUI")
+        if existing then existing:Destroy() end
+    end)
+    getgenv().HBE = false
+    print("🧹 [UniversalHitbox] Cleaned up previous instance successfully!")
+end
+
+print("⚡ Universal Hitbox v3.2 Loaded! (Pure HRP Engine + Zero Freeze)")
