@@ -1,0 +1,584 @@
+--[[
+    UNDERGROUND v2.0  |  CYBERPUNK EDITION
+    - UI سایبرپانکی با حاشیه RGB متحرک و افکت نئونی
+    - سیستم درگ کامل برای موبایل و کامپیوتر (Touch + Mouse)
+    - انتقال Part ها به ReplicatedStorage به صورت بَچ (بدون لگ و فریز)
+    - بازگردانی بدون لگ با همان سیستم بَچ
+    - Baseplate تیره سایبرپانکی
+]]
+
+local Players            = game:GetService("Players")
+local CoreGui            = game:GetService("CoreGui")
+local UserInputService   = game:GetService("UserInputService")
+local RunService         = game:GetService("RunService")
+local TweenService       = game:GetService("TweenService")
+local ReplicatedStorage  = game:GetService("ReplicatedStorage")
+
+local LocalPlayer = Players.LocalPlayer
+
+----------------------------------------------------------------
+-- 0) تنظیمات
+----------------------------------------------------------------
+local CONFIG = {
+    FRAME_BUDGET   = 0.004,  -- حداکثر زمان پردازش در هر فریم (ثانیه) -> ضد لگ
+    MIN_PER_FRAME  = 8,      -- حداقل تعداد آبجکت در هر فریم
+    BASEPLATE_SIZE = Vector3.new(2048, 4, 2048),
+    BASEPLATE_COLOR= Color3.fromRGB(100, 100, 100), -- تیره‌تر (سایبرپانک)
+    DROP_OFFSET    = 13,
+}
+
+----------------------------------------------------------------
+-- 1) ScreenGui
+----------------------------------------------------------------
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "UG_CyberUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+if gethui then
+    ScreenGui.Parent = gethui()
+elseif syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = CoreGui
+else
+    ScreenGui.Parent = LocalPlayer:FindFirstChildOfClass("PlayerGui") or CoreGui
+end
+
+----------------------------------------------------------------
+-- 2) پنل اصلی + حاشیه RGB
+----------------------------------------------------------------
+local Frame = Instance.new("Frame")
+Frame.Name = "MainFrame"
+Frame.Size = UDim2.new(0, 300, 0, 198)
+Frame.Position = UDim2.new(0.5, -150, 0.35, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 16)
+Frame.BackgroundTransparency = 0.05
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.ClipsDescendants = false
+Frame.Parent = ScreenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 14)
+corner.Parent = Frame
+
+-- گرادیان پس‌زمینه (مشکی -> بنفش تیره)
+local bgGrad = Instance.new("UIGradient")
+bgGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(18, 10, 32)),
+    ColorSequenceKeypoint.new(0.55, Color3.fromRGB(10, 10, 18)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(8, 18, 28)),
+})
+bgGrad.Rotation = 115
+bgGrad.Parent = Frame
+
+-- حاشیه RGB متحرک
+local RGBStroke = Instance.new("UIStroke")
+RGBStroke.Thickness = 2
+RGBStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+RGBStroke.Parent = Frame
+
+local strokeGrad = Instance.new("UIGradient")
+strokeGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 128)),
+    ColorSequenceKeypoint.new(0.25, Color3.fromRGB(170, 0, 255)),
+    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 225, 255)),
+    ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0, 255, 170)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 128)),
+})
+strokeGrad.Parent = RGBStroke
+
+-- هاله نئون پشت پنل
+local Glow = Instance.new("ImageLabel")
+Glow.Name = "Glow"
+Glow.BackgroundTransparency = 1
+Glow.Image = "rbxassetid://5028857084"
+Glow.ImageColor3 = Color3.fromRGB(190, 0, 255)
+Glow.ImageTransparency = 0.45
+Glow.ScaleType = Enum.ScaleType.Slice
+Glow.SliceCenter = Rect.new(24, 24, 276, 276)
+Glow.Size = UDim2.new(1, 36, 1, 36)
+Glow.Position = UDim2.new(0, -18, 0, -18)
+Glow.ZIndex = 0
+Glow.Parent = Frame
+
+----------------------------------------------------------------
+-- 3) هدر / تیتر
+----------------------------------------------------------------
+local Header = Instance.new("Frame")
+Header.Name = "Header"
+Header.Size = UDim2.new(1, 0, 0, 46)
+Header.BackgroundColor3 = Color3.fromRGB(16, 14, 26)
+Header.BackgroundTransparency = 0.25
+Header.BorderSizePixel = 0
+Header.Active = true
+Header.Parent = Frame
+
+local hCorner = Instance.new("UICorner")
+hCorner.CornerRadius = UDim.new(0, 14)
+hCorner.Parent = Header
+
+-- خط نئونی زیر هدر
+local HLine = Instance.new("Frame")
+HLine.Size = UDim2.new(1, -24, 0, 1)
+HLine.Position = UDim2.new(0, 12, 1, -1)
+HLine.BorderSizePixel = 0
+HLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HLine.Parent = Header
+
+local lineGrad = Instance.new("UIGradient")
+lineGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 128)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 225, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 0, 255)),
+})
+lineGrad.Parent = HLine
+
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, -90, 1, 0)
+Title.Position = UDim2.new(0, 16, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "UNDERGROUND"
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 19
+Title.Font = Enum.Font.GothamBlack
+Title.Parent = Header
+
+local titleGrad = Instance.new("UIGradient")
+titleGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 230, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 160)),
+})
+titleGrad.Parent = Title
+
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(1, -90, 0, 12)
+SubTitle.Position = UDim2.new(0, 17, 0, 30)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Text = "Made By C00LHACK"
+SubTitle.TextXAlignment = Enum.TextXAlignment.Left
+SubTitle.TextColor3 = Color3.fromRGB(120, 125, 160)
+SubTitle.TextSize = 10
+SubTitle.Font = Enum.Font.Code
+SubTitle.Parent = Header
+
+-- چراغ وضعیت
+local StatusDot = Instance.new("Frame")
+StatusDot.Size = UDim2.new(0, 10, 0, 10)
+StatusDot.Position = UDim2.new(1, -66, 0, 18)
+StatusDot.BackgroundColor3 = Color3.fromRGB(255, 60, 90)
+StatusDot.BorderSizePixel = 0
+StatusDot.Parent = Header
+Instance.new("UICorner", StatusDot).CornerRadius = UDim.new(1, 0)
+
+-- دکمه کوچک‌سازی
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0, 28, 0, 28)
+MinBtn.Position = UDim2.new(1, -40, 0, 9)
+MinBtn.BackgroundColor3 = Color3.fromRGB(30, 28, 44)
+MinBtn.Text = "—"
+MinBtn.TextColor3 = Color3.fromRGB(200, 205, 235)
+MinBtn.TextSize = 14
+MinBtn.Font = Enum.Font.GothamBold
+MinBtn.AutoButtonColor = false
+MinBtn.Parent = Header
+Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 8)
+
+----------------------------------------------------------------
+-- 4) بدنه: دکمه سوییچ + نوار پیشرفت
+----------------------------------------------------------------
+local Body = Instance.new("Frame")
+Body.Name = "Body"
+Body.Size = UDim2.new(1, 0, 1, -46)
+Body.Position = UDim2.new(0, 0, 0, 46)
+Body.BackgroundTransparency = 1
+Body.ClipsDescendants = true
+Body.Parent = Frame
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Size = UDim2.new(1, -36, 0, 54)
+ToggleButton.Position = UDim2.new(0, 18, 0, 16)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(26, 14, 26)
+ToggleButton.Text = ""
+ToggleButton.AutoButtonColor = false
+ToggleButton.Parent = Body
+Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0, 12)
+
+local tStroke = Instance.new("UIStroke")
+tStroke.Thickness = 1.6
+tStroke.Color = Color3.fromRGB(255, 45, 95)
+tStroke.Transparency = 0.15
+tStroke.Parent = ToggleButton
+
+local ToggleLabel = Instance.new("TextLabel")
+ToggleLabel.Size = UDim2.new(1, -70, 1, 0)
+ToggleLabel.Position = UDim2.new(0, 18, 0, 0)
+ToggleLabel.BackgroundTransparency = 1
+ToggleLabel.Text = "Underground  :  OFF"
+ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+ToggleLabel.TextColor3 = Color3.fromRGB(255, 90, 125)
+ToggleLabel.TextSize = 14
+ToggleLabel.Font = Enum.Font.GothamBold
+ToggleLabel.Parent = ToggleButton
+
+-- سوییچ کشویی
+local Track = Instance.new("Frame")
+Track.Size = UDim2.new(0, 44, 0, 22)
+Track.Position = UDim2.new(1, -58, 0.5, -11)
+Track.BackgroundColor3 = Color3.fromRGB(48, 20, 34)
+Track.BorderSizePixel = 0
+Track.Parent = ToggleButton
+Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
+
+local Knob = Instance.new("Frame")
+Knob.Size = UDim2.new(0, 16, 0, 16)
+Knob.Position = UDim2.new(0, 3, 0.5, -8)
+Knob.BackgroundColor3 = Color3.fromRGB(255, 70, 110)
+Knob.BorderSizePixel = 0
+Knob.Parent = Track
+Instance.new("UICorner", Knob).CornerRadius = UDim.new(1, 0)
+
+-- نوار پیشرفت (برای پردازش بَچ)
+local BarBG = Instance.new("Frame")
+BarBG.Size = UDim2.new(1, -36, 0, 6)
+BarBG.Position = UDim2.new(0, 18, 0, 84)
+BarBG.BackgroundColor3 = Color3.fromRGB(26, 26, 38)
+BarBG.BorderSizePixel = 0
+BarBG.Parent = Body
+Instance.new("UICorner", BarBG).CornerRadius = UDim.new(1, 0)
+
+local BarFill = Instance.new("Frame")
+BarFill.Size = UDim2.new(0, 0, 1, 0)
+BarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+BarFill.BorderSizePixel = 0
+BarFill.Parent = BarBG
+Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
+
+local fillGrad = Instance.new("UIGradient")
+fillGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 225, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(190, 0, 255)),
+})
+fillGrad.Parent = BarFill
+
+local InfoLabel = Instance.new("TextLabel")
+InfoLabel.Size = UDim2.new(1, -36, 0, 14)
+InfoLabel.Position = UDim2.new(0, 18, 0, 98)
+InfoLabel.BackgroundTransparency = 1
+InfoLabel.Text = "STATUS: IDLE  |  OBJECTS: 0"
+InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+InfoLabel.TextColor3 = Color3.fromRGB(110, 118, 150)
+InfoLabel.TextSize = 10
+InfoLabel.Font = Enum.Font.Code
+InfoLabel.Parent = Body
+
+----------------------------------------------------------------
+-- 5) انیمیشن RGB (حاشیه + هاله + چراغ)
+----------------------------------------------------------------
+local hue = 0
+RunService.RenderStepped:Connect(function(dt)
+    hue = (hue + dt * 0.18) % 1
+    strokeGrad.Rotation = (strokeGrad.Rotation + dt * 90) % 360
+    titleGrad.Rotation  = (titleGrad.Rotation + dt * 40) % 360
+    Glow.ImageColor3 = Color3.fromHSV(hue, 0.85, 1)
+    RGBStroke.Color  = Color3.fromRGB(255, 255, 255)
+end)
+
+----------------------------------------------------------------
+-- 6) سیستم درگ (موبایل + کامپیوتر) با پشتیبانی کامل لمسی
+----------------------------------------------------------------
+local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
+
+local function beginDrag(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging  = true
+        dragStart = input.Position
+        startPos  = Frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end
+
+local function changedDrag(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end
+
+Frame.InputBegan:Connect(beginDrag)
+Frame.InputChanged:Connect(changedDrag)
+Header.InputBegan:Connect(beginDrag)
+Header.InputChanged:Connect(changedDrag)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        local delta = input.Position - dragStart
+        Frame.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+-- کوچک‌سازی پنل
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    TweenService:Create(Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+        Size = minimized and UDim2.new(0, 300, 0, 46) or UDim2.new(0, 300, 0, 198)
+    }):Play()
+    MinBtn.Text = minimized and "+" or "—"
+end)
+
+----------------------------------------------------------------
+-- 7) مخزن در ReplicatedStorage
+----------------------------------------------------------------
+local hiddenStorage = ReplicatedStorage:FindFirstChild("UG_HiddenMap")
+if not hiddenStorage then
+    hiddenStorage = Instance.new("Folder")
+    hiddenStorage.Name = "UG_HiddenMap"
+    hiddenStorage.Parent = ReplicatedStorage
+end
+
+local isToggled        = false
+local isBusy           = false
+local spawnedBaseplate = nil
+local childAddedConn   = nil
+local disabledGuis     = {}
+local pendingQueue     = {}   -- صف آبجکت‌های جدید هنگام ON
+
+----------------------------------------------------------------
+-- 8) موتور بَچ (ضد لگ) — پردازش با بودجه زمانی در هر فریم
+----------------------------------------------------------------
+local function setProgress(done, total, text)
+    local a = total > 0 and (done / total) or 0
+    BarFill.Size = UDim2.new(a, 0, 1, 0)
+    InfoLabel.Text = string.format("STATUS: %s  |  %d / %d", text, done, total)
+end
+
+-- لیست را در چند فریم پردازش می‌کند تا بازی هرگز فریز نشود
+local function processBatched(list, handler, label)
+    local total, done = #list, 0
+    local clock = os.clock()
+    for i = 1, total do
+        handler(list[i])
+        done += 1
+        if done % CONFIG.MIN_PER_FRAME == 0 then
+            if os.clock() - clock >= CONFIG.FRAME_BUDGET then
+                setProgress(done, total, label)
+                RunService.Heartbeat:Wait()
+                clock = os.clock()
+            end
+        end
+    end
+    setProgress(total, total, "DONE")
+end
+
+----------------------------------------------------------------
+-- 9) ابزار کمکی
+----------------------------------------------------------------
+local function buildCharacterSet()
+    local set = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr.Character then set[plr.Character] = true end
+    end
+    return set
+end
+
+local charSet = buildCharacterSet()
+Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function(c) charSet[c] = true end)
+end)
+for _, p in ipairs(Players:GetPlayers()) do
+    p.CharacterAdded:Connect(function(c) charSet[c] = true end)
+end
+
+local function isProtected(obj)
+    return obj == workspace.CurrentCamera
+        or obj == workspace.Terrain
+        or obj == spawnedBaseplate
+        or charSet[obj] ~= nil
+        or obj:IsA("Camera")
+end
+
+local function hideObject(child)
+    if child and child.Parent and not isProtected(child) then
+        pcall(function() child.Parent = hiddenStorage end)
+    end
+end
+
+local function restoreObject(child)
+    if child and child.Parent == hiddenStorage then
+        pcall(function() child.Parent = workspace end)
+    end
+end
+
+local function toggleExternalGuis(disable)
+    if disable then
+        local pGui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
+        if pGui then
+            for _, gui in ipairs(pGui:GetDescendants()) do
+                if (gui:IsA("BillboardGui") or gui:IsA("SurfaceGui")) and gui.Enabled then
+                    table.insert(disabledGuis, gui)
+                    gui.Enabled = false
+                end
+            end
+        end
+    else
+        for _, gui in ipairs(disabledGuis) do
+            if gui and gui.Parent then gui.Enabled = true end
+        end
+        table.clear(disabledGuis)
+    end
+end
+
+----------------------------------------------------------------
+-- 10) ظاهر دکمه بر اساس وضعیت
+----------------------------------------------------------------
+local function paintToggle(on)
+    local accent = on and Color3.fromRGB(0, 255, 190) or Color3.fromRGB(255, 45, 95)
+    local soft   = on and Color3.fromRGB(10, 32, 30)  or Color3.fromRGB(26, 14, 26)
+    local trackC = on and Color3.fromRGB(12, 60, 52)  or Color3.fromRGB(48, 20, 34)
+
+    ToggleLabel.Text = "Underground  :  " .. (on and "ON" or "OFF")
+    TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = soft}):Play()
+    TweenService:Create(tStroke,      TweenInfo.new(0.2), {Color = accent}):Play()
+    TweenService:Create(ToggleLabel,  TweenInfo.new(0.2), {TextColor3 = accent}):Play()
+    TweenService:Create(Track,        TweenInfo.new(0.2), {BackgroundColor3 = trackC}):Play()
+    TweenService:Create(Knob, TweenInfo.new(0.22, Enum.EasingStyle.Back), {
+        Position = on and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8),
+        BackgroundColor3 = accent
+    }):Play()
+    TweenService:Create(StatusDot, TweenInfo.new(0.2), {BackgroundColor3 = accent}):Play()
+end
+
+----------------------------------------------------------------
+-- 11) روشن کردن (ON) — بدون لگ
+----------------------------------------------------------------
+local function enableVoid()
+    local children = workspace:GetChildren()
+
+    -- صف‌کردن آبجکت‌های جدید به‌جای انتقال آنی (ضد لگ)
+    childAddedConn = workspace.ChildAdded:Connect(function(child)
+        if isToggled then
+            table.insert(pendingQueue, child)
+        end
+    end)
+
+    toggleExternalGuis(true)
+
+    -- Baseplate تیره قبل از پاک‌سازی ساخته می‌شود تا بازیکن سقوط نکند
+    local char = LocalPlayer.Character
+    local hrp  = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local spawnPos = hrp.Position - Vector3.new(0, CONFIG.DROP_OFFSET, 0)
+
+        spawnedBaseplate = Instance.new("Part")
+        spawnedBaseplate.Name = "UG_Baseplate"
+        spawnedBaseplate.Size = CONFIG.BASEPLATE_SIZE
+        spawnedBaseplate.CFrame = CFrame.new(spawnPos)
+        spawnedBaseplate.Anchored = true
+        spawnedBaseplate.CanCollide = true
+        spawnedBaseplate.Material = Enum.Material.Plastic
+        spawnedBaseplate.TopSurface = Enum.SurfaceType.Studs
+        spawnedBaseplate.BottomSurface = Enum.SurfaceType.Studs
+        spawnedBaseplate.FrontSurface = Enum.SurfaceType.Studs
+        spawnedBaseplate.BackSurface = Enum.SurfaceType.Studs
+        spawnedBaseplate.LeftSurface = Enum.SurfaceType.Studs
+        spawnedBaseplate.RightSurface = Enum.SurfaceType.Studs
+        spawnedBaseplate.Color = CONFIG.BASEPLATE_COLOR   -- تیره‌تر
+        spawnedBaseplate.Parent = workspace
+
+        -- شبکه نئونی روی زمین (ظاهر سایبرپانک)
+
+        hrp.CFrame = CFrame.new(spawnPos + Vector3.new(0, 5, 0))
+    end
+
+    processBatched(children, hideObject, "CLEARING")
+
+    -- پاک‌سازی صف باقی‌مانده، آرام و بدون لگ
+    task.spawn(function()
+        while isToggled do
+            if #pendingQueue > 0 then
+                local batch = pendingQueue
+                pendingQueue = {}
+                processBatched(batch, hideObject, "SYNCING")
+            end
+            RunService.Heartbeat:Wait()
+        end
+    end)
+end
+
+----------------------------------------------------------------
+-- 12) خاموش کردن (OFF) — بازگردانی بدون لگ
+----------------------------------------------------------------
+local function disableVoid()
+    if childAddedConn then
+        childAddedConn:Disconnect()
+        childAddedConn = nil
+    end
+    pendingQueue = {}
+
+    if spawnedBaseplate and spawnedBaseplate.Parent then
+        spawnedBaseplate:Destroy()
+    end
+    spawnedBaseplate = nil
+
+    local char = LocalPlayer.Character
+    local hrp  = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = hrp.CFrame + Vector3.new(0, CONFIG.DROP_OFFSET + 3, 0)
+        if char:FindFirstChildOfClass("Humanoid") then
+            char:FindFirstChildOfClass("Humanoid").PlatformStand = false
+        end
+    end
+
+    processBatched(hiddenStorage:GetChildren(), restoreObject, "RESTORING")
+    toggleExternalGuis(false)
+end
+
+----------------------------------------------------------------
+-- 13) کلیک دکمه
+----------------------------------------------------------------
+ToggleButton.MouseButton1Click:Connect(function()
+    if isBusy then return end
+    isBusy = true
+    isToggled = not isToggled
+    paintToggle(isToggled)
+
+    local ok, err = pcall(function()
+        if isToggled then enableVoid() else disableVoid() end
+    end)
+    if not ok then
+        InfoLabel.Text = "ERROR: " .. tostring(err)
+    end
+
+    isBusy = false
+end)
+
+-- کلید میانبر: RightControl برای مخفی/نمایش پنل
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        Frame.Visible = not Frame.Visible
+    end
+end)
+
+paintToggle(false)
+setProgress(0, 0, "IDLE")
