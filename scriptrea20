@@ -56,142 +56,13 @@ end
 
 _G.Connections = {}
 
-local addownerui = function(head)
-    local gui = Instance.new("BillboardGui")
-    gui.Parent = head
-    gui.Adornee = head
-    gui.MaxDistance = 9e9
-    gui.Size = UDim2.new(3,0,3,0)
-    gui.StudsOffset = Vector3.new(0,2,0)
-    
-    local text = Instance.new("TextLabel")
-    text.TextXAlignment = Enum.TextXAlignment.Center
-    text.Text = ("Syndicate Owner")
-    text.Font = "Bodoni"
-    text.TextColor3 = Color3.fromRGB(255, 255, 255)
-    text.TextStrokeTransparency = 0.6
-    text.Size = UDim2.new(1,0,1,0)
-    text.FontSize = 'Size32'
-    text.Position = UDim2.new(0,0,0,0)
-    text.BackgroundTransparency = 1
-    text.Parent = gui
-end
-
-local Send_ChatMessage = function(message)
-    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-        local channel = TextChatService.TextChannels["RBXGeneral"]
-        channel:SendAsync(message)
-    else
-        local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-        if chatEvent and chatEvent:FindFirstChild("SayMessageRequest") then
-            chatEvent.SayMessageRequest:FireServer(message, "All")
-        else
-            warn("Chat system not found")
-        end
-    end
-end
-
-for _,player in Players:GetPlayers() do
-    if player.UserId == 177043180 then
-        addownerui(player.Character.Head)
-
-        _G.Connections[player.UserId] = player.Chatted:Connect(function(msg)
-            if msg == ".check" then
-           --     Send_ChatMessage("Visualizer GUI Cracked By C00LHACK")
-              --  LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position.X, player.Character.HumanoidRootPart.Position.Y + 10, player.Character.HumanoidRootPart.Position.Z)
-            end
-        end)
-    end
-
-    if player.UserId == 2673203971 then
-        _G.Connections[player.UserId] = player.Chatted:Connect(function(msg)
-            if msg == ".funny" then
-             --   Send_ChatMessage("funut")
-            --    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position.X, player.Character.HumanoidRootPart.Position.Y + 10, player.Character.HumanoidRootPart.Position.Z)
-            end
-        end)
-    end
-
-    if player.UserId == 26261922 then
-        _G.Connections[player.UserId] = player.Chatted:Connect(function(msg)
-            if msg == ".prox" then
-                local roasts = {
-                    "You're like a cloud. When you disappear, it's a beautiful day.",
-                    "You're not stupid; you just have bad luck thinking.",
-                    "If I had a dollar for every smart thing you said, I'd be broke.",
-                    "You're proof that even evolution takes a break sometimes.",
-                    "You're the reason the gene pool needs a lifeguard.",
-                    "You're not completely useless—you can always serve as a bad example.",
-                    "I've seen salads dressed better than you.",
-                    "You bring everyone so much joy… when you leave the server.",
-                    "Your aim is like your IQ—way off target.",
-                    "You're the type of player who would drown in a kiddie pool.",
-                    "You're not lagging, you're just naturally slow.",
-                    "You have something on your chin... no, the third one down.",
-                    "You must be the human version of a participation trophy.",
-                    "You're not carried, you're airlifted every round.",
-                    "Your presence makes NPCs look intelligent.",
-                    "You're like a software update—always annoying and never on time.",
-                    "Even the AFK players contribute more than you.",
-                    "You're the kind of person who trips in creative mode.",
-                }
-            --    Send_ChatMessage(roasts[math.random(1, #roasts)])
-            --    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position.X, player.Character.HumanoidRootPart.Position.Y + 10, player.Character.HumanoidRootPart.Position.Z)
-            end
-        end)
-    end
-    
-end
-
-
-
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAppearanceLoaded:Connect(function(char)
-        if player.UserId == 177043180 then
-            addownerui(char.Head)
-
-            _G.Connections[player.UserId] = player.Chatted:Connect(function(msg)
-                if msg == ".check" then
-                    -- Send_ChatMessage("Visualizer GUI Cracked By C00LHACK")
-                    -- LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position.X, player.Character.HumanoidRootPart.Position.Y + 10, player.Character.HumanoidRootPart.Position.Z)
-                end
-            end)
-        end
-
-        if player.UserId == 2673203971 then
-            _G.Connections[player.UserId] = player.Chatted:Connect(function(msg)
-                if msg == ".funny" then
-                --    Send_ChatMessage("funut")
-                    -- LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position.X, player.Character.HumanoidRootPart.Position.Y + 10, player.Character.HumanoidRootPart.Position.Z)
-                end
-            end)
-        end
-        
-        if player.UserId == 26261922 then
-            _G.Connections[player.UserId] = player.Chatted:Connect(function(msg)
-                if msg == ".prox" then
-                    local roasts = {
-                    }
-                --    Send_ChatMessage(roasts[math.random(1, #roasts)])
-           --         LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position.X, player.Character.HumanoidRootPart.Position.Y + 10, player.Character.HumanoidRootPart.Position.Z)
-                end
-            end)
-        end
-
-    end)
-end)
-
-
-
-
-
 local ScriptSettings = {
     Player = {
         AudioId = 77478671906831,
         Pitch = 1,
     },
     Duper = {Ammount = 1, PanicStop = false, Vip = false},
-    Visualizer = {SetVisualizer = {"halo (visualizer)"},Target = "me", Radius=10, Speed=1},
+    Visualizer = {SetVisualizer = "halo (visualizer)",Target = "me", Radius=10, Speed=1},
     Visualizer2 = {SetVisualizer = {"boombox man"}},
     Misc = {Stealing = false, AntiFling = false, DisableUi = false},
     Songs = {Selected = 0},
@@ -209,13 +80,11 @@ local EquipAll = function()
     local character, backpack, hrp = GetLPlrImportant()
 
     for index, tool in next, backpack:GetChildren() do
-        if tool:IsA("Tool") and tool.Name and string.find(string.lower(tool.Name), "boom") then
+        if tool:IsA("Tool") then
             tool.Parent = character
         end
     end
 end
-
-
 
 
 local antilog = function(id)
@@ -747,7 +616,7 @@ local Visualize = function()
 
     local tools = {}
     for index, tool in next, backpack:GetChildren() do
-        if tool:IsA("Tool") and (tool:FindFirstChild("Handle", true) and (tool.Name:lower()):find("boom")) then
+        if tool:IsA("Tool") and tool:FindFirstChild("Handle", true) then
             tools[#tools+1] = tool
             tool.Parent = character
             tool.Parent = backpack
@@ -787,6 +656,55 @@ local Visualize = function()
     PlayAudio()
 
 
+    local audioMeter = {PlaybackLoudness = 0}
+    local previousLoudness = 0
+    local beatPulse = 0
+    local lastScan
+    local lastBeat = -math.huge
+
+    local function GetSoundSource()
+        local now = tick()
+
+        -- اسکن حداکثر ۳۰ بار در ثانیه انجام می‌شود.
+        if lastScan and now - lastScan < 1 / 30 then
+            return audioMeter
+        end
+
+        local deltaTime = lastScan and math.max(0, now - lastScan) or (1 / 30)
+        lastScan = now
+
+        local loudness = 0
+
+        -- تمام Soundهای داخل ابزارها، حتی اگر بعداً ساخته شده باشند.
+        for _, tool in ipairs(tools) do
+            if tool and tool.Parent then
+                for _, descendant in ipairs(tool:GetDescendants()) do
+                    if descendant:IsA("Sound") and descendant.IsPlaying then
+                        local currentLoudness = descendant.PlaybackLoudness
+                        if currentLoudness > loudness then
+                            loudness = currentLoudness
+                        end
+                    end
+                end
+            end
+        end
+
+        -- تشخیص افزایش ناگهانی صدا و ایجاد ضربهٔ کوتاه.
+        local rise = loudness - previousLoudness
+        if loudness >= 20
+            and rise >= math.max(8, previousLoudness * 0.15)
+            and now - lastBeat >= 0.16 then
+            beatPulse = 1
+            lastBeat = now
+        end
+
+        previousLoudness = loudness
+        beatPulse = math.max(0, beatPulse - deltaTime * 4)
+
+        audioMeter.PlaybackLoudness = math.clamp(loudness + beatPulse * 180, 0, 1000)
+        return audioMeter
+    end
+
     local y = 0
 
     local target, targethrp
@@ -822,7 +740,7 @@ local Visualize = function()
         if Preset == "circle 1" then
 
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)
                 local z = (targethrp).Position
                 local b = G.PlaybackLoudness
@@ -847,7 +765,7 @@ local Visualize = function()
 
         elseif Preset == "circle 2" then
             for index, tool in next, tools do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)
                 local z = (targethrp).Position
                 local b = G.PlaybackLoudness
@@ -872,7 +790,7 @@ local Visualize = function()
         elseif Preset == "circle (reactive)" then
         
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)
                 local z = (targethrp).Position
                 local b = G.PlaybackLoudness
@@ -889,7 +807,7 @@ local Visualize = function()
                 
                 local A = tool:FindFirstChild("Handle")
                 local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                A.Position = (h * CFrame.new((math.cos(u) * 5) * j, math.sin(math.deg(tick() / 7 + ((index * #tools) / math.max(0.1, 5)) / 360)) * 2, (math.sin(u) * 5) * j)).p
+                A.Position = (h * CFrame.new((math.cos(u) * ScriptSettings.Visualizer.Radius) * j, math.sin(math.deg(tick() / 7 + ((index * #tools) / math.max(0.1, 5)) / 360)) * 2, (math.sin(u) * ScriptSettings.Visualizer.Radius) * j)).p
                 J.CFrame = CFrame.new(A.Position, z)
                 w = A.CFrame
                 
@@ -902,7 +820,7 @@ local Visualize = function()
         elseif Preset == "sine wave" then
 
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)
                 local z = (targethrp).Position
                 
@@ -932,7 +850,7 @@ local Visualize = function()
             local smoothingFactor = 0.1
         
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)
                 local z = (targethrp).Position
                 local b = G.PlaybackLoudness
@@ -956,7 +874,7 @@ local Visualize = function()
                 local smoothedYOffset = currentYOffset + (targetYOffset - currentYOffset) * smoothingFactor
         
                 
-                local J = ((h * CFrame.Angles(0, math.rad(y + index * (360 / #tools)), 0)) * CFrame.new(0, smoothedYOffset, 5 + w / 3)).Position
+                local J = ((h * CFrame.Angles(0, math.rad(y + index * (360 / #tools)), 0)) * CFrame.new(0, smoothedYOffset, ScriptSettings.Visualizer.Radius + w / 3)).Position
                 local j = CFrame.new(J, z + Vector3.new(0, smoothedYOffset, 0))
         
                 
@@ -964,7 +882,7 @@ local Visualize = function()
                     tool.Handle.CFrame = j
                 end
             end
-            y = y + 1
+            y = y + ScriptSettings.Visualizer.Speed
 
         elseif Preset == "wings (reactive)" then
 
@@ -973,7 +891,7 @@ local Visualize = function()
                     continue
                 end
         
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local b = G.PlaybackLoudness
         
                 local handle = tool:FindFirstChild("Handle")
@@ -981,7 +899,7 @@ local Visualize = function()
                 bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
                 bodyGyro.P = 10000
         
-                local distanceBehind = 1
+                local distanceBehind = ScriptSettings.Visualizer.Radius / 2
         
                 local parabolaCoefficient = 0.5 * (b / 400)
                 parabolaCoefficient = math.clamp(parabolaCoefficient, 0.1, 1)
@@ -1011,7 +929,7 @@ local Visualize = function()
                     continue
                 end
         
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local b = G.PlaybackLoudness
         
                 local handle = tool:FindFirstChild("Handle")
@@ -1035,7 +953,7 @@ local Visualize = function()
                 handle.CFrame = behindPosition
         
                 local waveAmplitude = 30
-                local waveFrequency = 4
+                local waveFrequency = 4 * ScriptSettings.Visualizer.Speed
                 local waveOffset = index * (360 / #tools)
         
                 local rotationAngle = math.rad(waveAmplitude * math.sin(tick() * waveFrequency + waveOffset))
@@ -1053,7 +971,7 @@ local Visualize = function()
                     continue
                 end
         
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local b = G.PlaybackLoudness
         
                 local handle = tool:FindFirstChild("Handle")
@@ -1064,13 +982,13 @@ local Visualize = function()
         
                 local xOffset = 0
                 local yOffset = 0
-                local zOffset = 0.8
+                local zOffset = ScriptSettings.Visualizer.Radius / 5
         
                 local behindPosition = targethrp.CFrame * CFrame.new(xOffset, yOffset, zOffset)
                 handle.CFrame = behindPosition * CFrame.Angles(0, math.rad(180), 0)
         
                 local waveAmplitude = 30
-                local waveFrequency = 4
+                local waveFrequency = 4 * ScriptSettings.Visualizer.Speed
                 local waveOffset = (360 / #tools)
         
                 local rotationAngle = math.rad(waveAmplitude * math.sin(tick() * waveFrequency + waveOffset))
@@ -1082,7 +1000,7 @@ local Visualize = function()
 
         elseif Preset == "lemniscate" then
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)
                 local z = (targethrp).Position
                 
@@ -1123,7 +1041,7 @@ local Visualize = function()
         elseif Preset == "figure-8" then
         
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position) 
                 local z = (targethrp).Position 
                 
@@ -1164,7 +1082,7 @@ local Visualize = function()
         elseif Preset == "lissajous curve" then
 
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position) 
                 local z = (targethrp).Position 
                 
@@ -1208,7 +1126,7 @@ local Visualize = function()
         elseif Preset == "orbiting rings" then
 
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)
                 local z = (targethrp).Position
                 
@@ -1254,7 +1172,7 @@ local Visualize = function()
         elseif Preset == "dome" then
 
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)  -- Target position (your position)
                 local z = (targethrp).Position  -- Target position (your position)
                 
@@ -1301,7 +1219,7 @@ local Visualize = function()
         elseif Preset == "infinity symbol" then
 
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)  -- Target position (your position)
                 local z = (targethrp).Position  -- Target position (your position)
                 
@@ -1341,7 +1259,7 @@ local Visualize = function()
         elseif Preset == "heart" then
 
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)  -- Target position (your position)
                 local z = (targethrp).Position  -- Target position (your position)
                 
@@ -1382,7 +1300,7 @@ local Visualize = function()
         elseif Preset == "rose curve" then
 
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)  -- Target position (your position)
                 local z = (targethrp).Position  -- Target position (your position)
                 
@@ -1424,7 +1342,7 @@ local Visualize = function()
         elseif Preset == "trefoil knot" then
 
             for index, tool in pairs(tools) do
-                local G = tools[1].Handle:FindFirstChild("Sound")
+                local G = GetSoundSource()
                 local h = CFrame.new((targethrp).Position)  -- Target position (your position)
                 local z = (targethrp).Position  -- Target position (your position)
                 
@@ -1634,7 +1552,7 @@ local Visualize2 = function()
 
     local tools = {}
     for index, tool in next, backpack:GetChildren() do
-        if tool:IsA("Tool") and (tool:FindFirstChild("Handle", true) and (tool.Name:lower()):find("boom")) then
+        if tool:IsA("Tool") and tool:FindFirstChild("Handle", true) then
             tools[#tools+1] = tool
             tool.Parent = character
             tool.Parent = backpack
@@ -1872,7 +1790,7 @@ local Visualize2 = function()
         local lastMoveState = false
     
         local function updateMovement()
-            local x = (moveKeys.A and -3 or 0) + (moveKeys.D and 3 or 0)
+            local x = (moveKeys.D and -3 or 0) + (moveKeys.A and 3 or 0)
             local z = (moveKeys.W and -3 or 0) + (moveKeys.S and 3 or 0)
             
             if x == 0 and z == 0 then
@@ -2073,7 +1991,7 @@ coroutine.wrap(function()
     end
 end)()
 
-library.title = "syndicate visualizer Cracked By C00LHACK"
+library.title = "syndicate visualizer Updated And Cracked By C00LHACK"
 
 library:Introduction()
 --wait(1)
