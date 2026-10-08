@@ -1,0 +1,348 @@
+--[[
+    Proxy Aura - Advanced ProximityPrompt Auto Fire (Anti-Robux Purchase Edition)
+    Features:
+    - Custom Drag Slider (No UI Conflict Bug)
+    - Weld 3D Visual Red Aura Sphere
+    - Highly Optimized Spatial Detection Engine
+    - Anti-Robux & Anti-Gamepass Purchase Filter
+--]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Global States
+local Enabled = false
+local CurrentRange = 3 -- default 3 studs
+local MaxRange = 40
+local MinRange = 1
+
+local AuraSphere = nil
+local AuraWeld = nil
+local IsDraggingSlider = false
+local IsDraggingFrame = false
+
+--------------------------------------------------------------------------------
+-- Anti-Robux Purchase Protection Hook
+--------------------------------------------------------------------------------
+if hookmetamethod then
+    local oldNamecall
+    oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+        local method = getnamecallmethod()
+        if Enabled and self == MarketplaceService and (string.find(method, "Prompt") or string.find(method, "Purchase")) then
+            return nil
+        end
+        return oldNamecall(self, ...)
+    end)
+end
+
+local PurchaseKeywords = {
+    "buy", "purchase", "robux", "r$", "pass", "gamepass", 
+    "devproduct", "product", "donate", "store", "shop", "item", "push", "nuke", "spin"
+}
+
+local function IsPurchasePrompt(prompt)
+    if not prompt then return false end
+    
+    local textToSearch = string.lower(
+        (prompt.ActionText or "") .. " " .. 
+        (prompt.ObjectText or "") .. " " .. 
+        (prompt.Name or "") .. " " .. 
+        (prompt.Parent and prompt.Parent.Name or "")
+    )
+    
+    for _, kw in ipairs(PurchaseKeywords) do
+        if string.find(textToSearch, kw, 1, true) then
+            return true
+        end
+    end
+    
+    return false
+end
+
+--------------------------------------------------------------------------------
+-- 1. Visual Aura Sphere Creation
+--------------------------------------------------------------------------------
+local function UpdateAuraSize()
+    if AuraSphere and AuraSphere.Parent then
+        local diameter = CurrentRange * 2
+        AuraSphere.Size = Vector3.new(diameter, diameter, diameter)
+    end
+end
+
+local function DestroyAura()
+    if AuraSphere then
+        AuraSphere:Destroy()
+        AuraSphere = nil
+    end
+end
+
+local function CreateAuraSphere(character)
+    DestroyAura()
+    if not character then return end
+    local hrp = character:WaitForChild("HumanoidRootPart", 5)
+    if not hrp then return end
+
+    AuraSphere = Instance.new("Part")
+    AuraSphere.Name = "ProxyAuraVisualSphere"
+    AuraSphere.Shape = Enum.PartType.Ball
+    AuraSphere.Color = Color3.fromRGB(255, 35, 35)
+    AuraSphere.Material = Enum.Material.ForceField
+    AuraSphere.Transparency = 0.35
+    
+    AuraSphere.CanCollide = false
+    AuraSphere.CanTouch = false
+    AuraSphere.CanQuery = false
+    AuraSphere.Massless = true
+    
+    AuraSphere.CastShadow = false
+    AuraSphere.CFrame = hrp.CFrame
+    AuraSphere.Parent = character
+
+    AuraWeld = Instance.new("WeldConstraint")
+    AuraWeld.Part0 = hrp
+    AuraWeld.Part1 = AuraSphere
+    AuraWeld.Parent = AuraSphere
+
+    UpdateAuraSize()
+end
+
+--------------------------------------------------------------------------------
+-- 2. GUI Setup
+--------------------------------------------------------------------------------
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ProxyAuraGUI"
+ScreenGui.ResetOnSpawn = false
+
+if gethui then
+    ScreenGui.Parent = gethui()
+elseif syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = game:GetService("CoreGui")
+else
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 260, 0, 160)
+MainFrame.Position = UDim2.new(0.5, -130, 0.4, -80)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(255, 50, 50)
+UIStroke.Thickness = 1.5
+UIStroke.Parent = MainFrame
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, 0, 0, 35)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "☠️ PROXY AURA ☠️"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 16
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Parent = MainFrame
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "ToggleBtn"
+ToggleBtn.Size = UDim2.new(0.9, 0, 0, 36)
+ToggleBtn.Position = UDim2.new(0.05, 0, 0, 42)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+ToggleBtn.Text = "AURA: OFF"
+ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+ToggleBtn.TextSize = 14
+ToggleBtn.Font = Enum.Font.GothamSemibold
+ToggleBtn.AutoButtonColor = false
+ToggleBtn.Parent = MainFrame
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 6)
+BtnCorner.Parent = ToggleBtn
+
+local SliderContainer = Instance.new("Frame")
+SliderContainer.Name = "SliderContainer"
+SliderContainer.Size = UDim2.new(0.9, 0, 0, 50)
+SliderContainer.Position = UDim2.new(0.05, 0, 0, 92)
+SliderContainer.BackgroundTransparency = 1
+SliderContainer.Parent = MainFrame
+
+local SliderTitle = Instance.new("TextLabel")
+SliderTitle.Size = UDim2.new(1, 0, 0, 20)
+SliderTitle.BackgroundTransparency = 1
+SliderTitle.Text = "Range: 3 Studs"
+SliderTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+SliderTitle.TextSize = 12
+SliderTitle.Font = Enum.Font.Gotham
+SliderTitle.TextXAlignment = Enum.TextXAlignment.Left
+SliderTitle.Parent = SliderContainer
+
+local SliderTrack = Instance.new("Frame")
+SliderTrack.Name = "Track"
+SliderTrack.Size = UDim2.new(1, 0, 0, 8)
+SliderTrack.Position = UDim2.new(0, 0, 0, 26)
+SliderTrack.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+SliderTrack.BorderSizePixel = 0
+SliderTrack.Parent = SliderContainer
+
+local TrackCorner = Instance.new("UICorner")
+TrackCorner.CornerRadius = UDim.new(1, 0)
+TrackCorner.Parent = SliderTrack
+
+local SliderFill = Instance.new("Frame")
+SliderFill.Name = "Fill"
+SliderFill.Size = UDim2.new((CurrentRange - MinRange) / (MaxRange - MinRange), 0, 1, 0)
+SliderFill.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+SliderFill.BorderSizePixel = 0
+SliderFill.Parent = SliderTrack
+
+local FillCorner = Instance.new("UICorner")
+FillCorner.CornerRadius = UDim.new(1, 0)
+FillCorner.Parent = SliderFill
+
+local SliderKnob = Instance.new("TextButton")
+SliderKnob.Name = "Knob"
+SliderKnob.Size = UDim2.new(0, 16, 0, 16)
+SliderKnob.Position = UDim2.new(1, -8, 0.5, -8)
+SliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SliderKnob.Text = ""
+SliderKnob.Parent = SliderFill
+
+local KnobCorner = Instance.new("UICorner")
+KnobCorner.CornerRadius = UDim.new(1, 0)
+KnobCorner.Parent = SliderKnob
+
+--------------------------------------------------------------------------------
+-- 3. Smooth Slider Mechanics
+--------------------------------------------------------------------------------
+local function UpdateSlider(inputPosition)
+    local trackPos = SliderTrack.AbsolutePosition.X
+    local trackSize = SliderTrack.AbsoluteSize.X
+    local relativeX = math.clamp(inputPosition.X - trackPos, 0, trackSize)
+    local percentage = relativeX / trackSize
+
+    CurrentRange = math.floor(MinRange + (percentage * (MaxRange - MinRange)))
+    if CurrentRange < MinRange then CurrentRange = MinRange end
+
+    SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+    SliderTitle.Text = "Range: " .. tostring(CurrentRange) .. " Studs"
+
+    UpdateAuraSize()
+end
+
+SliderKnob.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        IsDraggingSlider = true
+    end
+end)
+
+SliderTrack.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        IsDraggingSlider = true
+        UpdateSlider(input.Position)
+    end
+end)
+
+--------------------------------------------------------------------------------
+-- 4. Main Panel Dragging
+--------------------------------------------------------------------------------
+local DragStart = nil
+local StartPos = nil
+
+MainFrame.InputBegan:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not IsDraggingSlider then
+        IsDraggingFrame = true
+        DragStart = input.Position
+        StartPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if IsDraggingSlider and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        UpdateSlider(input.Position)
+    elseif IsDraggingFrame and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - DragStart
+        MainFrame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + delta.X, StartPos.Y.Scale, StartPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        IsDraggingSlider = false
+        IsDraggingFrame = false
+    end
+end)
+
+--------------------------------------------------------------------------------
+-- 5. Toggle Logic & Character Binding
+--------------------------------------------------------------------------------
+ToggleBtn.MouseButton1Click:Connect(function()
+    Enabled = not Enabled
+    if Enabled then
+        ToggleBtn.Text = "AURA: ON"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        if LocalPlayer.Character then
+            CreateAuraSphere(LocalPlayer.Character)
+        end
+    else
+        ToggleBtn.Text = "AURA: OFF"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+        ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        DestroyAura()
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    if Enabled then
+        task.wait(0.5)
+        CreateAuraSphere(char)
+    end
+end)
+
+--------------------------------------------------------------------------------
+-- 6. High-Performance ProximityPrompt Detection Loop
+--------------------------------------------------------------------------------
+task.spawn(function()
+    while true do
+        task.wait(0.05)
+        if Enabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = LocalPlayer.Character.HumanoidRootPart
+            
+            local overlapParams = OverlapParams.new()
+            overlapParams.FilterType = Enum.RaycastFilterType.Exclude
+            overlapParams.FilterDescendantsInstances = {LocalPlayer.Character}
+
+            local parts = workspace:GetPartBoundsInRadius(hrp.Position, CurrentRange, overlapParams)
+            local firedPrompts = {}
+
+            for _, part in ipairs(parts) do
+                local prompt = part:FindFirstChildWhichIsA("ProximityPrompt") or part.Parent:FindFirstChildWhichIsA("ProximityPrompt")
+                
+                if prompt and prompt.Enabled and not firedPrompts[prompt] then
+                    -- چک کردن عدم مطابقت با پرامپت‌های خرید
+                    if IsPurchasePrompt(prompt) then
+                        continue
+                    end
+
+                    firedPrompts[prompt] = true
+                    
+                    if fireproximityprompt then
+                        fireproximityprompt(prompt)
+                    end
+                end
+            end
+        end
+    end
+end)
