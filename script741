@@ -42,7 +42,7 @@ end
 
 local PurchaseKeywords = {
     "buy", "purchase", "robux", "r$", "pass", "gamepass", 
-    "devproduct", "product", "donate", "store", "shop", "item", "push", "nuke", "spin"
+    "devproduct", "product", "donate", "push", "nuke", "spin", "explode", "troll"
 }
 
 local function IsPurchasePrompt(prompt)
