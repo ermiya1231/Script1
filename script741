@@ -534,6 +534,7 @@ SliderTrack.InputBegan:Connect(function(input)
     end
 end)
 
+-- Main Frame Dragging
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
@@ -586,6 +587,22 @@ end
 
 -- فراخوانی تابع: MainFrame حرکت می‌کند، اما کلیک روی TitleLabel انجام می‌شود
 MakeDraggable(MainFrame, TitleLabel)
+
+UserInputService.InputChanged:Connect(function(input)
+    if IsDraggingSlider and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        UpdateSlider(input.Position)
+    elseif IsDraggingFrame and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - DragStart
+        MainFrame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + delta.X, StartPos.Y.Scale, StartPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        IsDraggingSlider = false
+        IsDraggingFrame = false
+    end
+end)
 
 -- Toggle Aura Button
 ToggleBtn.MouseButton1Click:Connect(function()
