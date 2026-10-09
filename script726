@@ -1,0 +1,290 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local speaker = Players.LocalPlayer
+
+-- ۱. ساخت پنل رابط کاربری (GUI)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FlingToolGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = speaker:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 260, 0, 150)
+frame.Position = UDim2.new(0.5, -130, 0.5, -75)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundTransparency = 1
+title.Text = "Tool Fling By C00LHACK"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 16
+title.Font = Enum.Font.SourceSansBold
+title.Parent = frame
+
+-- کادر ورودی نام
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0.85, 0, 0, 35)
+textBox.Position = UDim2.new(0.075, 0, 0.28, 0)
+textBox.PlaceholderText = "Username or DisplayName..."
+textBox.Text = ""
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+textBox.BorderSizePixel = 0
+textBox.Font = Enum.Font.SourceSans
+textBox.TextSize = 14
+textBox.Parent = frame
+
+local textBoxCorner = Instance.new("UICorner")
+textBoxCorner.CornerRadius = UDim.new(0, 6)
+textBoxCorner.Parent = textBox
+
+-- دکمه شروع
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.85, 0, 0, 35)
+button.Position = UDim2.new(0.075, 0, 0.60, 0)
+button.Text = "Fling Player"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+button.BorderSizePixel = 0
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 15
+button.Parent = frame
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 6)
+buttonCorner.Parent = button
+
+-- پوشه موقت در ReplicatedStorage برای نگهداری مش‌ها
+local tempFolder = ReplicatedStorage:FindFirstChild("TempFlingMeshes")
+if not tempFolder then
+	tempFolder = Instance.new("Folder")
+	tempFolder.Name = "TempFlingMeshes"
+	tempFolder.Parent = ReplicatedStorage
+end
+
+-- تابع پیدا کردن بازیکن بر اساس بخشی از نام
+local function getTargetPlayer(inputText)
+	if inputText == "" then return nil end
+	local text = string.lower(inputText)
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= speaker then
+			local uName = string.lower(player.Name)
+			local dName = string.lower(player.DisplayName)
+			if string.find(uName, text, 1, true) or string.find(dName, text, 1, true) then
+				return player
+			end
+		end
+	end
+	return nil
+end
+
+local isFlinging = false
+
+button.MouseButton1Click:Connect(function()
+	if isFlinging then return end
+	
+	local targetPlayer = getTargetPlayer(textBox.Text)
+	if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+		warn("بازیکن مورد نظر پیدا نشد!")
+		return
+	end
+
+	local character = speaker.Character
+	if not character or not character:FindFirstChild("HumanoidRootPart") or not character:FindFirstChildOfClass("Humanoid") then
+		return
+	end
+
+	isFlinging = true
+	local myHRP = character.HumanoidRootPart
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local originalCFrame = myHRP.CFrame 
+	local targetHRP = targetPlayer.Character.HumanoidRootPart
+
+	if workspace.StreamingEnabled then
+		task.spawn(function()
+			pcall(function()
+				workspace:RequestStreamAroundAsync(targetHRP.Position)
+			end)
+		end)
+	end
+	if humanoid then
+		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+	end
+
+	-- ۲. Equip کردن تمامی وسایل کوله‌پشتی
+	local backpack = speaker:FindFirstChildOfClass("Backpack")
+	if backpack then
+		for _, v in pairs(backpack:GetChildren()) do
+			if v:IsA("Tool") or v:IsA("HopperBin") then
+				v.Parent = character
+			end
+		end
+	end
+
+	local savedMeshes = {}
+
+	-- ۳ & ۴. تنظیم CanCollide و جداسازی/مخفی‌سازی همه‌جانبه مش‌ها
+	for _, tool in pairs(character:GetChildren()) do
+		if tool:IsA("Tool") or tool:IsA("HopperBin") or tool:IsA("Accoutrement") then
+			for _, item in pairs(tool:GetDescendants()) do
+				if item:IsA("BasePart") then
+					item.CanCollide = true
+				end
+				
+				-- پشتیبانی از تمام انواع DataModelMesh و CharacterMesh
+				if item:IsA("DataModelMesh") or item:IsA("CharacterMesh") then
+					table.insert(savedMeshes, {
+						meshType = "Mesh",
+						instance = item,
+						originalParent = item.Parent
+					})
+					item.Parent = tempFolder
+				-- پشتیبانی از MeshPartها در وسایل جدید
+				elseif item:IsA("MeshPart") then
+					table.insert(savedMeshes, {
+						meshType = "MeshPart",
+						instance = item,
+						originalTransparency = item.Transparency
+					})
+					item.Transparency = 1
+				end
+			end
+		end
+	end
+
+	-- ۵. نیروهای پرتاب
+	local bav = Instance.new("BodyAngularVelocity")
+	bav.Name = "FlingSpin"
+	bav.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+	bav.AngularVelocity = Vector3.new(99999, 99999, 99999)
+	bav.Parent = myHRP
+
+	local bv = Instance.new("BodyVelocity")
+	bv.Name = "FlingVel"
+	bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+	bv.Velocity = Vector3.new(0, 0, 0)
+	bv.Parent = myHRP
+
+	local rotX, rotY, rotZ = 0, 0, 0
+	local loopConn
+
+	loopConn = RunService.Heartbeat:Connect(function()
+		if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and character and myHRP then
+			local tHRP = targetPlayer.Character.HumanoidRootPart
+			
+			local targetVelocity = tHRP.AssemblyLinearVelocity or tHRP.Velocity
+			local predictionOffset = targetVelocity * 0.12 
+			
+			rotX = rotX + 45
+			rotY = rotY + 90
+			rotZ = rotZ + 30
+			local rotationCFrame = CFrame.Angles(math.rad(rotX), math.rad(rotY), math.rad(rotZ))
+
+			myHRP.CFrame = CFrame.new(tHRP.Position + predictionOffset) * rotationCFrame
+			
+			myHRP.AssemblyLinearVelocity = Vector3.new(99999, 99999, 99999)
+			myHRP.AssemblyAngularVelocity = Vector3.new(99999, 99999, 99999)
+		else
+			if loopConn then loopConn:Disconnect() end
+		end
+	end)
+
+	-- ۶. صبر کردن به مدت ۲ ثانیه
+	task.wait(2)
+
+	-- ۷. قطع اتصالات و توقف فیزیکی
+	if loopConn then loopConn:Disconnect() end
+	if bav then bav:Destroy() end
+	if bv then bv:Destroy() end
+
+	-- صفر کردن سرعت برای برگشت
+	if myHRP then
+		myHRP.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+		myHRP.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+		myHRP.CFrame = originalCFrame
+	end
+
+	-- بازگرداندن تمام مش‌ها و شفافیت‌ها به حالت اولیه
+	for _, record in ipairs(savedMeshes) do
+		if record.meshType == "Mesh" and record.instance and record.originalParent then
+			record.instance.Parent = record.originalParent
+		elseif record.meshType == "MeshPart" and record.instance then
+			record.instance.Transparency = record.originalTransparency
+		end
+	end
+
+	-- Unequip کردن ابزارها
+	if humanoid then
+		humanoid:UnequipTools()
+		humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+	end
+
+	-- بازگرداندن وضعیت CanCollide به خاموش
+	local currentBackpack = speaker:FindFirstChildOfClass("Backpack")
+	if currentBackpack then
+		for _, tool in pairs(currentBackpack:GetChildren()) do
+			if tool:IsA("Tool") then
+				for _, item in pairs(tool:GetDescendants()) do
+					if item:IsA("BasePart") then
+						item.CanCollide = false
+					end
+				end
+			end
+		end
+	end
+
+	-- ۸. سیستم محافظتی ۵ ثانیه‌ای ضد Void و ضد GamePlayPaused
+	local protectionTime = 5
+	local timeElapsed = 0
+	local lastStreamReq = 0
+	local antiVoidConn
+	
+	antiVoidConn = RunService.Heartbeat:Connect(function(dt)
+		timeElapsed = timeElapsed + dt
+		
+		if timeElapsed >= protectionTime then
+			antiVoidConn:Disconnect()
+			isFlinging = false
+			return
+		end
+
+		if myHRP then
+			if workspace.StreamingEnabled and (timeElapsed - lastStreamReq > 0.5) then
+				lastStreamReq = timeElapsed
+				task.spawn(function()
+					pcall(function()
+						workspace:RequestStreamAroundAsync(originalCFrame.Position)
+					end)
+				end)
+			end
+
+			local isGlitching = false
+			if myHRP.AssemblyLinearVelocity.Magnitude > 200 or myHRP.AssemblyAngularVelocity.Magnitude > 200 then
+				isGlitching = true
+			elseif myHRP.Position.Y < (workspace.FallenPartsDestroyHeight + 150) then
+				isGlitching = true
+			end
+
+			if isGlitching then
+				myHRP.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+				myHRP.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+				myHRP.CFrame = originalCFrame
+			end
+		else
+			antiVoidConn:Disconnect()
+			isFlinging = false
+		end
+	end)
+
+end)
