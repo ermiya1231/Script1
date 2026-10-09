@@ -1,0 +1,364 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+
+-- ==========================================
+-- 1. تنظیمات و متغیرهای اصلی
+-- ==========================================
+local isOrbitActive = false
+local orbitSpeed = 50
+local orbitRadius = 10
+local orbitMode = 1
+local modes = {"Flat Orbit", "Wave Orbit", "Chaos Orbit"}
+local maxSearchDistance = 300
+
+-- بای‌پاس SimulationRadius
+local sethidden = sethiddenproperty or set_hidden_property or set_hidden_prop
+if sethidden then
+    task.spawn(function()
+        while task.wait(0.5) do
+            pcall(function()
+                settings().Physics.AllowSleep = false
+                sethidden(player, "SimulationRadius", math.huge)
+                sethidden(player, "MaxSimulationRadius", math.huge)
+            end)
+        end
+    end)
+end
+
+-- ==========================================
+-- 2. ساخت رابط کاربری (UI)
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "OrbitPanel_Pro"
+ScreenGui.ResetOnSpawn = false
+local guiParent = game:GetService("CoreGui") or player:WaitForChild("PlayerGui")
+ScreenGui.Parent = guiParent
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 250, 0, 270)
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -135)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 2
+UIStroke.Parent = MainFrame
+
+RunService.RenderStepped:Connect(function()
+    if UIStroke.Parent then
+        UIStroke.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+    end
+end)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -70, 0, 40)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "NPC Orbit By C00LHACK"
+Title.TextColor3 = Color3.fromRGB(255, 200, 50)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = MainFrame
+
+local function makeDraggable(dragArea, targetFrame)
+    local dragging, dragInput, dragStart, startPos
+    
+    dragArea.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = targetFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    dragArea.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local newPos = UDim2.new(
+                startPos.X.Scale, 
+                startPos.X.Offset + delta.X, 
+                startPos.Y.Scale, 
+                startPos.Y.Offset + delta.Y
+            )
+            TweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+        end
+    end)
+end
+
+makeDraggable(Title, MainFrame)
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 5)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 16
+CloseBtn.Parent = MainFrame
+
+local CollapseBtn = Instance.new("TextButton")
+CollapseBtn.Size = UDim2.new(0, 30, 0, 30)
+CollapseBtn.Position = UDim2.new(1, -65, 0, 5)
+CollapseBtn.BackgroundTransparency = 1
+CollapseBtn.Text = "−"
+CollapseBtn.TextColor3 = Color3.fromRGB(250, 250, 250)
+CollapseBtn.Font = Enum.Font.GothamBold
+CollapseBtn.TextSize = 22
+CollapseBtn.Parent = MainFrame
+
+local isCollapsed = false
+CollapseBtn.MouseButton1Click:Connect(function()
+    isCollapsed = not isCollapsed
+    if isCollapsed then
+        MainFrame:TweenSize(UDim2.new(0, 250, 0, 40), "Out", "Quad", 0.3, true)
+        CollapseBtn.Text = "+"
+    else
+        MainFrame:TweenSize(UDim2.new(0, 250, 0, 270), "Out", "Quad", 0.3, true)
+        CollapseBtn.Text = "−"
+    end
+end)
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(1, -20, 0, 40)
+ToggleBtn.Position = UDim2.new(0, 10, 0, 45)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ToggleBtn.Text = "Status: OFF"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 16
+ToggleBtn.Parent = MainFrame
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 8)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    isOrbitActive = not isOrbitActive
+    if isOrbitActive then
+        ToggleBtn.Text = "Status: ON"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
+    else
+        ToggleBtn.Text = "Status: OFF"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    end
+end)
+
+local function createSlider(name, yPos, minVal, maxVal, defaultVal, callback)
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -20, 0, 20)
+    Label.Position = UDim2.new(0, 10, 0, yPos)
+    Label.BackgroundTransparency = 1
+    Label.Text = name .. ": " .. defaultVal
+    Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Label.Font = Enum.Font.Gotham
+    Label.TextSize = 14
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = MainFrame
+
+    local Bg = Instance.new("Frame")
+    Bg.Size = UDim2.new(1, -20, 0, 10)
+    Bg.Position = UDim2.new(0, 10, 0, yPos + 22)
+    Bg.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+    Bg.Parent = MainFrame
+    Instance.new("UICorner", Bg).CornerRadius = UDim.new(1, 0)
+
+    local Fill = Instance.new("Frame")
+    Fill.Size = UDim2.new((defaultVal - minVal) / (maxVal - minVal), 0, 1, 0)
+    Fill.BackgroundColor3 = Color3.fromRGB(255, 200, 50)
+    Fill.Parent = Bg
+    Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+
+    local isDraggingSlider = false
+    Bg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingSlider = true
+        end
+    end)
+    
+    local function updateSlider(input)
+        if isDraggingSlider then
+            local relativeX = math.clamp((input.Position.X - Bg.AbsolutePosition.X) / Bg.AbsoluteSize.X, 0, 1)
+            Fill.Size = UDim2.new(relativeX, 0, 1, 0)
+            local val = math.floor(minVal + (relativeX * (maxVal - minVal)))
+            Label.Text = name .. ": " .. val
+            callback(val)
+        end
+    end
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then updateSlider(input) end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then isDraggingSlider = false end
+    end)
+end
+
+createSlider("Speed", 95, 10, 300, orbitSpeed, function(val) orbitSpeed = val end)
+createSlider("Radius", 150, 5, 50, orbitRadius, function(val) orbitRadius = val end)
+
+local ModeButton = Instance.new("TextButton")
+ModeButton.Size = UDim2.new(1, -20, 0, 35)
+ModeButton.Position = UDim2.new(0, 10, 0, 215)
+ModeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 150)
+ModeButton.Text = "Mode: " .. modes[orbitMode]
+ModeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ModeButton.Font = Enum.Font.GothamBold
+ModeButton.TextSize = 14
+ModeButton.Parent = MainFrame
+Instance.new("UICorner", ModeButton).CornerRadius = UDim.new(0, 8)
+
+ModeButton.MouseButton1Click:Connect(function()
+    orbitMode = orbitMode + 1
+    if orbitMode > #modes then orbitMode = 1 end
+    ModeButton.Text = "Mode: " .. modes[orbitMode]
+end)
+
+-- ==========================================
+-- 3. اسکنر دقیق Network Ownership (بهینه‌شده و بدون لگ)
+-- ==========================================
+local cachedNPCs = {}
+local checkOwnership = typeof(isnetworkowner) == "function"
+local allModels = {}
+
+-- تابع اضافه کردن مدل‌های جدید به لیست پنهان
+local function checkAndAddModel(obj)
+    if obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid") then
+        table.insert(allModels, obj)
+    end
+end
+
+-- یک‌بار مپ را اسکن می‌کنیم
+for _, obj in ipairs(workspace:GetDescendants()) do
+    checkAndAddModel(obj)
+end
+
+-- برای مدل‌های جدیدی که اسپاون می‌شوند
+workspace.DescendantAdded:Connect(function(obj)
+    if obj:IsA("Model") then
+        task.delay(0.5, function() -- کمی صبر تا لود کامل شود
+            checkAndAddModel(obj)
+        end)
+    elseif obj:IsA("Humanoid") and obj.Parent and obj.Parent:IsA("Model") then
+        table.insert(allModels, obj.Parent)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if isOrbitActive then
+            local newNpcs = {}
+            local char = player.Character
+            local myRoot = char and char:FindFirstChild("HumanoidRootPart")
+            
+            if myRoot then
+                -- به جای کل مپ، فقط لیست مدل‌ها را بررسی می‌کنیم
+                for i = #allModels, 1, -1 do
+                    local obj = allModels[i]
+                    
+                    if not obj or not obj.Parent then
+                        table.remove(allModels, i)
+                        continue
+                    end
+                    
+                    if not Players:GetPlayerFromCharacter(obj) then
+                        local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                        local rootPart = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
+                        
+                        if humanoid and rootPart and not rootPart.Anchored and humanoid.Health > 0 then
+                            local hasOwnerShip = true
+                            if checkOwnership then
+                                pcall(function()
+                                    hasOwnerShip = isnetworkowner(rootPart)
+                                end)
+                            end
+                            
+                            if hasOwnerShip then
+                                local dist = (rootPart.Position - myRoot.Position).Magnitude
+                                if dist <= maxSearchDistance then
+                                    table.insert(newNpcs, rootPart)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            cachedNPCs = newNpcs
+        else
+            cachedNPCs = {}
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- ==========================================
+-- 4. حلقه چرخش بدون لگ
+-- ==========================================
+local currentAngle = 0
+local connection
+
+-- تغییر به Heartbeat برای پردازش نرم‌تر CFrame
+connection = RunService.Heartbeat:Connect(function(dt)
+    if not isOrbitActive then return end
+    
+    local char = player.Character
+    if not char or not char.PrimaryPart then return end
+    
+    local myRoot = char.PrimaryPart
+    local npcs = cachedNPCs
+    
+    if #npcs == 0 then return end
+    
+    currentAngle = currentAngle + math.rad(orbitSpeed * dt)
+    local angleStep = (math.pi * 2) / #npcs
+    
+    for i, npcRoot in ipairs(npcs) do
+        if npcRoot and npcRoot.Parent then
+            local angle = currentAngle + (angleStep * i)
+            local targetCFrame
+            
+            if orbitMode == 1 then
+                local offset = Vector3.new(math.cos(angle) * orbitRadius, 0, math.sin(angle) * orbitRadius)
+                targetCFrame = myRoot.CFrame * CFrame.new(offset)
+            elseif orbitMode == 2 then
+                local yOffset = math.sin(currentAngle * 2 + i) * (orbitRadius / 2)
+                local offset = Vector3.new(math.cos(angle) * orbitRadius, yOffset, math.sin(angle) * orbitRadius)
+                targetCFrame = myRoot.CFrame * CFrame.new(offset)
+            elseif orbitMode == 3 then
+                local offset = Vector3.new(math.cos(angle) * orbitRadius, math.cos(angle * 1.5) * orbitRadius, math.sin(angle) * orbitRadius)
+                targetCFrame = myRoot.CFrame * CFrame.new(offset)
+            end
+            
+            npcRoot.Velocity = Vector3.zero
+            npcRoot.RotVelocity = Vector3.zero
+            npcRoot.CFrame = targetCFrame * CFrame.Angles(0, -angle + math.pi/2, 0)
+        end
+    end
+end)
+
+-- بستن و پاک کردن
+CloseBtn.MouseButton1Click:Connect(function()
+    isOrbitActive = false
+    if connection then connection:Disconnect() end
+    ScreenGui:Destroy()
+end)
