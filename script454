@@ -1,0 +1,95 @@
+local Player = game.Players.LocalPlayer
+local PlayerGui = game.Players.LocalPlayer.PlayerGui
+local gui = Instance.new("ScreenGui")
+local frame = Instance.new("Frame")
+local TextButton = Instance.new("TextButton")
+local CloseBtn = Instance.new("TextButton")
+local Title = Instance.new("TextLabel")
+local framecorner = Instance.new("UICorner")
+local execorner = Instance.new("UICorner")
+local CloseCorner = Instance.new("UICorner")
+
+gui.Parent = PlayerGui
+gui.ResetOnSpawn = false
+
+frame.Parent = gui
+frame.Size = UDim2.fromOffset(200, 200)
+frame.Position = UDim2.fromScale(0.5, 0.5)
+frame.BackgroundColor3 = Color3.fromRGB(50, 509, 50)
+framecorner.Parent = frame
+
+TextButton.Parent = frame
+TextButton.Size = UDim2.fromOffset(100, 100)
+TextButton.Position = UDim2.fromScale(0.25, 0.25)
+TextButton.Text = "Execute"
+TextButton.TextScaled = true
+TextButton.BackgroundColor3 = Color3.fromRGB(0, 0, 100)
+TextButton.TextColor3 = Color3.fromRGB(50, 300, 50)
+execorner.Parent = TextButton
+
+CloseBtn.Parent = frame
+CloseBtn.Size = UDim2.fromOffset(25, 25)
+CloseBtn.Position = UDim2.fromScale(0.875, 0)
+CloseBtn.Text = "X"
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseCorner.Parent = CloseBtn
+
+Title.Parent = frame
+Title.Position = UDim2.fromScale(0.45, 0.1)
+Title.Text = "C00LHACK Equip Tools Panel"
+Title.TextSize = 8
+
+
+CloseBtn.MouseButton1Click:Connect(function()
+	frame:Destroy()
+end)
+
+TextButton.MouseButton1Click:Connect(function()
+	for _, tool in ipairs(Player.Backpack:GetDescendants()) do
+		if tool:IsA("Tool") then
+			tool.Parent = Player.Character
+		end
+end
+end)
+
+local function makeDraggable(targetFrame)
+    local uis = game:GetService("UserInputService")
+    local tweenService = game:GetService("TweenService")
+    
+    local dragging, dragInput, dragStart, startPos
+    
+    targetFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = targetFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    targetFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    uis.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local newPos = UDim2.new(
+                startPos.X.Scale, 
+                startPos.X.Offset + delta.X, 
+                startPos.Y.Scale, 
+                startPos.Y.Offset + delta.Y
+            )
+            tweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+        end
+    end)
+end
+
+makeDraggable(frame)
