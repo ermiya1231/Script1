@@ -1,0 +1,231 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DeathNote_Authentic"
+ScreenGui.Parent = CoreGui
+
+local BookCover = Instance.new("Frame")
+BookCover.Size = UDim2.new(0, 320, 0, 450)
+BookCover.Position = UDim2.new(0.5, -160, 0.5, -225)
+BookCover.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+BookCover.BorderSizePixel = 0
+BookCover.Active = true
+BookCover.Draggable = true
+BookCover.Parent = ScreenGui
+
+local BookCorner = Instance.new("UICorner")
+BookCorner.CornerRadius = UDim.new(0, 6)
+BookCorner.Parent = BookCover
+
+local SpineShadow = Instance.new("Frame")
+SpineShadow.Size = UDim2.new(0.05, 0, 1, 0)
+SpineShadow.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+SpineShadow.BorderSizePixel = 0
+SpineShadow.Parent = BookCover
+
+local Title = Instance.new("TextLabel")
+Title.Text = "DEATH NOTE"
+Title.Font = Enum.Font.SpecialElite
+Title.TextSize = 40
+Title.TextColor3 = Color3.fromRGB(180, 180, 180)
+Title.Size = UDim2.new(1, 0, 0, 70)
+Title.Position = UDim2.new(0, 0, 0.02, 0)
+Title.BackgroundTransparency = 1
+Title.Parent = BookCover
+
+local PageArea = Instance.new("Frame")
+PageArea.Size = UDim2.new(0.9, 0, 0.75, 0)
+PageArea.Position = UDim2.new(0.05, 0, 0.2, 0)
+PageArea.BackgroundColor3 = Color3.fromRGB(240, 238, 225)
+PageArea.BorderSizePixel = 0
+PageArea.Parent = BookCover
+
+local PageCorner = Instance.new("UICorner")
+PageCorner.CornerRadius = UDim.new(0, 4)
+PageCorner.Parent = PageArea
+
+local InputBox = Instance.new("TextBox")
+InputBox.Size = UDim2.new(1, -20, 0, 40)
+InputBox.Position = UDim2.new(0, 10, 0, 10)
+InputBox.BackgroundTransparency = 1
+InputBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+InputBox.Font = Enum.Font.IndieFlower
+InputBox.TextSize = 28
+InputBox.PlaceholderText = "write victim's name"
+InputBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+InputBox.TextXAlignment = Enum.TextXAlignment.Left
+InputBox.Text = ""
+InputBox.Parent = PageArea
+
+local Line = Instance.new("Frame")
+Line.Size = UDim2.new(1, 0, 0, 1)
+Line.Position = UDim2.new(0, 0, 1, 0)
+Line.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Line.BackgroundTransparency = 0.8
+Line.Parent = InputBox
+
+local SuggestionScroll = Instance.new("ScrollingFrame")
+SuggestionScroll.Size = UDim2.new(1, 0, 0.85, -20)
+SuggestionScroll.Position = UDim2.new(0, 0, 0, 50)
+SuggestionScroll.BackgroundTransparency = 1
+SuggestionScroll.BorderSizePixel = 0
+SuggestionScroll.ScrollBarThickness = 3
+SuggestionScroll.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+SuggestionScroll.Parent = PageArea
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 5)
+ListLayout.Parent = SuggestionScroll
+
+local Animation = Instance.new("Animation")
+Animation.AnimationId = "rbxassetid://89956832244829"
+local AnimTrack = nil
+
+local function PlayAnim()
+	local Char = LocalPlayer.Character
+	local Hum = Char and Char:FindFirstChild("Humanoid")
+	if Hum then
+		local Animator = Hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", Hum)
+		AnimTrack = Animator:LoadAnimation(Animation)
+		AnimTrack.Looped = true
+		AnimTrack:Play()
+	end
+end
+
+local function StopAnim()
+	if AnimTrack then
+		AnimTrack:Stop()
+		AnimTrack:Destroy()
+		AnimTrack = nil
+	end
+end
+
+InputBox.Focused:Connect(PlayAnim)
+InputBox.FocusLost:Connect(function()
+	StopAnim()
+end)
+
+local function Kill(TargetName)
+	local TargetChar
+	for _, v in pairs(workspace:GetDescendants()) do
+		if v:IsA("Model") and v:FindFirstChild("Humanoid") and string.lower(v.Name) == string.lower(TargetName) then
+			TargetChar = v
+			break
+		end
+	end
+
+	if TargetChar and TargetChar ~= LocalPlayer.Character then
+		local Character = LocalPlayer.Character
+		local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+		local TargetRoot = TargetChar:FindFirstChild("HumanoidRootPart")
+		
+		if RootPart and TargetRoot then
+			local OriginalPos = RootPart.CFrame
+			local FlingTime = 1.0
+			local StartTime = tick()
+			
+			local NoclipConnection
+			local FlingConnection
+			
+			NoclipConnection = RunService.Stepped:Connect(function()
+				if Character then
+					for _, part in pairs(Character:GetDescendants()) do
+						if part:IsA("BasePart") then
+							part.CanCollide = false
+						end
+					end
+				end
+			end)
+			
+			FlingConnection = RunService.Heartbeat:Connect(function()
+				if tick() - StartTime > FlingTime or not TargetRoot.Parent or not RootPart.Parent then
+					if NoclipConnection then NoclipConnection:Disconnect() end
+					if FlingConnection then FlingConnection:Disconnect() end
+					
+					RootPart.Velocity = Vector3.new(0, 0, 0)
+					RootPart.RotVelocity = Vector3.new(0, 0, 0)
+					RootPart.CFrame = OriginalPos + Vector3.new(0, 5, 0)
+					
+					task.wait(0.1)
+					if Character then
+						for _, part in pairs(Character:GetDescendants()) do
+							if part:IsA("BasePart") then
+								part.CanCollide = true
+							end
+						end
+					end
+				else
+					RootPart.CFrame = TargetRoot.CFrame * CFrame.new(0, 0, 0)
+					RootPart.Velocity = Vector3.new(100000, 100000, 100000)
+					RootPart.RotVelocity = Vector3.new(100000, 100000, 100000)
+				end
+			end)
+		end
+	end
+end
+
+local function UpdateList()
+	for _, child in pairs(SuggestionScroll:GetChildren()) do
+		if child:IsA("TextButton") then child:Destroy() end
+	end
+
+	local Text = string.lower(InputBox.Text)
+	if Text == "" then return end
+
+	local Found = {}
+	
+	local function AddBtn(Name)
+		if table.find(Found, Name) then return end
+		table.insert(Found, Name)
+		
+		local Btn = Instance.new("TextButton")
+		Btn.Size = UDim2.new(1, -20, 0, 30)
+		Btn.Position = UDim2.new(0, 10, 0, 0)
+		Btn.BackgroundTransparency = 1
+		Btn.TextColor3 = Color3.fromRGB(50, 50, 50)
+		Btn.Text = Name
+		Btn.Font = Enum.Font.IndieFlower
+		Btn.TextSize = 24
+		Btn.TextXAlignment = Enum.TextXAlignment.Left
+		Btn.Parent = SuggestionScroll
+		
+		local BtnLine = Instance.new("Frame")
+		BtnLine.Size = UDim2.new(1, 0, 0, 1)
+		BtnLine.Position = UDim2.new(0, 0, 1, 0)
+		BtnLine.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		BtnLine.BackgroundTransparency = 0.8
+		BtnLine.Parent = Btn
+		
+		Btn.MouseButton1Click:Connect(function()
+			InputBox.Text = Name
+			InputBox:ReleaseFocus()
+			Kill(Name)
+			InputBox.Text = ""
+			UpdateList()
+		end)
+	end
+
+	for _, v in pairs(workspace:GetDescendants()) do
+		if v:IsA("Model") and v:FindFirstChild("Humanoid") and v.Name ~= LocalPlayer.Name then
+			if string.find(string.lower(v.Name), Text) then
+				AddBtn(v.Name)
+			end
+		end
+	end
+end
+
+InputBox:GetPropertyChangedSignal("Text"):Connect(UpdateList)
+InputBox.FocusLost:Connect(function(Enter)
+	if Enter then
+		Kill(InputBox.Text)
+		InputBox.Text = ""
+		UpdateList()
+	end
+end)
