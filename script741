@@ -1,12 +1,3 @@
---[[
-    Proxy Aura - Advanced ProximityPrompt Auto Fire (Anti-Robux Purchase Edition)
-    Features:
-    - Custom Drag Slider (No UI Conflict Bug)
-    - Weld 3D Visual Red Aura Sphere
-    - Highly Optimized Spatial Detection Engine
-    - Anti-Robux & Anti-Gamepass Purchase Filter
---]]
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -17,7 +8,8 @@ local LocalPlayer = Players.LocalPlayer
 
 -- Global States
 local Enabled = false
-local CurrentRange = 3 -- default 3 studs
+local FilterEnabled = true
+local CurrentRange = 6 -- پیش‌فرض روی 6 تنظیم شد
 local MaxRange = 40
 local MinRange = 1
 
@@ -25,6 +17,7 @@ local AuraSphere = nil
 local AuraWeld = nil
 local IsDraggingSlider = false
 local IsDraggingFrame = false
+local IsCollapsed = false
 
 --------------------------------------------------------------------------------
 -- Anti-Robux Purchase Protection Hook
@@ -33,7 +26,7 @@ if hookmetamethod then
     local oldNamecall
     oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
         local method = getnamecallmethod()
-        if Enabled and self == MarketplaceService and (string.find(method, "Prompt") or string.find(method, "Purchase")) then
+        if Enabled and FilterEnabled and self == MarketplaceService and (string.find(method, "Prompt") or string.find(method, "Purchase")) then
             return nil
         end
         return oldNamecall(self, ...)
@@ -46,7 +39,7 @@ local PurchaseKeywords = {
 }
 
 local function IsPurchasePrompt(prompt)
-    if not prompt then return false end
+    if not prompt or not FilterEnabled then return false end
     
     local textToSearch = string.lower(
         (prompt.ActionText or "") .. " " .. 
@@ -98,7 +91,6 @@ local function CreateAuraSphere(character)
     AuraSphere.CanTouch = false
     AuraSphere.CanQuery = false
     AuraSphere.Massless = true
-    
     AuraSphere.CastShadow = false
     AuraSphere.CFrame = hrp.CFrame
     AuraSphere.Parent = character
@@ -127,11 +119,14 @@ else
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
 
+local FullSize = UDim2.new(0, 500, 0, 270)
+local CollapsedSize = UDim2.new(0, 500, 0, 35)
+
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 260, 0, 160)
-MainFrame.Position = UDim2.new(0.5, -130, 0.4, -80)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+MainFrame.Size = FullSize
+MainFrame.Position = UDim2.new(0.5, -250, 0.4, -135)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Active = true
@@ -141,58 +136,222 @@ local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
 
+-- افکت حاشیه RGB متحرک
 local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(255, 50, 50)
-UIStroke.Thickness = 1.5
+UIStroke.Thickness = 2
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 UIStroke.Parent = MainFrame
 
+task.spawn(function()
+    local hue = 0
+    while task.wait() do
+        hue = (hue + 0.004) % 1
+        UIStroke.Color = Color3.fromHSV(hue, 0.85, 1)
+    end
+end)
+
+-- Header Area (عنوان در مرکز)
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1, 0, 0, 35)
+TitleLabel.Position = UDim2.new(0, 0, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "☠️ PROXY AURA ☠️"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 16
+TitleLabel.TextSize = 15
 TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+TitleLabel.ZIndex = 1
 TitleLabel.Parent = MainFrame
 
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 24, 0, 24)
+CloseBtn.Position = UDim2.new(1, -30, 0, 5)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 40, 50)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 13
+CloseBtn.ZIndex = 2
+CloseBtn.Parent = MainFrame
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseBtn
+
+local CollapseBtn = Instance.new("TextButton")
+CollapseBtn.Size = UDim2.new(0, 24, 0, 24)
+CollapseBtn.Position = UDim2.new(1, -58, 0, 5)
+CollapseBtn.BackgroundColor3 = Color3.fromRGB(40, 42, 55)
+CollapseBtn.Text = "−"
+CollapseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CollapseBtn.Font = Enum.Font.GothamBold
+CollapseBtn.TextSize = 16
+CollapseBtn.ZIndex = 2
+CollapseBtn.Parent = MainFrame
+
+local CollapseCorner = Instance.new("UICorner")
+CollapseCorner.CornerRadius = UDim.new(0, 6)
+CollapseCorner.Parent = CollapseBtn
+
+local Divider = Instance.new("Frame")
+Divider.Size = UDim2.new(1, 0, 0, 1)
+Divider.Position = UDim2.new(0, 0, 0, 35)
+Divider.BackgroundColor3 = Color3.fromRGB(40, 40, 52)
+Divider.BorderSizePixel = 0
+Divider.Parent = MainFrame
+
+--------------------------------------------------------------------------------
+-- Helper: انیمیشن‌های نرم برای Hover دکمه‌ها
+--------------------------------------------------------------------------------
+local function ApplyHoverEffect(button, normalColor, hoverColor)
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play()
+    end)
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = normalColor}):Play()
+    end)
+end
+
+ApplyHoverEffect(CloseBtn, Color3.fromRGB(220, 40, 50), Color3.fromRGB(255, 70, 80))
+ApplyHoverEffect(CollapseBtn, Color3.fromRGB(40, 42, 55), Color3.fromRGB(60, 62, 80))
+
+--------------------------------------------------------------------------------
+-- Left Section: Filter Proxys
+--------------------------------------------------------------------------------
+local LeftContainer = Instance.new("Frame")
+LeftContainer.Size = UDim2.new(0.5, -15, 1, -45)
+LeftContainer.Position = UDim2.new(0, 10, 0, 40)
+LeftContainer.BackgroundTransparency = 1
+LeftContainer.Parent = MainFrame
+
+local FilterToggleBtn = Instance.new("TextButton")
+FilterToggleBtn.Size = UDim2.new(1, 0, 0, 34)
+FilterToggleBtn.Position = UDim2.new(0, 0, 0, 0)
+FilterToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
+FilterToggleBtn.Text = "Filter Proxys: ON"
+FilterToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FilterToggleBtn.TextSize = 13
+FilterToggleBtn.Font = Enum.Font.GothamBold
+FilterToggleBtn.AutoButtonColor = false
+FilterToggleBtn.Parent = LeftContainer
+
+local FilterBtnCorner = Instance.new("UICorner")
+FilterBtnCorner.CornerRadius = UDim.new(0, 6)
+FilterBtnCorner.Parent = FilterToggleBtn
+
+local AddContainer = Instance.new("Frame")
+AddContainer.Size = UDim2.new(1, 0, 0, 30)
+AddContainer.Position = UDim2.new(0, 0, 0, 42)
+AddContainer.BackgroundTransparency = 1
+AddContainer.Parent = LeftContainer
+
+local AddInput = Instance.new("TextBox")
+AddInput.Size = UDim2.new(1, -36, 1, 0)
+AddInput.BackgroundColor3 = Color3.fromRGB(25, 25, 34)
+AddInput.BorderSizePixel = 0
+AddInput.PlaceholderText = "Add keyword..."
+AddInput.Text = ""
+AddInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+AddInput.TextSize = 12
+AddInput.Font = Enum.Font.GothamMedium
+AddInput.TextXAlignment = Enum.TextXAlignment.Left
+AddInput.ClearTextOnFocus = false
+AddInput.Parent = AddContainer
+
+local InputPadding = Instance.new("UIPadding")
+InputPadding.PaddingLeft = UDim.new(0, 8)
+InputPadding.Parent = AddInput
+
+local InputCorner = Instance.new("UICorner")
+InputCorner.CornerRadius = UDim.new(0, 6)
+InputCorner.Parent = AddInput
+
+local AddBtn = Instance.new("TextButton")
+AddBtn.Size = UDim2.new(0, 30, 1, 0)
+AddBtn.Position = UDim2.new(1, -30, 0, 0)
+AddBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
+AddBtn.Text = "+"
+AddBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AddBtn.TextSize = 16
+AddBtn.Font = Enum.Font.GothamBold
+AddBtn.Parent = AddContainer
+
+local AddBtnCorner = Instance.new("UICorner")
+AddBtnCorner.CornerRadius = UDim.new(0, 6)
+AddBtnCorner.Parent = AddBtn
+
+ApplyHoverEffect(AddBtn, Color3.fromRGB(35, 140, 75), Color3.fromRGB(45, 175, 95))
+
+local KeywordsHolder = Instance.new("ScrollingFrame")
+KeywordsHolder.Size = UDim2.new(1, 0, 1, -80)
+KeywordsHolder.Position = UDim2.new(0, 0, 0, 80)
+KeywordsHolder.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
+KeywordsHolder.BorderSizePixel = 0
+KeywordsHolder.ScrollBarThickness = 3
+KeywordsHolder.ScrollBarImageColor3 = Color3.fromRGB(255, 60, 60)
+KeywordsHolder.CanvasSize = UDim2.new(0, 0, 0, 0)
+KeywordsHolder.Parent = LeftContainer
+
+local HolderCorner = Instance.new("UICorner")
+HolderCorner.CornerRadius = UDim.new(0, 6)
+HolderCorner.Parent = KeywordsHolder
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 4)
+ListLayout.Parent = KeywordsHolder
+
+local HolderPadding = Instance.new("UIPadding")
+HolderPadding.PaddingTop = UDim.new(0, 4)
+HolderPadding.PaddingBottom = UDim.new(0, 4)
+HolderPadding.PaddingLeft = UDim.new(0, 4)
+HolderPadding.PaddingRight = UDim.new(0, 4)
+HolderPadding.Parent = KeywordsHolder
+
+--------------------------------------------------------------------------------
+-- Right Section: Aura Settings
+--------------------------------------------------------------------------------
+local RightContainer = Instance.new("Frame")
+RightContainer.Size = UDim2.new(0.5, -15, 1, -45)
+RightContainer.Position = UDim2.new(0.5, 5, 0, 40)
+RightContainer.BackgroundTransparency = 1
+RightContainer.Parent = MainFrame
+
 local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "ToggleBtn"
-ToggleBtn.Size = UDim2.new(0.9, 0, 0, 36)
-ToggleBtn.Position = UDim2.new(0.05, 0, 0, 42)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+ToggleBtn.Size = UDim2.new(1, 0, 0, 40)
+ToggleBtn.Position = UDim2.new(0, 0, 0, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 42, 55)
 ToggleBtn.Text = "AURA: OFF"
 ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-ToggleBtn.TextSize = 14
-ToggleBtn.Font = Enum.Font.GothamSemibold
+ToggleBtn.TextSize = 13
+ToggleBtn.Font = Enum.Font.GothamBold
 ToggleBtn.AutoButtonColor = false
-ToggleBtn.Parent = MainFrame
+ToggleBtn.Parent = RightContainer
 
 local BtnCorner = Instance.new("UICorner")
 BtnCorner.CornerRadius = UDim.new(0, 6)
 BtnCorner.Parent = ToggleBtn
 
 local SliderContainer = Instance.new("Frame")
-SliderContainer.Name = "SliderContainer"
-SliderContainer.Size = UDim2.new(0.9, 0, 0, 50)
-SliderContainer.Position = UDim2.new(0.05, 0, 0, 92)
+SliderContainer.Size = UDim2.new(1, 0, 0, 50)
+SliderContainer.Position = UDim2.new(0, 0, 0, 54)
 SliderContainer.BackgroundTransparency = 1
-SliderContainer.Parent = MainFrame
+SliderContainer.Parent = RightContainer
 
 local SliderTitle = Instance.new("TextLabel")
-SliderTitle.Size = UDim2.new(1, 0, 0, 20)
+SliderTitle.Size = UDim2.new(1, 0, 0, 18)
 SliderTitle.BackgroundTransparency = 1
-SliderTitle.Text = "Range: 3 Studs"
-SliderTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+SliderTitle.Text = "Range: " .. tostring(CurrentRange) .. " Studs"
+SliderTitle.TextColor3 = Color3.fromRGB(220, 220, 220)
 SliderTitle.TextSize = 12
-SliderTitle.Font = Enum.Font.Gotham
+SliderTitle.Font = Enum.Font.GothamMedium
 SliderTitle.TextXAlignment = Enum.TextXAlignment.Left
 SliderTitle.Parent = SliderContainer
 
 local SliderTrack = Instance.new("Frame")
-SliderTrack.Name = "Track"
 SliderTrack.Size = UDim2.new(1, 0, 0, 8)
 SliderTrack.Position = UDim2.new(0, 0, 0, 26)
-SliderTrack.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+SliderTrack.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 SliderTrack.BorderSizePixel = 0
 SliderTrack.Parent = SliderContainer
 
@@ -201,9 +360,8 @@ TrackCorner.CornerRadius = UDim.new(1, 0)
 TrackCorner.Parent = SliderTrack
 
 local SliderFill = Instance.new("Frame")
-SliderFill.Name = "Fill"
 SliderFill.Size = UDim2.new((CurrentRange - MinRange) / (MaxRange - MinRange), 0, 1, 0)
-SliderFill.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+SliderFill.BackgroundColor3 = Color3.fromRGB(255, 55, 65)
 SliderFill.BorderSizePixel = 0
 SliderFill.Parent = SliderTrack
 
@@ -212,7 +370,6 @@ FillCorner.CornerRadius = UDim.new(1, 0)
 FillCorner.Parent = SliderFill
 
 local SliderKnob = Instance.new("TextButton")
-SliderKnob.Name = "Knob"
 SliderKnob.Size = UDim2.new(0, 16, 0, 16)
 SliderKnob.Position = UDim2.new(1, -8, 0.5, -8)
 SliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -224,8 +381,132 @@ KnobCorner.CornerRadius = UDim.new(1, 0)
 KnobCorner.Parent = SliderKnob
 
 --------------------------------------------------------------------------------
--- 3. Smooth Slider Mechanics
+-- Logic: UI Buttons & Sliders
 --------------------------------------------------------------------------------
+
+CloseBtn.MouseButton1Click:Connect(function()
+    if Enabled then
+        Enabled = false
+        DestroyAura()
+    end
+    ScreenGui:Destroy()
+end)
+
+-- منطق Collapse جدید بدون باگ
+CollapseBtn.MouseButton1Click:Connect(function()
+    IsCollapsed = not IsCollapsed
+    local targetSize = IsCollapsed and CollapsedSize or FullSize
+    CollapseBtn.Text = IsCollapsed and "+" or "−"
+    
+    if IsCollapsed then
+        LeftContainer.Visible = false
+        RightContainer.Visible = false
+        Divider.Visible = false
+    end
+
+    local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = targetSize})
+    tween:Play()
+
+    if not IsCollapsed then
+        tween.Completed:Connect(function()
+            if not IsCollapsed then
+                LeftContainer.Visible = true
+                RightContainer.Visible = true
+                Divider.Visible = true
+            end
+        end)
+    end
+end)
+
+-- Keyword List Logic
+local function RefreshKeywordList()
+    for _, child in ipairs(KeywordsHolder:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+
+    for index, keyword in ipairs(PurchaseKeywords) do
+        local ItemFrame = Instance.new("Frame")
+        ItemFrame.Size = UDim2.new(1, -4, 0, 24)
+        ItemFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+        ItemFrame.BorderSizePixel = 0
+        ItemFrame.Parent = KeywordsHolder
+
+        local ItemCorner = Instance.new("UICorner")
+        ItemCorner.CornerRadius = UDim.new(0, 4)
+        ItemCorner.Parent = ItemFrame
+
+        local WordLabel = Instance.new("TextLabel")
+        WordLabel.Size = UDim2.new(1, -28, 1, 0)
+        WordLabel.Position = UDim2.new(0, 8, 0, 0)
+        WordLabel.BackgroundTransparency = 1
+        WordLabel.Text = keyword
+        WordLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+        WordLabel.TextSize = 12
+        WordLabel.Font = Enum.Font.GothamMedium
+        WordLabel.TextXAlignment = Enum.TextXAlignment.Left
+        WordLabel.Parent = ItemFrame
+
+        local RemoveBtn = Instance.new("TextButton")
+        RemoveBtn.Size = UDim2.new(0, 20, 0, 20)
+        RemoveBtn.Position = UDim2.new(1, -22, 0.5, -10)
+        RemoveBtn.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
+        RemoveBtn.Text = "−"
+        RemoveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        RemoveBtn.TextSize = 14
+        RemoveBtn.Font = Enum.Font.GothamBold
+        RemoveBtn.Parent = ItemFrame
+
+        local RemoveCorner = Instance.new("UICorner")
+        RemoveCorner.CornerRadius = UDim.new(0, 4)
+        RemoveCorner.Parent = RemoveBtn
+
+        ApplyHoverEffect(RemoveBtn, Color3.fromRGB(180, 45, 45), Color3.fromRGB(220, 60, 60))
+
+        RemoveBtn.MouseButton1Click:Connect(function()
+            table.remove(PurchaseKeywords, index)
+            RefreshKeywordList()
+        end)
+    end
+    KeywordsHolder.CanvasSize = UDim2.new(0, 0, 0, #PurchaseKeywords * 28 + 4)
+end
+
+local function AddKeyword()
+    local text = string.gsub(AddInput.Text, "^%s*(.-)%s*$", "%1"):lower()
+    if text ~= "" then
+        local exists = false
+        for _, kw in ipairs(PurchaseKeywords) do
+            if kw == text then exists = true; break end
+        end
+        if not exists then
+            table.insert(PurchaseKeywords, text)
+            RefreshKeywordList()
+        end
+        AddInput.Text = ""
+    end
+end
+
+AddBtn.MouseButton1Click:Connect(AddKeyword)
+AddInput.FocusLost:Connect(function(enter) if enter then AddKeyword() end end)
+
+-- Toggle Filter Proxys
+FilterToggleBtn.MouseButton1Click:Connect(function()
+    FilterEnabled = not FilterEnabled
+    if FilterEnabled then
+        FilterToggleBtn.Text = "Filter Proxys: ON"
+        FilterToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
+        AddContainer.Visible = true
+        KeywordsHolder.Visible = true
+    else
+        FilterToggleBtn.Text = "Filter Proxys: OFF"
+        FilterToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 52, 65)
+        AddContainer.Visible = false
+        KeywordsHolder.Visible = false
+    end
+end)
+
+RefreshKeywordList()
+
+-- Slider Logic
 local function UpdateSlider(inputPosition)
     local trackPos = SliderTrack.AbsolutePosition.X
     local trackSize = SliderTrack.AbsoluteSize.X
@@ -237,7 +518,6 @@ local function UpdateSlider(inputPosition)
 
     SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
     SliderTitle.Text = "Range: " .. tostring(CurrentRange) .. " Studs"
-
     UpdateAuraSize()
 end
 
@@ -254,51 +534,70 @@ SliderTrack.InputBegan:Connect(function(input)
     end
 end)
 
---------------------------------------------------------------------------------
--- 4. Main Panel Dragging
---------------------------------------------------------------------------------
-local DragStart = nil
-local StartPos = nil
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
-MainFrame.InputBegan:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not IsDraggingSlider then
-        IsDraggingFrame = true
-        DragStart = input.Position
-        StartPos = MainFrame.Position
-    end
-end)
+local function MakeDraggable(Frame, DragHandle)
+	DragHandle = DragHandle or Frame
+	
+	local dragToggle = false
+	local dragInput = nil
+	local dragStart = nil
+	local startPos = nil
 
-UserInputService.InputChanged:Connect(function(input)
-    if IsDraggingSlider and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        UpdateSlider(input.Position)
-    elseif IsDraggingFrame and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - DragStart
-        MainFrame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + delta.X, StartPos.Y.Scale, StartPos.Y.Offset + delta.Y)
-    end
-end)
+	local function updateInput(input)
+		local Delta = input.Position - dragStart
+		local Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + Delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + Delta.Y
+		)
+		TweenService:Create(Frame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = Position}):Play()
+	end
 
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        IsDraggingSlider = false
-        IsDraggingFrame = false
-    end
-end)
+	-- گوش دادن به ورودی روی TitleLabel
+	DragHandle.InputBegan:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) 
+			and UserInputService:GetFocusedTextBox() == nil then
 
---------------------------------------------------------------------------------
--- 5. Toggle Logic & Character Binding
---------------------------------------------------------------------------------
+			dragToggle = true
+			dragStart = input.Position
+			startPos = Frame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragToggle = false
+				end
+			end)
+		end
+	end)
+
+	DragHandle.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragToggle then
+			updateInput(input)
+		end
+	end)
+end
+
+-- فراخوانی تابع: MainFrame حرکت می‌کند، اما کلیک روی TitleLabel انجام می‌شود
+MakeDraggable(MainFrame, TitleLabel)
+
+-- Toggle Aura Button
 ToggleBtn.MouseButton1Click:Connect(function()
     Enabled = not Enabled
     if Enabled then
         ToggleBtn.Text = "AURA: ON"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 40, 50)
         ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        if LocalPlayer.Character then
-            CreateAuraSphere(LocalPlayer.Character)
-        end
+        if LocalPlayer.Character then CreateAuraSphere(LocalPlayer.Character) end
     else
         ToggleBtn.Text = "AURA: OFF"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 42, 55)
         ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
         DestroyAura()
     end
@@ -331,16 +630,10 @@ task.spawn(function()
                 local prompt = part:FindFirstChildWhichIsA("ProximityPrompt") or part.Parent:FindFirstChildWhichIsA("ProximityPrompt")
                 
                 if prompt and prompt.Enabled and not firedPrompts[prompt] then
-                    -- چک کردن عدم مطابقت با پرامپت‌های خرید
-                    if IsPurchasePrompt(prompt) then
-                        continue
-                    end
+                    if IsPurchasePrompt(prompt) then continue end
 
                     firedPrompts[prompt] = true
-                    
-                    if fireproximityprompt then
-                        fireproximityprompt(prompt)
-                    end
+                    if fireproximityprompt then fireproximityprompt(prompt) end
                 end
             end
         end
