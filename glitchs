@@ -1,0 +1,313 @@
+local CoreOverlay = Instance.new("ScreenGui")
+local AppBase = Instance.new("Frame")
+local HeaderPanel = Instance.new("Frame")
+local AppTitle = Instance.new("TextLabel")
+local AppSubtitle = Instance.new("TextLabel")
+local DismissBtn = Instance.new("TextButton")
+
+local ActionBtn1 = Instance.new("TextButton")
+local ActionBtn2 = Instance.new("TextButton")
+local ActionBtn3 = Instance.new("TextButton")
+
+local Corner_App = Instance.new("UICorner")
+local Stroke_App = Instance.new("UIStroke")
+
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- پیکربندی GUI اصلی
+CoreOverlay.Name = "SystemModule_" .. math.random(1000, 9999)
+CoreOverlay.Parent = playerGui
+CoreOverlay.ResetOnSpawn = false
+CoreOverlay.DisplayOrder = 999
+
+-- فریم اصلی
+AppBase.Name = "BaseContainer"
+AppBase.Size = UDim2.new(0, 0, 0, 0)
+AppBase.Position = UDim2.new(0.5, 0, 0.5, 0)
+AppBase.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+AppBase.BackgroundTransparency = 0.15
+AppBase.BorderSizePixel = 0
+AppBase.Active = true
+AppBase.ClipsDescendants = true
+AppBase.AnchorPoint = Vector2.new(0.5, 0.5)
+AppBase.Parent = CoreOverlay
+
+Corner_App.CornerRadius = UDim.new(0, 14)
+Corner_App.Parent = AppBase
+
+Stroke_App.Color = Color3.fromRGB(45, 45, 60)
+Stroke_App.Thickness = 1.5
+Stroke_App.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+Stroke_App.Parent = AppBase
+
+-- هدر
+HeaderPanel.Name = "Header"
+HeaderPanel.Size = UDim2.new(1, 0, 0, 45)
+HeaderPanel.Position = UDim2.new(0, 0, 0, 0)
+HeaderPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+HeaderPanel.BorderSizePixel = 0
+HeaderPanel.Parent = AppBase
+Instance.new("UICorner", HeaderPanel).CornerRadius = UDim.new(0, 14)
+
+AppTitle.Size = UDim2.new(1, -50, 0, 22)
+AppTitle.Position = UDim2.new(0, 12, 0, 6)
+AppTitle.Text = "C00LHACK Anti Bang"
+AppTitle.TextColor3 = Color3.fromRGB(240, 240, 245)
+AppTitle.BackgroundTransparency = 1
+AppTitle.Font = Enum.Font.GothamBold
+AppTitle.TextSize = 13
+AppTitle.TextXAlignment = Enum.TextXAlignment.Left
+AppTitle.Parent = HeaderPanel
+
+AppSubtitle.Size = UDim2.new(1, -50, 0, 14)
+AppSubtitle.Position = UDim2.new(0, 12, 0, 26)
+AppSubtitle.Text = "v2.4 • Protection Active"
+AppSubtitle.TextColor3 = Color3.fromRGB(120, 120, 140)
+AppSubtitle.BackgroundTransparency = 1
+AppSubtitle.Font = Enum.Font.Gotham
+AppSubtitle.TextSize = 10
+AppSubtitle.TextXAlignment = Enum.TextXAlignment.Left
+AppSubtitle.Parent = HeaderPanel
+
+DismissBtn.Name = "Dismiss"
+DismissBtn.Size = UDim2.new(0, 26, 0, 26)
+DismissBtn.Position = UDim2.new(1, -34, 0, 9)
+DismissBtn.Text = "X"
+DismissBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 60)
+DismissBtn.BackgroundTransparency = 0.85
+DismissBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+DismissBtn.Font = Enum.Font.GothamMedium
+DismissBtn.TextSize = 12
+DismissBtn.Parent = HeaderPanel
+Instance.new("UICorner", DismissBtn).CornerRadius = UDim.new(0, 8)
+
+-- تابع ساخت دکمه‌های استایل مدرن
+local function StyleButton(btn, text, posY, primaryColor)
+    btn.Size = UDim2.new(1, -24, 0, 38)
+    btn.Position = UDim2.new(0, 12, 0, posY)
+    btn.Text = text
+    btn.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
+    btn.TextColor3 = Color3.fromRGB(220, 220, 230)
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextSize = 11
+    btn.Parent = AppBase
+    
+    local c = Instance.new("UICorner", btn)
+    c.CornerRadius = UDim.new(0, 8)
+    
+    local s = Instance.new("UIStroke", btn)
+    s.Color = primaryColor or Color3.fromRGB(50, 50, 70)
+    s.Thickness = 1
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(38, 38, 52)}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(28, 28, 38)}):Play()
+    end)
+end
+
+-- ایجاد دکمه‌ها
+StyleButton(ActionBtn1, "⚡ Execute", 56, Color3.fromRGB(0, 170, 255))
+StyleButton(ActionBtn2, "🛡️ Automatic: OFF", 102, Color3.fromRGB(60, 60, 80))
+StyleButton(ActionBtn3, "🌀 Glitch Mode", 148, Color3.fromRGB(220, 60, 60))
+
+-- قابلیت جابه‌جایی UI (Drag)
+local dragging, dragInput, dragStart, startPos
+AppBase.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = AppBase.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+
+AppBase.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        AppBase.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- انیمیشن باز شدن
+AppBase.Size = UDim2.new(0, 0, 0, 0)
+TweenService:Create(AppBase, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 198)}):Play()
+
+workspace.FallenPartsDestroyHeight = 0/0
+
+local isDodging = false
+local autoEnabled = false
+local PROXIMITY_DISTANCE = 2
+
+-- ساخت پارت شبح
+local function createGhostPart(originalCF)
+    local ghostPart = Instance.new("Part")
+    ghostPart.Name = "ProxyAnchor"
+    ghostPart.Size = Vector3.new(2, 2, 1)
+    ghostPart.CFrame = originalCF
+    ghostPart.Anchored = true
+    ghostPart.CanCollide = false
+    ghostPart.Transparency = 0.6
+    ghostPart.Color = Color3.fromRGB(163, 162, 165)
+    ghostPart.Material = Enum.Material.Plastic
+    ghostPart.Parent = workspace
+    return ghostPart
+end
+
+-- اکشن ۱: Manual Protocol
+local function performAntiBang()
+    if isDodging then return end
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
+        isDodging = true
+        local root = player.Character.HumanoidRootPart
+        local humanoid = player.Character.Humanoid
+        local originalCF = root.CFrame
+        
+        local ghostPart = createGhostPart(originalCF)
+        local cam = workspace.CurrentCamera
+        cam.CameraSubject = ghostPart
+        
+        root.CFrame = originalCF * CFrame.new(0, -551, 0)
+        task.wait(0.4)
+        
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = originalCF
+        end
+        
+        cam.CameraSubject = humanoid
+        ghostPart:Destroy()
+        
+        task.wait(1.5)
+        isDodging = false
+    end
+end
+
+-- اکشن ۲: Quantum Drift Mode
+local function performStrongAntiBang()
+    if isDodging then return end
+    isDodging = true
+    
+    local function notify(title, text)
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = title,
+                Text = text,
+                Duration = 4
+            })
+        end)
+    end
+
+    local CoreGui = game:GetService("CoreGui")
+    if getgenv().networkPaused then
+        pcall(function() getgenv().networkPaused:Disconnect() end)
+    end
+    getgenv().networkPaused = CoreGui.RobloxGui.ChildAdded:Connect(function(obj)
+        if obj.Name == "CoreScripts/NetworkPause" then
+            pcall(function() obj:Destroy() end)
+        end
+    end)
+    pcall(function()
+        local existingPause = CoreGui.RobloxGui:FindFirstChild("CoreScripts/NetworkPause")
+        if existingPause then existingPause:Destroy() end
+    end)
+    
+    notify("Security Override", "Null Zone Displacement Engaged")
+
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
+        local root = player.Character.HumanoidRootPart
+        local humanoid = player.Character.Humanoid
+        local originalCF = root.CFrame
+        
+        local ghostPart = createGhostPart(originalCF)
+        local cam = workspace.CurrentCamera
+        cam.CameraSubject = ghostPart
+        
+        root.CFrame = originalCF * CFrame.new(0, 1000, 0)
+        
+        local moveSpeed = 1000000000
+        local moveConnection
+        
+        moveConnection = RunService.Heartbeat:Connect(function(deltaTime)
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -moveSpeed * deltaTime)
+            end
+        end)
+        
+        task.wait(10)
+        
+        if moveConnection then moveConnection:Disconnect() end
+        
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            root.Velocity = Vector3.new(0,0,0)
+            root.RotVelocity = Vector3.new(0,0,0)
+            root.CFrame = originalCF
+        end
+        
+        cam.CameraSubject = humanoid
+        ghostPart:Destroy()
+    end
+    
+    isDodging = false
+end
+
+-- اتصالات کلیک
+ActionBtn1.MouseButton1Click:Connect(function()
+    task.spawn(performAntiBang)
+end)
+
+ActionBtn3.MouseButton1Click:Connect(function()
+    task.spawn(performStrongAntiBang)
+end)
+
+ActionBtn2.MouseButton1Click:Connect(function()
+    autoEnabled = not autoEnabled
+    if autoEnabled then
+        ActionBtn2.Text = "🛡️ Automatic: ACTIVE"
+        ActionBtn2.TextColor3 = Color3.fromRGB(100, 255, 150)
+        ActionBtn2:FindFirstChildOfClass("UIStroke").Color = Color3.fromRGB(0, 200, 100)
+    else
+        ActionBtn2.Text = "🛡️ Automatic: OFF"
+        ActionBtn2.TextColor3 = Color3.fromRGB(220, 220, 230)
+        ActionBtn2:FindFirstChildOfClass("UIStroke").Color = Color3.fromRGB(60, 60, 80)
+    end
+end)
+
+-- حلقه شناسایی و چک اتوماتیک
+RunService.RenderStepped:Connect(function()
+    if autoEnabled and not isDodging then
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local myRoot = player.Character.HumanoidRootPart
+            for _, otherPlayer in ipairs(Players:GetPlayers()) do
+                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local otherRoot = otherPlayer.Character.HumanoidRootPart
+                    local distance = (myRoot.Position - otherRoot.Position).Magnitude
+                    if distance <= PROXIMITY_DISTANCE then
+                        task.spawn(performAntiBang)
+                        break
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- بستن برنامه
+DismissBtn.MouseButton1Click:Connect(function()
+    autoEnabled = false
+    TweenService:Create(AppBase, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)}):Play()
+    task.wait(0.25)
+    CoreOverlay:Destroy()
+end)
