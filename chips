@@ -1,0 +1,12 @@
+local localPlayer = game.Players.LocalPlayer
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local targetTouchInterest = workspace:WaitForChild("chipsgive"):WaitForChild("TouchInterest")
+local parentPart = targetTouchInterest.Parent
+
+-- شروع تماس (Touch)
+firetouchinterest(hrp, parentPart, 0)
+task.wait(0.1)
+-- پایان تماس (Untouch)
+firetouchinterest(hrp, parentPart, 1)
