@@ -1,0 +1,23 @@
+-- مطمئن شوید که nameTagEvent و colorArgsList به درستی تعریف شده‌اند
+local colorArgsList = {
+    {"SetColor", "Red"}, {"SetColor", "Yellow"}, {"SetColor", "Blue"},
+    {"SetColor", "Green"}, {"SetColor", "Pink"}, {"SetColor", "Gold"},
+    {"SetColor", "Orange"}, {"SetColor", "Cyan"}, {"SetColor", "Teal"},
+    {"SetColor", "Gray"}, {"SetColor", "White"}, {"SetColor", "Purple"}
+}
+
+-- پیدا کردن رویداد (Event) در صورت نیاز (بسته به ساختار بازی شما)
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local nameTagEvent = replicatedStorage:WaitForChild("NameTagEvent", 5) -- نام رویداد را در صورت نیاز تغییر دهید
+
+-- اجرای حلقه RGB به صورت مستقل
+task.spawn(function()
+    local rgbIndex = 1
+    while true do
+        if nameTagEvent then
+            nameTagEvent:FireServer(unpack(colorArgsList[rgbIndex]))
+        end
+        rgbIndex = (rgbIndex % #colorArgsList) + 1
+        task.wait(1) -- فاصله زمانی بین تغییر هر رنگ (۱ ثانیه)
+    end
+end)
