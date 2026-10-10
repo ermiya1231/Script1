@@ -1,0 +1,37 @@
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+task.spawn(function()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+
+    if hrp then
+        local originalCFrame = hrp.CFrame
+
+        -- پیمایش یک‌باره‌ی تمام ProximityPromptها در Workspace
+        for _, prompt in pairs(Workspace:GetDescendants()) do
+            if prompt:IsA("ProximityPrompt") then
+                local parentPart = prompt.Parent
+                if parentPart and parentPart:IsA("BasePart") then
+                    local color = parentPart.Color
+                    local isGreen = (color.G > 0.5 and color.R < 0.5)
+
+                    -- شرط بررسی رنگ سبز یا کلمات مرتبط با پول/دریافت
+                    if isGreen or prompt.ObjectText:lower():find("money") or prompt.ActionText:lower():find("get") then
+                        hrp.CFrame = parentPart.CFrame + Vector3.new(0, 3, 0)
+                        task.wait(0.2)
+                        fireproximityprompt(prompt)
+                        task.wait(prompt.HoldDuration + 0.2)
+                    end
+                end
+            end
+        end
+
+        -- بازگشت به موقعیت اولیه بعد از اتمام کار
+        task.wait(0.5)
+        if hrp then 
+            hrp.CFrame = originalCFrame 
+        end
+    end
+end)
