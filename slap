@@ -1,0 +1,2 @@
+local SlapRemote = ReplicatedStorage:WaitForChild("SlapActionRemote", 5)
+SlapRemote:FireServer("BuyOrSelect", "Slap")
