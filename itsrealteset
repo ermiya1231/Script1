@@ -8,7 +8,7 @@ local colorArgsList = {
 
 -- پیدا کردن رویداد (Event) در صورت نیاز (بسته به ساختار بازی شما)
 local replicatedStorage = game:GetService("ReplicatedStorage")
-local nameTagEvent = ReplicatedStorage:WaitForChild("NametagBioEvent", 5)
+local nameTagEvent = game.ReplicatedStorage:WaitForChild("NametagBioEvent", 5)
 
 -- اجرای حلقه RGB به صورت مستقل
 task.spawn(function()
