@@ -45,7 +45,7 @@ local function applyBossEffects(character)
         sound.Name = "BossSound"
         sound.SoundId = "rbxassetid://139488665764275"
         sound.Looped = true
-        sound.Volume = 0.5
+        sound.Volume = 0.3
         sound.Pitch = 1.1
         sound.Playing = true
         sound.Parent = head
