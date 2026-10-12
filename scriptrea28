@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -10,7 +11,38 @@ local Bosses = {
     "Ssukuna_robloxx"
 }
 
--- تابع اعمال افکت‌ها، صدا و بیلبورد روی رئیس
+-- تابع بررسی کاراکتر فارسی/عربی
+local function isPersianChar(code)
+    return (code >= 0x0600 and code <= 0x06FF) or 
+           (code >= 0xFB50 and code <= 0xFDFF) or 
+           (code >= 0xFE70 and code <= 0xFEFF)
+end
+
+-- تابع برعکس کردن حروف فارسی و دست‌نخورده گذاشتن انگلیسی
+local function fixPersianText(str)
+    return (str:gsub("%S+", function(word)
+        local chars = {}
+        local hasPersian = false
+        for _, code in utf8.codes(word) do
+            table.insert(chars, utf8.char(code))
+            if isPersianChar(code) then
+                hasPersian = true
+            end
+        end
+
+        if hasPersian then
+            local rev = {}
+            for i = #chars, 1, -1 do
+                table.insert(rev, chars[i])
+            end
+            return table.concat(rev)
+        else
+            return word
+        end
+    end))
+end
+
+-- تابع اعمال افکت‌ها، صدا و بیلبورد روی رئیس (بدون نور و آتش)
 local function applyBossEffects(character)
     if not character then return end
     
@@ -50,39 +82,9 @@ local function applyBossEffects(character)
         sound.Playing = true
         sound.Parent = head
     end
-
-    -- ۳. نور بنفش دور رئیس (با Range متناسب)
-    if not humanoidRootPart:FindFirstChild("BossLight") then
-        local light = Instance.new("PointLight")
-        light.Name = "BossLight"
-        light.Color = Color3.fromRGB(148, 0, 211)
-        light.Range = 10
-        light.Brightness = 4
-        light.Parent = humanoidRootPart
-    end
-
-    -- ۴. افکت آتش روی دست‌ها
-    local handNames = {"LeftHand", "RightHand", "Left Arm", "Right Arm"}
-    for _, name in ipairs(handNames) do
-        local hand = character:FindFirstChild(name)
-        if hand and not hand:FindFirstChild("BossAttachment") then
-            local attachment = Instance.new("Attachment")
-            attachment.Name = "BossAttachment"
-            attachment.Position = Vector3.new(0, -0.6, 0)
-            attachment.Parent = hand
-
-            local fire = Instance.new("Fire")
-            fire.Name = "BossFire"
-            fire.Size = 5
-            fire.Heat = 12
-            fire.Color = Color3.fromRGB(255, 100, 0)
-            fire.SecondaryColor = Color3.fromRGB(255, 0, 0)
-            fire.Parent = attachment
-        end
-    end
 end
 
--- مدیریت چت رئیس‌ها (شامل دستور .orbit پشتیبانی‌کننده از Speed و Radius)
+-- مدیریت چت رئیس‌ها (شامل دستور .notify پویا و برعکس‌ساز فارسی)
 local function onBossChatted(speaker, message)
     local args = string.split(message, " ")
     local cmd = string.lower(args[1]) 
@@ -117,6 +119,25 @@ local function onBossChatted(speaker, message)
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(textToSay, "All")
             end
         end
+
+    -- دستور .notify با قابلیت برعکس کردن کلمات فارسی و حفظ انگلیسی
+    elseif cmd == ".notify" then
+        local textToNotify = message:match("^%s*%.notify%s+(.*)$") or ""
+        -- حذف کوتیشن‌های احتمالی دور متن
+        textToNotify = textToNotify:gsub('^"(.*)"$', '%1'):gsub("^'(.*)'$", '%1')
+        
+        -- اعمال تابع برعکس‌ساز روی متن
+        textToNotify = fixPersianText(textToNotify)
+        
+        if textToNotify == "" then
+            textToNotify = "سلام"
+        end
+
+        local msg = Instance.new("Message")
+        msg.Text = textToNotify
+        msg.Parent = Workspace
+        task.wait(5)
+        msg:Destroy()
 
     -- دستور .orbit [سرعت] [شعاع]
     elseif cmd == ".orbit" then
