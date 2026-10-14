@@ -511,7 +511,7 @@ elseif strl == "me" then
 end
 if enable == true then
 blurefct(0)
-Notify("Destructed Hex", "Loaded", 10)
+Notify("Backdoor Scanner", "Loaded", 10)
 local destruct = Instance.new("ScreenGui")
 local main = Instance.new("Frame")
 local TextLabel = Instance.new("TextLabel")
