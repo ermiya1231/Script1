@@ -1,584 +1,295 @@
-
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
+local RS = game:GetService("ReplicatedStorage")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
-local LocalPlayer = Players.LocalPlayer
-local Roots = { ReplicatedStorage, LocalPlayer, workspace }
+local LP = Players.LocalPlayer
 
----------------------------------------------------------------- GUI parent
-local function getGuiParent()
-	local ok, ui = pcall(function()
-		return gethui and gethui()
-	end)
-	if ok and ui then
-		return ui
-	end
-	return LocalPlayer:WaitForChild("PlayerGui")
-end
-
-local old = getGuiParent():FindFirstChild("RemoteExplorerPanel")
-if old then
-	old:Destroy()
-end
-
----------------------------------------------------------------- theme (hacker green / black)
-local WHITE = Color3.fromRGB(255, 255, 255)
-local BLACK = Color3.fromRGB(0, 0, 0)
-local PANEL_BG = Color3.fromRGB(5, 10, 5)
-local ROW_BG = Color3.fromRGB(10, 20, 10)
-local NEON = Color3.fromRGB(0, 255, 70)
-local NEON_DIM = Color3.fromRGB(0, 110, 35)
-
-local RED = Color3.fromRGB(220, 0, 0)
-local RED_H = Color3.fromRGB(255, 50, 50)
-local GREEN = Color3.fromRGB(0, 200, 70)
-local GREEN_H = Color3.fromRGB(40, 255, 110)
-local BLUE = Color3.fromRGB(0, 100, 230)
-local BLUE_H = Color3.fromRGB(50, 140, 255)
-local BLUE_TEXT = Color3.fromRGB(80, 170, 255) -- اسم RemoteFunction
-local AMBER = Color3.fromRGB(230, 180, 0) -- Path
-
-local ARG_COLORS = {
-	Color3.fromRGB(255, 140, 0), -- orange
-	Color3.fromRGB(190, 80, 255), -- purple
-	Color3.fromRGB(0, 220, 220), -- cyan
-	Color3.fromRGB(255, 60, 150), -- pink
+-- ====== رنگ‌ها ======
+local C = {
+    bg = Color3.fromRGB(8, 12, 8),
+    bar = Color3.fromRGB(0, 40, 10),
+    row = Color3.fromRGB(14, 22, 14),
+    green = Color3.fromRGB(0, 255, 70),
+    dim = Color3.fromRGB(0, 160, 50),
+    fire = Color3.fromRGB(255, 140, 0),
+    invoke = Color3.fromRGB(30, 120, 255),
+    red = Color3.fromRGB(220, 30, 30),
+    input = Color3.fromRGB(0, 0, 0),
 }
-local FONT = Enum.Font.Code
 
-local function create(class, props, parent)
-	local o = Instance.new(class)
-	for k, v in pairs(props) do
-		o[k] = v
-	end
-	o.Parent = parent
-	return o
+-- ====== GUI والد ======
+local function getParent()
+    local ok, h = pcall(function() return gethui and gethui() end)
+    if ok and h then return h end
+    local ok2, cg = pcall(function() return game:GetService("CoreGui") end)
+    if ok2 then
+        local t = pcall(function() local _ = cg.Name end)
+        if t then return cg end
+    end
+    return LP:WaitForChild("PlayerGui")
 end
 
-local function styleColored(b, base, hover, textColor)
-	b.BackgroundColor3 = base
-	b.TextColor3 = textColor or WHITE
-	b.BorderSizePixel = 1
-	b.BorderColor3 = BLACK
-	b.AutoButtonColor = false
-	b.Font = FONT
-	b.TextSize = 13
-	b.TextTruncate = Enum.TextTruncate.AtEnd
-	b.ClipsDescendants = true
-	b.MouseEnter:Connect(function()
-		b.BackgroundColor3 = hover
-	end)
-	b.MouseLeave:Connect(function()
-		b.BackgroundColor3 = base
-	end)
+local gui = Instance.new("ScreenGui")
+gui.Name = "RemoteExplorer"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = getParent()
+
+-- ====== ساخت ابزار UI ======
+local function make(class, props, parent)
+    local o = Instance.new(class)
+    for k, v in pairs(props) do o[k] = v end
+    o.Parent = parent
+    return o
 end
 
----------------------------------------------------------------- layout
-local HEADER_H = 88
-local ARGS_H = 98
+local function button(text, color, size, pos, parent)
+    return make("TextButton", {
+        Text = text, Font = Enum.Font.Code, TextSize = 13,
+        TextColor3 = Color3.new(1, 1, 1), BackgroundColor3 = color,
+        BorderSizePixel = 1, BorderColor3 = C.green,
+        Size = size, Position = pos, AutoButtonColor = true,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+    }, parent)
+end
 
-local gui = create("ScreenGui", {
-	Name = "RemoteExplorerPanel",
-	ResetOnSpawn = false,
-	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-	IgnoreGuiInset = true,
-}, getGuiParent())
-
-local main = create("Frame", {
-	Name = "Main",
-	Size = UDim2.fromOffset(440, 560),
-	Position = UDim2.new(0.5, -220, 0.5, -280),
-	BackgroundColor3 = PANEL_BG,
-	BorderSizePixel = 2,
-	BorderColor3 = NEON,
-	ClipsDescendants = true,
+-- ====== پنل اصلی ======
+local frame = make("Frame", {
+    Size = UDim2.new(0, 460, 0, 440),
+    Position = UDim2.new(0.5, -230, 0.5, -220),
+    BackgroundColor3 = C.bg, BorderSizePixel = 2, BorderColor3 = C.green,
+    ClipsDescendants = true,
 }, gui)
 
--- header
-local header = create("Frame", {
-	Name = "Header",
-	Size = UDim2.new(1, 0, 0, HEADER_H),
-	BackgroundColor3 = BLACK,
-	BorderSizePixel = 0,
-	ClipsDescendants = true,
-}, main)
-create("Frame", {
-	Size = UDim2.new(1, 0, 0, 1),
-	Position = UDim2.new(0, 0, 1, -1),
-	BackgroundColor3 = NEON,
-	BorderSizePixel = 0,
-}, header)
+-- نوار عنوان
+local titleBar = make("Frame", {
+    Size = UDim2.new(1, 0, 0, 28), BackgroundColor3 = C.bar, BorderSizePixel = 0,
+}, frame)
 
--- title
-create("TextLabel", {
-	Name = "Title",
-	Text = "C00LHACK Remote Explorer",
-	Size = UDim2.new(1, -44, 0, 26),
-	Position = UDim2.fromOffset(6, 0),
-	BackgroundTransparency = 1,
-	TextColor3 = NEON,
-	Font = FONT,
-	TextSize = 16,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	TextTruncate = Enum.TextTruncate.AtEnd,
-	ClipsDescendants = true,
-}, header)
+make("TextLabel", {
+    Text = "C00LHACK Remote Explorer", Font = Enum.Font.Code, TextSize = 16,
+    TextColor3 = C.green, BackgroundTransparency = 1,
+    Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 8, 0, 0),
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextTruncate = Enum.TextTruncate.AtEnd,
+}, titleBar)
 
--- close (red)
-local closeBtn = create("TextButton", {
-	Name = "Close",
-	Text = "X",
-	Size = UDim2.fromOffset(26, 22),
-	Position = UDim2.new(1, -30, 0, 2),
-}, header)
-styleColored(closeBtn, RED, RED_H, WHITE)
-closeBtn.TextSize = 14
+local closeBtn = button("X", C.red, UDim2.new(0, 28, 0, 22), UDim2.new(1, -32, 0, 3), titleBar)
+closeBtn.Activated:Connect(function() gui:Destroy() end)
 
--- top-left buttons
-local fireAllBtn = create("TextButton", {
-	Name = "FireAll",
-	Text = "Fire All",
-	Size = UDim2.fromOffset(75, 24),
-	Position = UDim2.fromOffset(4, 29),
-}, header)
-styleColored(fireAllBtn, GREEN, GREEN_H, BLACK)
+-- نوار ابزار بالا (Fire All / Invoke All / Search)
+local fireAll = button("Fire All", C.fire, UDim2.new(0, 70, 0, 24), UDim2.new(0, 6, 0, 33), frame)
+local invokeAll = button("Invoke All", C.invoke, UDim2.new(0, 80, 0, 24), UDim2.new(0, 82, 0, 33), frame)
 
-local invokeAllBtn = create("TextButton", {
-	Name = "InvokeAll",
-	Text = "Invoke All",
-	Size = UDim2.fromOffset(85, 24),
-	Position = UDim2.fromOffset(84, 29),
-}, header)
-styleColored(invokeAllBtn, BLUE, BLUE_H, WHITE)
+local search = make("TextBox", {
+    PlaceholderText = "Search...", Text = "", Font = Enum.Font.Code, TextSize = 13,
+    TextColor3 = C.green, PlaceholderColor3 = C.dim, BackgroundColor3 = C.input,
+    BorderSizePixel = 1, BorderColor3 = C.green, ClearTextOnFocus = false,
+    Size = UDim2.new(1, -176, 0, 24), Position = UDim2.new(0, 168, 0, 33),
+    TextXAlignment = Enum.TextXAlignment.Left, ClipsDescendants = true,
+}, frame)
 
-local countLabel = create("TextLabel", {
-	Name = "Count",
-	Text = "0 remotes",
-	Size = UDim2.new(1, -182, 0, 24),
-	Position = UDim2.fromOffset(174, 29),
-	BackgroundTransparency = 1,
-	TextColor3 = NEON,
-	Font = FONT,
-	TextSize = 12,
-	TextXAlignment = Enum.TextXAlignment.Right,
-	TextTruncate = Enum.TextTruncate.AtEnd,
-	ClipsDescendants = true,
-}, header)
+-- لیست
+local list = make("ScrollingFrame", {
+    Size = UDim2.new(1, -12, 1, -170), Position = UDim2.new(0, 6, 0, 62),
+    BackgroundColor3 = C.input, BorderSizePixel = 1, BorderColor3 = C.green,
+    ScrollBarThickness = 6, ScrollBarImageColor3 = C.green,
+    CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    ScrollingDirection = Enum.ScrollingDirection.Y, ClipsDescendants = true,
+}, frame)
 
--- search box
-local searchBox = create("TextBox", {
-	Name = "Search",
-	Text = "",
-	PlaceholderText = "Search remotes (name or path)...",
-	PlaceholderColor3 = NEON_DIM,
-	Size = UDim2.new(1, -8, 0, 24),
-	Position = UDim2.fromOffset(4, 58),
-	BackgroundColor3 = PANEL_BG,
-	TextColor3 = NEON,
-	BorderSizePixel = 1,
-	BorderColor3 = NEON,
-	Font = FONT,
-	TextSize = 13,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	ClearTextOnFocus = false,
-	ClipsDescendants = true,
-	TextTruncate = Enum.TextTruncate.AtEnd,
-}, header)
+make("UIListLayout", { Padding = UDim.new(0, 3), SortOrder = Enum.SortOrder.LayoutOrder }, list)
+make("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingLeft = UDim.new(0, 3), PaddingRight = UDim.new(0, 3) }, list)
 
--- args area (bottom)
-local argsFrame = create("Frame", {
-	Name = "Args",
-	Size = UDim2.new(1, 0, 0, ARGS_H),
-	Position = UDim2.new(0, 0, 1, -ARGS_H),
-	BackgroundColor3 = BLACK,
-	BorderSizePixel = 0,
-	ClipsDescendants = true,
-}, main)
-create("Frame", {
-	Size = UDim2.new(1, 0, 0, 1),
-	BackgroundColor3 = NEON,
-	BorderSizePixel = 0,
-}, argsFrame)
-create("TextLabel", {
-	Text = 'Arguments  (number / true / false / nil / "text")',
-	Size = UDim2.new(1, -8, 0, 16),
-	Position = UDim2.fromOffset(4, 3),
-	BackgroundTransparency = 1,
-	TextColor3 = NEON,
-	Font = FONT,
-	TextSize = 11,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	TextTruncate = Enum.TextTruncate.AtEnd,
-	ClipsDescendants = true,
-}, argsFrame)
+-- کادر آرگومان (بزرگ)
+make("TextLabel", {
+    Text = "Arguments:", Font = Enum.Font.Code, TextSize = 12,
+    TextColor3 = C.dim, BackgroundTransparency = 1,
+    Size = UDim2.new(1, -12, 0, 16), Position = UDim2.new(1, 0, 1, -104),
+    TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
+}, frame).Position = UDim2.new(0, 6, 1, -106)
 
-local argBoxes = {}
-for i = 1, 4 do
-	local box = create("TextBox", {
-		Name = "Arg" .. i,
-		Text = "",
-		PlaceholderText = "Arg " .. i,
-		PlaceholderColor3 = NEON_DIM,
-		Size = UDim2.new(0.5, -8, 0, 33),
-		Position = UDim2.new(((i - 1) % 2) * 0.5, 4, 0, 22 + math.floor((i - 1) / 2) * 37),
-		BackgroundColor3 = PANEL_BG,
-		TextColor3 = NEON,
-		BorderSizePixel = 2,
-		BorderColor3 = ARG_COLORS[i],
-		Font = FONT,
-		TextSize = 13,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		ClearTextOnFocus = false,
-		ClipsDescendants = true,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-	}, argsFrame)
-	argBoxes[i] = box
+local argBox = make("TextBox", {
+    PlaceholderText = "args here...", Text = "", Font = Enum.Font.Code, TextSize = 13,
+    TextColor3 = C.green, PlaceholderColor3 = C.dim, BackgroundColor3 = C.input,
+    BorderSizePixel = 1, BorderColor3 = C.green, ClearTextOnFocus = false,
+    MultiLine = true, TextWrapped = true, ClipsDescendants = true,
+    TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top,
+    Size = UDim2.new(1, -12, 0, 82), Position = UDim2.new(0, 6, 1, -88),
+}, frame)
+
+-- ====== پارس آرگومان ======
+local function getArgs()
+    local text = argBox.Text
+    if text:match("^%s*$") then return table.pack() end
+    local ls = loadstring or load
+    if ls then
+        local fn = ls("return " .. text)
+        if fn then
+            local ok, res = pcall(function() return table.pack(fn()) end)
+            if ok then return res end
+        end
+    end
+    return table.pack(text) -- اگه پارس نشد، به صورت رشته ساده
 end
 
--- list
-local list = create("ScrollingFrame", {
-	Name = "List",
-	Size = UDim2.new(1, -8, 1, -HEADER_H - ARGS_H - 8),
-	Position = UDim2.fromOffset(4, HEADER_H + 4),
-	BackgroundColor3 = BLACK,
-	BorderSizePixel = 1,
-	BorderColor3 = NEON_DIM,
-	ScrollBarThickness = 8,
-	ScrollBarImageColor3 = NEON,
-	CanvasSize = UDim2.new(),
-	AutomaticCanvasSize = Enum.AutomaticSize.Y,
-	ScrollingDirection = Enum.ScrollingDirection.Y,
-	ClipsDescendants = true,
-}, main)
-create("UIListLayout", {
-	SortOrder = Enum.SortOrder.LayoutOrder,
-	Padding = UDim.new(0, 2),
-}, list)
-
----------------------------------------------------------------- dragging (by header)
-do
-	local dragging, dragStart, startPos
-	header.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPos = main.Position
-		end
-	end)
-	UserInputService.InputChanged:Connect(function(input)
-		if
-			dragging
-			and (
-				input.UserInputType == Enum.UserInputType.MouseMovement
-				or input.UserInputType == Enum.UserInputType.Touch
-			)
-		then
-			local d = input.Position - dragStart
-			main.Position = UDim2.new(
-				startPos.X.Scale,
-				startPos.X.Offset + d.X,
-				startPos.Y.Scale,
-				startPos.Y.Offset + d.Y
-			)
-		end
-	end)
-	UserInputService.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end)
+-- ====== اجرای ریموت ======
+local function run(remote)
+    local args = getArgs()
+    if remote:IsA("RemoteEvent") then
+        pcall(function() remote:FireServer(table.unpack(args, 1, args.n)) end)
+    elseif remote:IsA("RemoteFunction") then
+        task.spawn(function() -- InvokeServer yield می‌کنه
+            pcall(function() remote:InvokeServer(table.unpack(args, 1, args.n)) end)
+        end)
+    end
 end
 
----------------------------------------------------------------- args parsing
-local function parseArg(s)
-	s = s:match("^%s*(.-)%s*$")
-	if s == "nil" then
-		return nil
-	elseif s == "true" then
-		return true
-	elseif s == "false" then
-		return false
-	end
-	local n = tonumber(s)
-	if n then
-		return n
-	end
-	local q = s:match('^"(.*)"$') or s:match("^'(.*)'$")
-	return q or s
+-- ====== مدیریت ردیف‌ها ======
+local rows = {} -- [remote] = {frame=, path=, pathLabel=, visible=}
+local order = 0
+
+local function isRemote(o)
+    return o:IsA("RemoteEvent") or o:IsA("RemoteFunction")
 end
 
-local function collectArgs()
-	local args = { n = 0 }
-	for _, box in ipairs(argBoxes) do
-		if box.Text ~= "" then
-			args.n += 1
-			args[args.n] = parseArg(box.Text)
-		end
-	end
-	return args
+local function removeRow(remote)
+    local r = rows[remote]
+    if r then
+        r.frame:Destroy()
+        rows[remote] = nil
+    end
 end
-
----------------------------------------------------------------- remote firing
-local function isRemote(i)
-	return i:IsA("RemoteEvent") or i:IsA("UnreliableRemoteEvent") or i:IsA("RemoteFunction")
-end
-
-local function isFunction(i)
-	return i:IsA("RemoteFunction")
-end
-
-local function fireRemote(remote, args)
-	task.spawn(function()
-		pcall(function()
-			if isFunction(remote) then
-				remote:InvokeServer(table.unpack(args, 1, args.n))
-			else
-				remote:FireServer(table.unpack(args, 1, args.n))
-			end
-		end)
-	end)
-end
-
----------------------------------------------------------------- rows
-local rows = {} -- [remote] = {frame=, nameLbl=, pathLbl=, parent=, name=}
-local rowCount = 0
-local orderCounter = 0
-
-local function inRoots(inst)
-	for _, r in ipairs(Roots) do
-		if inst:IsDescendantOf(r) then
-			return true
-		end
-	end
-	return false
-end
-
-local filterText = ""
-local function matchesFilter(s)
-	return filterText == "" or s:find(filterText, 1, true) ~= nil
-end
-
-local removeRow -- forward declaration (used by the Delete button)
 
 local function addRow(remote)
-	if rows[remote] then
-		return
-	end
-	orderCounter += 1
-	rowCount += 1
+    if rows[remote] then return end
+    order += 1
+    local isEvent = remote:IsA("RemoteEvent")
 
-	local isFn = isFunction(remote)
+    local row = make("Frame", {
+        Size = UDim2.new(1, -6, 0, 44), BackgroundColor3 = C.row,
+        BorderSizePixel = 1, BorderColor3 = C.dim,
+        LayoutOrder = order, ClipsDescendants = true,
+    }, list)
 
-	-- ردیف فقط یه Frame هست؛ کلیک روی خودش کاری نمی‌کنه
-	local row = create("Frame", {
-		Name = "Row",
-		Size = UDim2.new(1, -10, 0, 38),
-		LayoutOrder = orderCounter,
-		BackgroundColor3 = ROW_BG,
-		BorderSizePixel = 1,
-		BorderColor3 = NEON_DIM,
-		ClipsDescendants = true,
-	}, list)
+    local nameLabel = make("TextLabel", {
+        Text = remote.Name .. (isEvent and "  [Event]" or "  [Function]"),
+        Font = Enum.Font.Code, TextSize = 14, TextColor3 = C.green,
+        BackgroundTransparency = 1, Size = UDim2.new(1, -130, 0, 20),
+        Position = UDim2.new(0, 6, 0, 2), TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+    }, row)
 
-	local nameLbl = create("TextLabel", {
-		Text = (isFn and "[Function] " or "[Event] ") .. remote.Name,
-		Size = UDim2.new(1, -134, 0, 18),
-		Position = UDim2.fromOffset(4, 2),
-		BackgroundTransparency = 1,
-		TextColor3 = isFn and BLUE_TEXT or NEON,
-		Font = FONT,
-		TextSize = 14,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-		ClipsDescendants = true,
-	}, row)
+    local pathLabel = make("TextLabel", {
+        Text = remote:GetFullName(), Font = Enum.Font.Code, TextSize = 11,
+        TextColor3 = C.dim, BackgroundTransparency = 1,
+        Size = UDim2.new(1, -130, 0, 18), Position = UDim2.new(0, 6, 0, 23),
+        TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
+    }, row)
 
-	local pathLbl = create("TextLabel", {
-		Text = remote:GetFullName(),
-		Size = UDim2.new(1, -134, 0, 15),
-		Position = UDim2.fromOffset(4, 20),
-		BackgroundTransparency = 1,
-		TextColor3 = AMBER,
-		Font = FONT,
-		TextSize = 11,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-		ClipsDescendants = true,
-	}, row)
+    local actBtn = button(isEvent and "Fire" or "Invoke", isEvent and C.fire or C.invoke,
+        UDim2.new(0, 56, 0, 30), UDim2.new(1, -122, 0, 7), row)
+    local delBtn = button("Delete", C.red, UDim2.new(0, 56, 0, 30), UDim2.new(1, -62, 0, 7), row)
 
-	-- Fire (event) / Invoke (function) button
-	local actionBtn = create("TextButton", {
-		Name = "Action",
-		Text = isFn and "Invoke" or "Fire",
-		Size = UDim2.fromOffset(58, 26),
-		Position = UDim2.new(1, -124, 0, 5),
-	}, row)
-	local baseColor = isFn and BLUE or GREEN
-	local hoverColor = isFn and BLUE_H or GREEN_H
-	local textColor = isFn and WHITE or BLACK
-	styleColored(actionBtn, baseColor, hoverColor, textColor)
-	actionBtn.MouseButton1Click:Connect(function()
-		fireRemote(remote, collectArgs())
-		actionBtn.BackgroundColor3 = WHITE
-		task.delay(0.12, function()
-			actionBtn.BackgroundColor3 = baseColor
-		end)
-	end)
+    actBtn.Activated:Connect(function() run(remote) end)
+    delBtn.Activated:Connect(function()
+        pcall(function() remote:Destroy() end)
+        removeRow(remote)
+    end)
 
-	-- Delete button (red)
-	local deleteBtn = create("TextButton", {
-		Name = "Delete",
-		Text = "Delete",
-		Size = UDim2.fromOffset(58, 26),
-		Position = UDim2.new(1, -62, 0, 5),
-	}, row)
-	styleColored(deleteBtn, RED, RED_H, WHITE)
-	deleteBtn.MouseButton1Click:Connect(function()
-		local ok = pcall(function()
-			remote:Destroy()
-		end)
-		if ok then
-			removeRow(remote)
-		end
-	end)
-
-	rows[remote] = {
-		frame = row,
-		nameLbl = nameLbl,
-		pathLbl = pathLbl,
-		parent = remote.Parent,
-		name = remote.Name,
-		search = (remote.Name .. " " .. remote:GetFullName()):lower(),
-	}
-	row.Visible = matchesFilter(rows[remote].search)
+    rows[remote] = { frame = row, pathLabel = pathLabel, nameLabel = nameLabel, path = pathLabel.Text, shown = true }
 end
 
-removeRow = function(remote)
-	local row = rows[remote]
-	if row then
-		row.frame:Destroy()
-		rows[remote] = nil
-		rowCount -= 1
-	end
+-- ====== ثبت ریموت‌ها با Event (بدون اسکن سنگین) ======
+local roots = { RS, LP, workspace }
+
+local function hook(root)
+    for _, d in ipairs(root:GetDescendants()) do
+        if isRemote(d) then addRow(d) end
+    end
+    root.DescendantAdded:Connect(function(d)
+        if isRemote(d) then addRow(d) end
+    end)
+    root.DescendantRemoving:Connect(function(d)
+        if rows[d] then
+            task.defer(removeRow, d)
+        end
+    end)
 end
 
--- search filter (only toggles Visible, never rebuilds the list)
-local function applyFilter()
-	filterText = searchBox.Text:lower()
-	for _, row in pairs(rows) do
-		row.frame.Visible = matchesFilter(row.search)
-	end
-end
-searchBox:GetPropertyChangedSignal("Text"):Connect(applyFilter)
+for _, r in ipairs(roots) do hook(r) end
 
----------------------------------------------------------------- discovery (event based + 0.1s flush)
-local pending = {}
-local pendingList = {}
-
-local function queue(inst)
-	if not pending[inst] and not rows[inst] then
-		pending[inst] = true
-		pendingList[#pendingList + 1] = inst
-	end
-end
-
-for _, root in ipairs(Roots) do
-	root.DescendantAdded:Connect(function(d)
-		if isRemote(d) then
-			queue(d)
-		end
-	end)
-end
-
--- first scan in chunks so the game never freezes
+-- ====== آپدیت هر 0.1 ثانیه (فقط تغییرات) ======
 task.spawn(function()
-	for _, root in ipairs(Roots) do
-		local n = 0
-		for _, d in ipairs(root:GetDescendants()) do
-			if isRemote(d) then
-				queue(d)
-			end
-			n += 1
-			if n % 1500 == 0 then
-				task.wait()
-			end
-		end
-	end
+    while gui.Parent do
+        local q = search.Text:lower()
+        for remote, r in pairs(rows) do
+            if not remote.Parent then
+                removeRow(remote)
+            else
+                local p = remote:GetFullName()
+                if p ~= r.path then
+                    r.path = p
+                    r.pathLabel.Text = p
+                end
+                local match = q == "" or remote.Name:lower():find(q, 1, true) ~= nil or p:lower():find(q, 1, true) ~= nil
+                if match ~= r.shown then
+                    r.shown = match
+                    r.frame.Visible = match
+                end
+            end
+        end
+        task.wait(0.1)
+    end
 end)
 
--- main 0.1s update loop (only touches what changed)
-task.spawn(function()
-	while gui.Parent do
-		-- 1) add new remotes (capped per tick to stay smooth)
-		local added = 0
-		while #pendingList > 0 and added < 40 do
-			local inst = table.remove(pendingList)
-			pending[inst] = nil
-			if inst.Parent and inRoots(inst) then
-				addRow(inst)
-				added += 1
-			end
-		end
-
-		-- 2) validate existing rows (removed / moved / renamed)
-		local shown = 0
-		for remote, row in pairs(rows) do
-			if not inRoots(remote) then
-				removeRow(remote)
-			else
-				local changed = false
-				if remote.Parent ~= row.parent then
-					row.parent = remote.Parent
-					row.pathLbl.Text = remote:GetFullName()
-					changed = true
-				end
-				if remote.Name ~= row.name then
-					row.name = remote.Name
-					row.nameLbl.Text = (isFunction(remote) and "[Function] " or "[Event] ") .. remote.Name
-					row.pathLbl.Text = remote:GetFullName()
-					changed = true
-				end
-				if changed then
-					row.search = (remote.Name .. " " .. remote:GetFullName()):lower()
-					row.frame.Visible = matchesFilter(row.search)
-				end
-				if row.frame.Visible then
-					shown += 1
-				end
-			end
-		end
-
-		countLabel.Text = shown .. "/" .. rowCount .. " remotes"
-		task.wait(0.1)
-	end
+-- ====== Fire All / Invoke All (فقط ریموت‌های قابل مشاهده در لیست) ======
+fireAll.Activated:Connect(function()
+    for remote, r in pairs(rows) do
+        if r.shown and remote:IsA("RemoteEvent") then run(remote) end
+    end
 end)
 
----------------------------------------------------------------- buttons
-local function runAll(wantFunctions)
-	local args = collectArgs()
-	local snapshot = {}
-	for remote in pairs(rows) do
-		if isFunction(remote) == wantFunctions then
-			snapshot[#snapshot + 1] = remote
-		end
-	end
-	task.spawn(function()
-		for i, remote in ipairs(snapshot) do
-			fireRemote(remote, args)
-			if i % 10 == 0 then
-				task.wait()
-			end
-		end
-	end)
+invokeAll.Activated:Connect(function()
+    for remote, r in pairs(rows) do
+        if r.shown and remote:IsA("RemoteFunction") then run(remote) end
+    end
+end)
+
+-- ====== سیستم درگ (همون سیستم خودت، با کمی اصلاح) ======
+local function makeDraggable(handle, targetFrame)
+    local dragging, dragInput, dragStart, startPos
+
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = targetFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local newPos = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+            TweenService:Create(targetFrame, TweenInfo.new(0.15), { Position = newPos }):Play()
+        end
+    end)
 end
 
-fireAllBtn.MouseButton1Click:Connect(function()
-	runAll(false)
-end)
-invokeAllBtn.MouseButton1Click:Connect(function()
-	runAll(true)
-end)
-closeBtn.MouseButton1Click:Connect(function()
-	gui:Destroy()
-end)
+makeDraggable(titleBar, frame)
