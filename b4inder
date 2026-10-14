@@ -1,10 +1,3 @@
---[[
-    Remote Explorer Panel (LocalScript) - Hacker Theme
-    - لیست RemoteEvent / UnreliableRemoteEvent / RemoteFunction از ReplicatedStorage، Players.LocalPlayer و workspace
-    - فقط با دکمه‌ی سمت راست هر ریموت (Fire / Invoke) اجرا میشه، با آرگومان‌های 4 کادر پایین
-    - Fire All (فقط ایونت‌ها) و Invoke All (فقط فانکشن‌ها) بالا سمت چپ
-    - آپدیت هر 0.1 ثانیه بدون ساخت مجدد لیست (فقط تغییرات اعمال میشه => بدون لگ)
-]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
