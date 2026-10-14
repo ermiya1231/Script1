@@ -1,357 +1,591 @@
+--[[
+    Remote Explorer Panel (LocalScript) - Hacker Theme
+    - لیست RemoteEvent / UnreliableRemoteEvent / RemoteFunction از ReplicatedStorage، Players.LocalPlayer و workspace
+    - فقط با دکمه‌ی سمت راست هر ریموت (Fire / Invoke) اجرا میشه، با آرگومان‌های 4 کادر پایین
+    - Fire All (فقط ایونت‌ها) و Invoke All (فقط فانکشن‌ها) بالا سمت چپ
+    - آپدیت هر 0.1 ثانیه بدون ساخت مجدد لیست (فقط تغییرات اعمال میشه => بدون لگ)
+]]
+
 local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+
 local LocalPlayer = Players.LocalPlayer
+local Roots = { ReplicatedStorage, LocalPlayer, workspace }
 
--- سیستم درگ نرم و سازگار با موبایل
-local function makeDraggable(Frame, TopBar)
-    TopBar = TopBar or Frame
-    local dragToggle = false
-    local dragSpeed = 0.15
-    local dragInput = nil
-    local dragStart = nil
-    local startPos = nil
-
-    local function updateInput(input)
-        local Delta = input.Position - dragStart
-        local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
-        TweenService:Create(Frame, TweenInfo.new(dragSpeed), {Position = Position}):Play()
-    end
-
-    TopBar.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UserInputService:GetFocusedTextBox() == nil then
-            dragToggle = true
-            dragStart = input.Position
-            startPos = Frame.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragToggle = false
-                end
-            end)
-        end
-    end)
-
-    TopBar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragToggle then
-            updateInput(input)
-        end
-    end)
+---------------------------------------------------------------- GUI parent
+local function getGuiParent()
+	local ok, ui = pcall(function()
+		return gethui and gethui()
+	end)
+	if ok and ui then
+		return ui
+	end
+	return LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- جدول ریموت‌ها برای جلوگیری از تکرار
-local remotes = {}
-local remoteSet = {}
-
-local function addRemote(obj)
-    if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) and not remoteSet[obj] then
-        remoteSet[obj] = true
-        table.insert(remotes, obj)
-        return true
-    end
-    return false
+local old = getGuiParent():FindFirstChild("RemoteExplorerPanel")
+if old then
+	old:Destroy()
 end
 
--- لیست سرویس‌های ممنوعه کلاینت
-local blacklistedServices = {
-    ["ServerScriptService"] = true,
-    ["ServerStorage"] = true,
-    ["RobloxReplicatedStorage"] = true
+---------------------------------------------------------------- theme (hacker green / black)
+local WHITE = Color3.fromRGB(255, 255, 255)
+local BLACK = Color3.fromRGB(0, 0, 0)
+local PANEL_BG = Color3.fromRGB(5, 10, 5)
+local ROW_BG = Color3.fromRGB(10, 20, 10)
+local NEON = Color3.fromRGB(0, 255, 70)
+local NEON_DIM = Color3.fromRGB(0, 110, 35)
+
+local RED = Color3.fromRGB(220, 0, 0)
+local RED_H = Color3.fromRGB(255, 50, 50)
+local GREEN = Color3.fromRGB(0, 200, 70)
+local GREEN_H = Color3.fromRGB(40, 255, 110)
+local BLUE = Color3.fromRGB(0, 100, 230)
+local BLUE_H = Color3.fromRGB(50, 140, 255)
+local BLUE_TEXT = Color3.fromRGB(80, 170, 255) -- اسم RemoteFunction
+local AMBER = Color3.fromRGB(230, 180, 0) -- Path
+
+local ARG_COLORS = {
+	Color3.fromRGB(255, 140, 0), -- orange
+	Color3.fromRGB(190, 80, 255), -- purple
+	Color3.fromRGB(0, 220, 220), -- cyan
+	Color3.fromRGB(255, 60, 150), -- pink
 }
+local FONT = Enum.Font.Code
 
--- استارت اسکن اولیه و سیستم شنود لحظه‌ای (Real-time Scanner)
-local function startLiveScanning(onNewRemoteFound)
-    -- اسکن همه‌جا در ابتدا
-    for _, service in ipairs(game:GetChildren()) do
-        if not blacklistedServices[service.Name] then
-            pcall(function()
-                for _, obj in ipairs(service:GetDescendants()) do
-                    if addRemote(obj) and onNewRemoteFound then
-                        onNewRemoteFound(obj)
-                    end
-                end
-                
-                -- شنود لحظه‌ای برای ریموت‌های جدید در این سرویس
-                service.DescendantAdded:Connect(function(obj)
-                    if addRemote(obj) and onNewRemoteFound then
-                        onNewRemoteFound(obj)
-                    end
-                end)
-            end)
-        end
-    end
-
-    -- اسکن ویژه کوله‌پشتی و کاراکتر بازیکنان (پویا)
-    local function listenToPlayer(player)
-        player.CharacterAdded:Connect(function(char)
-            pcall(function()
-                for _, obj in ipairs(char:GetDescendants()) do
-                    if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
-                end
-                char.DescendantAdded:Connect(function(obj)
-                    if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
-                end)
-            end)
-        end)
-
-        player:GetPropertyChangedSignal("Backpack"):Connect(function()
-            local bp = player:FindFirstChild("Backpack")
-            if bp then
-                pcall(function()
-                    for _, obj in ipairs(bp:GetDescendants()) do
-                        if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
-                    end
-                    bp.DescendantAdded:Connect(function(obj)
-                        if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
-                    end)
-                end)
-            end
-        end)
-        
-        -- بررسی کوله‌پشتی فعلی در صورت وجود
-        local bp = player:FindFirstChild("Backpack")
-        if bp then
-            pcall(function()
-                for _, obj in ipairs(bp:GetDescendants()) do
-                    if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
-                end
-                bp.DescendantAdded:Connect(function(obj)
-                    if addRemote(obj) and onNewRemoteFound then onNewRemoteFound(obj) end
-                end)
-            end)
-        end
-    end
-
-    Players.PlayerAdded:Connect(listenToPlayer)
-    for _, p in ipairs(Players:GetPlayers()) do
-        listenToPlayer(p)
-    end
+local function create(class, props, parent)
+	local o = Instance.new(class)
+	for k, v in pairs(props) do
+		o[k] = v
+	end
+	o.Parent = parent
+	return o
 end
 
-local function createFastAdminGUI()
-    local targetGuiParent = pcall(function() return CoreGui.Name end) and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-    if targetGuiParent:FindFirstChild("GodModePanel") then targetGuiParent.GodModePanel:Destroy() end
-
-    local ScreenGui = Instance.new("ScreenGui", targetGuiParent)
-    ScreenGui.Name = "GodModePanel"
-    ScreenGui.ResetOnSpawn = false
-
-    local currentMode = "Custom"
-    local selectedRemote = nil
-
-    -- پنل اصلی (Modern Dark UI)
-    local MainFrame = Instance.new("Frame", ScreenGui)
-    MainFrame.Size = UDim2.new(0, 360, 0, 460)
-    MainFrame.Position = UDim2.new(0.5, -180, 0.5, -230)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    MainFrame.BorderSizePixel = 0
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-
-    -- تاپ بار پنل
-    local TopBar = Instance.new("Frame", MainFrame)
-    TopBar.Size = UDim2.new(1, 0, 0, 45)
-    TopBar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-    TopBar.BorderSizePixel = 0
-    local TopCorner = Instance.new("UICorner", TopBar)
-    TopCorner.CornerRadius = UDim.new(0, 8)
-    makeDraggable(MainFrame, TopBar)
-
-    -- دکمه بستن زیبا
-    local CloseMain = Instance.new("TextButton", TopBar)
-    CloseMain.Size = UDim2.new(0, 35, 0, 35)
-    CloseMain.Position = UDim2.new(1, -40, 0, 5)
-    CloseMain.BackgroundTransparency = 1
-    CloseMain.Text = "✕"
-    CloseMain.TextColor3 = Color3.fromRGB(200, 70, 70)
-    CloseMain.TextSize = 18
-    CloseMain.Font = Enum.Font.ArialBold
-    CloseMain.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
-    -- دکمه START FIRE مدرن
-    local StartFireBtn = Instance.new("TextButton", TopBar)
-    StartFireBtn.Size = UDim2.new(0, 95, 0, 30)
-    StartFireBtn.Position = UDim2.new(1, -145, 0, 7)
-    StartFireBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-    StartFireBtn.Text = "FireAllAsMode"
-    StartFireBtn.TextColor3 = Color3.new(1,1,1)
-    StartFireBtn.Font = Enum.Font.ArialBold
-    StartFireBtn.TextSize = 12
-    Instance.new("UICorner", StartFireBtn).CornerRadius = UDim.new(0, 6)
-
-    -- منوی دراپ‌داون مدها
-    local ModeBtn = Instance.new("TextButton", TopBar)
-    ModeBtn.Size = UDim2.new(0, 130, 0, 30)
-    ModeBtn.Position = UDim2.new(0, 10, 0, 7)
-    ModeBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    ModeBtn.Text = "Mode: Custom"
-    ModeBtn.TextColor3 = Color3.new(1,1,1)
-    ModeBtn.Font = Enum.Font.Arial
-    ModeBtn.TextSize = 13
-    Instance.new("UICorner", ModeBtn).CornerRadius = UDim.new(0, 6)
-
-    local Dropdown = Instance.new("Frame", TopBar)
-    Dropdown.Size = UDim2.new(0, 150, 0, 175)
-    Dropdown.Position = UDim2.new(0, 10, 1, 5)
-    Dropdown.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    Dropdown.Visible = false
-    Dropdown.ZIndex = 10
-    Dropdown.BorderSizePixel = 0
-    Instance.new("UICorner", Dropdown).CornerRadius = UDim.new(0, 6)
-    local dropList = Instance.new("UIListLayout", Dropdown)
-    dropList.Padding = UDim.new(0, 2)
-
-    ModeBtn.MouseButton1Click:Connect(function() Dropdown.Visible = not Dropdown.Visible end)
-
-    -- لیست ریموت‌ها با اسکرول نرم
-    local ScrollingFrame = Instance.new("ScrollingFrame", MainFrame)
-    ScrollingFrame.Size = UDim2.new(1, -20, 1, -65)
-    ScrollingFrame.Position = UDim2.new(0, 10, 0, 55)
-    ScrollingFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    ScrollingFrame.BorderSizePixel = 0
-    ScrollingFrame.ScrollBarThickness = 4
-    ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
-    Instance.new("UICorner", ScrollingFrame).CornerRadius = UDim.new(0, 6)
-    
-    local listPadding = Instance.new("UIPadding", ScrollingFrame)
-    listPadding.PaddingTop = UDim.new(0, 5)
-    listPadding.PaddingLeft = UDim.new(0, 5)
-
-    local UIListLayout = Instance.new("UIListLayout", ScrollingFrame)
-    UIListLayout.Padding = UDim.new(0, 5)
-    UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 15)
-    end)
-
-    -- پنل تکست باکس اکزکیوتور
-    local RequireFrame = Instance.new("Frame", ScreenGui)
-    RequireFrame.Size = UDim2.new(0, 400, 0, 180)
-    RequireFrame.Position = UDim2.new(0.5, -200, 0.5, -90)
-    RequireFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    RequireFrame.Visible = false
-    RequireFrame.BorderSizePixel = 0
-    Instance.new("UICorner", RequireFrame).CornerRadius = UDim.new(0, 8)
-    makeDraggable(RequireFrame, RequireFrame)
-    
-    local ReqTopBar = Instance.new("Frame", RequireFrame)
-    ReqTopBar.Size = UDim2.new(1, 0, 0, 35)
-    ReqTopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    ReqTopBar.BorderSizePixel = 0
-    local ReqCorner = Instance.new("UICorner", ReqTopBar)
-    ReqCorner.CornerRadius = UDim.new(0, 8)
-
-    local CloseReq = Instance.new("TextButton", ReqTopBar)
-    CloseReq.Size = UDim2.new(0, 30, 1, 0)
-    CloseReq.Position = UDim2.new(1, -35, 0, 0)
-    CloseReq.Text = "x"
-    CloseReq.BackgroundTransparency = 1
-    CloseReq.TextColor3 = Color3.fromRGB(200,70,70)
-    CloseReq.MouseButton1Click:Connect(function() RequireFrame.Visible = false end)
-
-    local CodeInput = Instance.new("TextBox", RequireFrame)
-    CodeInput.Size = UDim2.new(1, -20, 0, 60)
-    CodeInput.Position = UDim2.new(0, 10, 0, 45)
-    CodeInput.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    CodeInput.TextColor3 = Color3.fromRGB(80, 220, 80)
-    CodeInput.Text = ""
-    CodeInput.PlaceholderText = "Arguments here..."
-    CodeInput.Font = Enum.Font.Code
-    CodeInput.TextSize = 14
-    CodeInput.ClearTextOnFocus = false
-    Instance.new("UICorner", CodeInput).CornerRadius = UDim.new(0, 6)
-    
-    local ExecuteBtn = Instance.new("TextButton", RequireFrame)
-    ExecuteBtn.Size = UDim2.new(1, -20, 0, 40)
-    ExecuteBtn.Position = UDim2.new(0, 10, 0, 115)
-    ExecuteBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-    ExecuteBtn.Text = "EXECUTE REMOTE"
-    ExecuteBtn.TextColor3 = Color3.new(1,1,1)
-    ExecuteBtn.Font = Enum.Font.ArialBold
-    ExecuteBtn.TextSize = 14
-    Instance.new("UICorner", ExecuteBtn).CornerRadius = UDim.new(0, 6)
-
-    ExecuteBtn.MouseButton1Click:Connect(function()
-        if selectedRemote and selectedRemote:IsA("RemoteEvent") then 
-            selectedRemote:FireServer(CodeInput.Text) 
-        elseif selectedRemote and selectedRemote:IsA("RemoteFunction") then
-            task.spawn(function() pcall(function() selectedRemote:InvokeServer(CodeInput.Text) end) end)
-        end
-    end)
-
-    -- ایجاد دکمه برای هر ریموت پیدا شده
-    local function createRemoteButton(remote)
-        local Button = Instance.new("TextButton", ScrollingFrame)
-        Button.Size = UDim2.new(1, -15, 0, 35)
-        Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-        Button.TextColor3 = Color3.fromRGB(230, 230, 230)
-        Button.Font = Enum.Font.SourceSans
-        Button.TextSize = 15
-        Button.TextXAlignment = Enum.TextXAlignment.Left
-        Button.Text = "  [" .. remote.ClassName .. "] " .. remote.Name
-        Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 5)
-
-        Button.MouseButton1Click:Connect(function()
-            if currentMode == "Custom" then
-                selectedRemote = remote
-                RequireFrame.Visible = true
-            -- مدهای دیگر
-            elseif currentMode == "HD Admin" then
-                local payload = "require(7192763922).load(\""..LocalPlayer.Name.."\")"
-                if remote:IsA("RemoteEvent") then remote:FireServer(payload)
-                elseif remote:IsA("RemoteFunction") then task.spawn(function() pcall(function() remote:InvokeServer(payload) end) end) end
-            elseif currentMode == "Fire" then
-                if remote:IsA("RemoteEvent") then remote:FireServer()
-                elseif remote:IsA("RemoteFunction") then task.spawn(function() pcall(function() remote:InvokeServer() end) end) end
-            end
-        end)
-    end
-
-    -- ساخت آیتم‌های دراپ‌داون مد
-    for _, mode in ipairs({"Custom", "HD Admin", "Fire", "Fire all", "Fire all as HD admin"}) do
-        local btn = Instance.new("TextButton", Dropdown)
-        btn.Size = UDim2.new(1, 0, 0, 32)
-        btn.Text = mode
-        btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        btn.TextColor3 = Color3.new(1,1,1)
-        btn.Font = Enum.Font.Arial
-        btn.TextSize = 13
-        btn.ZIndex = 10
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-        btn.MouseButton1Click:Connect(function() 
-            currentMode = mode 
-            ModeBtn.Text = "Mode: "..mode 
-            Dropdown.Visible = false 
-        end)
-    end
-
-    -- لاجیک دکمه اصلی آتش همگانی
-    StartFireBtn.MouseButton1Click:Connect(function()
-        if currentMode == "Fire all" then
-            for _, r in ipairs(remotes) do
-                if r:IsA("RemoteEvent") then pcall(function() r:FireServer() end)
-                elseif r:IsA("RemoteFunction") then task.spawn(function() pcall(function() r:InvokeServer() end) end) end
-            end
-        elseif currentMode == "Fire all as HD admin" then
-            local payload = "require(7192763922).load(\""..LocalPlayer.Name.."\")"
-            for _, r in ipairs(remotes) do
-                if r:IsA("RemoteEvent") then pcall(function() r:FireServer(payload) end)
-                elseif r:IsA("RemoteFunction") then task.spawn(function() pcall(function() r:InvokeServer(payload) end) end) end
-            end
-        else
-            warn("لطفا مد Fire all یا Fire all as HD admin را انتخاب کنید!")
-        end
-    end)
-
-    -- شروع اسکن زنده و پویای بازی و رندر دکمه‌ها به محض کشف ریموت جدید
-    startLiveScanning(function(newRemote)
-        createRemoteButton(newRemote)
-    end)
+local function styleColored(b, base, hover, textColor)
+	b.BackgroundColor3 = base
+	b.TextColor3 = textColor or WHITE
+	b.BorderSizePixel = 1
+	b.BorderColor3 = BLACK
+	b.AutoButtonColor = false
+	b.Font = FONT
+	b.TextSize = 13
+	b.TextTruncate = Enum.TextTruncate.AtEnd
+	b.ClipsDescendants = true
+	b.MouseEnter:Connect(function()
+		b.BackgroundColor3 = hover
+	end)
+	b.MouseLeave:Connect(function()
+		b.BackgroundColor3 = base
+	end)
 end
 
-createFastAdminGUI()
+---------------------------------------------------------------- layout
+local HEADER_H = 88
+local ARGS_H = 98
+
+local gui = create("ScreenGui", {
+	Name = "RemoteExplorerPanel",
+	ResetOnSpawn = false,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	IgnoreGuiInset = true,
+}, getGuiParent())
+
+local main = create("Frame", {
+	Name = "Main",
+	Size = UDim2.fromOffset(440, 560),
+	Position = UDim2.new(0.5, -220, 0.5, -280),
+	BackgroundColor3 = PANEL_BG,
+	BorderSizePixel = 2,
+	BorderColor3 = NEON,
+	ClipsDescendants = true,
+}, gui)
+
+-- header
+local header = create("Frame", {
+	Name = "Header",
+	Size = UDim2.new(1, 0, 0, HEADER_H),
+	BackgroundColor3 = BLACK,
+	BorderSizePixel = 0,
+	ClipsDescendants = true,
+}, main)
+create("Frame", {
+	Size = UDim2.new(1, 0, 0, 1),
+	Position = UDim2.new(0, 0, 1, -1),
+	BackgroundColor3 = NEON,
+	BorderSizePixel = 0,
+}, header)
+
+-- title
+create("TextLabel", {
+	Name = "Title",
+	Text = "C00LHACK Remote Explorer",
+	Size = UDim2.new(1, -44, 0, 26),
+	Position = UDim2.fromOffset(6, 0),
+	BackgroundTransparency = 1,
+	TextColor3 = NEON,
+	Font = FONT,
+	TextSize = 16,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextTruncate = Enum.TextTruncate.AtEnd,
+	ClipsDescendants = true,
+}, header)
+
+-- close (red)
+local closeBtn = create("TextButton", {
+	Name = "Close",
+	Text = "X",
+	Size = UDim2.fromOffset(26, 22),
+	Position = UDim2.new(1, -30, 0, 2),
+}, header)
+styleColored(closeBtn, RED, RED_H, WHITE)
+closeBtn.TextSize = 14
+
+-- top-left buttons
+local fireAllBtn = create("TextButton", {
+	Name = "FireAll",
+	Text = "Fire All",
+	Size = UDim2.fromOffset(75, 24),
+	Position = UDim2.fromOffset(4, 29),
+}, header)
+styleColored(fireAllBtn, GREEN, GREEN_H, BLACK)
+
+local invokeAllBtn = create("TextButton", {
+	Name = "InvokeAll",
+	Text = "Invoke All",
+	Size = UDim2.fromOffset(85, 24),
+	Position = UDim2.fromOffset(84, 29),
+}, header)
+styleColored(invokeAllBtn, BLUE, BLUE_H, WHITE)
+
+local countLabel = create("TextLabel", {
+	Name = "Count",
+	Text = "0 remotes",
+	Size = UDim2.new(1, -182, 0, 24),
+	Position = UDim2.fromOffset(174, 29),
+	BackgroundTransparency = 1,
+	TextColor3 = NEON,
+	Font = FONT,
+	TextSize = 12,
+	TextXAlignment = Enum.TextXAlignment.Right,
+	TextTruncate = Enum.TextTruncate.AtEnd,
+	ClipsDescendants = true,
+}, header)
+
+-- search box
+local searchBox = create("TextBox", {
+	Name = "Search",
+	Text = "",
+	PlaceholderText = "Search remotes (name or path)...",
+	PlaceholderColor3 = NEON_DIM,
+	Size = UDim2.new(1, -8, 0, 24),
+	Position = UDim2.fromOffset(4, 58),
+	BackgroundColor3 = PANEL_BG,
+	TextColor3 = NEON,
+	BorderSizePixel = 1,
+	BorderColor3 = NEON,
+	Font = FONT,
+	TextSize = 13,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	ClearTextOnFocus = false,
+	ClipsDescendants = true,
+	TextTruncate = Enum.TextTruncate.AtEnd,
+}, header)
+
+-- args area (bottom)
+local argsFrame = create("Frame", {
+	Name = "Args",
+	Size = UDim2.new(1, 0, 0, ARGS_H),
+	Position = UDim2.new(0, 0, 1, -ARGS_H),
+	BackgroundColor3 = BLACK,
+	BorderSizePixel = 0,
+	ClipsDescendants = true,
+}, main)
+create("Frame", {
+	Size = UDim2.new(1, 0, 0, 1),
+	BackgroundColor3 = NEON,
+	BorderSizePixel = 0,
+}, argsFrame)
+create("TextLabel", {
+	Text = 'Arguments  (number / true / false / nil / "text")',
+	Size = UDim2.new(1, -8, 0, 16),
+	Position = UDim2.fromOffset(4, 3),
+	BackgroundTransparency = 1,
+	TextColor3 = NEON,
+	Font = FONT,
+	TextSize = 11,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextTruncate = Enum.TextTruncate.AtEnd,
+	ClipsDescendants = true,
+}, argsFrame)
+
+local argBoxes = {}
+for i = 1, 4 do
+	local box = create("TextBox", {
+		Name = "Arg" .. i,
+		Text = "",
+		PlaceholderText = "Arg " .. i,
+		PlaceholderColor3 = NEON_DIM,
+		Size = UDim2.new(0.5, -8, 0, 33),
+		Position = UDim2.new(((i - 1) % 2) * 0.5, 4, 0, 22 + math.floor((i - 1) / 2) * 37),
+		BackgroundColor3 = PANEL_BG,
+		TextColor3 = NEON,
+		BorderSizePixel = 2,
+		BorderColor3 = ARG_COLORS[i],
+		Font = FONT,
+		TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ClearTextOnFocus = false,
+		ClipsDescendants = true,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+	}, argsFrame)
+	argBoxes[i] = box
+end
+
+-- list
+local list = create("ScrollingFrame", {
+	Name = "List",
+	Size = UDim2.new(1, -8, 1, -HEADER_H - ARGS_H - 8),
+	Position = UDim2.fromOffset(4, HEADER_H + 4),
+	BackgroundColor3 = BLACK,
+	BorderSizePixel = 1,
+	BorderColor3 = NEON_DIM,
+	ScrollBarThickness = 8,
+	ScrollBarImageColor3 = NEON,
+	CanvasSize = UDim2.new(),
+	AutomaticCanvasSize = Enum.AutomaticSize.Y,
+	ScrollingDirection = Enum.ScrollingDirection.Y,
+	ClipsDescendants = true,
+}, main)
+create("UIListLayout", {
+	SortOrder = Enum.SortOrder.LayoutOrder,
+	Padding = UDim.new(0, 2),
+}, list)
+
+---------------------------------------------------------------- dragging (by header)
+do
+	local dragging, dragStart, startPos
+	header.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = main.Position
+		end
+	end)
+	UserInputService.InputChanged:Connect(function(input)
+		if
+			dragging
+			and (
+				input.UserInputType == Enum.UserInputType.MouseMovement
+				or input.UserInputType == Enum.UserInputType.Touch
+			)
+		then
+			local d = input.Position - dragStart
+			main.Position = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + d.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + d.Y
+			)
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end)
+end
+
+---------------------------------------------------------------- args parsing
+local function parseArg(s)
+	s = s:match("^%s*(.-)%s*$")
+	if s == "nil" then
+		return nil
+	elseif s == "true" then
+		return true
+	elseif s == "false" then
+		return false
+	end
+	local n = tonumber(s)
+	if n then
+		return n
+	end
+	local q = s:match('^"(.*)"$') or s:match("^'(.*)'$")
+	return q or s
+end
+
+local function collectArgs()
+	local args = { n = 0 }
+	for _, box in ipairs(argBoxes) do
+		if box.Text ~= "" then
+			args.n += 1
+			args[args.n] = parseArg(box.Text)
+		end
+	end
+	return args
+end
+
+---------------------------------------------------------------- remote firing
+local function isRemote(i)
+	return i:IsA("RemoteEvent") or i:IsA("UnreliableRemoteEvent") or i:IsA("RemoteFunction")
+end
+
+local function isFunction(i)
+	return i:IsA("RemoteFunction")
+end
+
+local function fireRemote(remote, args)
+	task.spawn(function()
+		pcall(function()
+			if isFunction(remote) then
+				remote:InvokeServer(table.unpack(args, 1, args.n))
+			else
+				remote:FireServer(table.unpack(args, 1, args.n))
+			end
+		end)
+	end)
+end
+
+---------------------------------------------------------------- rows
+local rows = {} -- [remote] = {frame=, nameLbl=, pathLbl=, parent=, name=}
+local rowCount = 0
+local orderCounter = 0
+
+local function inRoots(inst)
+	for _, r in ipairs(Roots) do
+		if inst:IsDescendantOf(r) then
+			return true
+		end
+	end
+	return false
+end
+
+local filterText = ""
+local function matchesFilter(s)
+	return filterText == "" or s:find(filterText, 1, true) ~= nil
+end
+
+local removeRow -- forward declaration (used by the Delete button)
+
+local function addRow(remote)
+	if rows[remote] then
+		return
+	end
+	orderCounter += 1
+	rowCount += 1
+
+	local isFn = isFunction(remote)
+
+	-- ردیف فقط یه Frame هست؛ کلیک روی خودش کاری نمی‌کنه
+	local row = create("Frame", {
+		Name = "Row",
+		Size = UDim2.new(1, -10, 0, 38),
+		LayoutOrder = orderCounter,
+		BackgroundColor3 = ROW_BG,
+		BorderSizePixel = 1,
+		BorderColor3 = NEON_DIM,
+		ClipsDescendants = true,
+	}, list)
+
+	local nameLbl = create("TextLabel", {
+		Text = (isFn and "[Function] " or "[Event] ") .. remote.Name,
+		Size = UDim2.new(1, -134, 0, 18),
+		Position = UDim2.fromOffset(4, 2),
+		BackgroundTransparency = 1,
+		TextColor3 = isFn and BLUE_TEXT or NEON,
+		Font = FONT,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		ClipsDescendants = true,
+	}, row)
+
+	local pathLbl = create("TextLabel", {
+		Text = remote:GetFullName(),
+		Size = UDim2.new(1, -134, 0, 15),
+		Position = UDim2.fromOffset(4, 20),
+		BackgroundTransparency = 1,
+		TextColor3 = AMBER,
+		Font = FONT,
+		TextSize = 11,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		ClipsDescendants = true,
+	}, row)
+
+	-- Fire (event) / Invoke (function) button
+	local actionBtn = create("TextButton", {
+		Name = "Action",
+		Text = isFn and "Invoke" or "Fire",
+		Size = UDim2.fromOffset(58, 26),
+		Position = UDim2.new(1, -124, 0, 5),
+	}, row)
+	local baseColor = isFn and BLUE or GREEN
+	local hoverColor = isFn and BLUE_H or GREEN_H
+	local textColor = isFn and WHITE or BLACK
+	styleColored(actionBtn, baseColor, hoverColor, textColor)
+	actionBtn.MouseButton1Click:Connect(function()
+		fireRemote(remote, collectArgs())
+		actionBtn.BackgroundColor3 = WHITE
+		task.delay(0.12, function()
+			actionBtn.BackgroundColor3 = baseColor
+		end)
+	end)
+
+	-- Delete button (red)
+	local deleteBtn = create("TextButton", {
+		Name = "Delete",
+		Text = "Delete",
+		Size = UDim2.fromOffset(58, 26),
+		Position = UDim2.new(1, -62, 0, 5),
+	}, row)
+	styleColored(deleteBtn, RED, RED_H, WHITE)
+	deleteBtn.MouseButton1Click:Connect(function()
+		local ok = pcall(function()
+			remote:Destroy()
+		end)
+		if ok then
+			removeRow(remote)
+		end
+	end)
+
+	rows[remote] = {
+		frame = row,
+		nameLbl = nameLbl,
+		pathLbl = pathLbl,
+		parent = remote.Parent,
+		name = remote.Name,
+		search = (remote.Name .. " " .. remote:GetFullName()):lower(),
+	}
+	row.Visible = matchesFilter(rows[remote].search)
+end
+
+removeRow = function(remote)
+	local row = rows[remote]
+	if row then
+		row.frame:Destroy()
+		rows[remote] = nil
+		rowCount -= 1
+	end
+end
+
+-- search filter (only toggles Visible, never rebuilds the list)
+local function applyFilter()
+	filterText = searchBox.Text:lower()
+	for _, row in pairs(rows) do
+		row.frame.Visible = matchesFilter(row.search)
+	end
+end
+searchBox:GetPropertyChangedSignal("Text"):Connect(applyFilter)
+
+---------------------------------------------------------------- discovery (event based + 0.1s flush)
+local pending = {}
+local pendingList = {}
+
+local function queue(inst)
+	if not pending[inst] and not rows[inst] then
+		pending[inst] = true
+		pendingList[#pendingList + 1] = inst
+	end
+end
+
+for _, root in ipairs(Roots) do
+	root.DescendantAdded:Connect(function(d)
+		if isRemote(d) then
+			queue(d)
+		end
+	end)
+end
+
+-- first scan in chunks so the game never freezes
+task.spawn(function()
+	for _, root in ipairs(Roots) do
+		local n = 0
+		for _, d in ipairs(root:GetDescendants()) do
+			if isRemote(d) then
+				queue(d)
+			end
+			n += 1
+			if n % 1500 == 0 then
+				task.wait()
+			end
+		end
+	end
+end)
+
+-- main 0.1s update loop (only touches what changed)
+task.spawn(function()
+	while gui.Parent do
+		-- 1) add new remotes (capped per tick to stay smooth)
+		local added = 0
+		while #pendingList > 0 and added < 40 do
+			local inst = table.remove(pendingList)
+			pending[inst] = nil
+			if inst.Parent and inRoots(inst) then
+				addRow(inst)
+				added += 1
+			end
+		end
+
+		-- 2) validate existing rows (removed / moved / renamed)
+		local shown = 0
+		for remote, row in pairs(rows) do
+			if not inRoots(remote) then
+				removeRow(remote)
+			else
+				local changed = false
+				if remote.Parent ~= row.parent then
+					row.parent = remote.Parent
+					row.pathLbl.Text = remote:GetFullName()
+					changed = true
+				end
+				if remote.Name ~= row.name then
+					row.name = remote.Name
+					row.nameLbl.Text = (isFunction(remote) and "[Function] " or "[Event] ") .. remote.Name
+					row.pathLbl.Text = remote:GetFullName()
+					changed = true
+				end
+				if changed then
+					row.search = (remote.Name .. " " .. remote:GetFullName()):lower()
+					row.frame.Visible = matchesFilter(row.search)
+				end
+				if row.frame.Visible then
+					shown += 1
+				end
+			end
+		end
+
+		countLabel.Text = shown .. "/" .. rowCount .. " remotes"
+		task.wait(0.1)
+	end
+end)
+
+---------------------------------------------------------------- buttons
+local function runAll(wantFunctions)
+	local args = collectArgs()
+	local snapshot = {}
+	for remote in pairs(rows) do
+		if isFunction(remote) == wantFunctions then
+			snapshot[#snapshot + 1] = remote
+		end
+	end
+	task.spawn(function()
+		for i, remote in ipairs(snapshot) do
+			fireRemote(remote, args)
+			if i % 10 == 0 then
+				task.wait()
+			end
+		end
+	end)
+end
+
+fireAllBtn.MouseButton1Click:Connect(function()
+	runAll(false)
+end)
+invokeAllBtn.MouseButton1Click:Connect(function()
+	runAll(true)
+end)
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
