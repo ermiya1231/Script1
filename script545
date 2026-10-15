@@ -322,87 +322,10 @@ createUI("TextLabel", {Size = UDim2.new(1, 0, 0, 25), BackgroundTransparency = 1
 local BtoolsBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 35), Position = UDim2.new(0, 10, 0, 35), BackgroundColor3 = Color3.fromRGB(0, 120, 200), BorderSizePixel = 1, Text = "Btools", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
 local DeleteMapBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 35), Position = UDim2.new(0, 10, 0, 80), BackgroundColor3 = Color3.fromRGB(200, 80, 0), BorderSizePixel = 1, Text = "Delete Map", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
 local RightKorbloxBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 35), Position = UDim2.new(0, 10, 0, 125), BackgroundColor3 = Color3.fromRGB(30, 30, 30), BorderColor3 = Color3.fromRGB(100, 100, 100), BorderSizePixel = 1, Text = "Korblox Me", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
-
--- ==== منطق بهینه‌شده اسکن اتوماتیک ====
-local function SmartScanNew()
-    blurefct(20)
-    Notify("Vulnerability Checker", "Looking up for remotes, may take a while.", 3)
-
-    local checkIn = {"Workspace", "ReplicatedStorage", "StarterGui", "CoreGui"}
-    local names = {"Delete", "Deletar", "Remove", "Destroy", "Clean", "Clear", "Bullet", "Bala", "Shoot", "Shot", "Fire", "Segway", "Handless", "Sword", "Attack"}
-
-    local candidates = {}
-    for _, serviceName in pairs(checkIn) do
-        local serviceObj = nil
-        pcall(function() serviceObj = game:GetService(serviceName) end)
-        if serviceObj then
-            for _, v in pairs(serviceObj:GetDescendants()) do
-                if v:IsA("RemoteEvent") then
-                    for _, str in pairs(names) do
-                        if string.match(v.Name:lower(), str:lower()) then
-                            table.insert(candidates, {remote = v, service = serviceName})
-                            break
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    local foundRemote = nil
-    local total = #candidates
-
-    for i, item in ipairs(candidates) do
-        local v = item.remote
-        local service = item.service
-
-        if total > 0 then
-            ProgressBarFill.Size = UDim2.new(i / total, 0, 1, 0)
-        end
-        ProgressText.Text = "Checking (" .. i .. "/" .. total .. "):\n" .. v.Name .. " [" .. service .. "]"
-
-        -- اطمینان از زنده بودن کاراکتر قبل از تست
-        local char = player.Character
-        if not char or not char:FindFirstChild("Head") or (char:FindFirstChildOfClass("Humanoid") and char:FindFirstChildOfClass("Humanoid").Health <= 0) then
-            char = player.CharacterAdded:Wait()
-            task.wait(1)
-        end
-
-        local head = char:FindFirstChild("Head")
-        local humanoid = char:FindFirstChildOfClass("Humanoid")
-
-        if head then
-            pcall(function()
-                v:FireServer(head)
-            end)
-
-            -- مهلت انتظار تا ۱.۲ ثانیه برای پاسخ سرور و پینگ شبکه
-            local startTime = tick()
-            local detected = false
-            while tick() - startTime < 1.7 do
-                if not char:FindFirstChild("Head") or (humanoid and humanoid.Health <= 0) or not char.Parent then
-                    detected = true
-                    break
-                end
-                task.wait(0.1)
-            end
-
-            if detected then
-                foundRemote = v
-                break
-            end
-        end
-    end
-
-    blurefct(0)
-    return foundRemote
-end
+local DexBtn = createUI("TextButton", {Size = UDim2.new(1, -20, 0, 35), Position = UDim2.new(0, 10, 0, 170), BackgroundColor3 = Color3.fromRGB(0, 50, 250), BorderSizePixel = 1, Text = "Dex", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.SourceSansBold, TextSize = 14, Parent = RightFrame})
 
 AutoBtn.MouseButton1Click:Connect(function()
     ScanLabel.Visible = false
-	--[[
-	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
-]]
 local StarterGui = game:GetService("StarterGui")
 local showNotification = true
 
@@ -1421,4 +1344,995 @@ BtoolsBtn.MouseButton1Click:Connect(function()
     end)
 
     tool.Parent = player:WaitForChild("Backpack")
+end)
+
+DexBtn.MouseButton1Click:Connect(function()
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local CollectionService = game:GetService("CollectionService")
+
+---------------------------------------------------------------- Remote check
+do
+	local remote = selectedRemote or SelectedRemote
+	if not remote then
+		pcall(function()
+			StarterGui:SetCore("SendNotification", {
+				Title = "Dex Explorer",
+				Text = "Please Select Remote",
+				Duration = 5,
+			})
+		end)
+		warn("Dex Explorer: Please Select Remote")
+		return
+	end
+end
+
+local lp = Players.LocalPlayer
+local mouse = lp:GetMouse()
+
+---------------------------------------------------------------- GUI root
+local guiParent
+do
+	local ok, res = pcall(function() return gethui and gethui() end)
+	guiParent = (ok and res) or lp:WaitForChild("PlayerGui")
+end
+
+local old = guiParent:FindFirstChild("DexExplorer")
+if old then old:Destroy() end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "DexExplorer"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.DisplayOrder = 999
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = guiParent
+
+local C = {
+	bg = Color3.fromRGB(30, 30, 34),
+	bar = Color3.fromRGB(22, 22, 26),
+	row = Color3.fromRGB(45, 45, 52),
+	sel = Color3.fromRGB(0, 110, 220),
+	text = Color3.fromRGB(235, 235, 235),
+	dim = Color3.fromRGB(150, 150, 160),
+	off = Color3.fromRGB(150, 50, 50),
+	on = Color3.fromRGB(40, 160, 80),
+	blue = Color3.fromRGB(0, 140, 255),
+}
+
+local function corner(o, r)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, r or 6)
+	c.Parent = o
+end
+
+---------------------------------------------------------------- Main window
+local WIN_H = 780
+do
+	local ok, vp = pcall(function() return workspace.CurrentCamera.ViewportSize end)
+	if ok and vp then
+		WIN_H = math.clamp(vp.Y - 40, 480, 780)
+	end
+end
+local LIST_Y = 94
+local FREE_H = WIN_H - LIST_Y - 4 - 20 - 30 -- space shared by explorer + properties
+local LIST_H = math.floor(FREE_H * 0.62)    -- explorer gets the bigger part
+local PROP_HEAD_Y = LIST_Y + LIST_H + 4
+local PROP_Y = PROP_HEAD_Y + 20
+local PROP_H = WIN_H - PROP_Y - 30
+
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.fromOffset(340, WIN_H)
+main.Position = UDim2.new(1, -360, 0.5, -WIN_H / 2)
+main.BackgroundColor3 = C.bg
+main.BorderSizePixel = 0
+main.Parent = gui
+corner(main, 8)
+
+local titleBar = Instance.new("TextLabel")
+titleBar.Size = UDim2.new(1, 0, 0, 28)
+titleBar.BackgroundColor3 = C.bar
+titleBar.BorderSizePixel = 0
+titleBar.Text = "  Dex Explorer"
+titleBar.TextXAlignment = Enum.TextXAlignment.Left
+titleBar.TextColor3 = C.text
+titleBar.Font = Enum.Font.GothamBold
+titleBar.TextSize = 14
+titleBar.Parent = main
+corner(titleBar, 8)
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.fromOffset(24, 20)
+closeBtn.Position = UDim2.new(1, -28, 0, 4)
+closeBtn.BackgroundColor3 = C.off
+closeBtn.Text = "X"
+closeBtn.TextColor3 = C.text
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 12
+closeBtn.Parent = titleBar
+corner(closeBtn, 4)
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(1, -12, 0, 26)
+toggleBtn.Position = UDim2.fromOffset(6, 34)
+toggleBtn.BackgroundColor3 = C.off
+toggleBtn.Text = "Click To Select Part: OFF"
+toggleBtn.TextColor3 = C.text
+toggleBtn.Font = Enum.Font.GothamMedium
+toggleBtn.TextSize = 13
+toggleBtn.Parent = main
+corner(toggleBtn, 6)
+
+local searchBox = Instance.new("TextBox")
+searchBox.Size = UDim2.new(1, -12, 0, 24)
+searchBox.Position = UDim2.fromOffset(6, 64)
+searchBox.BackgroundColor3 = C.bar
+searchBox.PlaceholderText = "Search name / class (press Enter)"
+searchBox.PlaceholderColor3 = C.dim
+searchBox.Text = ""
+searchBox.TextColor3 = C.text
+searchBox.Font = Enum.Font.Gotham
+searchBox.TextSize = 13
+searchBox.ClearTextOnFocus = false
+searchBox.TextXAlignment = Enum.TextXAlignment.Left
+searchBox.Parent = main
+corner(searchBox, 6)
+do
+	local pad = Instance.new("UIPadding")
+	pad.PaddingLeft = UDim.new(0, 8)
+	pad.Parent = searchBox
+end
+
+local list = Instance.new("ScrollingFrame")
+list.Size = UDim2.new(1, -12, 0, LIST_H)
+list.Position = UDim2.fromOffset(6, LIST_Y)
+list.BackgroundColor3 = C.bar
+list.BorderSizePixel = 0
+list.ScrollBarThickness = 6
+list.CanvasSize = UDim2.new()
+list.ScrollingDirection = Enum.ScrollingDirection.Y
+list.Parent = main
+corner(list, 6)
+
+local propHead = Instance.new("TextLabel")
+propHead.Size = UDim2.new(1, -12, 0, 18)
+propHead.Position = UDim2.fromOffset(6, PROP_HEAD_Y)
+propHead.BackgroundTransparency = 1
+propHead.Text = "Properties"
+propHead.TextXAlignment = Enum.TextXAlignment.Left
+propHead.TextColor3 = C.text
+propHead.Font = Enum.Font.GothamBold
+propHead.TextSize = 13
+propHead.Parent = main
+
+local propList = Instance.new("ScrollingFrame")
+propList.Size = UDim2.new(1, -12, 0, PROP_H)
+propList.Position = UDim2.fromOffset(6, PROP_Y)
+propList.BackgroundColor3 = C.bar
+propList.BorderSizePixel = 0
+propList.ScrollBarThickness = 6
+propList.CanvasSize = UDim2.new()
+propList.ScrollingDirection = Enum.ScrollingDirection.Y
+propList.Parent = main
+corner(propList, 6)
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, -12, 0, 22)
+status.Position = UDim2.new(0, 6, 1, -26)
+status.BackgroundTransparency = 1
+status.Text = "Nothing selected"
+status.TextColor3 = C.dim
+status.TextXAlignment = Enum.TextXAlignment.Left
+status.TextTruncate = Enum.TextTruncate.AtEnd
+status.Font = Enum.Font.Gotham
+status.TextSize = 12
+status.Parent = main
+
+-- dragging
+do
+	local dragging, dragStart, startPos
+	titleBar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = main.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then dragging = false end
+			end)
+		end
+	end)
+	UIS.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local d = input.Position - dragStart
+			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+		end
+	end)
+end
+
+---------------------------------------------------------------- Toast
+local toast = Instance.new("TextLabel")
+toast.Size = UDim2.fromOffset(240, 30)
+toast.Position = UDim2.new(0.5, -120, 0, 40)
+toast.BackgroundColor3 = C.bar
+toast.TextColor3 = C.text
+toast.Font = Enum.Font.GothamMedium
+toast.TextSize = 13
+toast.Visible = false
+toast.ZIndex = 100
+toast.Parent = gui
+corner(toast, 6)
+
+local toastToken = 0
+local function showToast(msg)
+	toastToken += 1
+	local my = toastToken
+	toast.Text = msg
+	toast.Visible = true
+	task.delay(1.6, function()
+		if my == toastToken then toast.Visible = false end
+	end)
+end
+
+---------------------------------------------------------------- Helpers
+local function isIdent(s)
+	return s:match("^[%a_][%w_]*$") ~= nil
+end
+
+local function getPath(inst)
+	if inst == game then return "game" end
+	local chain, cur = {}, inst
+	while cur and cur ~= game do
+		table.insert(chain, 1, cur)
+		cur = cur.Parent
+	end
+	local path = "game"
+	for i, o in ipairs(chain) do
+		if i == 1 then
+			if o == workspace then
+				path = "game.Workspace"
+			else
+				local ok, svc = pcall(game.GetService, game, o.ClassName)
+				if ok and svc == o then
+					path = string.format('game:GetService("%s")', o.ClassName)
+				elseif isIdent(o.Name) then
+					path = "game." .. o.Name
+				else
+					path = path .. string.format("[%q]", o.Name)
+				end
+			end
+		else
+			if isIdent(o.Name) then
+				path = path .. "." .. o.Name
+			else
+				path = path .. string.format("[%q]", o.Name)
+			end
+		end
+	end
+	return path
+end
+
+local function escape(s)
+	return (s:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"))
+end
+
+-- class icons (first matching rule wins)
+local ICON_RULES = {
+	{ "Workspace", "🌍" }, { "Terrain", "⛰️" }, { "Players", "👥" }, { "Player", "👤" },
+	{ "Lighting", "☀️" }, { "ReplicatedStorage", "🗄️" }, { "ServerStorage", "🗄️" },
+	{ "ServerScriptService", "📚" }, { "StarterGui", "🖥️" }, { "StarterPack", "🎒" },
+	{ "StarterPlayer", "🏁" }, { "Teams", "🚩" }, { "SoundService", "🔈" }, { "Camera", "🎥" },
+	{ "MeshPart", "🔷" }, { "SpawnLocation", "🚩" }, { "VehicleSeat", "🚗" }, { "Seat", "🪑" },
+	{ "BasePart", "🧱" }, { "Model", "📦" }, { "Folder", "📁" },
+	{ "Decal", "🖼️" }, { "Texture", "🖼️" },
+	{ "LocalScript", "📜" }, { "ModuleScript", "🧩" }, { "BaseScript", "📃" },
+	{ "RemoteEvent", "⚡" }, { "RemoteFunction", "🔁" },
+	{ "BindableEvent", "🔔" }, { "BindableFunction", "🔔" },
+	{ "ValueBase", "🔢" }, { "Humanoid", "🧍" }, { "Animator", "🎞️" }, { "Animation", "🎞️" },
+	{ "Sound", "🔊" }, { "Light", "💡" }, { "ParticleEmitter", "✨" },
+	{ "Fire", "🔥" }, { "Smoke", "💨" }, { "Explosion", "💥" }, { "Beam", "〰️" }, { "Trail", "〰️" },
+	{ "Attachment", "📎" }, { "WeldConstraint", "🔗" }, { "JointInstance", "🔗" }, { "Constraint", "🔗" },
+	{ "Tool", "🔧" }, { "Accessory", "🎩" }, { "Clothing", "👕" },
+	{ "ProximityPrompt", "💬" }, { "ClickDetector", "👆" }, { "Sky", "🌌" }, { "Configuration", "⚙️" },
+	{ "LayerCollector", "🖥️" }, { "GuiObject", "🔲" }, { "UIComponent", "🎨" },
+}
+local iconCache = {}
+local function iconFor(inst)
+	if inst == game then return "🎮" end
+	local cn = inst.ClassName
+	local c = iconCache[cn]
+	if c then return c end
+	local res = "▫️"
+	for _, rule in ipairs(ICON_RULES) do
+		local ok, is = pcall(inst.IsA, inst, rule[1])
+		if ok and is then
+			res = rule[2]
+			break
+		end
+	end
+	iconCache[cn] = res
+	return res
+end
+
+---------------------------------------------------------------- State
+local ROW_H = 22
+local selected = nil
+local selConn = nil
+local expanded = {}
+local fInst, fDepth, fN = {}, {}, 0
+
+-- Only the important services are shown at the top of the explorer
+local ROOT_SERVICES = {
+	"Workspace", "Players", "Lighting", "SoundService", "StarterPlayer", "StarterPack",
+	"StarterGui", "ReplicatedStorage", "ReplicatedFirst", "Teams",
+}
+local function getRoots()
+	local roots = {}
+	for _, name in ipairs(ROOT_SERVICES) do
+		local ok, svc = pcall(game.GetService, game, name)
+		if ok and svc then roots[#roots + 1] = svc end
+	end
+	return roots
+end
+local ROOTS = getRoots()
+local dirty = true
+local searchMode = false
+local searchResults = {}
+local watchers = {}
+local render, buildProps -- forward decl
+
+local box = Instance.new("SelectionBox")
+box.Name = "DexSelectionBox"
+box.Color3 = C.blue
+box.SurfaceColor3 = C.blue
+box.SurfaceTransparency = 0.85
+box.LineThickness = 0.05
+box.Parent = gui
+
+local function setSelected(inst)
+	if selConn then selConn:Disconnect() selConn = nil end
+	selected = inst
+	if inst and (inst:IsA("BasePart") or inst:IsA("Model")) then
+		box.Adornee = inst
+	else
+		box.Adornee = nil
+	end
+	if inst and inst ~= game then
+		selConn = inst.AncestryChanged:Connect(function(_, parent)
+			if not parent and selected == inst then setSelected(nil) end
+		end)
+	end
+	status.Text = inst and ("Selected: " .. getPath(inst)) or "Nothing selected"
+	buildProps(inst)
+	render()
+end
+
+---------------------------------------------------------------- Context menu
+local overlay = Instance.new("TextButton")
+overlay.Size = UDim2.fromScale(1, 1)
+overlay.BackgroundTransparency = 1
+overlay.Text = ""
+overlay.Visible = false
+overlay.ZIndex = 50
+overlay.AutoButtonColor = false
+overlay.Parent = gui
+
+local menu = Instance.new("Frame")
+menu.Size = UDim2.fromOffset(150, 64)
+menu.BackgroundColor3 = C.bar
+menu.BorderSizePixel = 0
+menu.Visible = false
+menu.ZIndex = 51
+menu.Parent = gui
+corner(menu, 6)
+
+local menuTarget = nil
+
+local function closeMenu()
+	menu.Visible = false
+	overlay.Visible = false
+	menuTarget = nil
+end
+overlay.MouseButton1Click:Connect(closeMenu)
+overlay.MouseButton2Click:Connect(closeMenu)
+
+local function menuButton(text, y, color)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1, -8, 0, 26)
+	b.Position = UDim2.fromOffset(4, y)
+	b.BackgroundColor3 = color
+	b.Text = text
+	b.TextColor3 = C.text
+	b.Font = Enum.Font.GothamMedium
+	b.TextSize = 13
+	b.ZIndex = 52
+	b.Parent = menu
+	corner(b, 4)
+	return b
+end
+
+local copyBtn = menuButton("Copy Path", 4, C.row)
+local tpBtn = menuButton("Teleport To Part", 33, C.on)
+local deleteBtn = menuButton("Delete", 62, C.off)
+
+local function canTeleport(inst)
+	return inst ~= nil and (inst:IsA("BasePart") or inst:IsA("Model"))
+end
+
+tpBtn.MouseButton1Click:Connect(function()
+	local inst = menuTarget
+	closeMenu()
+	if not inst or not canTeleport(inst) then return end
+	local char = lp.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then
+		showToast("No character found")
+		return
+	end
+	local ok = pcall(function()
+		local cf, height
+		if inst:IsA("BasePart") then
+			cf, height = inst.CFrame, inst.Size.Y
+		else
+			local boxCF, boxSize = inst:GetBoundingBox()
+			cf, height = boxCF, boxSize.Y
+		end
+		hrp.CFrame = cf * CFrame.new(0, height / 2 + 4, 0)
+	end)
+	showToast(ok and "Teleported" or "Teleport failed")
+end)
+
+copyBtn.MouseButton1Click:Connect(function()
+	local inst = menuTarget
+	closeMenu()
+	if not inst then return end
+	local path = getPath(inst)
+	local fn = setclipboard or toclipboard or (Clipboard and Clipboard.set)
+	if fn then
+		local ok = pcall(fn, path)
+		showToast(ok and "Path copied" or "Copy failed")
+	else
+		print(path)
+		showToast("No clipboard - path printed")
+	end
+end)
+
+deleteBtn.MouseButton1Click:Connect(function()
+	local inst = menuTarget
+	closeMenu()
+	if not inst then return end
+	if inst == game then
+		showToast("Can't delete game")
+		return
+	end
+	local remote = selectedRemote or SelectedRemote
+	if not remote then
+		showToast("Please Select Remote")
+		return
+	end
+	task.spawn(function() -- InvokeServer yields, keep UI responsive
+		local ok, err = pcall(function()
+			if remote:IsA("RemoteFunction") then
+				remote:InvokeServer(inst)
+			elseif remote:IsA("RemoteEvent") then
+				remote:FireServer(inst)
+			end
+		end)
+		showToast(ok and "Delete request sent" or "Delete failed")
+		if not ok then warn(err) end
+	end)
+end)
+
+local function openMenu(inst)
+	menuTarget = inst
+	local showTp = canTeleport(inst)
+	tpBtn.Visible = showTp
+	deleteBtn.Position = UDim2.fromOffset(4, showTp and 62 or 33)
+	local h = showTp and 93 or 64
+	menu.Size = UDim2.fromOffset(150, h)
+
+	local pos = UIS:GetMouseLocation()
+	local vp = gui.AbsoluteSize
+	menu.Position = UDim2.fromOffset(
+		math.clamp(pos.X, 0, math.max(0, vp.X - 154)),
+		math.clamp(pos.Y, 0, math.max(0, vp.Y - h - 4))
+	)
+	overlay.Visible = true
+	menu.Visible = true
+end
+
+---------------------------------------------------------------- Row pool (virtualized)
+local POOL = math.ceil(LIST_H / ROW_H) + 2
+local pool = {}
+
+for i = 1, POOL do
+	local r = {}
+	local f = Instance.new("TextButton")
+	f.Size = UDim2.new(1, -8, 0, ROW_H)
+	f.BackgroundColor3 = C.sel
+	f.BackgroundTransparency = 1
+	f.AutoButtonColor = false
+	f.Text = ""
+	f.ClipsDescendants = true
+	f.Visible = false
+	f.Parent = list
+
+	local tog = Instance.new("TextButton")
+	tog.Size = UDim2.fromOffset(18, 18)
+	tog.BackgroundColor3 = C.row
+	tog.TextColor3 = C.text
+	tog.Font = Enum.Font.GothamBold
+	tog.TextSize = 14
+	tog.Parent = f
+	corner(tog, 4)
+
+	local icon = Instance.new("TextLabel")
+	icon.Size = UDim2.fromOffset(18, 18)
+	icon.BackgroundTransparency = 1
+	icon.TextSize = 14
+	icon.TextColor3 = C.text
+	icon.Font = Enum.Font.Gotham
+	icon.Parent = f
+
+	local label = Instance.new("TextLabel")
+	label.BackgroundTransparency = 1
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.RichText = true
+	label.TextColor3 = C.text
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 13
+	label.TextTruncate = Enum.TextTruncate.AtEnd
+	label.Parent = f
+
+	r.frame, r.tog, r.icon, r.label = f, tog, icon, label
+
+	tog.MouseButton1Click:Connect(function()
+		local inst = r.inst
+		if not inst then return end
+		expanded[inst] = not expanded[inst]
+		dirty = true
+	end)
+
+	f.MouseButton1Click:Connect(function()
+		if r.inst then setSelected(r.inst) end
+	end)
+
+	f.InputBegan:Connect(function(input)
+		local inst = r.inst
+		if not inst then return end
+		if input.UserInputType == Enum.UserInputType.MouseButton2 then
+			openMenu(inst)
+		elseif input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+			local held = true
+			local conn
+			conn = input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					held = false
+					conn:Disconnect()
+				end
+			end)
+			task.delay(0.6, function()
+				if held then
+					conn:Disconnect()
+					if r.inst == inst then openMenu(inst) end
+				end
+			end)
+		end
+	end)
+
+	pool[i] = r
+end
+
+function render()
+	local top = math.floor(list.CanvasPosition.Y / ROW_H)
+	for i = 1, POOL do
+		local r = pool[i]
+		local idx = top + i
+		local inst = idx <= fN and fInst[idx] or nil
+		if inst then
+			local depth = fDepth[idx]
+			local name = inst.Name
+			local isSel = inst == selected
+			local isExp = expanded[inst] == true
+			if r.inst ~= inst or r.idx ~= idx or r.sel ~= isSel or r.exp ~= isExp or r.name ~= name or r.depth ~= depth then
+				r.inst, r.idx, r.sel, r.exp, r.name, r.depth = inst, idx, isSel, isExp, name, depth
+
+				r.frame.Visible = true
+				r.frame.Position = UDim2.fromOffset(0, (idx - 1) * ROW_H)
+				r.frame.BackgroundTransparency = isSel and 0 or 1
+
+				local x = 4 + depth * 16
+				local hasKids = (not searchMode) and inst:FindFirstChildWhichIsA("Instance") ~= nil
+				r.tog.Position = UDim2.fromOffset(x, 2)
+				r.tog.Visible = hasKids
+				r.tog.Text = isExp and "-" or "+"
+
+				r.icon.Position = UDim2.fromOffset(x + 22, 2)
+				r.icon.Text = iconFor(inst)
+
+				r.label.Position = UDim2.fromOffset(x + 44, 0)
+				r.label.Size = UDim2.new(1, -(x + 44), 1, 0)
+				r.label.Text = escape(name) .. '  <font color="#8a8a8a">' .. inst.ClassName .. "</font>"
+			end
+		elseif r.inst ~= nil or r.frame.Visible then
+			r.inst = nil
+			r.frame.Visible = false
+		end
+	end
+end
+
+local function markDirty()
+	dirty = true
+end
+
+local function flatten()
+	local oldN = fN
+	fN = 0
+	if searchMode then
+		for i, inst in ipairs(searchResults) do
+			fN = i
+			fInst[i] = inst
+			fDepth[i] = 0
+		end
+		for _, conns in pairs(watchers) do
+			for _, c in ipairs(conns) do c:Disconnect() end
+		end
+		table.clear(watchers)
+	else
+		local seen = {}
+		local function walk(inst, depth)
+			fN += 1
+			fInst[fN] = inst
+			fDepth[fN] = depth
+			if expanded[inst] then
+				seen[inst] = true
+				for _, c in ipairs(inst:GetChildren()) do
+					walk(c, depth + 1)
+				end
+			end
+		end
+		for _, root in ipairs(ROOTS) do
+			walk(root, 0)
+		end
+
+		for inst, conns in pairs(watchers) do
+			if not seen[inst] then
+				for _, c in ipairs(conns) do c:Disconnect() end
+				watchers[inst] = nil
+			end
+		end
+		for inst in pairs(seen) do
+			if not watchers[inst] then
+				watchers[inst] = {
+					inst.ChildAdded:Connect(markDirty),
+					inst.ChildRemoved:Connect(markDirty),
+				}
+			end
+		end
+	end
+	for i = fN + 1, oldN do
+		fInst[i] = nil
+		fDepth[i] = nil
+	end
+	list.CanvasSize = UDim2.fromOffset(0, fN * ROW_H)
+end
+
+local function refresh()
+	dirty = false
+	flatten()
+	for i = 1, POOL do pool[i].inst = nil end
+	render()
+end
+
+list:GetPropertyChangedSignal("CanvasPosition"):Connect(render)
+
+---------------------------------------------------------------- Properties panel
+local PROP_ROW_H = 18
+local PROP_POOL = 80
+local propRows = {}
+
+for i = 1, PROP_POOL do
+	local f = Instance.new("Frame")
+	f.Size = UDim2.new(1, -8, 0, PROP_ROW_H)
+	f.Position = UDim2.fromOffset(0, (i - 1) * PROP_ROW_H)
+	f.BackgroundColor3 = C.row
+	f.BackgroundTransparency = 0.6
+	f.BorderSizePixel = 0
+	f.Visible = false
+	f.Parent = propList
+
+	local n = Instance.new("TextLabel")
+	n.Size = UDim2.new(0.4, 0, 1, 0)
+	n.Position = UDim2.fromOffset(4, 0)
+	n.BackgroundTransparency = 1
+	n.TextXAlignment = Enum.TextXAlignment.Left
+	n.TextColor3 = C.dim
+	n.Font = Enum.Font.Gotham
+	n.TextSize = 12
+	n.TextTruncate = Enum.TextTruncate.AtEnd
+	n.Parent = f
+
+	local v = Instance.new("TextLabel")
+	v.Size = UDim2.new(0.6, -8, 1, 0)
+	v.Position = UDim2.new(0.4, 4, 0, 0)
+	v.BackgroundTransparency = 1
+	v.TextXAlignment = Enum.TextXAlignment.Left
+	v.TextColor3 = C.text
+	v.Font = Enum.Font.Gotham
+	v.TextSize = 12
+	v.TextTruncate = Enum.TextTruncate.AtEnd
+	v.Parent = f
+
+	propRows[i] = { frame = f, name = n, value = v }
+end
+
+local function fmt(v)
+	local t = typeof(v)
+	if t == "number" then
+		return tostring(math.floor(v * 1000 + 0.5) / 1000)
+	elseif t == "Vector3" then
+		return string.format("%.2f, %.2f, %.2f", v.X, v.Y, v.Z)
+	elseif t == "Vector2" then
+		return string.format("%.2f, %.2f", v.X, v.Y)
+	elseif t == "Color3" then
+		return string.format("%d, %d, %d", math.floor(v.R * 255 + 0.5), math.floor(v.G * 255 + 0.5), math.floor(v.B * 255 + 0.5))
+	elseif t == "UDim2" then
+		return string.format("{%.2f, %d}, {%.2f, %d}", v.X.Scale, v.X.Offset, v.Y.Scale, v.Y.Offset)
+	elseif t == "UDim" then
+		return string.format("%.2f, %d", v.Scale, v.Offset)
+	elseif t == "CFrame" then
+		local p = v.Position
+		return string.format("%.2f, %.2f, %.2f (CFrame)", p.X, p.Y, p.Z)
+	elseif t == "EnumItem" then
+		return v.Name
+	elseif t == "Instance" then
+		return getPath(v)
+	elseif t == "nil" then
+		return "nil"
+	end
+	return tostring(v)
+end
+
+local PROP_GROUPS = {
+	{ "BasePart", { "Position", "Orientation", "Size", "Color", "Material", "Transparency", "Reflectance", "Anchored", "CanCollide", "CanTouch", "CanQuery", "Massless", "CastShadow", "Locked" } },
+	{ "Part", { "Shape" } },
+	{ "MeshPart", { "MeshId", "TextureID", "CollisionFidelity", "RenderFidelity" } },
+	{ "Model", { "PrimaryPart", "WorldPivot" } },
+	{ "Decal", { "Texture", "Face", "Color3", "Transparency" } },
+	{ "Texture", { "StudsPerTileU", "StudsPerTileV" } },
+	{ "GuiObject", { "Visible", "Position", "Size", "AnchorPoint", "BackgroundColor3", "BackgroundTransparency", "ZIndex", "Rotation" } },
+	{ "TextLabel", { "Text", "TextColor3", "TextSize", "Font" } },
+	{ "TextButton", { "Text", "TextColor3", "TextSize", "Font" } },
+	{ "TextBox", { "Text", "TextColor3", "TextSize", "Font", "PlaceholderText" } },
+	{ "ImageLabel", { "Image", "ImageColor3", "ImageTransparency" } },
+	{ "ImageButton", { "Image", "ImageColor3", "ImageTransparency" } },
+	{ "LuaSourceContainer", { "Disabled", "Enabled" } },
+	{ "Humanoid", { "Health", "MaxHealth", "WalkSpeed", "JumpPower", "JumpHeight", "HipHeight", "DisplayName", "RigType" } },
+	{ "Sound", { "SoundId", "Volume", "Playing", "Looped", "TimePosition", "PlaybackSpeed" } },
+	{ "Light", { "Enabled", "Brightness", "Color", "Range" } },
+	{ "ParticleEmitter", { "Enabled", "Rate", "Lifetime", "Texture" } },
+	{ "ValueBase", { "Value" } },
+	{ "Attachment", { "Position", "WorldPosition", "Orientation" } },
+	{ "WeldConstraint", { "Enabled", "Part0", "Part1" } },
+	{ "JointInstance", { "Enabled", "Part0", "Part1" } },
+	{ "Constraint", { "Enabled", "Attachment0", "Attachment1" } },
+	{ "Tool", { "Enabled", "CanBeDropped", "RequiresHandle" } },
+	{ "Camera", { "CFrame", "FieldOfView", "CameraType", "CameraSubject" } },
+	{ "ProximityPrompt", { "ActionText", "ObjectText", "HoldDuration", "MaxActivationDistance", "Enabled" } },
+	{ "ClickDetector", { "MaxActivationDistance" } },
+}
+
+local propEntries = {}
+local propCount = 0
+
+local function clearProps()
+	propCount = 0
+	table.clear(propEntries)
+	for i = 1, PROP_POOL do propRows[i].frame.Visible = false end
+	propList.CanvasSize = UDim2.new()
+end
+
+local function pushEntry(entry)
+	if propCount >= PROP_POOL then return end
+	propCount += 1
+	propEntries[propCount] = entry
+	local row = propRows[propCount]
+	row.frame.Visible = true
+	if entry.header then
+		row.frame.BackgroundTransparency = 0.2
+		row.name.Text = entry.header
+		row.name.TextColor3 = C.blue
+		row.name.Font = Enum.Font.GothamBold
+		row.name.Size = UDim2.new(1, -8, 1, 0)
+		row.value.Text = ""
+	else
+		row.frame.BackgroundTransparency = 0.6
+		row.name.Text = entry.name
+		row.name.TextColor3 = C.dim
+		row.name.Font = Enum.Font.Gotham
+		row.name.Size = UDim2.new(0.4, 0, 1, 0)
+		local ok, v = pcall(entry.get)
+		entry.last = ok and fmt(v) or "?"
+		row.value.Text = entry.last
+	end
+end
+
+function buildProps(inst)
+	clearProps()
+	if not inst then return end
+
+	pushEntry({ header = "Data" })
+	pushEntry({ name = "Name", get = function() return inst.Name end })
+	pushEntry({ name = "ClassName", get = function() return inst.ClassName end })
+	pushEntry({ name = "Parent", get = function() return inst.Parent and inst.Parent.Name or "nil" end })
+	pushEntry({ name = "Path", get = function() return getPath(inst) end })
+
+	for _, group in ipairs(PROP_GROUPS) do
+		local okIs, is = pcall(inst.IsA, inst, group[1])
+		if okIs and is then
+			local added = false
+			for _, prop in ipairs(group[2]) do
+				local ok = pcall(function() return inst[prop] end)
+				if ok then
+					if not added then
+						pushEntry({ header = group[1] })
+						added = true
+					end
+					pushEntry({ name = prop, get = function() return inst[prop] end })
+				end
+			end
+		end
+	end
+
+	local okA, attrs = pcall(inst.GetAttributes, inst)
+	if okA and attrs and next(attrs) then
+		pushEntry({ header = "Attributes" })
+		for k in pairs(attrs) do
+			pushEntry({ name = k, get = function() return inst:GetAttribute(k) end })
+		end
+	end
+
+	local okT, tags = pcall(CollectionService.GetTags, CollectionService, inst)
+	if okT and tags and #tags > 0 then
+		pushEntry({ header = "Tags" })
+		pushEntry({ name = "Tags", get = function() return table.concat(tags, ", ") end })
+	end
+
+	propList.CanvasSize = UDim2.fromOffset(0, propCount * PROP_ROW_H)
+end
+
+local function updateProps()
+	for i = 1, propCount do
+		local e = propEntries[i]
+		if e and e.get then
+			local ok, v = pcall(e.get)
+			local s = ok and fmt(v) or "?"
+			if s ~= e.last then
+				e.last = s
+				propRows[i].value.Text = s
+			end
+		end
+	end
+end
+
+---------------------------------------------------------------- Heartbeat: debounced tree refresh + props refresh
+local lastBuild, lastProps = 0, 0
+local hb = RunService.Heartbeat:Connect(function()
+	local now = os.clock()
+	if dirty and now - lastBuild > 0.5 then
+		lastBuild = now
+		refresh()
+	end
+	if selected and now - lastProps > 0.5 then
+		lastProps = now
+		updateProps()
+	end
+end)
+
+---------------------------------------------------------------- Search
+local searchToken = 0
+
+searchBox.FocusLost:Connect(function(enter)
+	if not enter then return end
+	local q = searchBox.Text:lower()
+	searchToken += 1
+	local my = searchToken
+
+	if q == "" then
+		searchMode = false
+		table.clear(searchResults)
+		refresh()
+		return
+	end
+
+	status.Text = "Searching..."
+	task.spawn(function()
+		local res = {}
+		local all = {}
+		for _, root in ipairs(ROOTS) do
+			all[#all + 1] = root
+			for _, d in ipairs(root:GetDescendants()) do
+				all[#all + 1] = d
+			end
+		end
+		for i = 1, #all do
+			local d = all[i]
+			if d.Name:lower():find(q, 1, true) or d.ClassName:lower():find(q, 1, true) then
+				res[#res + 1] = d
+				if #res >= 500 then break end
+			end
+			if i % 4000 == 0 then
+				task.wait()
+				if my ~= searchToken then return end
+			end
+		end
+		if my ~= searchToken then return end
+		searchResults = res
+		searchMode = true
+		list.CanvasPosition = Vector2.new(0, 0)
+		refresh()
+		status.Text = #res .. (#res >= 500 and "+" or "") .. " results"
+	end)
+end)
+
+---------------------------------------------------------------- Click To Select Part
+local clickMode = false
+
+toggleBtn.MouseButton1Click:Connect(function()
+	clickMode = not clickMode
+	toggleBtn.Text = "Click To Select Part: " .. (clickMode and "ON" or "OFF")
+	toggleBtn.BackgroundColor3 = clickMode and C.on or C.off
+end)
+
+local function revealAndScroll(inst)
+	searchMode = false
+	table.clear(searchResults)
+	local p = inst.Parent
+	while p do
+		expanded[p] = true
+		p = p.Parent
+	end
+	refresh()
+	local found = false
+	for i = 1, fN do
+		if fInst[i] == inst then
+			local y = (i - 1) * ROW_H - list.AbsoluteSize.Y / 2
+			list.CanvasPosition = Vector2.new(0, math.max(0, y))
+			found = true
+			break
+		end
+	end
+	if not found then
+		showToast("Not inside the shown services")
+	end
+	render()
+end
+
+local inputConn = UIS.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed or not clickMode then return end
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
+		return
+	end
+	local target = mouse.Target
+	if not target then return end
+
+	setSelected(target) -- select only, no teleport
+	revealAndScroll(target)
+end)
+
+---------------------------------------------------------------- Close
+closeBtn.MouseButton1Click:Connect(function()
+	hb:Disconnect()
+	inputConn:Disconnect()
+	if selConn then selConn:Disconnect() end
+	for _, conns in pairs(watchers) do
+		for _, c in ipairs(conns) do c:Disconnect() end
+	end
+	box:Destroy()
+	gui:Destroy()
+end)
+
+refresh()
 end)
