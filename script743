@@ -1,3 +1,6 @@
+-- ==========================================
+-- NPC Orbit Script - Optimized, Expanded & Welds Protected
+-- ==========================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -12,7 +15,7 @@ local isOrbitActive = false
 local orbitSpeed = 50
 local orbitRadius = 10
 local orbitMode = 1
-local modes = {"Flat Orbit", "Wave Orbit", "Chaos Orbit"}
+local modes = {"Flat Orbit", "Wave Orbit", "Chaos Orbit", "Helix Orbit", "Pulse Orbit", "Sphere Orbit"}
 local maxSearchDistance = 300
 
 -- بای‌پاس SimulationRadius
@@ -64,7 +67,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -70, 0, 40)
 Title.Position = UDim2.new(0, 10, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "NPC Orbit By C00LHACK"
+Title.Text = "NPC Orbit Pro"
 Title.TextColor3 = Color3.fromRGB(255, 200, 50)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
@@ -235,34 +238,62 @@ ModeButton.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 3. اسکنر دقیق Network Ownership (بهینه‌شده و بدون لگ)
+-- 3. اسکنر پیشرفته با بررسی Anchored بودن و Welds / Joints
 -- ==========================================
 local cachedNPCs = {}
 local checkOwnership = typeof(isnetworkowner) == "function"
 local allModels = {}
 
--- تابع اضافه کردن مدل‌های جدید به لیست پنهان
 local function checkAndAddModel(obj)
     if obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid") then
         table.insert(allModels, obj)
     end
 end
 
--- یک‌بار مپ را اسکن می‌کنیم
 for _, obj in ipairs(workspace:GetDescendants()) do
     checkAndAddModel(obj)
 end
 
--- برای مدل‌های جدیدی که اسپاون می‌شوند
 workspace.DescendantAdded:Connect(function(obj)
     if obj:IsA("Model") then
-        task.delay(0.5, function() -- کمی صبر تا لود کامل شود
+        task.delay(0.5, function()
             checkAndAddModel(obj)
         end)
     elseif obj:IsA("Humanoid") and obj.Parent and obj.Parent:IsA("Model") then
         table.insert(allModels, obj.Parent)
     end
 end)
+
+-- تابع هوشمند بررسی تحرک‌پذیری NPC (چک کردن Anchored مستقیم و اتصالات Weld شده به اجزای ثابت)
+local function isModelMovable(model)
+    local rootPart = model:FindFirstChild("HumanoidRootPart") or model.PrimaryPart
+    if not rootPart or not rootPart:IsA("BasePart") then return false end
+    
+    -- بررسی بخش‌های خود مدل
+    for _, part in ipairs(model:GetDescendants()) do
+        if part:IsA("BasePart") then
+            -- اگر خود پارت انچورد بود
+            if part.Anchored then
+                return false
+            end
+        end
+    end
+    
+    -- بررسی اتصالات (Welds / Joints) با استفاده از GetConnectedParts برای تشخیص اینکه آیا به شیء انچوردشده‌ای وصل است یا خیر
+    local success, connectedParts = pcall(function()
+        return rootPart:GetConnectedParts(true)
+    end)
+    
+    if success and connectedParts then
+        for _, part in ipairs(connectedParts) do
+            if part.Anchored then
+                return false -- اگر از طریق Weld به چیزی متصل است که انچورد شده، یعنی ثابت است و نباید تکان بخورد
+            end
+        end
+    end
+    
+    return true
+end
 
 task.spawn(function()
     while true do
@@ -272,7 +303,6 @@ task.spawn(function()
             local myRoot = char and char:FindFirstChild("HumanoidRootPart")
             
             if myRoot then
-                -- به جای کل مپ، فقط لیست مدل‌ها را بررسی می‌کنیم
                 for i = #allModels, 1, -1 do
                     local obj = allModels[i]
                     
@@ -281,22 +311,26 @@ task.spawn(function()
                         continue
                     end
                     
+                    -- بررسی اینکه بازیکن نباشد و دارای Humanoid فعال باشد
                     if not Players:GetPlayerFromCharacter(obj) then
                         local humanoid = obj:FindFirstChildOfClass("Humanoid")
                         local rootPart = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
                         
-                        if humanoid and rootPart and not rootPart.Anchored and humanoid.Health > 0 then
-                            local hasOwnerShip = true
-                            if checkOwnership then
-                                pcall(function()
-                                    hasOwnerShip = isnetworkowner(rootPart)
-                                end)
-                            end
-                            
-                            if hasOwnerShip then
-                                local dist = (rootPart.Position - myRoot.Position).Magnitude
-                                if dist <= maxSearchDistance then
-                                    table.insert(newNpcs, rootPart)
+                        if humanoid and rootPart and humanoid.Health > 0 then
+                            -- بررسی کامل اینکه آیا مدل آزاد است و هیچ‌گونه انچورد یا ولدِ قفل‌کننده‌ای ندارد
+                            if isModelMovable(obj) then
+                                local hasOwnerShip = true
+                                if checkOwnership then
+                                    pcall(function()
+                                        hasOwnerShip = isnetworkowner(rootPart)
+                                    end)
+                                end
+                                
+                                if hasOwnerShip then
+                                    local dist = (rootPart.Position - myRoot.Position).Magnitude
+                                    if dist <= maxSearchDistance then
+                                        table.insert(newNpcs, rootPart)
+                                    end
                                 end
                             end
                         end
@@ -312,12 +346,11 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- 4. حلقه چرخش بدون لگ
+-- 4. حلقه چرخش بهینه با ۶ مود مختلف (Heartbeat)
 -- ==========================================
 local currentAngle = 0
 local connection
 
--- تغییر به Heartbeat برای پردازش نرم‌تر CFrame
 connection = RunService.Heartbeat:Connect(function(dt)
     if not isOrbitActive then return end
     
@@ -347,6 +380,20 @@ connection = RunService.Heartbeat:Connect(function(dt)
             elseif orbitMode == 3 then
                 local offset = Vector3.new(math.cos(angle) * orbitRadius, math.cos(angle * 1.5) * orbitRadius, math.sin(angle) * orbitRadius)
                 targetCFrame = myRoot.CFrame * CFrame.new(offset)
+            elseif orbitMode == 4 then
+                local yOffset = math.sin(currentAngle + (i * 0.5)) * orbitRadius
+                local offset = Vector3.new(math.cos(angle) * (orbitRadius * 0.8), yOffset, math.sin(angle) * (orbitRadius * 0.8))
+                targetCFrame = myRoot.CFrame * CFrame.new(offset)
+            elseif orbitMode == 5 then
+                local currentPulseRadius = orbitRadius + math.sin(currentAngle * 3) * (orbitRadius * 0.4)
+                local offset = Vector3.new(math.cos(angle) * currentPulseRadius, 0, math.sin(angle) * currentPulseRadius)
+                targetCFrame = myRoot.CFrame * CFrame.new(offset)
+            elseif orbitMode == 6 then
+                local phi = (i / #npcs) * math.pi
+                local x = math.sin(angle) * math.sin(phi) * orbitRadius
+                local y = math.cos(phi) * orbitRadius
+                local z = math.cos(angle) * math.sin(phi) * orbitRadius
+                targetCFrame = myRoot.CFrame * CFrame.new(Vector3.new(x, y, z))
             end
             
             npcRoot.Velocity = Vector3.zero
@@ -356,7 +403,7 @@ connection = RunService.Heartbeat:Connect(function(dt)
     end
 end)
 
--- بستن و پاک کردن
+-- دکمه بستن و پاکسازی کامل منو
 CloseBtn.MouseButton1Click:Connect(function()
     isOrbitActive = false
     if connection then connection:Disconnect() end
