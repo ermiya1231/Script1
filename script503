@@ -2,8 +2,10 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
 
--- ScreenGui Setup
+-- ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "LolzerTargetPanel"
 ScreenGui.ResetOnSpawn = false
@@ -13,8 +15,8 @@ ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 -- Main Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 280, 0, 235)
-MainFrame.Position = UDim2.new(0.5, -140, 0.4, -90)
+MainFrame.Size = UDim2.new(0, 580, 0, 520)
+MainFrame.Position = UDim2.new(0.5, -290, 0.5, -260)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -27,7 +29,8 @@ Corner.Parent = MainFrame
 
 -- Title Bar
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Size = UDim2.new(1, -40, 0, 35)
+Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
 Title.Text = "C00LHACK REMOTE TARGET MODE"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -47,292 +50,743 @@ TitleCover.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
 TitleCover.BorderSizePixel = 0
 TitleCover.Parent = Title
 
--- Target TextBox
+-- Main Collapse Button
+local CollapseMainBtn = Instance.new("TextButton")
+CollapseMainBtn.Size = UDim2.new(0, 40, 0, 35)
+CollapseMainBtn.Position = UDim2.new(1, -40, 0, 0)
+CollapseMainBtn.Text = "-"
+CollapseMainBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+CollapseMainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CollapseMainBtn.Font = Enum.Font.SourceSansBold
+CollapseMainBtn.TextSize = 18
+CollapseMainBtn.Parent = MainFrame
+CollapseMainBtn.ZIndex = 6
+
+-- Content Container
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, 0, 1, -35)
+Content.Position = UDim2.new(0, 0, 0, 35)
+Content.BackgroundTransparency = 1
+Content.Parent = MainFrame
+
+-- Upper Section
+local Upper = Instance.new("Frame")
+Upper.Size = UDim2.new(1, -10, 0, 225)
+Upper.Position = UDim2.new(0, 5, 0, 5)
+Upper.BackgroundTransparency = 1
+Upper.Parent = Content
+
+local function makePanel(parent, xScale, xOffset, widthScale)
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(widthScale, -4, 1, 0)
+    f.Position = UDim2.new(xScale, xOffset, 0, 0)
+    f.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    f.BorderSizePixel = 0
+    f.Parent = parent
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 6)
+    c.Parent = f
+    return f
+end
+
+-- Shared Args List
+local argList = {"Player", "PlayerName", "PlayerCharacter"}
+local argLabels = {
+    Player = "Player (object)",
+    PlayerName = "Player.Name",
+    PlayerCharacter = "Player.Character",
+}
+local selectedPrimary = "Player"
+local selectedSecondary = nil
+local primaryButtons = {}
+local secondaryButtons = {}
+
+local function resolveArg(player, key)
+    if key == "Player" then
+        return player
+    elseif key == "PlayerName" then
+        return player.Name
+    elseif key == "PlayerCharacter" then
+        return player.Character
+    else
+        return key
+    end
+end
+
+-- LEFT PANEL
+local LeftPanel = makePanel(Upper, 0, 0, 0.32)
+local LeftTitle = Instance.new("TextLabel")
+LeftTitle.Size = UDim2.new(1, 0, 0, 24)
+LeftTitle.Text = "Primary Args (arg1)"
+LeftTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+LeftTitle.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+LeftTitle.Font = Enum.Font.SourceSansBold
+LeftTitle.TextSize = 12
+LeftTitle.Parent = LeftPanel
+local lc = Instance.new("UICorner"); lc.CornerRadius = UDim.new(0,6); lc.Parent = LeftTitle
+
+local PrimaryList = Instance.new("ScrollingFrame")
+PrimaryList.Size = UDim2.new(1, -6, 1, -62)
+PrimaryList.Position = UDim2.new(0, 3, 0, 26)
+PrimaryList.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+PrimaryList.BorderSizePixel = 0
+PrimaryList.ScrollBarThickness = 4
+PrimaryList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+PrimaryList.CanvasSize = UDim2.new(0,0,0,0)
+PrimaryList.Parent = LeftPanel
+local pl = Instance.new("UIListLayout"); pl.Padding = UDim.new(0,4); pl.Parent = PrimaryList
+local pc = Instance.new("UICorner"); pc.CornerRadius = UDim.new(0,4); pc.Parent = PrimaryList
+
+local PrimaryAddFrame = Instance.new("Frame")
+PrimaryAddFrame.Size = UDim2.new(1, -6, 0, 30)
+PrimaryAddFrame.Position = UDim2.new(0, 3, 1, -32)
+PrimaryAddFrame.BackgroundTransparency = 1
+PrimaryAddFrame.Parent = LeftPanel
+
+local PrimaryAddBox = Instance.new("TextBox")
+PrimaryAddBox.Size = UDim2.new(0.7, 0, 1, 0)
+PrimaryAddBox.PlaceholderText = "Custom arg..."
+PrimaryAddBox.Text = ""
+PrimaryAddBox.TextColor3 = Color3.fromRGB(255,255,255)
+PrimaryAddBox.BackgroundColor3 = Color3.fromRGB(40,40,45)
+PrimaryAddBox.BorderSizePixel = 0
+PrimaryAddBox.Font = Enum.Font.SourceSans
+PrimaryAddBox.TextSize = 11
+PrimaryAddBox.ClearTextOnFocus = false
+PrimaryAddBox.Parent = PrimaryAddFrame
+local pac = Instance.new("UICorner"); pac.CornerRadius = UDim.new(0,4); pac.Parent = PrimaryAddBox
+
+local PrimaryAddBtn = Instance.new("TextButton")
+PrimaryAddBtn.Size = UDim2.new(0.28, 0, 1, 0)
+PrimaryAddBtn.Position = UDim2.new(0.72, 0, 0, 0)
+PrimaryAddBtn.Text = "+"
+PrimaryAddBtn.BackgroundColor3 = Color3.fromRGB(60, 120, 200)
+PrimaryAddBtn.TextColor3 = Color3.fromRGB(255,255,255)
+PrimaryAddBtn.Font = Enum.Font.SourceSansBold
+PrimaryAddBtn.TextSize = 16
+PrimaryAddBtn.Parent = PrimaryAddFrame
+local pabc = Instance.new("UICorner"); pabc.CornerRadius = UDim.new(0,4); pabc.Parent = PrimaryAddBtn
+
+-- CENTER PANEL
+local CenterPanel = makePanel(Upper, 0.32, 4, 0.36)
+local CenterTitle = Instance.new("TextLabel")
+CenterTitle.Size = UDim2.new(1,0,0,24)
+CenterTitle.Text = "Target"
+CenterTitle.TextColor3 = Color3.fromRGB(255,255,255)
+CenterTitle.BackgroundColor3 = Color3.fromRGB(45,45,52)
+CenterTitle.Font = Enum.Font.SourceSansBold
+CenterTitle.TextSize = 12
+CenterTitle.Parent = CenterPanel
+local cc = Instance.new("UICorner"); cc.CornerRadius = UDim.new(0,6); cc.Parent = CenterTitle
+
 local TargetBox = Instance.new("TextBox")
-TargetBox.Size = UDim2.new(0.85, 0, 0, 35)
-TargetBox.Position = UDim2.new(0.075, 0, 0.2, 0)
+TargetBox.Size = UDim2.new(0.9, 0, 0, 32)
+TargetBox.Position = UDim2.new(0.05, 0, 0, 30)
 TargetBox.PlaceholderText = "Target Username / DisplayName..."
 TargetBox.Text = ""
-TargetBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-TargetBox.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+TargetBox.TextColor3 = Color3.fromRGB(255,255,255)
+TargetBox.BackgroundColor3 = Color3.fromRGB(40,40,45)
 TargetBox.BorderSizePixel = 0
 TargetBox.Font = Enum.Font.SourceSans
-TargetBox.TextSize = 14
+TargetBox.TextSize = 13
 TargetBox.ClearTextOnFocus = false
 TargetBox.TextXAlignment = Enum.TextXAlignment.Center
-TargetBox.Parent = MainFrame
+TargetBox.Parent = CenterPanel
+local tbc = Instance.new("UICorner"); tbc.CornerRadius = UDim.new(0,6); tbc.Parent = TargetBox
 
-local TargetCorner = Instance.new("UICorner")
-TargetCorner.CornerRadius = UDim.new(0, 6)
-TargetCorner.Parent = TargetBox
+local function makeExecBtn(text, color, yPos)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0.9, 0, 0, 34)
+    b.Position = UDim2.new(0.05, 0, 0, yPos)
+    b.Text = text
+    b.BackgroundColor3 = color
+    b.TextColor3 = Color3.fromRGB(255,255,255)
+    b.Font = Enum.Font.SourceSansBold
+    b.TextSize = 13
+    b.AutoButtonColor = true
+    b.Parent = CenterPanel
+    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,6); c.Parent = b
+    return b
+end
 
--- Execute On Target Button
-local ExecTargetButton = Instance.new("TextButton")
-ExecTargetButton.Size = UDim2.new(0.85, 0, 0, 38)
-ExecTargetButton.Position = UDim2.new(0.075, 0, 0.38, 0)
-ExecTargetButton.Text = "Execute On Target"
-ExecTargetButton.BackgroundColor3 = Color3.fromRGB(190, 40, 40)
-ExecTargetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ExecTargetButton.Font = Enum.Font.SourceSansBold
-ExecTargetButton.TextSize = 15
-ExecTargetButton.AutoButtonColor = true
-ExecTargetButton.Parent = MainFrame
+local ExecTargetButton = makeExecBtn("Execute On Target", Color3.fromRGB(190,40,40), 70)
+local ExecMeButton = makeExecBtn("Execute On Me", Color3.fromRGB(40,120,200), 112)
+local ExecOthersButton = makeExecBtn("Execute On Others", Color3.fromRGB(160,90,30), 154)
 
-local BtnCorner1 = Instance.new("UICorner")
-BtnCorner1.CornerRadius = UDim.new(0, 6)
-BtnCorner1.Parent = ExecTargetButton
+-- RIGHT PANEL
+local RightPanel = makePanel(Upper, 0.68, 0, 0.32)
+local RightTitle = Instance.new("TextLabel")
+RightTitle.Size = UDim2.new(1,0,0,24)
+RightTitle.Text = "Secondary Args (arg2)"
+RightTitle.TextColor3 = Color3.fromRGB(255,255,255)
+RightTitle.BackgroundColor3 = Color3.fromRGB(45,45,52)
+RightTitle.Font = Enum.Font.SourceSansBold
+RightTitle.TextSize = 12
+RightTitle.Parent = RightPanel
+local rc = Instance.new("UICorner"); rc.CornerRadius = UDim.new(0,6); rc.Parent = RightTitle
 
--- Execute On Me Button
-local ExecMeButton = Instance.new("TextButton")
-ExecMeButton.Size = UDim2.new(0.85, 0, 0, 38)
-ExecMeButton.Position = UDim2.new(0.075, 0, 0.55, 0)
-ExecMeButton.Text = "Execute On Me"
-ExecMeButton.BackgroundColor3 = Color3.fromRGB(40, 120, 200)
-ExecMeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ExecMeButton.Font = Enum.Font.SourceSansBold
-ExecMeButton.TextSize = 15
-ExecMeButton.AutoButtonColor = true
-ExecMeButton.Parent = MainFrame
+local SecondaryList = Instance.new("ScrollingFrame")
+SecondaryList.Size = UDim2.new(1, -6, 1, -62)
+SecondaryList.Position = UDim2.new(0, 3, 0, 26)
+SecondaryList.BackgroundColor3 = Color3.fromRGB(28,28,32)
+SecondaryList.BorderSizePixel = 0
+SecondaryList.ScrollBarThickness = 4
+SecondaryList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+SecondaryList.CanvasSize = UDim2.new(0,0,0,0)
+SecondaryList.Parent = RightPanel
+local sl = Instance.new("UIListLayout"); sl.Padding = UDim.new(0,4); sl.Parent = SecondaryList
+local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,4); sc.Parent = SecondaryList
 
-local BtnCorner2 = Instance.new("UICorner")
-BtnCorner2.CornerRadius = UDim.new(0, 6)
-BtnCorner2.Parent = ExecMeButton
+local SecondaryAddFrame = Instance.new("Frame")
+SecondaryAddFrame.Size = UDim2.new(1, -6, 0, 30)
+SecondaryAddFrame.Position = UDim2.new(0, 3, 1, -32)
+SecondaryAddFrame.BackgroundTransparency = 1
+SecondaryAddFrame.Parent = RightPanel
 
--- Execute On Others Button
-local ExecOthersButton = Instance.new("TextButton")
-ExecOthersButton.Size = UDim2.new(0.85, 0, 0, 38)
-ExecOthersButton.Position = UDim2.new(0.075, 0, 0.72, 0)
-ExecOthersButton.Text = "Execute On Others"
-ExecOthersButton.BackgroundColor3 = Color3.fromRGB(160, 90, 30)
-ExecOthersButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ExecOthersButton.Font = Enum.Font.SourceSansBold
-ExecOthersButton.TextSize = 15
-ExecOthersButton.AutoButtonColor = true
-ExecOthersButton.Parent = MainFrame
+local SecondaryAddBox = Instance.new("TextBox")
+SecondaryAddBox.Size = UDim2.new(0.7, 0, 1, 0)
+SecondaryAddBox.PlaceholderText = "Custom arg..."
+SecondaryAddBox.Text = ""
+SecondaryAddBox.TextColor3 = Color3.fromRGB(255,255,255)
+SecondaryAddBox.BackgroundColor3 = Color3.fromRGB(40,40,45)
+SecondaryAddBox.BorderSizePixel = 0
+SecondaryAddBox.Font = Enum.Font.SourceSans
+SecondaryAddBox.TextSize = 11
+SecondaryAddBox.ClearTextOnFocus = false
+SecondaryAddBox.Parent = SecondaryAddFrame
+local sac = Instance.new("UICorner"); sac.CornerRadius = UDim.new(0,4); sac.Parent = SecondaryAddBox
 
-local BtnCorner3 = Instance.new("UICorner")
-BtnCorner3.CornerRadius = UDim.new(0, 6)
-BtnCorner3.Parent = ExecOthersButton
+local SecondaryAddBtn = Instance.new("TextButton")
+SecondaryAddBtn.Size = UDim2.new(0.28, 0, 1, 0)
+SecondaryAddBtn.Position = UDim2.new(0.72, 0, 0, 0)
+SecondaryAddBtn.Text = "+"
+SecondaryAddBtn.BackgroundColor3 = Color3.fromRGB(160, 90, 30)
+SecondaryAddBtn.TextColor3 = Color3.fromRGB(255,255,255)
+SecondaryAddBtn.Font = Enum.Font.SourceSansBold
+SecondaryAddBtn.TextSize = 16
+SecondaryAddBtn.Parent = SecondaryAddFrame
+local sabc = Instance.new("UICorner"); sabc.CornerRadius = UDim.new(0,4); sabc.Parent = SecondaryAddBtn
 
--- Drag System (Mobile + PC Support)
+local function rebuildPrimaryList()
+    for _, b in pairs(primaryButtons) do
+        if b and b.Parent then b:Destroy() end
+    end
+    primaryButtons = {}
+    for _, key in ipairs(argList) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -6, 0, 26)
+        btn.Text = argLabels[key] or key
+        btn.BackgroundColor3 = (key == selectedPrimary) and Color3.fromRGB(60,120,200) or Color3.fromRGB(50,50,55)
+        btn.TextColor3 = Color3.fromRGB(255,255,255)
+        btn.Font = Enum.Font.SourceSans
+        btn.TextSize = 12
+        btn.AutoButtonColor = true
+        btn.Parent = PrimaryList
+        primaryButtons[key] = btn
+        btn.MouseButton1Click:Connect(function()
+            if selectedPrimary == key then
+                selectedPrimary = nil
+            else
+                selectedPrimary = key
+            end
+            rebuildPrimaryList()
+        end)
+    end
+end
+
+local function rebuildSecondaryList()
+    for _, b in pairs(secondaryButtons) do
+        if b and b.Parent then b:Destroy() end
+    end
+    secondaryButtons = {}
+    for _, val in ipairs(argList) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -6, 0, 26)
+        btn.Text = argLabels[val] or val
+        btn.BackgroundColor3 = (val == selectedSecondary) and Color3.fromRGB(160,90,30) or Color3.fromRGB(50,50,55)
+        btn.TextColor3 = Color3.fromRGB(255,255,255)
+        btn.Font = Enum.Font.SourceSans
+        btn.TextSize = 12
+        btn.AutoButtonColor = true
+        btn.Parent = SecondaryList
+        secondaryButtons[val] = btn
+        btn.MouseButton1Click:Connect(function()
+            if selectedSecondary == val then
+                selectedSecondary = nil
+            else
+                selectedSecondary = val
+            end
+            rebuildSecondaryList()
+        end)
+    end
+end
+
+local function addArg(txt)
+    if txt == "" then return end
+    if not table.find(argList, txt) then
+        table.insert(argList, txt)
+    end
+    rebuildPrimaryList()
+    rebuildSecondaryList()
+end
+
+PrimaryAddBtn.MouseButton1Click:Connect(function()
+    addArg(PrimaryAddBox.Text)
+    PrimaryAddBox.Text = ""
+end)
+
+SecondaryAddBtn.MouseButton1Click:Connect(function()
+    addArg(SecondaryAddBox.Text)
+    SecondaryAddBox.Text = ""
+end)
+
+rebuildPrimaryList()
+rebuildSecondaryList()
+
+-- LOWER SECTION
+local RemoteSection = Instance.new("Frame")
+RemoteSection.Size = UDim2.new(1, -10, 1, -240)
+RemoteSection.Position = UDim2.new(0, 5, 0, 235)
+RemoteSection.BackgroundColor3 = Color3.fromRGB(35,35,40)
+RemoteSection.BorderSizePixel = 0
+RemoteSection.Parent = Content
+local rsc = Instance.new("UICorner"); rsc.CornerRadius = UDim.new(0,6); rsc.Parent = RemoteSection
+
+local RemoteHeader = Instance.new("Frame")
+RemoteHeader.Size = UDim2.new(1, 0, 0, 28)
+RemoteHeader.BackgroundColor3 = Color3.fromRGB(45,45,52)
+RemoteHeader.BorderSizePixel = 0
+RemoteHeader.Parent = RemoteSection
+local rhc = Instance.new("UICorner"); rhc.CornerRadius = UDim.new(0,6); rhc.Parent = RemoteHeader
+
+local RemoteTitleLbl = Instance.new("TextLabel")
+RemoteTitleLbl.Size = UDim2.new(0.5, 0, 1, 0)
+RemoteTitleLbl.Position = UDim2.new(0, 8, 0, 0)
+RemoteTitleLbl.Text = "Remotes"
+RemoteTitleLbl.TextColor3 = Color3.fromRGB(255,255,255)
+RemoteTitleLbl.Font = Enum.Font.SourceSansBold
+RemoteTitleLbl.TextSize = 12
+RemoteTitleLbl.BackgroundTransparency = 1
+RemoteTitleLbl.TextXAlignment = Enum.TextXAlignment.Left
+RemoteTitleLbl.Parent = RemoteHeader
+
+local CollapseRemoteBtn = Instance.new("TextButton")
+CollapseRemoteBtn.Size = UDim2.new(0, 26, 0, 22)
+CollapseRemoteBtn.Position = UDim2.new(1, -30, 0, 3)
+CollapseRemoteBtn.Text = "-"
+CollapseRemoteBtn.BackgroundColor3 = Color3.fromRGB(60,60,70)
+CollapseRemoteBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CollapseRemoteBtn.Font = Enum.Font.SourceSansBold
+CollapseRemoteBtn.TextSize = 14
+CollapseRemoteBtn.Parent = RemoteHeader
+local crc = Instance.new("UICorner"); crc.CornerRadius = UDim.new(0,4); crc.Parent = CollapseRemoteBtn
+
+local RemoteToolbar = Instance.new("Frame")
+RemoteToolbar.Size = UDim2.new(1, -6, 0, 28)
+RemoteToolbar.Position = UDim2.new(0, 3, 0, 30)
+RemoteToolbar.BackgroundTransparency = 1
+RemoteToolbar.Parent = RemoteSection
+
+local SearchBox = Instance.new("TextBox")
+SearchBox.Size = UDim2.new(0.34, -4, 1, -4)
+SearchBox.Position = UDim2.new(0, 0, 0, 2)
+SearchBox.PlaceholderText = "Search remotes..."
+SearchBox.Text = ""
+SearchBox.TextColor3 = Color3.fromRGB(255,255,255)
+SearchBox.BackgroundColor3 = Color3.fromRGB(40,40,45)
+SearchBox.BorderSizePixel = 0
+SearchBox.Font = Enum.Font.SourceSans
+SearchBox.TextSize = 11
+SearchBox.ClearTextOnFocus = false
+SearchBox.Parent = RemoteToolbar
+local sboxc = Instance.new("UICorner"); sboxc.CornerRadius = UDim.new(0,4); sboxc.Parent = SearchBox
+
+local RefreshBtn = Instance.new("TextButton")
+RefreshBtn.Size = UDim2.new(0.18, -2, 1, -4)
+RefreshBtn.Position = UDim2.new(0.36, 0, 0, 2)
+RefreshBtn.Text = "Refresh"
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(60, 170, 200)
+RefreshBtn.TextColor3 = Color3.fromRGB(255,255,255)
+RefreshBtn.Font = Enum.Font.SourceSansBold
+RefreshBtn.TextSize = 10
+RefreshBtn.Parent = RemoteToolbar
+local rbc = Instance.new("UICorner"); rbc.CornerRadius = UDim.new(0,4); rbc.Parent = RefreshBtn
+
+local SelectAllBtn = Instance.new("TextButton")
+SelectAllBtn.Size = UDim2.new(0.22, -2, 1, -4)
+SelectAllBtn.Position = UDim2.new(0.56, 0, 0, 2)
+SelectAllBtn.Text = "Select All"
+SelectAllBtn.BackgroundColor3 = Color3.fromRGB(60,120,200)
+SelectAllBtn.TextColor3 = Color3.fromRGB(255,255,255)
+SelectAllBtn.Font = Enum.Font.SourceSansBold
+SelectAllBtn.TextSize = 10
+SelectAllBtn.Parent = RemoteToolbar
+local sac2 = Instance.new("UICorner"); sac2.CornerRadius = UDim.new(0,4); sac2.Parent = SelectAllBtn
+
+local DeselectAllBtn = Instance.new("TextButton")
+DeselectAllBtn.Size = UDim2.new(0.22, -2, 1, -4)
+DeselectAllBtn.Position = UDim2.new(0.78, 0, 0, 2)
+DeselectAllBtn.Text = "Deselect All"
+DeselectAllBtn.BackgroundColor3 = Color3.fromRGB(190,40,40)
+DeselectAllBtn.TextColor3 = Color3.fromRGB(255,255,255)
+DeselectAllBtn.Font = Enum.Font.SourceSansBold
+DeselectAllBtn.TextSize = 10
+DeselectAllBtn.Parent = RemoteToolbar
+local dac = Instance.new("UICorner"); dac.CornerRadius = UDim.new(0,4); dac.Parent = DeselectAllBtn
+
+local RemoteList = Instance.new("ScrollingFrame")
+RemoteList.Size = UDim2.new(1, -6, 1, -64)
+RemoteList.Position = UDim2.new(0, 3, 0, 60)
+RemoteList.BackgroundColor3 = Color3.fromRGB(28,28,32)
+RemoteList.BorderSizePixel = 0
+RemoteList.ScrollBarThickness = 6
+RemoteList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+RemoteList.CanvasSize = UDim2.new(0,0,0,0)
+RemoteList.Parent = RemoteSection
+local rl = Instance.new("UIListLayout"); rl.Padding = UDim.new(0,3); rl.Parent = RemoteList
+local rlc = Instance.new("UICorner"); rlc.CornerRadius = UDim.new(0,4); rlc.Parent = RemoteList
+
+-- Drag System
 local dragToggle = false
 local dragStart = Vector2.zero
 local startPos = UDim2.new()
 
 MainFrame.InputBegan:Connect(function(input)
-	if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-		local focused = UIS:GetFocusedTextBox()
-		if focused == nil then
-			dragToggle = true
-			dragStart = input.Position
-			startPos = MainFrame.Position
-
-			local connection
-			connection = input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragToggle = false
-					connection:Disconnect()
-				end
-			end)
-		end
-	end
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        local focused = UIS:GetFocusedTextBox()
+        if focused == nil then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            local connection
+            connection = input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                    connection:Disconnect()
+                end
+            end)
+        end
+    end
 end)
 
 local dragInput = nil
-
 MainFrame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
-	end
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
 end)
 
 UIS.InputChanged:Connect(function(input)
-	if input == dragInput and dragToggle then
-		local delta = input.Position - dragStart
-		local newPos = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-		TweenService:Create(MainFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = newPos}):Play()
-	end
+    if input == dragInput and dragToggle then
+        local delta = input.Position - dragStart
+        local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        TweenService:Create(MainFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = newPos}):Play()
+    end
 end)
 
--- Target Finder (Partial Username & DisplayName Support)
-local function findTarget(query: string)
-	if query == "" then
-		return nil
-	end
-
-	local lowerQuery = string.lower(query)
-
-	for _, player in ipairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer then
-			local nameLower = string.lower(player.Name)
-			local displayLower = string.lower(player.DisplayName)
-
-			if string.find(nameLower, lowerQuery, 1, true) or string.find(displayLower, lowerQuery, 1, true) then
-				return player
-			end
-		end
-	end
-	return nil
+-- Target Finder
+local function findTarget(query)
+    if query == "" then return nil end
+    local lowerQuery = string.lower(query)
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local nameLower = string.lower(player.Name)
+            local displayLower = string.lower(player.DisplayName)
+            if string.find(nameLower, lowerQuery, 1, true) or string.find(displayLower, lowerQuery, 1, true) then
+                return player
+            end
+        end
+    end
+    return nil
 end
 
--- Collect Remotes
-local function getRemotes()
-	local remotes = {}
+-- Remote List Logic
+local remoteEntries = {}
+local selectedRemotes = {}
 
-	local locations = {
-		workspace,
-		game:GetService("ReplicatedStorage"),
-		Players,
-		game:GetService("Lighting"),
-		game:GetService("SoundService"),
-	}
-
-	for _, loc in ipairs(locations) do
-		local success, descendants = pcall(function()
-			return loc:GetDescendants()
-		end)
-
-		if success then
-			for _, obj in ipairs(descendants) do
-				if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-					table.insert(remotes, obj)
-				end
-			end
-		end
-	end
-
-	return remotes
+local function refreshRemoteVisual(remote)
+    local e = remoteEntries[remote]
+    if not e then return end
+    local selBtn = e.sel
+    if selectedRemotes[remote] then
+        selBtn.BackgroundColor3 = Color3.fromRGB(60,180,60)
+        selBtn.Text = "✓"
+    else
+        selBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
+        selBtn.Text = ""
+    end
 end
 
+local function makeRemoteEntry(remote)
+    if remoteEntries[remote] then return end
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 36)
+    frame.BackgroundColor3 = Color3.fromRGB(40,40,45)
+    frame.BorderSizePixel = 0
+    frame.Parent = RemoteList
+    local fc = Instance.new("UICorner"); fc.CornerRadius = UDim.new(0,4); fc.Parent = frame
+
+    local sel = Instance.new("TextButton")
+    sel.Size = UDim2.new(0, 22, 0, 22)
+    sel.Position = UDim2.new(0, 6, 0.5, -11)
+    sel.Text = ""
+    sel.BackgroundColor3 = Color3.fromRGB(60,180,60)
+    sel.TextColor3 = Color3.fromRGB(255,255,255)
+    sel.Font = Enum.Font.SourceSansBold
+    sel.TextSize = 14
+    sel.Parent = frame
+    local sc2 = Instance.new("UICorner"); sc2.CornerRadius = UDim.new(0,4); sc2.Parent = sel
+
+    local nameLbl = Instance.new("TextLabel")
+    nameLbl.Size = UDim2.new(1, -34, 0, 16)
+    nameLbl.Position = UDim2.new(0, 34, 0, 2)
+    nameLbl.Text = remote.Name
+    nameLbl.TextColor3 = Color3.fromRGB(255,255,255)
+    nameLbl.TextSize = 13
+    nameLbl.Font = Enum.Font.SourceSans
+    nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+    nameLbl.BackgroundTransparency = 1
+    nameLbl.Parent = frame
+
+    local pathLbl = Instance.new("TextLabel")
+    pathLbl.Size = UDim2.new(1, -34, 0, 14)
+    pathLbl.Position = UDim2.new(0, 34, 0, 18)
+    local ok, full = pcall(function() return remote:GetFullName() end)
+    pathLbl.Text = ok and full or tostring(remote)
+    pathLbl.TextColor3 = Color3.fromRGB(160,160,160)
+    pathLbl.TextSize = 10
+    pathLbl.Font = Enum.Font.SourceSans
+    pathLbl.TextXAlignment = Enum.TextXAlignment.Left
+    pathLbl.BackgroundTransparency = 1
+    pathLbl.Parent = frame
+
+    selectedRemotes[remote] = true
+
+    sel.MouseButton1Click:Connect(function()
+        selectedRemotes[remote] = not selectedRemotes[remote]
+        refreshRemoteVisual(remote)
+    end)
+
+    remoteEntries[remote] = {frame = frame, sel = sel, name = remote.Name, path = pathLbl.Text}
+    refreshRemoteVisual(remote)
+end
+
+local function applyRemoteFilter()
+    local q = string.lower(SearchBox.Text)
+    for remote, entry in pairs(remoteEntries) do
+        local visible = true
+        if q ~= "" then
+            if not (string.find(string.lower(entry.name), q, 1, true) or string.find(string.lower(entry.path), q, 1, true)) then
+                visible = false
+            end
+        end
+        if entry.frame and entry.frame.Parent then
+            entry.frame.Visible = visible
+        end
+    end
+end
+
+SearchBox:GetPropertyChangedSignal("Text"):Connect(applyRemoteFilter)
+
+SelectAllBtn.MouseButton1Click:Connect(function()
+    for r in pairs(remoteEntries) do
+        selectedRemotes[r] = true
+        refreshRemoteVisual(r)
+    end
+end)
+
+DeselectAllBtn.MouseButton1Click:Connect(function()
+    for r in pairs(remoteEntries) do
+        selectedRemotes[r] = false
+        refreshRemoteVisual(r)
+    end
+end)
+
+local function isRemote(obj)
+    return obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")
+end
+
+local function refreshRemotes()
+    for r, e in pairs(remoteEntries) do
+        if e.frame and e.frame.Parent then e.frame:Destroy() end
+    end
+    remoteEntries = {}
+    selectedRemotes = {}
+    local locations = {workspace, ReplicatedStorage, LocalPlayer, Lighting}
+    for _, loc in ipairs(locations) do
+        local ok, desc = pcall(function() return loc:GetDescendants() end)
+        if ok then
+            for _, obj in ipairs(desc) do
+                if isRemote(obj) then
+                    makeRemoteEntry(obj)
+                end
+            end
+        end
+    end
+    applyRemoteFilter()
+end
+
+RefreshBtn.MouseButton1Click:Connect(function()
+    RefreshBtn.Text = "..."
+    task.spawn(function()
+        refreshRemotes()
+        RefreshBtn.Text = "Refresh"
+    end)
+end)
+
+refreshRemotes()
+
+-- Collapse Remotes (also collapses MainFrame height)
+local remoteCollapsed = false
+local function setRemoteCollapsed(state)
+    remoteCollapsed = state
+    if state then
+        RemoteList.Visible = false
+        RemoteToolbar.Visible = false
+        RemoteSection.Size = UDim2.new(1, -10, 0, 28)
+        CollapseRemoteBtn.Text = "+"
+        if not mainCollapsed then
+            MainFrame.Size = UDim2.new(0, 580, 0, 260)
+        end
+    else
+        RemoteList.Visible = true
+        RemoteToolbar.Visible = true
+        RemoteSection.Size = UDim2.new(1, -10, 1, -240)
+        CollapseRemoteBtn.Text = "-"
+        if not mainCollapsed then
+            MainFrame.Size = UDim2.new(0, 580, 0, 520)
+        end
+    end
+end
+CollapseRemoteBtn.MouseButton1Click:Connect(function()
+    setRemoteCollapsed(not remoteCollapsed)
+end)
+
+-- Collapse Main
+local mainCollapsed = false
+local function setMainCollapsed(state)
+    mainCollapsed = state
+    if state then
+        MainFrame.Size = UDim2.new(0, 580, 0, 35)
+        CollapseMainBtn.Text = "+"
+        Content.Visible = false
+    else
+        Content.Visible = true
+        CollapseMainBtn.Text = "-"
+        if remoteCollapsed then
+            MainFrame.Size = UDim2.new(0, 580, 0, 260)
+        else
+            MainFrame.Size = UDim2.new(0, 580, 0, 520)
+        end
+    end
+end
+CollapseMainBtn.MouseButton1Click:Connect(function()
+    setMainCollapsed(not mainCollapsed)
+end)
+
+-- Execution Logic
 local isExecuting = false
 
-local function executeOnPlayer(player: Player)
-	if not player or not player.Parent then
-		return
-	end
-
-	local remotes = getRemotes()
-
-	for _, remote in ipairs(remotes) do
-		pcall(function()
-			if remote:IsA("RemoteEvent") then
-				remote:FireServer(player)
-				remote:FireServer(player.Name)
-				if player.Character then
-					remote:FireServer(player.Character)
-				end
-			elseif remote:IsA("RemoteFunction") then
-				task.spawn(function()
-					pcall(function()
-						remote:InvokeServer(player)
-						remote:InvokeServer(player.Name)
-					end)
-				end)
-			end
-		end)
-	end
+local function resolvePrimary(player)
+    return resolveArg(player, selectedPrimary)
 end
 
-local function setButtonText(button: TextButton, text: string, delay: number?)
-	local oldText = button.Text
-	button.Text = text
-	task.wait(delay or 1.5)
-	if button.Text == text then
-		button.Text = oldText
-	end
+local function getSelectedSecondary()
+    if selectedSecondary == nil then return nil end
+    return selectedSecondary
+end
+
+local function executeOnPlayer(player)
+    if not player or not player.Parent then return end
+    local primary = resolvePrimary(player)
+    local secKey = getSelectedSecondary()
+
+    for remote, sel in pairs(selectedRemotes) do
+        if sel and remote and remote.Parent then
+            pcall(function()
+                if remote:IsA("RemoteEvent") then
+                    if secKey == nil then
+                        remote:FireServer(primary)
+                    else
+                        local secVal = resolveArg(player, secKey)
+                        remote:FireServer(primary, secVal)
+                    end
+                elseif remote:IsA("RemoteFunction") then
+                    task.spawn(function()
+                        pcall(function()
+                            if secKey == nil then
+                                remote:InvokeServer(primary)
+                            else
+                                local secVal = resolveArg(player, secKey)
+                                remote:InvokeServer(primary, secVal)
+                            end
+                        end)
+                    end)
+                end
+            end)
+        end
+    end
+end
+
+local function setButtonText(button, text, delay)
+    local oldText = button.Text
+    button.Text = text
+    task.wait(delay or 1.5)
+    if button.Text == text then
+        button.Text = oldText
+    end
 end
 
 -- Execute On Target
 ExecTargetButton.MouseButton1Click:Connect(function()
-	if isExecuting then
-		return
-	end
-
-	local target = findTarget(TargetBox.Text)
-
-	if not target then
-		setButtonText(ExecTargetButton, "Target Not Found!")
-		return
-	end
-
-	isExecuting = true
-	ExecTargetButton.Text = "Firing Remotes..."
-
-	task.spawn(function()
-		executeOnPlayer(target)
-	end)
-
-	task.wait(1)
-	ExecTargetButton.Text = "Done!"
-	task.wait(1.5)
-	ExecTargetButton.Text = "Execute On Target"
-	isExecuting = false
+    if isExecuting then return end
+    local target = findTarget(TargetBox.Text)
+    if not target then
+        setButtonText(ExecTargetButton, "Target Not Found!")
+        return
+    end
+    isExecuting = true
+    ExecTargetButton.Text = "Firing Remotes..."
+    task.spawn(function()
+        executeOnPlayer(target)
+    end)
+    task.wait(1)
+    ExecTargetButton.Text = "Done!"
+    task.wait(1.5)
+    ExecTargetButton.Text = "Execute On Target"
+    isExecuting = false
 end)
 
 -- Execute On Me
 ExecMeButton.MouseButton1Click:Connect(function()
-	if isExecuting then
-		return
-	end
-
-	isExecuting = true
-	ExecMeButton.Text = "Firing Remotes..."
-
-	task.spawn(function()
-		executeOnPlayer(LocalPlayer)
-	end)
-
-	task.wait(1)
-	ExecMeButton.Text = "Done!"
-	task.wait(1.5)
-	ExecMeButton.Text = "Execute On Me"
-	isExecuting = false
+    if isExecuting then return end
+    isExecuting = true
+    ExecMeButton.Text = "Firing Remotes..."
+    task.spawn(function()
+        executeOnPlayer(LocalPlayer)
+    end)
+    task.wait(1)
+    ExecMeButton.Text = "Done!"
+    task.wait(1.5)
+    ExecMeButton.Text = "Execute On Me"
+    isExecuting = false
 end)
 
 -- Execute On Others
 ExecOthersButton.MouseButton1Click:Connect(function()
-	if isExecuting then
-		return
-	end
-
-	isExecuting = true
-	ExecOthersButton.Text = "Firing Remotes..."
-
-	task.spawn(function()
-		local remotes = getRemotes()
-
-		for _, player in ipairs(Players:GetPlayers()) do
-			if player ~= LocalPlayer then
-				for _, remote in ipairs(remotes) do
-					pcall(function()
-						if remote:IsA("RemoteEvent") then
-							remote:FireServer(player)
-							remote:FireServer(player.Name)
-							if player.Character then
-								remote:FireServer(player.Character)
-							end
-						elseif remote:IsA("RemoteFunction") then
-							task.spawn(function()
-								pcall(function()
-									remote:InvokeServer(player)
-									remote:InvokeServer(player.Name)
-								end)
-							end)
-						end
-					end)
-				end
-			end
-		end
-	end)
-
-	task.wait(1)
-	ExecOthersButton.Text = "Done!"
-	task.wait(1.5)
-	ExecOthersButton.Text = "Execute On Others"
-	isExecuting = false
+    if isExecuting then return end
+    isExecuting = true
+    ExecOthersButton.Text = "Firing Remotes..."
+    task.spawn(function()
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                executeOnPlayer(player)
+            end
+        end
+    end)
+    task.wait(1)
+    ExecOthersButton.Text = "Done!"
+    task.wait(1.5)
+    ExecOthersButton.Text = "Execute On Others"
+    isExecuting = false
 end)
