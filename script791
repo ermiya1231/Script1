@@ -1,0 +1,270 @@
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local StarterGui = game:GetService("StarterGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- تابع درگ روان با TweenService
+local function makeDraggable(targetFrame)
+    local dragging, dragInput, dragStart, startPos
+
+    targetFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = targetFrame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    targetFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local newPos = UDim2.new(
+                startPos.X.Scale, 
+                startPos.X.Offset + delta.X, 
+                startPos.Y.Scale, 
+                startPos.Y.Offset + delta.Y
+            )
+            TweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+        end
+    end)
+end
+
+-- تابع اسکن و یافتن پارت‌های معلق
+local function getUnanchoredIsolatedParts()
+    local isolatedParts = {}
+    
+    for _, desc in ipairs(Workspace:GetDescendants()) do
+        if desc:IsA("BasePart") and not desc.Anchored then
+            local model = desc:FindFirstAncestorOfClass("Model")
+            local isCharacterOrNPC = false
+            
+            if model then
+                if Players:GetPlayerFromCharacter(model) then
+                    isCharacterOrNPC = true
+                elseif model:FindFirstChildOfClass("Humanoid") then
+                    isCharacterOrNPC = true
+                end
+            end
+            
+            if not isCharacterOrNPC then
+                local hasAnchoredConnection = false
+                local connectedParts = desc:GetConnectedParts(true)
+                
+                for _, connPart in ipairs(connectedParts) do
+                    if connPart.Anchored then
+                        hasAnchoredConnection = true
+                        break
+                    end
+                end
+                
+                if not hasAnchoredConnection and model then
+                    for _, otherDesc in ipairs(model:GetDescendants()) do
+                        if otherDesc:IsA("BasePart") and otherDesc.Anchored then
+                            hasAnchoredConnection = true
+                            break
+                        end
+                    end
+                end
+                
+                if not hasAnchoredConnection then
+                    table.insert(isolatedParts, desc)
+                end
+            end
+        end
+    end
+    
+    return isolatedParts
+end
+
+-- اجرا و دریافت لیست پارت‌ها
+local foundParts = getUnanchoredIsolatedParts()
+
+-- اگر چیزی یافت نشد
+if #foundParts == 0 then
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "Unanchored Vuln❌",
+            Text = "Unanchored Not Detected❌",
+            Duration = 4,
+        })
+    end)
+    return
+end
+
+-- اگر تعداد پارت‌های معلق بیشتر از 20 عدد بود
+if #foundParts > 20 then
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "Unanchored Vuln✅",
+            Text = "Huge Value Of Unanchored Parts Detected!",
+            Duration = 6,
+        })
+    end)
+    return
+end
+
+-- پاکسازی GUI قبلی
+if PlayerGui:FindFirstChild("IsolatedPartsGUI") then
+    PlayerGui.IsolatedPartsGUI:Destroy()
+end
+
+-- ساخت ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "IsolatedPartsGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = PlayerGui
+
+-- فریم اصلی پنل
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 270, 0, 320)
+mainFrame.Position = UDim2.new(0.5, -135, 0.5, -160)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = mainFrame
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(0, 255, 200)
+stroke.Thickness = 1.5
+stroke.Parent = mainFrame
+
+-- فعال‌سازی درگ پنل
+makeDraggable(mainFrame)
+
+-- عنوان پنل
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -65, 0, 35)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Isolated (" .. #foundParts .. ")"
+titleLabel.TextColor3 = Color3.fromRGB(0, 255, 200)
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.Code
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = mainFrame
+
+-- فریم اسکرول
+local scrollingFrame = Instance.new("ScrollingFrame")
+scrollingFrame.Size = UDim2.new(1, -16, 1, -45)
+scrollingFrame.Position = UDim2.new(0, 8, 0, 38)
+scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scrollingFrame.ScrollBarThickness = 4
+scrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 200)
+scrollingFrame.Parent = mainFrame
+
+local uiList = Instance.new("UIListLayout")
+uiList.Padding = UDim.new(0, 4)
+uiList.SortOrder = Enum.SortOrder.LayoutOrder
+uiList.Parent = scrollingFrame
+
+-- دکمه Collapse / Expand (کوچک و بزرگ کردن پنل)
+local collapseBtn = Instance.new("TextButton")
+collapseBtn.Size = UDim2.new(0, 25, 0, 25)
+collapseBtn.Position = UDim2.new(1, -60, 0, 5)
+collapseBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+collapseBtn.TextColor3 = Color3.fromRGB(0, 255, 200)
+collapseBtn.Text = "-"
+collapseBtn.TextSize = 14
+collapseBtn.Font = Enum.Font.Code
+
+local collapseCorner = Instance.new("UICorner")
+collapseCorner.CornerRadius = UDim.new(0, 5)
+collapseCorner.Parent = collapseBtn
+collapseBtn.Parent = mainFrame
+
+local isCollapsed = false
+collapseBtn.MouseButton1Click:Connect(function()
+    isCollapsed = not isCollapsed
+    if isCollapsed then
+        collapseBtn.Text = "+"
+        scrollingFrame.Visible = false
+        TweenService:Create(mainFrame, TweenInfo.new(0.2), {Size = UDim2.new(0, 270, 0, 35)}):Play()
+    else
+        collapseBtn.Text = "-"
+        scrollingFrame.Visible = true
+        TweenService:Create(mainFrame, TweenInfo.new(0.2), {Size = UDim2.new(0, 270, 0, 320)}):Play()
+    end
+end)
+
+-- دکمه بستن
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 25, 0, 25)
+closeBtn.Position = UDim2.new(1, -30, 0, 5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+closeBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+closeBtn.Text = "X"
+closeBtn.TextSize = 12
+closeBtn.Font = Enum.Font.Code
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 5)
+closeCorner.Parent = closeBtn
+
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy() -- بستن پنل و پاک شدن خودکار Highlight
+end)
+closeBtn.Parent = mainFrame
+
+local currentHighlight = nil
+
+-- ساخت دکمه‌ها برای هر پارت
+for _, part in ipairs(foundParts) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -4, 0, 30)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    btn.TextColor3 = Color3.fromRGB(230, 230, 230)
+    btn.TextSize = 12
+    btn.Font = Enum.Font.Code
+    btn.Text = "  " .. part.Name
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 5)
+    btnCorner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(function()
+        local character = LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            if part and part.Parent then
+                character.HumanoidRootPart.CFrame = part.CFrame + Vector3.new(0, 4, 0)
+            end
+        end
+        
+        if currentHighlight then
+            currentHighlight:Destroy()
+        end
+        
+        if part and part.Parent then
+            local hl = Instance.new("Highlight")
+            hl.Adornee = part
+            hl.FillColor = Color3.fromRGB(0, 255, 200)
+            hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+            hl.Parent = screenGui
+            currentHighlight = hl
+        end
+    end)
+    
+    btn.Parent = scrollingFrame
+end
