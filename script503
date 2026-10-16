@@ -370,17 +370,6 @@ RemoteTitleLbl.BackgroundTransparency = 1
 RemoteTitleLbl.TextXAlignment = Enum.TextXAlignment.Left
 RemoteTitleLbl.Parent = RemoteHeader
 
-local CollapseRemoteBtn = Instance.new("TextButton")
-CollapseRemoteBtn.Size = UDim2.new(0, 26, 0, 22)
-CollapseRemoteBtn.Position = UDim2.new(1, -30, 0, 3)
-CollapseRemoteBtn.Text = "-"
-CollapseRemoteBtn.BackgroundColor3 = Color3.fromRGB(60,60,70)
-CollapseRemoteBtn.TextColor3 = Color3.fromRGB(255,255,255)
-CollapseRemoteBtn.Font = Enum.Font.SourceSansBold
-CollapseRemoteBtn.TextSize = 14
-CollapseRemoteBtn.Parent = RemoteHeader
-local crc = Instance.new("UICorner"); crc.CornerRadius = UDim.new(0,4); crc.Parent = CollapseRemoteBtn
-
 local RemoteToolbar = Instance.new("Frame")
 RemoteToolbar.Size = UDim2.new(1, -6, 0, 28)
 RemoteToolbar.Position = UDim2.new(0, 3, 0, 30)
@@ -636,31 +625,6 @@ end)
 
 refreshRemotes()
 
--- Collapse Remotes (also collapses MainFrame height)
-local remoteCollapsed = false
-local function setRemoteCollapsed(state)
-    remoteCollapsed = state
-    if state then
-        RemoteList.Visible = false
-        RemoteToolbar.Visible = false
-        RemoteSection.Size = UDim2.new(1, -10, 0, 28)
-        CollapseRemoteBtn.Text = "+"
-        if not mainCollapsed then
-            MainFrame.Size = UDim2.new(0, 580, 0, 260)
-        end
-    else
-        RemoteList.Visible = true
-        RemoteToolbar.Visible = true
-        RemoteSection.Size = UDim2.new(1, -10, 1, -240)
-        CollapseRemoteBtn.Text = "-"
-        if not mainCollapsed then
-            MainFrame.Size = UDim2.new(0, 580, 0, 520)
-        end
-    end
-end
-CollapseRemoteBtn.MouseButton1Click:Connect(function()
-    setRemoteCollapsed(not remoteCollapsed)
-end)
 
 -- Collapse Main
 local mainCollapsed = false
