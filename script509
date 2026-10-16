@@ -257,11 +257,6 @@ if isMobile then
     makeDraggable(toggleBtn, toggleBtn)
     toggleBtn.MouseButton1Click:Connect(showGui)
 else
-    UIS.InputBegan:Connect(function(i)
-        if i.KeyCode == Enum.KeyCode.RightShift then
-            if panel.Visible then hideGui() else showGui() end
-        end
-    end)
 end
 closeBtn.MouseButton1Click:Connect(hideGui)
 
