@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 
 local generalChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
 
-generalChannel:SendAsync(";fog inf")
+generalChannel:SendAsync(";fog 9999")
 generalChannel:SendAsync(";fogend inf")
 task.wait(0.5)
 
