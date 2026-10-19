@@ -1,0 +1,1763 @@
+local HD = game.Players.LocalPlayer.PlayerGui:FindFirstChild("HDAdminRanks")
+if HD then
+	HD:Destroy()
+end
+local msg = Instance.new("Message")
+msg.Parent = game.Workspace
+msg.Text = "This Script Remake By C00LHACK This Script Is Client Side :)"
+task.wait(5)
+msg:Destroy()
+task.wait(1)
+local G2L = {};
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"]["Name"] = [[HDAdminRanks]];
+G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+G2L["1"]["ResetOnSpawn"] = false;
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame
+G2L["2"] = Instance.new("Frame", G2L["1"]);
+G2L["2"]["BorderSizePixel"] = 0;
+G2L["2"]["BackgroundColor3"] = Color3.fromRGB(57, 57, 57);
+G2L["2"]["Size"] = UDim2.new(0, 540, 0, 367);
+G2L["2"]["Position"] = UDim2.new(0.2806, 23, 0.19213, 51);
+G2L["2"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Dragify
+G2L["3"] = Instance.new("LocalScript", G2L["2"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["3"]["Sandboxed"] = true;
+G2L["3"]["Name"] = [[Dragify]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2
+G2L["4"] = Instance.new("Frame", G2L["2"]);
+G2L["4"]["BorderSizePixel"] = 0;
+G2L["4"]["BackgroundColor3"] = Color3.fromRGB(164, 215, 117);
+G2L["4"]["Size"] = UDim2.new(0, 523, 0, 350);
+G2L["4"]["Position"] = UDim2.new(0.01507, 0, 0.02216, 0);
+G2L["4"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["4"]["Name"] = [[Frame2]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.TextLabel
+G2L["5"] = Instance.new("TextLabel", G2L["4"]);
+G2L["5"]["TextWrapped"] = true;
+G2L["5"]["BorderSizePixel"] = 0;
+G2L["5"]["TextSize"] = 14;
+G2L["5"]["TextScaled"] = true;
+G2L["5"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["5"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["5"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5"]["BackgroundTransparency"] = 0.8;
+G2L["5"]["Size"] = UDim2.new(0, 300, 0, 50);
+G2L["5"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["5"]["Text"] = [[HD Admin Ranks Giver]];
+G2L["5"]["Position"] = UDim2.new(0.22753, 0, 0, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Vip
+G2L["6"] = Instance.new("TextButton", G2L["4"]);
+G2L["6"]["TextWrapped"] = true;
+G2L["6"]["BorderSizePixel"] = 0;
+G2L["6"]["TextSize"] = 14;
+G2L["6"]["AutoButtonColor"] = false;
+G2L["6"]["TextScaled"] = true;
+G2L["6"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["6"]["BackgroundColor3"] = Color3.fromRGB(145, 223, 255);
+G2L["6"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["6"]["Size"] = UDim2.new(0, 200, 0, 50);
+G2L["6"]["ClipsDescendants"] = true;
+G2L["6"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["6"]["Text"] = [[HD Vip]];
+G2L["6"]["Name"] = [[HD Vip]];
+G2L["6"]["Position"] = UDim2.new(0.04398, 0, 0.20571, 0);
+G2L["6"].MouseButton1Click:Connect(function()
+local RequestCommand = game.ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+
+RequestCommand:InvokeServer(";Notice me You has been PermRanked To Vip!")
+    
+end)
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Vip.LocalScript
+G2L["7"] = Instance.new("LocalScript", G2L["6"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["7"]["Sandboxed"] = true;
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Vip.RippleEffect
+G2L["8"] = Instance.new("LocalScript", G2L["6"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["8"]["Sandboxed"] = true;
+G2L["8"]["Name"] = [[RippleEffect]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Vip.RippleEffect.Circle
+G2L["9"] = Instance.new("ImageLabel", G2L["8"]);
+G2L["9"]["ZIndex"] = 10;
+G2L["9"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["9"]["ImageTransparency"] = 0.5;
+G2L["9"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+G2L["9"]["Image"] = [[rbxassetid://266543268]];
+G2L["9"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["9"]["BackgroundTransparency"] = 1;
+G2L["9"]["Name"] = [[Circle]];
+G2L["9"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Mod
+G2L["a"] = Instance.new("TextButton", G2L["4"]);
+G2L["a"]["TextWrapped"] = true;
+G2L["a"]["BorderSizePixel"] = 0;
+G2L["a"]["TextSize"] = 14;
+G2L["a"]["AutoButtonColor"] = false;
+G2L["a"]["TextScaled"] = true;
+G2L["a"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["a"]["BackgroundColor3"] = Color3.fromRGB(145, 223, 255);
+G2L["a"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["a"]["Size"] = UDim2.new(0, 200, 0, 50);
+G2L["a"]["ClipsDescendants"] = true;
+G2L["a"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["a"]["Text"] = [[HD Mod]];
+G2L["a"]["Name"] = [[HD Mod]];
+G2L["a"]["Position"] = UDim2.new(0.04398, 0, 0.42857, 0);
+G2L["a"].MouseButton1Click:Connect(function()
+local RequestCommand = game.ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+
+RequestCommand:InvokeServer(";Notice me You has been PermRanked To Mod!")
+    
+end)
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Mod.LocalScript
+G2L["b"] = Instance.new("LocalScript", G2L["a"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["b"]["Sandboxed"] = true;
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Mod.RippleEffect
+G2L["c"] = Instance.new("LocalScript", G2L["a"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["c"]["Sandboxed"] = true;
+G2L["c"]["Name"] = [[RippleEffect]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Mod.RippleEffect.Circle
+G2L["d"] = Instance.new("ImageLabel", G2L["c"]);
+G2L["d"]["ZIndex"] = 10;
+G2L["d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["d"]["ImageTransparency"] = 0.5;
+G2L["d"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["d"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+G2L["d"]["Image"] = [[rbxassetid://266543268]];
+G2L["d"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["d"]["BackgroundTransparency"] = 1;
+G2L["d"]["Name"] = [[Circle]];
+G2L["d"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin
+G2L["e"] = Instance.new("TextButton", G2L["4"]);
+G2L["e"]["TextWrapped"] = true;
+G2L["e"]["BorderSizePixel"] = 0;
+G2L["e"]["TextSize"] = 14;
+G2L["e"]["AutoButtonColor"] = false;
+G2L["e"]["TextScaled"] = true;
+G2L["e"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["e"]["BackgroundColor3"] = Color3.fromRGB(145, 223, 255);
+G2L["e"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["e"]["Size"] = UDim2.new(0, 200, 0, 50);
+G2L["e"]["ClipsDescendants"] = true;
+G2L["e"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["e"]["Text"] = [[HD Admin]];
+G2L["e"]["Name"] = [[HD Admin]];
+G2L["e"]["Position"] = UDim2.new(0.04398, 0, 0.64857, 0);
+G2L["e"].MouseButton1Click:Connect(function()
+local RequestCommand = game.ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+
+RequestCommand:InvokeServer(";Notice me You has been PermRanked To Admin!")
+    
+end)
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin.LocalScript
+G2L["f"] = Instance.new("LocalScript", G2L["e"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["f"]["Sandboxed"] = true;
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin.RippleEffect
+G2L["10"] = Instance.new("LocalScript", G2L["e"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["10"]["Sandboxed"] = true;
+G2L["10"]["Name"] = [[RippleEffect]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin.RippleEffect.Circle
+G2L["11"] = Instance.new("ImageLabel", G2L["10"]);
+G2L["11"]["ZIndex"] = 10;
+G2L["11"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["11"]["ImageTransparency"] = 0.5;
+G2L["11"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["11"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+G2L["11"]["Image"] = [[rbxassetid://266543268]];
+G2L["11"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["11"]["BackgroundTransparency"] = 1;
+G2L["11"]["Name"] = [[Circle]];
+G2L["11"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD HeadAdmin
+G2L["12"] = Instance.new("TextButton", G2L["4"]);
+G2L["12"]["TextWrapped"] = true;
+G2L["12"]["BorderSizePixel"] = 0;
+G2L["12"]["TextSize"] = 14;
+G2L["12"]["AutoButtonColor"] = false;
+G2L["12"]["TextScaled"] = true;
+G2L["12"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["12"]["BackgroundColor3"] = Color3.fromRGB(145, 223, 255);
+G2L["12"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["12"]["Size"] = UDim2.new(0, 200, 0, 50);
+G2L["12"]["ClipsDescendants"] = true;
+G2L["12"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["12"]["Text"] = [[HD HeadAdmin]];
+G2L["12"]["Name"] = [[HD HeadAdmin]];
+G2L["12"]["Position"] = UDim2.new(0.51434, 0, 0.20571, 0);
+G2L["12"].MouseButton1Click:Connect(function()
+local RequestCommand = game.ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+
+RequestCommand:InvokeServer(";Notice me You has been PermRanked To HeadAdmin!")
+    
+end)
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD HeadAdmin.LocalScript
+G2L["13"] = Instance.new("LocalScript", G2L["12"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["13"]["Sandboxed"] = true;
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD HeadAdmin.RippleEffect
+G2L["14"] = Instance.new("LocalScript", G2L["12"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["14"]["Sandboxed"] = true;
+G2L["14"]["Name"] = [[RippleEffect]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD HeadAdmin.RippleEffect.Circle
+G2L["15"] = Instance.new("ImageLabel", G2L["14"]);
+G2L["15"]["ZIndex"] = 10;
+G2L["15"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["15"]["ImageTransparency"] = 0.5;
+G2L["15"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["15"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+G2L["15"]["Image"] = [[rbxassetid://266543268]];
+G2L["15"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["15"]["BackgroundTransparency"] = 1;
+G2L["15"]["Name"] = [[Circle]];
+G2L["15"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Owner
+G2L["16"] = Instance.new("TextButton", G2L["4"]);
+G2L["16"]["TextWrapped"] = true;
+G2L["16"]["BorderSizePixel"] = 0;
+G2L["16"]["TextSize"] = 14;
+G2L["16"]["AutoButtonColor"] = false;
+G2L["16"]["TextScaled"] = true;
+G2L["16"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["16"]["BackgroundColor3"] = Color3.fromRGB(145, 223, 255);
+G2L["16"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["16"]["Size"] = UDim2.new(0, 200, 0, 50);
+G2L["16"]["ClipsDescendants"] = true;
+G2L["16"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["16"]["Text"] = [[HD Owner]];
+G2L["16"]["Name"] = [[HD Owner]];
+G2L["16"]["Position"] = UDim2.new(0.51434, 0, 0.42857, 0);
+G2L["16"].MouseButton1Click:Connect(function()
+local RequestCommand = game.ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+
+RequestCommand:InvokeServer(";Notice me You has been PermRanked To Owner!")
+    
+end)
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Owner.LocalScript
+G2L["17"] = Instance.new("LocalScript", G2L["16"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["17"]["Sandboxed"] = true;
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Owner.RippleEffect
+G2L["18"] = Instance.new("LocalScript", G2L["16"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["18"]["Sandboxed"] = true;
+G2L["18"]["Name"] = [[RippleEffect]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Owner.RippleEffect.Circle
+G2L["19"] = Instance.new("ImageLabel", G2L["18"]);
+G2L["19"]["ZIndex"] = 10;
+G2L["19"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["19"]["ImageTransparency"] = 0.5;
+G2L["19"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["19"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+G2L["19"]["Image"] = [[rbxassetid://266543268]];
+G2L["19"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["19"]["BackgroundTransparency"] = 1;
+G2L["19"]["Name"] = [[Circle]];
+G2L["19"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Above Owner
+G2L["1a"] = Instance.new("TextButton", G2L["4"]);
+G2L["1a"]["TextWrapped"] = true;
+G2L["1a"]["BorderSizePixel"] = 0;
+G2L["1a"]["TextSize"] = 14;
+G2L["1a"]["AutoButtonColor"] = false;
+G2L["1a"]["TextScaled"] = true;
+G2L["1a"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1a"]["BackgroundColor3"] = Color3.fromRGB(145, 223, 255);
+G2L["1a"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["1a"]["Size"] = UDim2.new(0, 200, 0, 50);
+G2L["1a"]["ClipsDescendants"] = true;
+G2L["1a"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["1a"]["Text"] = [[HD Above Owner]];
+G2L["1a"]["Name"] = [[HD Above Owner]];
+G2L["1a"]["Position"] = UDim2.new(0.51434, 0, 0.64857, 0);
+G2L["1a"].MouseButton1Click:Connect(function()
+local RequestCommand = game.ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+
+RequestCommand:InvokeServer(";Notice me You has been PermRanked To !")
+    
+end)
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Above Owner.LocalScript
+G2L["1b"] = Instance.new("LocalScript", G2L["1a"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["1b"]["Sandboxed"] = true;
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Above Owner.RippleEffect
+G2L["1c"] = Instance.new("LocalScript", G2L["1a"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["1c"]["Sandboxed"] = true;
+G2L["1c"]["Name"] = [[RippleEffect]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Above Owner.RippleEffect.Circle
+G2L["1d"] = Instance.new("ImageLabel", G2L["1c"]);
+G2L["1d"]["ZIndex"] = 10;
+G2L["1d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1d"]["ImageTransparency"] = 0.5;
+G2L["1d"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1d"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+G2L["1d"]["Image"] = [[rbxassetid://266543268]];
+G2L["1d"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["1d"]["BackgroundTransparency"] = 1;
+G2L["1d"]["Name"] = [[Circle]];
+G2L["1d"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.Close
+G2L["1e"] = Instance.new("TextButton", G2L["4"]);
+G2L["1e"]["TextWrapped"] = true;
+G2L["1e"]["BorderSizePixel"] = 0;
+G2L["1e"]["TextSize"] = 14;
+G2L["1e"]["AutoButtonColor"] = false;
+G2L["1e"]["TextScaled"] = true;
+G2L["1e"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1e"]["BackgroundColor3"] = Color3.fromRGB(255, 50, 50);
+G2L["1e"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["1e"]["Size"] = UDim2.new(0, 78, 0, 50);
+G2L["1e"]["ClipsDescendants"] = true;
+G2L["1e"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["1e"]["Text"] = [[X]];
+G2L["1e"]["Name"] = [[Close]];
+G2L["1e"]["Position"] = UDim2.new(0.85086, 0, 0, 0);
+G2L["1e"].MouseButton1Click:Connect(function()
+	task.wait(0.15)
+	G2L["2"]:Destroy()
+end)
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.Close.RippleEffect
+G2L["1f"] = Instance.new("LocalScript", G2L["1e"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["1f"]["Sandboxed"] = true;
+G2L["1f"]["Name"] = [[RippleEffect]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.Close.RippleEffect.Circle
+G2L["20"] = Instance.new("ImageLabel", G2L["1f"]);
+G2L["20"]["ZIndex"] = 10;
+G2L["20"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["20"]["ImageTransparency"] = 0.5;
+G2L["20"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["20"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+G2L["20"]["Image"] = [[rbxassetid://266543268]];
+G2L["20"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["20"]["BackgroundTransparency"] = 1;
+G2L["20"]["Name"] = [[Circle]];
+G2L["20"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin Loader
+G2L["21"] = Instance.new("TextButton", G2L["4"]);
+G2L["21"]["TextWrapped"] = true;
+G2L["21"]["BorderSizePixel"] = 0;
+G2L["21"]["TextSize"] = 14;
+G2L["21"]["AutoButtonColor"] = false;
+G2L["21"]["TextScaled"] = true;
+G2L["21"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["21"]["BackgroundColor3"] = Color3.fromRGB(145, 223, 255);
+G2L["21"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["21"]["Size"] = UDim2.new(0, 301, 0, 50);
+G2L["21"]["ClipsDescendants"] = true;
+G2L["21"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["21"]["Text"] = [[HD Admin Loader (Only If HD Admin is not in the game)]];
+G2L["21"]["Name"] = [[HD Admin Loader]];
+G2L["21"]["Position"] = UDim2.new(0.21224, 0, 0.82857, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin Loader.LocalScript
+G2L["22"] = Instance.new("LocalScript", G2L["21"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["22"]["Sandboxed"] = true;
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin Loader.RippleEffect
+G2L["23"] = Instance.new("LocalScript", G2L["21"]);
+-- [ERROR] cannot convert Capabilities, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["23"]["Sandboxed"] = true;
+G2L["23"]["Name"] = [[RippleEffect]];
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin Loader.RippleEffect.Circle
+G2L["24"] = Instance.new("ImageLabel", G2L["23"]);
+G2L["24"]["ZIndex"] = 10;
+G2L["24"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["24"]["ImageTransparency"] = 0.5;
+G2L["24"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["24"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+G2L["24"]["Image"] = [[rbxassetid://266543268]];
+G2L["24"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["24"]["BackgroundTransparency"] = 1;
+G2L["24"]["Name"] = [[Circle]];
+G2L["24"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Dragify
+local function C_3()
+local script = G2L["3"];
+	local UIS = game:GetService("UserInputService")
+	function dragify(Frame)
+		dragToggle = nil
+		local dragSpeed = 0.33
+		dragInput = nil
+		dragStart = nil
+		local dragPos = nil
+		function updateInput(input)
+			local Delta = input.Position - dragStart
+			local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+			game:GetService("TweenService"):Create(Frame, TweenInfo.new(0.25), {Position = Position}):Play()
+		end
+		Frame.InputBegan:Connect(function(input)
+			if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UIS:GetFocusedTextBox() == nil then
+				dragToggle = true
+				dragStart = input.Position
+				startPos = Frame.Position
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						dragToggle = false
+					end
+				end)
+			end
+		end)
+		Frame.InputChanged:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+				dragInput = input
+			end
+		end)
+		game:GetService("UserInputService").InputChanged:Connect(function(input)
+			if input == dragInput and dragToggle then
+				updateInput(input)
+			end
+		end)
+	end
+	
+	dragify(script.Parent)
+end;
+task.spawn(C_3);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Vip.LocalScript
+local function C_7()
+local script = G2L["7"];
+	local Remote = script.Parent.RemoteEvent
+	
+	script.Parent.MouseButton1Click:Connect(function()
+		Remote:FireServer()
+	end)
+end;
+task.spawn(C_7);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Vip.RippleEffect
+local function C_8()
+local script = G2L["8"];
+	-- NOTE: Make sure the ZIndex of the button used is higher than other GUI parts behind
+	--       it, or this will not work correctly!
+	
+	
+	
+	
+	local RippleColor        = Color3.fromRGB(0, 0, 0) -- RGB Color of the ripple effect, you can change it.
+	local RippleTransparency = 0.61 ---------------------------- Max is 1, Min is 0
+	local PixelSize          = 2000 --------------------------- The Max size of the ripple in pixels
+	local TimeLength         = 1.333 ---------------------------- How long the ripple animation is
+	local FadeLength         = 0.6 ---------------------------- How long it takes for the ripple to fade out
+	
+	
+	
+	-- Do NOT change anything in the script if you want it to work, unless you know how to script...
+	
+	
+	
+	-- Script Below
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	local frame = script.Parent
+	local rgb = Color3.fromRGB
+	local ud2 = UDim2.new
+	repeat
+		wait()
+	until game.Players.LocalPlayer
+	local plr = game.Players.LocalPlayer
+	local mouse = plr:GetMouse()
+	
+	frame.ClipsDescendants = true
+	frame.AutoButtonColor = false
+	
+	
+	function tweenInRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				TimeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				Size = ud2(0, PixelSize, 0, PixelSize);
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+		end)
+	end
+	
+	function fadeOutRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				FadeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				ImageTransparency = 1;
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+			wait(FadeLength + 0.1)
+			ripple:Destroy()
+		end)
+	end
+	
+	frame.MouseButton1Down:Connect(function()
+		local done = false
+		local ripple = script.Circle:Clone()
+		ripple.Parent = frame
+		ripple.ZIndex = frame.ZIndex + 1
+		ripple.ImageColor3 = RippleColor
+		ripple.ImageTransparency = RippleTransparency
+		tweenInRipple(ripple)
+		frame.MouseButton1Up:Connect(function()
+			if done == false then
+				done = true
+				fadeOutRipple(ripple)
+			end
+		end)
+		wait(4);
+		done = true;
+		fadeOutRipple(ripple) -- if it doesnt detect that it was unselected
+	end)
+end;
+task.spawn(C_8);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Mod.LocalScript
+local function C_b()
+local script = G2L["b"];
+	local Remote = script.Parent.RemoteEvent
+	
+	script.Parent.MouseButton1Click:Connect(function()
+		Remote:FireServer()
+	end)
+end;
+task.spawn(C_b);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Mod.RippleEffect
+local function C_c()
+local script = G2L["c"];
+	-- NOTE: Make sure the ZIndex of the button used is higher than other GUI parts behind
+	--       it, or this will not work correctly!
+	
+	
+	
+	
+	local RippleColor        = Color3.fromRGB(0, 0, 0) -- RGB Color of the ripple effect, you can change it.
+	local RippleTransparency = 0.61 ---------------------------- Max is 1, Min is 0
+	local PixelSize          = 2000 --------------------------- The Max size of the ripple in pixels
+	local TimeLength         = 1.333 ---------------------------- How long the ripple animation is
+	local FadeLength         = 0.6 ---------------------------- How long it takes for the ripple to fade out
+	
+	
+	
+	-- Do NOT change anything in the script if you want it to work, unless you know how to script...
+	
+	
+	
+	-- Script Below
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	local frame = script.Parent
+	local rgb = Color3.fromRGB
+	local ud2 = UDim2.new
+	repeat
+		wait()
+	until game.Players.LocalPlayer
+	local plr = game.Players.LocalPlayer
+	local mouse = plr:GetMouse()
+	
+	frame.ClipsDescendants = true
+	frame.AutoButtonColor = false
+	
+	
+	function tweenInRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				TimeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				Size = ud2(0, PixelSize, 0, PixelSize);
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+		end)
+	end
+	
+	function fadeOutRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				FadeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				ImageTransparency = 1;
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+			wait(FadeLength + 0.1)
+			ripple:Destroy()
+		end)
+	end
+	
+	frame.MouseButton1Down:Connect(function()
+		local done = false
+		local ripple = script.Circle:Clone()
+		ripple.Parent = frame
+		ripple.ZIndex = frame.ZIndex + 1
+		ripple.ImageColor3 = RippleColor
+		ripple.ImageTransparency = RippleTransparency
+		tweenInRipple(ripple)
+		frame.MouseButton1Up:Connect(function()
+			if done == false then
+				done = true
+				fadeOutRipple(ripple)
+			end
+		end)
+		wait(4);
+		done = true;
+		fadeOutRipple(ripple) -- if it doesnt detect that it was unselected
+	end)
+end;
+task.spawn(C_c);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin.LocalScript
+local function C_f()
+local script = G2L["f"];
+	local Remote = script.Parent.RemoteEvent
+	
+	script.Parent.MouseButton1Click:Connect(function()
+		Remote:FireServer()
+	end)
+end;
+task.spawn(C_f);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin.RippleEffect
+local function C_10()
+local script = G2L["10"];
+	-- NOTE: Make sure the ZIndex of the button used is higher than other GUI parts behind
+	--       it, or this will not work correctly!
+	
+	
+	
+	
+	local RippleColor        = Color3.fromRGB(0, 0, 0) -- RGB Color of the ripple effect, you can change it.
+	local RippleTransparency = 0.61 ---------------------------- Max is 1, Min is 0
+	local PixelSize          = 2000 --------------------------- The Max size of the ripple in pixels
+	local TimeLength         = 1.333 ---------------------------- How long the ripple animation is
+	local FadeLength         = 0.6 ---------------------------- How long it takes for the ripple to fade out
+	
+	
+	
+	-- Do NOT change anything in the script if you want it to work, unless you know how to script...
+	
+	
+	
+	-- Script Below
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	local frame = script.Parent
+	local rgb = Color3.fromRGB
+	local ud2 = UDim2.new
+	repeat
+		wait()
+	until game.Players.LocalPlayer
+	local plr = game.Players.LocalPlayer
+	local mouse = plr:GetMouse()
+	
+	frame.ClipsDescendants = true
+	frame.AutoButtonColor = false
+	
+	
+	function tweenInRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				TimeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				Size = ud2(0, PixelSize, 0, PixelSize);
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+		end)
+	end
+	
+	function fadeOutRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				FadeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				ImageTransparency = 1;
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+			wait(FadeLength + 0.1)
+			ripple:Destroy()
+		end)
+	end
+	
+	frame.MouseButton1Down:Connect(function()
+		local done = false
+		local ripple = script.Circle:Clone()
+		ripple.Parent = frame
+		ripple.ZIndex = frame.ZIndex + 1
+		ripple.ImageColor3 = RippleColor
+		ripple.ImageTransparency = RippleTransparency
+		tweenInRipple(ripple)
+		frame.MouseButton1Up:Connect(function()
+			if done == false then
+				done = true
+				fadeOutRipple(ripple)
+			end
+		end)
+		wait(4);
+		done = true;
+		fadeOutRipple(ripple) -- if it doesnt detect that it was unselected
+	end)
+end;
+task.spawn(C_10);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD HeadAdmin.LocalScript
+local function C_13()
+local script = G2L["13"];
+	local Remote = script.Parent.RemoteEvent
+	
+	script.Parent.MouseButton1Click:Connect(function()
+		Remote:FireServer()
+	end)
+end;
+task.spawn(C_13);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD HeadAdmin.RippleEffect
+local function C_14()
+local script = G2L["14"];
+	-- NOTE: Make sure the ZIndex of the button used is higher than other GUI parts behind
+	--       it, or this will not work correctly!
+	
+	
+	
+	
+	local RippleColor        = Color3.fromRGB(0, 0, 0) -- RGB Color of the ripple effect, you can change it.
+	local RippleTransparency = 0.61 ---------------------------- Max is 1, Min is 0
+	local PixelSize          = 2000 --------------------------- The Max size of the ripple in pixels
+	local TimeLength         = 1.333 ---------------------------- How long the ripple animation is
+	local FadeLength         = 0.6 ---------------------------- How long it takes for the ripple to fade out
+	
+	
+	
+	-- Do NOT change anything in the script if you want it to work, unless you know how to script...
+	
+	
+	
+	-- Script Below
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	local frame = script.Parent
+	local rgb = Color3.fromRGB
+	local ud2 = UDim2.new
+	repeat
+		wait()
+	until game.Players.LocalPlayer
+	local plr = game.Players.LocalPlayer
+	local mouse = plr:GetMouse()
+	
+	frame.ClipsDescendants = true
+	frame.AutoButtonColor = false
+	
+	
+	function tweenInRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				TimeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				Size = ud2(0, PixelSize, 0, PixelSize);
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+		end)
+	end
+	
+	function fadeOutRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				FadeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				ImageTransparency = 1;
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+			wait(FadeLength + 0.1)
+			ripple:Destroy()
+		end)
+	end
+	
+	frame.MouseButton1Down:Connect(function()
+		local done = false
+		local ripple = script.Circle:Clone()
+		ripple.Parent = frame
+		ripple.ZIndex = frame.ZIndex + 1
+		ripple.ImageColor3 = RippleColor
+		ripple.ImageTransparency = RippleTransparency
+		tweenInRipple(ripple)
+		frame.MouseButton1Up:Connect(function()
+			if done == false then
+				done = true
+				fadeOutRipple(ripple)
+			end
+		end)
+		wait(4);
+		done = true;
+		fadeOutRipple(ripple) -- if it doesnt detect that it was unselected
+	end)
+end;
+task.spawn(C_14);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Owner.LocalScript
+local function C_17()
+local script = G2L["17"];
+	local Remote = script.Parent.RemoteEvent
+	
+	script.Parent.MouseButton1Click:Connect(function()
+		Remote:FireServer()
+	end)
+end;
+task.spawn(C_17);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Owner.RippleEffect
+local function C_18()
+local script = G2L["18"];
+	-- NOTE: Make sure the ZIndex of the button used is higher than other GUI parts behind
+	--       it, or this will not work correctly!
+	
+	
+	
+	
+	local RippleColor        = Color3.fromRGB(0, 0, 0) -- RGB Color of the ripple effect, you can change it.
+	local RippleTransparency = 0.61 ---------------------------- Max is 1, Min is 0
+	local PixelSize          = 2000 --------------------------- The Max size of the ripple in pixels
+	local TimeLength         = 1.333 ---------------------------- How long the ripple animation is
+	local FadeLength         = 0.6 ---------------------------- How long it takes for the ripple to fade out
+	
+	
+	
+	-- Do NOT change anything in the script if you want it to work, unless you know how to script...
+	
+	
+	
+	-- Script Below
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	local frame = script.Parent
+	local rgb = Color3.fromRGB
+	local ud2 = UDim2.new
+	repeat
+		wait()
+	until game.Players.LocalPlayer
+	local plr = game.Players.LocalPlayer
+	local mouse = plr:GetMouse()
+	
+	frame.ClipsDescendants = true
+	frame.AutoButtonColor = false
+	
+	
+	function tweenInRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				TimeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				Size = ud2(0, PixelSize, 0, PixelSize);
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+		end)
+	end
+	
+	function fadeOutRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				FadeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				ImageTransparency = 1;
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+			wait(FadeLength + 0.1)
+			ripple:Destroy()
+		end)
+	end
+	
+	frame.MouseButton1Down:Connect(function()
+		local done = false
+		local ripple = script.Circle:Clone()
+		ripple.Parent = frame
+		ripple.ZIndex = frame.ZIndex + 1
+		ripple.ImageColor3 = RippleColor
+		ripple.ImageTransparency = RippleTransparency
+		tweenInRipple(ripple)
+		frame.MouseButton1Up:Connect(function()
+			if done == false then
+				done = true
+				fadeOutRipple(ripple)
+			end
+		end)
+		wait(4);
+		done = true;
+		fadeOutRipple(ripple) -- if it doesnt detect that it was unselected
+	end)
+end;
+task.spawn(C_18);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Above Owner.LocalScript
+local function C_1b()
+local script = G2L["1b"];
+	local Remote = script.Parent.RemoteEvent
+	
+	script.Parent.MouseButton1Click:Connect(function()
+		Remote:FireServer()
+	end)
+end;
+task.spawn(C_1b);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Above Owner.RippleEffect
+local function C_1c()
+local script = G2L["1c"];
+	-- NOTE: Make sure the ZIndex of the button used is higher than other GUI parts behind
+	--       it, or this will not work correctly!
+	
+	
+	
+	
+	local RippleColor        = Color3.fromRGB(0, 0, 0) -- RGB Color of the ripple effect, you can change it.
+	local RippleTransparency = 0.61 ---------------------------- Max is 1, Min is 0
+	local PixelSize          = 2000 --------------------------- The Max size of the ripple in pixels
+	local TimeLength         = 1.333 ---------------------------- How long the ripple animation is
+	local FadeLength         = 0.6 ---------------------------- How long it takes for the ripple to fade out
+	
+	
+	
+	-- Do NOT change anything in the script if you want it to work, unless you know how to script...
+	
+	
+	
+	-- Script Below
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	local frame = script.Parent
+	local rgb = Color3.fromRGB
+	local ud2 = UDim2.new
+	repeat
+		wait()
+	until game.Players.LocalPlayer
+	local plr = game.Players.LocalPlayer
+	local mouse = plr:GetMouse()
+	
+	frame.ClipsDescendants = true
+	frame.AutoButtonColor = false
+	
+	
+	function tweenInRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				TimeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				Size = ud2(0, PixelSize, 0, PixelSize);
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+		end)
+	end
+	
+	function fadeOutRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				FadeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				ImageTransparency = 1;
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+			wait(FadeLength + 0.1)
+			ripple:Destroy()
+		end)
+	end
+	
+	frame.MouseButton1Down:Connect(function()
+		local done = false
+		local ripple = script.Circle:Clone()
+		ripple.Parent = frame
+		ripple.ZIndex = frame.ZIndex + 1
+		ripple.ImageColor3 = RippleColor
+		ripple.ImageTransparency = RippleTransparency
+		tweenInRipple(ripple)
+		frame.MouseButton1Up:Connect(function()
+			if done == false then
+				done = true
+				fadeOutRipple(ripple)
+			end
+		end)
+		wait(4);
+		done = true;
+		fadeOutRipple(ripple) -- if it doesnt detect that it was unselected
+	end)
+end;
+task.spawn(C_1c);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.Close.RippleEffect
+local function C_1f()
+local script = G2L["1f"];
+	-- NOTE: Make sure the ZIndex of the button used is higher than other GUI parts behind
+	--       it, or this will not work correctly!
+	
+	
+	
+	
+	local RippleColor        = Color3.fromRGB(0, 0, 0) -- RGB Color of the ripple effect, you can change it.
+	local RippleTransparency = 0.61 ---------------------------- Max is 1, Min is 0
+	local PixelSize          = 2000 --------------------------- The Max size of the ripple in pixels
+	local TimeLength         = 1.333 ---------------------------- How long the ripple animation is
+	local FadeLength         = 0.6 ---------------------------- How long it takes for the ripple to fade out
+	
+	
+	
+	-- Do NOT change anything in the script if you want it to work, unless you know how to script...
+	
+	
+	
+	-- Script Below
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	local frame = script.Parent
+	local rgb = Color3.fromRGB
+	local ud2 = UDim2.new
+	repeat
+		wait()
+	until game.Players.LocalPlayer
+	local plr = game.Players.LocalPlayer
+	local mouse = plr:GetMouse()
+	
+	frame.ClipsDescendants = true
+	frame.AutoButtonColor = false
+	
+	
+	function tweenInRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				TimeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				Size = ud2(0, PixelSize, 0, PixelSize);
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+		end)
+	end
+	
+	function fadeOutRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				FadeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				ImageTransparency = 1;
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+			wait(FadeLength + 0.1)
+			ripple:Destroy()
+		end)
+	end
+	
+	frame.MouseButton1Down:Connect(function()
+		local done = false
+		local ripple = script.Circle:Clone()
+		ripple.Parent = frame
+		ripple.ZIndex = frame.ZIndex + 1
+		ripple.ImageColor3 = RippleColor
+		ripple.ImageTransparency = RippleTransparency
+		tweenInRipple(ripple)
+		frame.MouseButton1Up:Connect(function()
+			if done == false then
+				done = true
+				fadeOutRipple(ripple)
+			end
+		end)
+		wait(4);
+		done = true;
+		fadeOutRipple(ripple) -- if it doesnt detect that it was unselected
+	end)
+end;
+task.spawn(C_1f);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin Loader.LocalScript
+local function C_22()
+local script = G2L["22"];
+	local Remote = script.Parent.RemoteEvent
+	
+	script.Parent.MouseButton1Click:Connect(function()
+		Remote:FireServer()
+	end)
+end;
+task.spawn(C_22);
+-- Players.C00LH4CK1124.PlayerGui.HDAdminRanks.Frame.Frame2.HD Admin Loader.RippleEffect
+local function C_23()
+local script = G2L["23"];
+	-- NOTE: Make sure the ZIndex of the button used is higher than other GUI parts behind
+	--       it, or this will not work correctly!
+	
+	
+	
+	
+	local RippleColor        = Color3.fromRGB(0, 0, 0) -- RGB Color of the ripple effect, you can change it.
+	local RippleTransparency = 0.61 ---------------------------- Max is 1, Min is 0
+	local PixelSize          = 2000 --------------------------- The Max size of the ripple in pixels
+	local TimeLength         = 1.333 ---------------------------- How long the ripple animation is
+	local FadeLength         = 0.6 ---------------------------- How long it takes for the ripple to fade out
+	
+	
+	
+	-- Do NOT change anything in the script if you want it to work, unless you know how to script...
+	
+	
+	
+	-- Script Below
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	local frame = script.Parent
+	local rgb = Color3.fromRGB
+	local ud2 = UDim2.new
+	repeat
+		wait()
+	until game.Players.LocalPlayer
+	local plr = game.Players.LocalPlayer
+	local mouse = plr:GetMouse()
+	
+	frame.ClipsDescendants = true
+	frame.AutoButtonColor = false
+	
+	
+	function tweenInRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				TimeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				Size = ud2(0, PixelSize, 0, PixelSize);
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+		end)
+	end
+	
+	function fadeOutRipple(ripple)
+		spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local Part = ripple
+			local Info = TweenInfo.new(
+				FadeLength,
+				Enum.EasingStyle.Linear,
+				Enum.EasingDirection.InOut,
+				0,
+				false,
+				0
+			)
+			local Goals = 
+			{
+				ImageTransparency = 1;
+			}
+			local Tween = TweenService:Create(Part, Info, Goals)
+			Tween:Play()
+			wait(FadeLength + 0.1)
+			ripple:Destroy()
+		end)
+	end
+	
+	frame.MouseButton1Down:Connect(function()
+		local done = false
+		local ripple = script.Circle:Clone()
+		ripple.Parent = frame
+		ripple.ZIndex = frame.ZIndex + 1
+		ripple.ImageColor3 = RippleColor
+		ripple.ImageTransparency = RippleTransparency
+		tweenInRipple(ripple)
+		frame.MouseButton1Up:Connect(function()
+			if done == false then
+				done = true
+				fadeOutRipple(ripple)
+			end
+		end)
+		wait(4);
+		done = true;
+		fadeOutRipple(ripple) -- if it doesnt detect that it was unselected
+	end)
+end;
+task.spawn(C_23);
+
+return G2L["1"], require;
