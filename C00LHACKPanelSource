@@ -1,0 +1,4 @@
+game.StarterGui:SetCore("SendNotification", {
+    Title = "YOU DONT HAVE ACCESS FUCKING NIGGA",
+    Text = "FUCK YOU"
+})
