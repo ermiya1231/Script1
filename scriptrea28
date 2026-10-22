@@ -13,14 +13,17 @@ local Bosses = {
 
 -- تابع بررسی کاراکتر فارسی/عربی
 local function isPersianChar(code)
-    return (code >= 0x0600 and code <= 0x06FF) or 
-           (code >= 0xFB50 and code <= 0xFDFF) or 
+    return (code >= 0x0600 and code <= 0x06FF) or
+           (code >= 0xFB50 and code <= 0xFDFF) or
            (code >= 0xFE70 and code <= 0xFEFF)
 end
 
--- تابع برعکس کردن حروف فارسی و دست‌نخورده گذاشتن انگلیسی
+-- برعکس کردن حروف کلمات فارسی (انگلیسی دست‌نخورده) + چیدن کلمات از راست به چپ
+-- تا خروجی در Message (که چپ‌به‌راست نمایش می‌دهد) درست خوانده شود
+-- مثال: "سلام علی!" -> بصری: سلام علی!
 local function fixPersianText(str)
-    return (str:gsub("%S+", function(word)
+    local words = {}
+    for word in str:gmatch("%S+") do
         local chars = {}
         local hasPersian = false
         for _, code in utf8.codes(word) do
@@ -35,59 +38,24 @@ local function fixPersianText(str)
             for i = #chars, 1, -1 do
                 table.insert(rev, chars[i])
             end
-            return table.concat(rev)
+            table.insert(words, table.concat(rev))
         else
-            return word
+            table.insert(words, word)
         end
-    end))
-end
-
--- تابع اعمال افکت‌ها، صدا و بیلبورد روی رئیس (بدون نور و آتش)
-local function applyBossEffects(character)
-    if not character then return end
-    
-    local head = character:WaitForChild("Head", 5)
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart", 5)
-    if not head or not humanoidRootPart then return end
-
-    -- ۱. ساخت BillboardGui برای متن REAL C00LHACK بالای سر
-    if not head:FindFirstChild("BossBillboard") then
-        local billboard = Instance.new("BillboardGui")
-        billboard.Name = "BossBillboard"
-        billboard.Size = UDim2.new(0, 250, 0, 60)
-        billboard.StudsOffset = Vector3.new(0, 3, 0)
-        billboard.AlwaysOnTop = true
-        billboard.Parent = head
-
-        local textLabel = Instance.new("TextLabel")
-        textLabel.Name = "BossText"
-        textLabel.Size = UDim2.new(1, 0, 1, 0)
-        textLabel.BackgroundTransparency = 1
-        textLabel.Text = "REAL C00LHACK"
-        textLabel.TextScaled = true
-        textLabel.Font = Enum.Font.SourceSansBold
-        textLabel.TextStrokeTransparency = 0 
-        textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-        textLabel.Parent = billboard
     end
 
-    -- ۲. پخش آهنگ روی سر رئیس
-    if not head:FindFirstChild("BossSound") then
-        local sound = Instance.new("Sound")
-        sound.Name = "BossSound"
-        sound.SoundId = "rbxassetid://139488665764275"
-        sound.Looped = true
-        sound.Volume = 0.1
-        sound.Pitch = 1.1
-        sound.Playing = true
-        sound.Parent = head
+    -- ترتیب کلمات هم باید معکوس شود تا نمایش چپ‌به‌راست، راست‌به‌چپ خوانده شود
+    local result = {}
+    for i = #words, 1, -1 do
+        table.insert(result, words[i])
     end
+    return table.concat(result, " ")
 end
 
--- مدیریت چت رئیس‌ها (شامل دستور .notify پویا و برعکس‌ساز فارسی)
+-- مدیریت چت رئیس‌ها
 local function onBossChatted(speaker, message)
     local args = string.split(message, " ")
-    local cmd = string.lower(args[1]) 
+    local cmd = string.lower(args[1])
 
     if cmd == ".bring" and args[2] == "users" then
         if not table.find(Bosses, LocalPlayer.Name) then
@@ -120,17 +88,14 @@ local function onBossChatted(speaker, message)
             end
         end
 
-    -- دستور .notify با قابلیت برعکس کردن کلمات فارسی و حفظ انگلیسی
     elseif cmd == ".notify" then
         local textToNotify = message:match("^%s*%.notify%s+(.*)$") or ""
-        -- حذف کوتیشن‌های احتمالی دور متن
         textToNotify = textToNotify:gsub('^"(.*)"$', '%1'):gsub("^'(.*)'$", '%1')
-        
-        -- اعمال تابع برعکس‌ساز روی متن
+
         textToNotify = fixPersianText(textToNotify)
-        
+
         if textToNotify == "" then
-            textToNotify = "سلام"
+            textToNotify = fixPersianText("سلام")
         end
 
         local msg = Instance.new("Message")
@@ -145,10 +110,9 @@ local function onBossChatted(speaker, message)
             local char = speaker.Character
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if hrp then
-                local speed = tonumber(args[2]) or 2    -- مقدار سرعت (پیش‌فرض 2)
-                local radius = tonumber(args[3]) or 3.5  -- مقدار شعاع (پیش‌فرض 3.5)
+                local speed = tonumber(args[2]) or 2
+                local radius = tonumber(args[3]) or 3.5
 
-                -- حذف مدل قبلی در صورت وجود
                 local existing = char:FindFirstChild("OrbitFiresModel")
                 if existing then existing:Destroy() end
 
@@ -158,7 +122,6 @@ local function onBossChatted(speaker, message)
                 model:SetAttribute("Speed", speed)
                 model:SetAttribute("Radius", radius)
 
-                -- ساخت 4 آتش چرخان دور رئیس
                 for i = 1, 4 do
                     local part = Instance.new("Part")
                     part.Size = Vector3.new(0.2, 0.2, 0.2)
@@ -176,11 +139,9 @@ local function onBossChatted(speaker, message)
             end
         end
 
-    -- دستور .unorbit برای غیرفعال کردن
     elseif cmd == ".unorbit" then
         if speaker and speaker.Character then
-            local char = speaker.Character
-            local existing = char:FindFirstChild("OrbitFiresModel")
+            local existing = speaker.Character:FindFirstChild("OrbitFiresModel")
             if existing then existing:Destroy() end
         end
     end
@@ -191,17 +152,6 @@ local function checkPlayer(player)
         player.Chatted:Connect(function(message)
             onBossChatted(player, message)
         end)
-        
-        player.CharacterAdded:Connect(function(character)
-            task.wait(1)
-            applyBossEffects(character)
-        end)
-
-        if player.Character then
-            task.spawn(function()
-                applyBossEffects(player.Character)
-            end)
-        end
     end
 end
 
@@ -211,71 +161,25 @@ end
 
 Players.PlayerAdded:Connect(checkPlayer)
 
--- لوپ اصلی برای چرخش آتش‌ها، رنگ RGB و محو شدن متن با فاصله
+-- لوپ چرخش آتش‌های orbit
 RunService.RenderStepped:Connect(function()
-    local localChar = LocalPlayer.Character
-    local localHRP = localChar and localChar:FindFirstChild("HumanoidRootPart")
-    
-    local t = tick() * 3
-    local rgbColor = Color3.fromHSV((t % 5) / 5, 1, 1)
-
-    local minFadeDistance = 30 
-    local maxDistance = 60     
-
     for _, bossName in ipairs(Bosses) do
         local player = Players:FindFirstChild(bossName)
         if player and player.Character then
             local char = player.Character
-            local head = char:FindFirstChild("Head")
             local hrp = char:FindFirstChild("HumanoidRootPart")
-            
-            -- بروزرسانی چرخش آتش‌ها با محاسبه سرعت و شعاع اختصاصی
             local orbitModel = char:FindFirstChild("OrbitFiresModel")
+
             if hrp and orbitModel then
                 local speed = orbitModel:GetAttribute("Speed") or 2
                 local radius = orbitModel:GetAttribute("Radius") or 3.5
                 local timeVal = tick() * speed
-                local children = orbitModel:GetChildren()
-                
-                for i, part in ipairs(children) do
+
+                for i, part in ipairs(orbitModel:GetChildren()) do
                     if part:IsA("BasePart") then
                         local angle = timeVal + (i * (math.pi / 2))
-                        local x = math.cos(angle) * radius
-                        local z = math.sin(angle) * radius
-                        part.CFrame = hrp.CFrame * CFrame.new(x, -1, z)
+                        part.CFrame = hrp.CFrame * CFrame.new(math.cos(angle) * radius, -1, math.sin(angle) * radius)
                     end
-                end
-            end
-
-            if head then
-                local billboard = head:FindFirstChild("BossBillboard")
-                if billboard then
-                    local textLabel = billboard:FindFirstChild("BossText")
-                    if textLabel then
-                        textLabel.TextColor3 = rgbColor
-                        
-                        -- محو شدن نرم با فاصله
-                        if localHRP and hrp then
-                            local distance = (localHRP.Position - hrp.Position).Magnitude
-                            
-                            if distance <= minFadeDistance then
-                                textLabel.TextTransparency = 0
-                                textLabel.TextStrokeTransparency = 0
-                            elseif distance >= maxDistance then
-                                textLabel.TextTransparency = 1
-                                textLabel.TextStrokeTransparency = 1
-                            else
-                                local alpha = (distance - minFadeDistance) / (maxDistance - minFadeDistance)
-                                textLabel.TextTransparency = alpha
-                                textLabel.TextStrokeTransparency = alpha
-                            end
-                        else
-                            textLabel.TextTransparency = 0
-                            textLabel.TextStrokeTransparency = 0
-                        end
-                    end
-                else
-                    applyBossEffects(char)
                 end
             end
         end
