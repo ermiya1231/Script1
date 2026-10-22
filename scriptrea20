@@ -2,91 +2,220 @@ local cloneref = cloneref or function(...)
 	return ...
 end
 
-local Players = cloneref(game:GetService("Players"));
-local LocalPlayer = Players.LocalPlayer;
-local TextChatService = cloneref(game:GetService("TextChatService"));
-local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"));
-local TweenService = cloneref(game:GetService("TweenService"));
-local UserInputService = cloneref(game:GetService("UserInputService"));
-local RunService = cloneref(game:GetService("RunService"));
-local HttpService = cloneref(game:GetService("HttpService"));
+local Players = cloneref(game:GetService("Players"))
+local LocalPlayer = Players.LocalPlayer
+local TweenService = cloneref(game:GetService("TweenService"))
+local UserInputService = cloneref(game:GetService("UserInputService"))
+local RunService = cloneref(game:GetService("RunService"))
 
-local version = loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/ver"))();
---print(version);
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/scriptreaui"))();
-local Notif = library:InitNotifications();
-if version ~= "1.0.3" then
-    LocalPlayer:Kick("please get the updated script");
+print("[syndicate] starting...")
+
+local function loadRemote(url, label)
+    local ok, res = pcall(function()
+        return loadstring(game:HttpGet(url))()
+    end)
+    if not ok then
+        warn("[syndicate] failed to load " .. label .. ": " .. tostring(res))
+        return nil
+    end
+    return res
 end
-library.version = "1.0.5";
 
-
-
+local version = loadRemote("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/ver", "version check")
+local library = loadRemote("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/scriptreaui", "ui library")
+if not version or not library then
+    warn("[syndicate] stopped: could not download the ui library / version (server down, blocked, or executor has no HttpGet)")
+    return
+end
+print("[syndicate] ui library loaded, version = " .. tostring(version))
+local Notif = library:InitNotifications()
+if version ~= "1.0.3" then
+    warn("[syndicate] version file says '" .. tostring(version) .. "' (expected 1.0.3), continuing anyway")
+end
+library.version = "1.0.5"
 
 local visualizers = {
-    "circle (reactive)", 
-    "halo (visualizer)", 
-    "sine wave", 
-    "wings (reactive)", 
+    "circle (reactive)",
+    "halo (visualizer)",
+    "sine wave",
+    "wings (reactive)",
     "REVAMPED WINGS - Emo Caine",
-    "wave wings", 
-    "backpack", 
-    "lemniscate", 
-    "figure-8", 
-    "infinity symbol", 
-    "orbiting rings", 
-    "lissajous curve", 
-    "heart", 
-    "trefoil knot", 
-    "rose curve", 
-    "dome", 
---    "dna"
+    "wave wings",
+    "backpack",
+    "lemniscate",
+    "figure-8",
+    "infinity symbol",
+    "orbiting rings",
+    "lissajous curve",
+    "heart",
+    "trefoil knot",
+    "rose curve",
+    "dome",
 }
 
-
 if _G.Connections then
-    for i,v in pairs(_G.Connections) do
+    for i, v in pairs(_G.Connections) do
         if v then
-            --print("Disconnecting old connection: " .. i)
-            v:Disconnect()
-            v = nil
+            pcall(function() v:Disconnect() end)
         end
     end
 end
-
 _G.Connections = {}
 
 local ScriptSettings = {
-    Player = {
-        AudioId = 77478671906831,
-        Pitch = 1,
-    },
-    Duper = {Ammount = 1, PanicStop = false, Vip = false},
-    Visualizer = {SetVisualizer = "halo (visualizer)",Target = "me", Radius=10, Speed=1},
-    Visualizer2 = {SetVisualizer = {"boombox man"}},
-    Misc = {Stealing = false, AntiFling = false, DisableUi = false},
-    Songs = {Selected = 0},
-    Settings = {AntiLoggerType = "syndicate!"}
+    Player = { AudioId = 77478671906831, Pitch = 1, Mode = "Auto" },
+    Duper = { Ammount = 1, PanicStop = false, Vip = false },
+    Visualizer = { AutoRecover = true, ToolMode = "All Tools", SetVisualizer = "halo (visualizer)", Target = "me", Radius = 6, Speed = 1 },
+    Visualizer2 = { SetVisualizer = "boombox man" },
+    Misc = { Stealing = false, AntiFling = false, DisableUi = false },
+    Songs = { Selected = 0 },
+    Settings = { AntiLoggerType = "syndicate!" }
 }
 
-
+----------------------------------------------------------------
+-- Helpers
+----------------------------------------------------------------
 local GetLPlrImportant = function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         return LocalPlayer.Character, LocalPlayer.Backpack, LocalPlayer.Character.HumanoidRootPart
     end
 end
 
-local EquipAll = function()
-    local character, backpack, hrp = GetLPlrImportant()
+local function isBoombox(tool)
+    return tool.Name:lower():find("boom") ~= nil
+end
 
-    for index, tool in next, backpack:GetChildren() do
+-- Collects ALL tools that have a Handle (boomboxes first, so tools[1] is always a boombox if you have one)
+local function CollectTools()
+    local character, backpack = GetLPlrImportant()
+    local list = {}
+    for _, container in ipairs({ backpack, character }) do
+        for _, t in ipairs(container:GetChildren()) do
+            if t:IsA("Tool") and t:FindFirstChild("Handle") then
+                if ScriptSettings.Visualizer.ToolMode ~= "Only Boombox" or isBoombox(t) then
+                    table.insert(list, t)
+                end
+            end
+        end
+    end
+    table.sort(list, function(a, b)
+        local ba, bb = isBoombox(a), isBoombox(b)
+        if ba ~= bb then return ba end
+        return a.Name < b.Name
+    end)
+    return list
+end
+
+local function GetLoudness(tools)
+    for _, t in ipairs(tools) do
+        if isBoombox(t) then
+            local h = t:FindFirstChild("Handle")
+            local s = h and h:FindFirstChildWhichIsA("Sound")
+            if s then return s.PlaybackLoudness end
+        end
+    end
+    return 0
+end
+
+local EquipAll = function()
+    local character, backpack = GetLPlrImportant()
+    for _, tool in next, backpack:GetChildren() do
         if tool:IsA("Tool") then
             tool.Parent = character
         end
     end
 end
 
+local GetPlayer = function(String)
+    if not String or String == "" or String == " " then
+        return nil
+    end
+    for _, v in pairs(Players:GetPlayers()) do
+        if v.Name:lower():sub(1, #String) == String:lower() then
+            return v
+        end
+    end
+end
 
+local function validVec(v)
+    return v.X == v.X and v.Y == v.Y and v.Z == v.Z and math.abs(v.X) < 1e6 and math.abs(v.Y) < 1e6 and math.abs(v.Z) < 1e6
+end
+
+local function Gyro(handle)
+    local g = handle:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", handle)
+    g.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    g.P = 10000
+    return g
+end
+
+local function ResolveTarget(hrp)
+    if string.lower(ScriptSettings.Visualizer.Target) ~= "me" then
+        local p = GetPlayer(ScriptSettings.Visualizer.Target)
+        if p and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            return p.Character.HumanoidRootPart
+        end
+        return nil
+    end
+    return hrp
+end
+
+-- Stops the drifting bug: zero velocities, destroy gyros and snap tools back next to the target
+local function StopTools(tools, anchorHrp)
+    for _, tool in ipairs(tools) do
+        local h = tool and tool:FindFirstChild("Handle")
+        if h then
+            local g = h:FindFirstChild("BodyGyro")
+            if g then g:Destroy() end
+            h.AssemblyLinearVelocity = Vector3.zero
+            h.AssemblyAngularVelocity = Vector3.zero
+            h.Velocity = Vector3.zero
+            h.RotVelocity = Vector3.zero
+            if anchorHrp and anchorHrp.Parent then
+                h.CFrame = anchorHrp.CFrame
+            end
+        end
+    end
+end
+
+-- Equips ALL tools and prepares them (same trick as the original, now for every tool)
+local function PrepareTools()
+    local character, backpack = GetLPlrImportant()
+    workspace.FallenPartsDestroyHeight = 0 / 0
+    character:WaitForChild("Humanoid"):UnequipTools()
+    task.wait(.2)
+
+    local tools = CollectTools()
+
+    for _, tool in ipairs(tools) do
+        tool.Parent = character
+        tool.Parent = backpack
+    end
+
+    task.spawn(function()
+        task.wait(.15)
+        for _, value in pairs(character:WaitForChild("Humanoid"):GetPlayingAnimationTracks()) do
+            if value.Name == "ToolNoneAnim" then
+                value:Stop()
+            end
+        end
+    end)
+
+    for _, tool in ipairs(tools) do
+        tool.Parent = character
+        tool.Parent = backpack
+        tool.Parent = character:WaitForChild("Humanoid")
+        tool.Parent = character
+        local h = tool:FindFirstChild("Handle")
+        if h then
+            h.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+        end
+    end
+    return tools
+end
+
+----------------------------------------------------------------
+-- Anti logger
+----------------------------------------------------------------
 local antilog = function(id)
     local asciiFace = [[
     _
@@ -97,24 +226,15 @@ local antilog = function(id)
 C{{([^*^])}}D
   [ * ]
  /  Y  \
-_\__|__/_  
+_\__|__/_
 (___/ \___)
 ]]
 
-
     if ScriptSettings.Settings.AntiLoggerType == "syndicate!" then
-        local originalInput = id
-        local encodedString = string.format("0x%X", originalInput)
+        local encodedString = string.format("0x%X", id)
         local randomHex = ""
         local noisePatterns = {
-            "% 0 a",
-            "%  0b",
-            " % 0c",
-            "% 0  d",
-            "%0  A",
-            "%  0 B",
-            "% 0  C",
-            "%0  D"
+            "% 0 a", "%  0b", " % 0c", "% 0  d", "%0  A", "%  0 B", "% 0  C", "%0  D"
         }
         local randomSeed = math.random(111, 222)
         local formattedNoise = ""
@@ -135,7 +255,7 @@ _\__|__/_
             "%34%30%35%39%0A%38%39%32%33%30%36%36%33%31%31",
             "%35%39%32%36%0A%31%38%33%36%37%37%38%32%39%39"
         }
-    
+
         local function encodeRandomHex(inputString)
             local encoded = ""
             local index = 1
@@ -145,9 +265,7 @@ _\__|__/_
                     encoded = encoded .. " "
                 else
                     if inputString:sub(index, index + 1) == "0x" then
-                        encoded =
-                            encoded ..
-                            (string.format("%%%X", string.byte("0")) .. string.format("%%%X", string.byte("x")))
+                        encoded = encoded .. (string.format("%%%X", string.byte("0")) .. string.format("%%%X", string.byte("x")))
                         index = index + 1
                     else
                         if math.random(0, 1) == 1 then
@@ -161,7 +279,7 @@ _\__|__/_
             end
             return encoded
         end
-    
+
         local function generateNoise()
             local noise = ""
             local randomLength = math.random(20, 30)
@@ -190,7 +308,7 @@ _\__|__/_
             end
             return noise
         end
-    
+
         local function generateRandomIDSequence()
             local idSequence = ""
             local randomLength = math.random(22, 25)
@@ -207,8 +325,7 @@ _\__|__/_
             end
             return idSequence
         end
-        
-    
+
         local function insertRandomSpaces(inputString)
             local spacedString = ""
             local charCounter = 0
@@ -231,266 +348,306 @@ _\__|__/_
             end
             return spacedString
         end
-    
+
         local prefixNoise = ""
         local randomPrefixLength = math.random(4, 5)
         for i = 1, randomPrefixLength, 1 do
             prefixNoise = prefixNoise .. noisePatterns[math.random(#noisePatterns)]
         end
-    
+
         randomHex = encodeRandomHex(encodedString)
         for i = 1, randomSeed, 1 do
             formattedNoise = formattedNoise .. noisePatterns[math.random(#noisePatterns)]
         end
-    
-        local encodedPayload =
-            (prefixNoise ..
-                (prefixNoise ..
-                    (prefixNoise ..
-                        ("%20" ..
-                            (randomHex ..
-                                (prefixNoise ..
-                                    (prefixNoise ..
-                                        (prefixNoise ..
-                                            ("&%20" .. generateRandomIDSequence())
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-    
+
+        local encodedPayload = prefixNoise .. prefixNoise .. prefixNoise .. "%20" .. randomHex .. prefixNoise .. prefixNoise .. prefixNoise .. "&%20" .. generateRandomIDSequence()
+
         return insertRandomSpaces(encodedPayload)
-    
+
     elseif ScriptSettings.Settings.AntiLoggerType == "fanta" then
         local q = tostring(ScriptSettings.Player.AudioId)
         local D = ""
         local n = {
-            "%  0b",
-            "% 0  d",
-            " % 0c",
-            "%0  A",
-            "%0  D",
-            "%  2 0",
-            "% 0  C",
-            "%  0 B",
-            "% 2  0",
-            "% 0 a",
-            "%0  D",
-            "%  2 0",
-            "% 0  C",
-            "% 2  0",
-            "%0  D",
-            "% 0  d",
-            "%  0b",
-            "% 0  C",
-            "% 0 a",
-            "%0  D",
-            "%  2 0",
-            "%0  D",
-            "% 0 a",
-            "% 0  d",
-            "%  2 0",
+            "%  0b", "% 0  d", " % 0c", "%0  A", "%0  D", "%  2 0", "% 0  C", "%  0 B", "% 2  0", "% 0 a",
+            "%0  D", "%  2 0", "% 0  C", "% 2  0", "%0  D", "% 0  d", "%  0b", "% 0  C", "% 0 a", "%0  D",
+            "%  2 0", "%0  D", "% 0 a", "% 0  d", "%  2 0",
         }
         local A = math.random(99, 444)
         local X = ""
         local g = {
-            "3884427347",
-            "7384639091",
-            "1616996690",
-            "1621409317",
-            "4615534852",
-            "1617122776",
-            "6485546017",
-            "7545632444",
-            "7023668509",
-            "6449895658",
-            "1339562034",
-            "8068992983",
-            "15645088699",
-            "15645208882",
-            "15645493148",
-            "15645594471",
-            "15663161715",
-            "15664083310",
-            "15673753435",
-            "15667648740",
-            "15695044812",
-            "15695512238",
-            "15695784417",
-            "15714903860",
-            "15715987966",
-            "15718826441",
-            "15716567283",
-            "15718814968",
-            "15719151859",
-            "15725860209",
-            "15726132970",
-            "15741448809",
-            "15741731518",
-            "15742373154",
-            "1574989897",
-            "15742666074",
-            "15753341751",
-            "15754322372",
-            "15754531592",
-            "15752643448",
-            "15757649766"
+            "3884427347", "7384639091", "1616996690", "1621409317", "4615534852", "1617122776",
+            "6485546017", "7545632444", "7023668509", "6449895658", "1339562034", "8068992983",
+            "15645088699", "15645208882", "15645493148", "15645594471", "15663161715", "15664083310",
+            "15673753435", "15667648740", "15695044812", "15695512238", "15695784417", "15714903860",
+            "15715987966", "15718826441", "15716567283", "15718814968", "15719151859", "15725860209",
+            "15726132970", "15741448809", "15741731518", "15742373154", "1574989897", "15742666074",
+            "15753341751", "15754322372", "15754531592", "15752643448", "15757649766"
         }
-        local function randomHexEncode(q)
-            local D = ""
-            for n = 1, #q, 1 do
-                local A = q:sub(n, n)
-                if A == " " then
-                    D = D .. " "
+        local function randomHexEncode(s)
+            local out = ""
+            for i = 1, #s, 1 do
+                local c = s:sub(i, i)
+                if c == " " then
+                    out = out .. " "
                 else
                     if math.random(0, 1) == 1 then
-                        D = D .. string.format("%%%X", string.byte(A))
+                        out = out .. string.format("%%%X", string.byte(c))
                     else
-                        D = D .. A
+                        out = out .. c
                     end
                 end
             end
-            return D
+            return out
         end
-        local function generateRandomString(q)
-            local D = "FANTAXSYNDICATE"
-            local n = ""
-            for q = 1, q, 1 do
-                n = n .. D:sub(math.random(#D), math.random(#D))
+        local function generateRandomString(len)
+            local chars = "FANTAXSYNDICATE"
+            local out = ""
+            for i = 1, len, 1 do
+                out = out .. chars:sub(math.random(#chars), math.random(#chars))
             end
-            return n
+            return out
         end
         local function generatePostNoise()
-            local q = ""
-            local D = math.random(30, 50)
-            for D = 1, D, 1 do
+            local out = ""
+            local count = math.random(30, 50)
+            for i = 1, count, 1 do
                 if math.random(1, 12) <= 3 then
                     if math.random(0, 1) == 1 then
-                        q = q .. g[math.random(#g)]
+                        out = out .. g[math.random(#g)]
                     else
-                        local D = math.random(1, 6)
-                        if D == 1 then
-                            q = q .. ("&assetid=" .. math.random(1000000, 9999950))
-                        elseif D == 2 then
-                            q = q .. ("&assetname=" .. generateRandomString(math.random(5, 10)))
-                        elseif D == 3 then
-                            q = q .. ("&ProductId=" .. math.random(1000000, 9999949))
-                        elseif D == 4 then
-                            q = q .. ("&instanceId=" .. math.random(1000000, 9999988))
-                        elseif D == 5 then
-                            q = q .. ("&id=" .. math.random(1000000, 9999944))
+                        local t = math.random(1, 6)
+                        if t == 1 then
+                            out = out .. ("&assetid=" .. math.random(1000000, 9999950))
+                        elseif t == 2 then
+                            out = out .. ("&assetname=" .. generateRandomString(math.random(5, 10)))
+                        elseif t == 3 then
+                            out = out .. ("&ProductId=" .. math.random(1000000, 9999949))
+                        elseif t == 4 then
+                            out = out .. ("&instanceId=" .. math.random(1000000, 9999988))
+                        elseif t == 5 then
+                            out = out .. ("&id=" .. math.random(1000000, 9999944))
                         else
-                            q = q .. "%00"
+                            out = out .. "%00"
                         end
                     end
                 else
-                    q = q .. n[math.random(#n)]
+                    out = out .. n[math.random(#n)]
                 end
             end
-            return q
+            return out
         end
         local function generateRandomIDBlocks()
-            local q = ""
-            local D = math.random(21, 23)
-            for D = 1, D, 1 do
+            local out = ""
+            local count = math.random(21, 23)
+            for i = 1, count, 1 do
                 if math.random(0, 1) == 1 then
-                    q = q .. g[math.random(#g)]
+                    out = out .. g[math.random(#g)]
                 else
-                    q = q .. ("&id=" .. g[math.random(#g)])
+                    out = out .. ("&id=" .. g[math.random(#g)])
                 end
-                q = q .. generatePostNoise()
+                out = out .. generatePostNoise()
             end
-            return q
+            return out
         end
-        local function insertSpaces(q)
-            local D = ""
-            local n = 0
-            local A = math.random(2, 3)
-            local X = 1
-            while X <= #q do
-                if q:sub(X, X) == "|" then
-                    D = D .. q:sub(X, X + 2)
-                    X = X + 3
+        local function insertSpaces(s)
+            local out = ""
+            local counter = 0
+            local threshold = math.random(2, 3)
+            local i = 1
+            while i <= #s do
+                if s:sub(i, i) == "|" then
+                    out = out .. s:sub(i, i + 2)
+                    i = i + 3
                 else
-                    D = D .. q:sub(X, X)
-                    X = X + 1
+                    out = out .. s:sub(i, i)
+                    i = i + 1
                 end
-                n = n + 1
-                if n >= A then
-                    D = D .. string.rep(" ", math.random(6, 8))
-                    n = 0
-                    A = math.random(6, 8)
+                counter = counter + 1
+                if counter >= threshold then
+                    out = out .. string.rep(" ", math.random(6, 8))
+                    counter = 0
+                    threshold = math.random(6, 8)
                 end
             end
-            return D
+            return out
         end
         local j = ""
         local U = math.random(4, 5)
-        for q = 1, U, 1 do
+        for i = 1, U, 1 do
             j = j .. n[math.random(#n)]
         end
         D = randomHexEncode(q)
-        for q = 1, A, 1 do
+        for i = 1, A, 1 do
             X = X .. n[math.random(#n)]
         end
-        local x =
-            "%2b+\n        \n        \n        \n        \n        ++\n        \n        \n        \n        \n        +%2b\n        \n        \n        \n        \n        %2b\n        \n        \n        \n        \n        \n        \n        %2b+" ..
-            (j .. (j .. (j .. ("%200%30" .. (D .. (j .. (j .. (j .. ("&%20" .. generateRandomIDBlocks())))))))))
-        local b = insertSpaces(x)
-
-        return b
-
+        local x = "%2b+\n        \n        \n        \n        \n        ++\n        \n        \n        \n        \n        +%2b\n        \n        \n        \n        \n        %2b\n        \n        \n        \n        \n        \n        \n        %2b+" ..
+            (j .. j .. j .. "%200%30" .. D .. j .. j .. j .. "&%20" .. generateRandomIDBlocks())
+        return insertSpaces(x)
     end
-
 end
 
+----------------------------------------------------------------
+-- Audio
+----------------------------------------------------------------
+local function getSounds(tool)
+    local list = {}
+    for _, d in ipairs(tool:GetDescendants()) do
+        if d:IsA("Sound") then table.insert(list, d) end
+    end
+    return list
+end
 
-local PlayAudio = function()
-    local character, backpack, hrp = GetLPlrImportant()
-
-    local audio = nil;
-    local pitch = ScriptSettings.Player.Pitch
-
-    if game.PlaceId == 138900085453390 then
-        local audiostring = tostring(ScriptSettings.Player.AudioId)
-        local a= string.rep("0", math.random(1500, 2500))
-        local b = "+" .. (a .. audiostring)
-
-
-        for index, tool in next, character:GetChildren() do
-            if tool:IsA("Tool") and tool:FindFirstChild("PlayAudio") then
-                tool.PlayAudio:InvokeServer("PlayAudio", b, pitch, "0", "0")
+-- Only the boombox's own remote: direct RemoteEvent first, then any RemoteEvent that isn't obviously something else
+local function getRemotes(tool)
+    local direct = tool:FindFirstChildOfClass("RemoteEvent")
+    if direct then return { direct } end
+    for _, d in ipairs(tool:GetDescendants()) do
+        if d:IsA("RemoteEvent") then
+            local n = d.Name:lower()
+            if not (n:find("slap") or n:find("hit") or n:find("damage") or n:find("attack")) then
+                return { d }
             end
         end
+    end
+    return {}
+end
 
+local function isAudioTool(tool)
+    return tool:IsA("Tool") and tool:FindFirstChild("Handle") ~= nil and isBoombox(tool)
+end
+
+local function EquipAudioTools()
+    local character, backpack = GetLPlrImportant()
+    if not character then return end
+    for _, t in ipairs(backpack:GetChildren()) do
+        if isAudioTool(t) then
+            t.Parent = character
+        end
+    end
+end
+
+local function sendTo(tool, kind, id, pitch)
+    local isSpecial = game.PlaceId == 138900085453390
+    local payload
+    if kind == "obfuscated" then
+        if isSpecial then
+            payload = "+" .. string.rep("0", math.random(1500, 2500)) .. tostring(id)
+        else
+            payload = antilog(id)
+        end
     else
-        audio = antilog(ScriptSettings.Player.AudioId)
-        for index, tool in next, character:GetChildren() do
-            if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
-                local remote = tool:FindFirstChildOfClass("RemoteEvent")
-                if remote then
-                    remote:FireServer("PlaySong", audio, pitch)
-                end
+        payload = tostring(id)
+    end
+
+    if isSpecial then
+        local pa = tool:FindFirstChild("PlayAudio")
+        if pa and pa:IsA("RemoteFunction") then
+            task.spawn(function()
+                pcall(function() pa:InvokeServer("PlayAudio", payload, pitch, "0", "0") end)
+            end)
+        end
+        return
+    end
+
+    for _, remote in ipairs(getRemotes(tool)) do
+        task.spawn(function()
+            pcall(function()
+                remote:FireServer("PlaySong", payload, pitch)
+            end)
+        end)
+    end
+end
+
+local function confirmed(tool, id)
+    for _, snd in ipairs(getSounds(tool)) do
+        if tostring(snd.SoundId):find(tostring(id), 1, true) then
+            return true
+        end
+    end
+    return false
+end
+
+-- Returns true if every audio tool confirmed the new song
+local PlayAudio = function()
+    local character = GetLPlrImportant()
+    if not character then
+        Notif:Notify("character not loaded", 3, "error")
+        return false
+    end
+
+    local id = ScriptSettings.Player.AudioId
+    if not id then
+        Notif:Notify("invalid audio id", 3, "error")
+        return false
+    end
+    local pitch = ScriptSettings.Player.Pitch or 1
+
+    local pending = {}
+    for _, t in ipairs(character:GetChildren()) do
+        if isAudioTool(t) then table.insert(pending, t) end
+    end
+    if #pending == 0 then
+        Notif:Notify("no boombox equipped", 3, "error")
+        return false
+    end
+    local total = #pending
+
+    local mode = ScriptSettings.Player.Mode or "Auto"
+    local kinds = (mode == "Auto") and { "obfuscated", "plain" } or { string.lower(mode) }
+
+    for _, kind in ipairs(kinds) do
+        for _, tool in ipairs(pending) do
+            sendTo(tool, kind, id, pitch)
+        end
+        task.wait(0.8)
+        local failed = {}
+        for _, tool in ipairs(pending) do
+            if not confirmed(tool, id) then
+                table.insert(failed, tool)
+            end
+        end
+        pending = failed
+        if #pending == 0 then break end
+    end
+
+    if #pending > 0 then
+        Notif:Notify((total - #pending) .. "/" .. total .. " boomboxes confirmed the song", 4, "error")
+        return false
+    end
+    Notif:Notify("playing " .. tostring(id) .. " on " .. total .. " boombox(es)", 3, "success")
+    return true
+end
+
+-- Restarts every equipped audio tool at the same instant
+local SyncAudio = function()
+    local character = GetLPlrImportant()
+    if not character then return end
+    local sounds = {}
+    for _, t in ipairs(character:GetChildren()) do
+        if t:IsA("Tool") and isAudioTool(t) then
+            for _, snd in ipairs(getSounds(t)) do
+                table.insert(sounds, snd)
             end
         end
     end
-
-
-end
-
-
-local SyncAudio = function()
-    local character, backpack, hrp = GetLPlrImportant()
-    for index, tool in next, character:GetChildren() do
-        if tool.ClassName == "Tool" and (tool:FindFirstChild("Handle") and tool.Handle:FindFirstChildOfClass("Sound")) then
-            tool.Handle.Sound.TimePosition = 0
+    if #sounds == 0 then
+        return Notif:Notify("no sounds to sync", 3, "error")
+    end
+    RunService.Heartbeat:Wait()
+    for _, snd in ipairs(sounds) do
+        snd.TimePosition = 0
+    end
+    for _, snd in ipairs(sounds) do
+        if not snd.IsPlaying and snd.SoundId ~= "" then
+            snd:Play()
         end
     end
+    Notif:Notify("synced " .. #sounds .. " sound(s)", 3, "success")
 end
 
+----------------------------------------------------------------
+-- Dupe
+----------------------------------------------------------------
 local DupeBoomboxes = function()
     local character, backpack, hrp = GetLPlrImportant()
 
@@ -500,48 +657,48 @@ local DupeBoomboxes = function()
         for i = 1, ScriptSettings.Duper.Ammount do
             if ScriptSettings.Duper.PanicStop then continue end
             character:WaitForChild("HumanoidRootPart")
-            for i,v in pairs(LocalPlayer.Backpack:GetChildren()) do
+            for _, v in pairs(LocalPlayer.Backpack:GetChildren()) do
                 if v:IsA("Tool") then v.Parent = character end
             end
-            for i,v in pairs(character:GetChildren()) do
+            for _, v in pairs(character:GetChildren()) do
                 if v:IsA("Tool") then v.Parent = character end
             end
-            character.HumanoidRootPart.CFrame = CFrame.new(0,9999999999,500)
+            character.HumanoidRootPart.CFrame = CFrame.new(0, 9999999999, 500)
             repeat wait() until not LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
             wait(0.75)
-            for i,v in pairs(character:GetChildren()) do
+            for _, v in pairs(character:GetChildren()) do
                 if v:IsA("BasePart") then
                     v.CanCollide = false
                     v.Anchored = true
                 end
             end
-            for i,v in pairs(character:GetChildren()) do
+            for _, v in pairs(character:GetChildren()) do
                 if v:IsA("Tool") then v.Parent = workspace end
             end
             character:BreakJoints()
             LocalPlayer.CharacterAdded:Wait()
             character = LocalPlayer.Character
         end
-         
-        character:WaitForChild('HumanoidRootPart')
+
+        character:WaitForChild("HumanoidRootPart")
         wait(0.15)
         character.HumanoidRootPart.CFrame = CFrame.new(ogpos)
-        for i,v in pairs(workspace:GetChildren()) do
+        for _, v in pairs(workspace:GetChildren()) do
             if v:IsA("Tool") then
-                character.Humanoid:EquipTool(v)    
+                character.Humanoid:EquipTool(v)
             end
         end
     else
         local og_pos = character.HumanoidRootPart.Position
         local basepos = Vector3.new(1000000, 5000000005, 0)
         hrp.CFrame = CFrame.new(basepos)
-        TweenService:Create(hrp, TweenInfo.new(1), {CFrame = hrp.CFrame * CFrame.new(0, 20, 0)}):Play()
+        TweenService:Create(hrp, TweenInfo.new(1), { CFrame = hrp.CFrame * CFrame.new(0, 20, 0) }):Play()
         task.wait(1)
         character.HumanoidRootPart.Anchored = true
-        
+
         local reCount = 0
         local cooldownTime = 3
-        
+
         for i = 1, ScriptSettings.Duper.Ammount do
             if reCount >= 7 then
                 Notif:Notify("Dupe limit reached, waiting for cooldown...", 3, "error")
@@ -552,1019 +709,426 @@ local DupeBoomboxes = function()
             character:WaitForChild("HumanoidRootPart")
             character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.new(0, 20, 0)
             character.HumanoidRootPart.Anchored = true
-        
+
             repeat wait() until LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
-        
-            for i, v in pairs(LocalPlayer.Backpack:GetChildren()) do
+
+            for _, v in pairs(LocalPlayer.Backpack:GetChildren()) do
                 if v:IsA("Tool") then v.Parent = character end
             end
             wait(0.75)
-        
-            for i, v in pairs(character:GetChildren()) do
+
+            for _, v in pairs(character:GetChildren()) do
                 if v:IsA("Tool") then v.Parent = workspace end
             end
-        
+
             game:GetService("Players"):Chat(";re")
             reCount = reCount + 1
-        
-        
+
             LocalPlayer.CharacterAdded:Wait()
             character = LocalPlayer.Character
         end
-        
-        character:WaitForChild('HumanoidRootPart')
+
+        character:WaitForChild("HumanoidRootPart")
         wait(0.15)
-        for i, v in pairs(workspace:GetChildren()) do
+        for _, v in pairs(workspace:GetChildren()) do
             if v:IsA("Tool") then
-                character.Humanoid:EquipTool(v)    
+                character.Humanoid:EquipTool(v)
             end
         end
-        
+
         character.HumanoidRootPart.Anchored = false
         character.HumanoidRootPart.CFrame = CFrame.new(og_pos)
-        
-        
     end
 
     ScriptSettings.Duper.PanicStop = false
 end
 
-local GetPlayer = function(String)
-    if not String or String == "" or String == " " then
-        return nil
-    end
+----------------------------------------------------------------
+-- Visualizer presets
+----------------------------------------------------------------
+-- ctx = { cf = CFrame at target, pos = Vector3, loud = loudness, y = counter }
+local J = 1 -- radius is now in real studs
 
-    local plr
-    local strl = String:lower()
-    for i, v in pairs(Players:GetPlayers()) do
-        if v.Name:lower():sub(1, #String) == String:lower() then
-            plr = v
-            break
-        end 
+local function placeOnCurve(tool, ctx, x, y, z)
+    local A = tool:FindFirstChild("Handle")
+    if not A then return end
+    local p = (ctx.cf * CFrame.new(x * J, y * J, z * J)).Position
+    if not validVec(p) then return end
+    A.Position = p
+    if (p - ctx.pos).Magnitude > 0.01 then
+        Gyro(A).CFrame = CFrame.new(p, ctx.pos)
     end
-    return plr
 end
 
+local function curvePreset(fn, speedMul)
+    return function(tool, index, n, ctx)
+        local u = math.rad(tick() * ScriptSettings.Visualizer.Speed * (speedMul or 20) + index * (360 / n))
+        local x, y, z = fn(u, ScriptSettings.Visualizer.Radius, index)
+        placeOnCurve(tool, ctx, x, y, z)
+    end
+end
+
+local Presets = {}
+
+local function reactiveCircle(radiusMode)
+    return function(tool, index, n, ctx)
+        local A = tool:FindFirstChild("Handle")
+        if not A then return end
+        local j = radiusMode and (ScriptSettings.Visualizer.Radius / 5) or (ctx.loud / 150)
+        local d = tick() * ScriptSettings.Visualizer.Speed * 20
+        local u = math.rad(d + index * (360 / n))
+        local p = (ctx.cf * CFrame.new(
+            (math.cos(u) * 5) * j,
+            math.sin(math.deg(tick() / 7 + ((index * n) / math.max(0.1, 5)) / 360)) * 2,
+            (math.sin(u) * 5) * j
+        )).Position
+        if not validVec(p) then return end
+        A.Position = p
+        if (p - ctx.pos).Magnitude > 0.01 then
+            Gyro(A).CFrame = CFrame.new(p, ctx.pos)
+        end
+    end
+end
+
+Presets["circle (reactive)"] = reactiveCircle(false)
+Presets["sine wave"] = reactiveCircle(true)
+
+Presets["halo (visualizer)"] = function(tool, index, n, ctx)
+    local A = tool:FindFirstChild("Handle")
+    if not A then return end
+    local b = ctx.loud
+    local w = b / 150
+    local targetYOffset = math.clamp(b / 1000, 0, 1) * 4 - 2
+    local currentYOffset = A.CFrame.Position.Y - ctx.pos.Y
+    if currentYOffset ~= currentYOffset or math.abs(currentYOffset) > 50 then currentYOffset = 0 end
+    local smoothed = currentYOffset + (targetYOffset - currentYOffset) * 0.1
+    local p = ((ctx.cf * CFrame.Angles(0, math.rad(ctx.y + index * (360 / n)), 0)) * CFrame.new(0, smoothed, ScriptSettings.Visualizer.Radius + w / 3)).Position
+    if not validVec(p) then return end
+    A.CFrame = CFrame.new(p, ctx.pos + Vector3.new(0, smoothed, 0))
+end
+
+Presets["wings (reactive)"] = function(tool, index, n, ctx)
+    local handle = tool:FindFirstChild("Handle")
+    if not handle then return end
+    local gyro = Gyro(handle)
+    local b = ctx.loud
+    local pc = math.clamp(0.5 * (b / 400), 0.1, 1)
+    local hs = 2 / (pc + 1)
+    local xOffset, yOffset
+    if index == 1 then
+        xOffset = ((n + 1) - (n / 2)) * hs
+        yOffset = pc * ((n + 1) - (n / 2)) ^ 2
+    else
+        xOffset = (index - (n / 2)) * hs
+        yOffset = pc * (index - (n / 2)) ^ 2
+    end
+    local cf = ctx.hrp.CFrame * CFrame.new(xOffset, yOffset, 1)
+    if not validVec(cf.Position) then return end
+    handle.CFrame = cf
+    gyro.CFrame = CFrame.new(handle.Position, ctx.pos)
+end
+
+Presets["wave wings"] = function(tool, index, n, ctx)
+    local handle = tool:FindFirstChild("Handle")
+    if not handle then return end
+    local gyro = Gyro(handle)
+    local distanceBehind, verticalSpacing, horizontalSpacing, outwardSpacing = -0.5, 1.5, 2, -1
+    local line = (index % 2 == 0) and 1 or -1
+    local row = math.floor((index + 1) / 2)
+    local xOffset = line * horizontalSpacing - (line * outwardSpacing * row)
+    local yOffset = row * verticalSpacing
+    local zOffset = -distanceBehind - row * outwardSpacing
+    handle.CFrame = ctx.hrp.CFrame * CFrame.new(xOffset, yOffset, zOffset)
+    local rot = math.rad(30 * math.sin(tick() * 4 + index * (360 / n)))
+    handle.CFrame = handle.CFrame * CFrame.Angles(0, rot, 0)
+    gyro.CFrame = CFrame.new(handle.Position, ctx.pos)
+end
+
+Presets["backpack"] = function(tool, index, n, ctx)
+    local handle = tool:FindFirstChild("Handle")
+    if not handle then return end
+    local gyro = Gyro(handle)
+    handle.CFrame = (ctx.hrp.CFrame * CFrame.new(0, 0, 0.8)) * CFrame.Angles(0, math.rad(180), 0)
+    local rot = math.rad(30 * math.sin(tick() * 4 + (360 / n)))
+    handle.CFrame = handle.CFrame * CFrame.Angles(0, 0, rot)
+    gyro.CFrame = CFrame.new(handle.Position, ctx.pos)
+end
+
+Presets["REVAMPED WINGS - Emo Caine"] = function(tool, index, n, ctx)
+    local handle = tool:FindFirstChild("Handle")
+    if not handle then return end
+    local gyro = handle:FindFirstChild("BodyGyro") or Instance.new("BodyGyro")
+    gyro.P = 10000
+    gyro.D = 1000
+    gyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    gyro.Parent = handle
+
+    local wingSpan = ScriptSettings.Visualizer.Radius or 5
+    local baseHeight, wingDepth, wingCount = 0.6, 2, 2
+    local flapSpeed = ScriptSettings.Visualizer.Speed or 1
+    local flapIntensity = 2.0
+    local flapProgress = (math.sin(tick() * flapSpeed) + 1) / 2
+
+    local wingSide = index % wingCount == 0 and 1 or -1
+    local wingIndex = math.floor((index - 1) / wingCount) + 1
+    local toolsPerWing = math.ceil(n / wingCount)
+    local np = wingIndex / toolsPerWing
+
+    local x = wingSide * wingSpan * np
+    local flapAmount = flapIntensity * (1 - math.cos(np * math.pi)) * (flapProgress - 0.5)
+    local y = baseHeight + flapAmount
+    local z = wingDepth - (np * 0.5)
+    if flapProgress > 0.5 then
+        x = x * (1.1 - (flapProgress - 0.5) * 0.2)
+    end
+
+    local worldPosition = ctx.hrp.CFrame:PointToWorldSpace(Vector3.new(x, y, z))
+    if not validVec(worldPosition) then return end
+    handle.Position = worldPosition
+    local angleFactor = (np * 2 - 1) * flapAmount * 0.5
+    gyro.CFrame = CFrame.new(handle.Position, ctx.pos + Vector3.new(0, angleFactor, 0))
+end
+
+Presets["lemniscate"] = curvePreset(function(u, R)
+    return R * math.sin(u), 2 * math.sin(2 * u), R * math.cos(u)
+end)
+Presets["figure-8"] = curvePreset(function(u, R)
+    return R * math.sin(u), 3 * math.cos(u), R * math.sin(2 * u)
+end)
+Presets["lissajous curve"] = curvePreset(function(u, R)
+    return R * math.sin(2 * u), 0, R * math.sin(3 * u)
+end)
+Presets["infinity symbol"] = curvePreset(function(u, R)
+    return R * math.sin(u), 0, R * math.sin(2 * u)
+end)
+Presets["orbiting rings"] = curvePreset(function(u, R, i)
+    local a = math.rad(15 * (i % 3))
+    return R * math.cos(u) * math.cos(a), R * math.sin(a), R * math.sin(u) * math.cos(a)
+end)
+Presets["dome"] = curvePreset(function(u, R, i)
+    local a = math.rad(15 * (i % 6))
+    return R * math.cos(u) * math.cos(a), R * math.sin(a), R * math.sin(u) * math.cos(a)
+end)
+Presets["heart"] = curvePreset(function(u, R)
+    return R * math.sin(u) ^ 3,
+        0,
+        R * (13 * math.cos(u) - 5 * math.cos(2 * u) - 2 * math.cos(3 * u) - math.cos(4 * u)) / 16
+end)
+Presets["rose curve"] = curvePreset(function(u, R)
+    return R * math.cos(3 * u) * math.cos(u), 0, R * math.cos(3 * u) * math.sin(u)
+end)
+Presets["trefoil knot"] = curvePreset(function(u, R)
+    return R * (math.sin(u) + 2 * math.sin(2 * u)) / 3, R * (-math.sin(3 * u)) / 3, R * (math.cos(u) - 2 * math.cos(2 * u)) / 3
+end, 1)
+
+----------------------------------------------------------------
+-- Smart recovery (watchdog)
+-- If a tool escapes (too far from the target, NaN/huge position, gets dropped on the
+-- ground, or is flying away) it is sent back to the backpack, re-equipped and the
+-- visualizer takes it over again.
+----------------------------------------------------------------
+local function CreateWatchdog(tools, getAnchor, getMaxDist)
+    local wd = { busy = {}, busyCount = 0, tries = {}, dead = {}, lastNotify = 0, grace = tick() + 1.2 }
+
+    local function notify(msg, kind)
+        if tick() - wd.lastNotify > 2 then
+            wd.lastNotify = tick()
+            Notif:Notify(msg, 2.5, kind)
+        end
+    end
+
+    local function recover(tool, anchor)
+        wd.busy[tool] = true
+        wd.busyCount = wd.busyCount + 1
+        wd.tries[tool] = (wd.tries[tool] or 0) + 1
+
+        task.spawn(function()
+            pcall(function()
+                local character = LocalPlayer.Character
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                local backpack = LocalPlayer.Backpack
+                local handle = tool:FindFirstChild("Handle")
+
+                local function settle()
+                    if handle and handle.Parent then
+                        handle.AssemblyLinearVelocity = Vector3.zero
+                        handle.AssemblyAngularVelocity = Vector3.zero
+                        handle.Velocity = Vector3.zero
+                        handle.RotVelocity = Vector3.zero
+                        local g = handle:FindFirstChild("BodyGyro")
+                        if g then g:Destroy() end
+                        if anchor then
+                            handle.CFrame = CFrame.new(anchor + Vector3.new(0, 3, 0))
+                        end
+                    end
+                end
+
+                settle()
+                if tool.Parent and character and humanoid then
+                    if tool.Parent == workspace then
+                        -- it was dropped on the ground
+                        humanoid:EquipTool(tool)
+                    else
+                        -- back to the backpack, then equip again
+                        tool.Parent = backpack
+                        task.wait(0.15)
+                        settle()
+                        tool.Parent = character
+                        tool.Parent = backpack
+                        tool.Parent = humanoid
+                        tool.Parent = character
+                    end
+                    task.wait(0.05)
+                    settle()
+                    if handle and handle.Parent then
+                        handle.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+                    end
+                end
+            end)
+
+            task.wait(0.4) -- let it settle before it can be checked again
+            wd.busy[tool] = nil
+            wd.busyCount = wd.busyCount - 1
+        end)
+    end
+
+    function wd.scan()
+        if not ScriptSettings.Visualizer.AutoRecover then return end
+        if tick() < wd.grace then return end
+        local anchor = getAnchor()
+        if not anchor then return end
+        local maxDist = getMaxDist()
+
+        for _, tool in ipairs(tools) do
+            if not wd.busy[tool] and not wd.dead[tool] then
+                local handle = tool.Parent and tool:FindFirstChild("Handle")
+                if not handle then
+                    wd.dead[tool] = true -- destroyed, nothing to recover
+                else
+                    local bad = false
+                    if tool.Parent == workspace then
+                        bad = true
+                    elseif tool.Parent == LocalPlayer.Character then
+                        local pos = handle.Position
+                        if not validVec(pos) then
+                            bad = true
+                        elseif (pos - anchor).Magnitude > maxDist then
+                            bad = true
+                        elseif handle.AssemblyLinearVelocity.Magnitude > 400 then
+                            bad = true
+                        end
+                    end
+                    -- (tools sitting in the backpack are left alone: that is how you stop the visualizer)
+
+                    if bad then
+                        if (wd.tries[tool] or 0) >= 6 then
+                            wd.dead[tool] = true
+                            notify("gave up on " .. tool.Name, "error")
+                        else
+                            notify("recovered " .. tool.Name, "success")
+                            recover(tool, anchor)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return wd
+end
 
 local Visualize = function()
-
     local character, backpack, hrp = GetLPlrImportant()
+    if not character then return end
 
-    workspace.FallenPartsDestroyHeight = 0 / 0
-    character:WaitForChild("Humanoid"):UnequipTools()
-    task.wait(.2)
+    if #CollectTools() == 0 then
+        return Notif:Notify("no tools found", 3, "error")
+    end
+    local tools = PrepareTools()
 
-    local tools = {}
-    for index, tool in next, backpack:GetChildren() do
-        if tool:IsA("Tool") and tool:FindFirstChild("Handle", true) then
-            tools[#tools+1] = tool
-            tool.Parent = character
-            tool.Parent = backpack
-        end
+    task.wait(.03)
+    task.spawn(PlayAudio)
+
+    local targethrp = ResolveTarget(hrp)
+    if not targethrp then
+        StopTools(tools, hrp)
+        return Notif:Notify("player not found", 3, "error")
     end
 
-    task.spawn(function()
-        task.wait(.15)
+    local humanoid = character:WaitForChild("Humanoid")
+    local ctx = { y = 0 }
 
-        for index, tool in next, character:GetChildren() do
-            if ((tool.Name:sub(1, 5)):lower()):find("boom") and tool:FindFirstChild("Remote") then
-            end
-        end
-
-        for index, value in pairs((character:WaitForChild("Humanoid")):GetPlayingAnimationTracks()) do
-            if value.Name == "ToolNoneAnim" then
-                value:Stop()
-            end
-        end
-
-        task.wait(1)
-        for index, tool in pairs(tools) do
-            if tool:FindFirstChild("Handle") then
-            end
-        end
-
+    local wd = CreateWatchdog(tools, function()
+        return targethrp.Parent and targethrp.Position or nil
+    end, function()
+        return math.max(90, ScriptSettings.Visualizer.Radius * 5 + 60)
     end)
 
-    for index, tool in pairs(tools) do
-        tool.Parent = character
-        tool.Parent = backpack
-        tool.Parent = character:WaitForChild("Humanoid")
-        tool.Parent = character
-        tool.Handle.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
-    end
-    wait(.03)
-    PlayAudio()
-
-
-    local audioMeter = {PlaybackLoudness = 0}
-    local previousLoudness = 0
-    local beatPulse = 0
-    local lastScan
-    local lastBeat = -math.huge
-
-    local function GetSoundSource()
-        local now = tick()
-
-        -- اسکن حداکثر ۳۰ بار در ثانیه انجام می‌شود.
-        if lastScan and now - lastScan < 1 / 30 then
-            return audioMeter
-        end
-
-        local deltaTime = lastScan and math.max(0, now - lastScan) or (1 / 30)
-        lastScan = now
-
-        local loudness = 0
-
-        -- تمام Soundهای داخل ابزارها، حتی اگر بعداً ساخته شده باشند.
-        for _, tool in ipairs(tools) do
-            if tool and tool.Parent then
-                for _, descendant in ipairs(tool:GetDescendants()) do
-                    if descendant:IsA("Sound") and descendant.IsPlaying then
-                        local currentLoudness = descendant.PlaybackLoudness
-                        if currentLoudness > loudness then
-                            loudness = currentLoudness
-                        end
-                    end
-                end
-            end
-        end
-
-        -- تشخیص افزایش ناگهانی صدا و ایجاد ضربهٔ کوتاه.
-        local rise = loudness - previousLoudness
-        if loudness >= 20
-            and rise >= math.max(8, previousLoudness * 0.15)
-            and now - lastBeat >= 0.16 then
-            beatPulse = 1
-            lastBeat = now
-        end
-
-        previousLoudness = loudness
-        beatPulse = math.max(0, beatPulse - deltaTime * 4)
-
-        audioMeter.PlaybackLoudness = math.clamp(loudness + beatPulse * 180, 0, 1000)
-        return audioMeter
-    end
-
-    local y = 0
-
-    local target, targethrp
-    if string.lower(ScriptSettings.Visualizer.Target) ~= "me" then
-        if GetPlayer(ScriptSettings.Visualizer.Target) then
-            target = GetPlayer(ScriptSettings.Visualizer.Target)
-            targethrp = target.Character.HumanoidRootPart
-        else
-            return Notif:Notify("player not found", 3, "error")
-        end
-    else
-        target = LocalPlayer
-        targethrp = hrp
-    end
-
-
-
-    
     repeat
+        if not targethrp.Parent then break end
+        if LocalPlayer.Character ~= character then break end
 
-        (coroutine.wrap(function()
-            for index, tool in next, tools do
-                if tool:FindFirstChild("Handle") then
-                    local handle = tool:FindFirstChild("Handle")
-                    handle.Velocity = Vector3.new(0, 0, -30.9995)
-                    handle.RotVelocity = Vector3.new(0, 0, 0)
-                end
-            end
-        end))()
+        wd.scan()
 
-        local Preset = ScriptSettings.Visualizer.SetVisualizer
-
-        if Preset == "circle 1" then
-
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)
-                local z = (targethrp).Position
-                local b = G.PlaybackLoudness
-                local w = b / 150
-        
-                if not tool and not tool:FindFirstChild("Handle", true) then 
-                    return 
-                end
-        
-                local j
-                local d = ((h * CFrame.Angles(0, math.rad(y + index * (360 / #tools)), 0)) * CFrame.new(-6, 0, 0 + w / 3)).Position
-                local u = index % 2 == 0 and 4 or 2
-                local A = math.sin(tick() * 2) * 3
-                local J = ((h * CFrame.Angles(0, math.rad(y + index * (360 / #tools)), 0)) * CFrame.new(0, u + A, 5 + w / 3)).Position
-                j = CFrame.new(J, z + Vector3.new(0, w, 0)) * CFrame.Angles(6, 0, 0)
-        
-                if tool:FindFirstChild("Handle") then 
-                    tool.Handle.CFrame = j 
-                end
-            end
-            y = y + 1
-
-        elseif Preset == "circle 2" then
-            for index, tool in next, tools do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)
-                local z = (targethrp).Position
-                local b = G.PlaybackLoudness
-                local y = b / 150
-                if not tool and not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * 100
-                local u = 2
-                local A = math.rad(d + index * (360 / #tools))
-                local J = (h * ((CFrame.Angles(math.rad(135), 0, 0) * CFrame.Angles(math.rad(135 * math.cos(u * math.cos((u / 3.5) * tick()))), math.rad(0), math.rad(45 * math.sin(u * math.cos((u / 3.5) * tick()))))) * CFrame.new(((j + 6) - j * math.cos((u * math.cos((u / 3.5) * tick())) / 1.5)) * math.sin(u * math.cos((u / 3.5) * tick()) + 6.625 * (index / #tools)), math.sin((u * math.cos((u / 3.5) * tick()) + 6.625 * (index / #tools)) / .5), ((j + 6) - j * math.sin(u * math.cos((u / 3.5) * tick()) + j / 1.5)) * math.cos(u * math.cos((u / 3.5) * tick()) + 6.625 * (index / #tools))))).p
-                w = CFrame.new(J, z + Vector3.new(0, y, 0)) * CFrame.Angles(6, 0, 0)
-    
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-        
-        elseif Preset == "circle (reactive)" then
-        
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)
-                local z = (targethrp).Position
-                local b = G.PlaybackLoudness
-                local y = b / 150
-                
-                if not tool and not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools))
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                A.Position = (h * CFrame.new((math.cos(u) * ScriptSettings.Visualizer.Radius) * j, math.sin(math.deg(tick() / 7 + ((index * #tools) / math.max(0.1, 5)) / 360)) * 2, (math.sin(u) * ScriptSettings.Visualizer.Radius) * j)).p
-                J.CFrame = CFrame.new(A.Position, z)
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-        elseif Preset == "sine wave" then
-
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)
-                local z = (targethrp).Position
-                
-                if not tool and not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                local b = ScriptSettings.Visualizer.Radius * 100
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools))
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                A.Position = (h * CFrame.new((math.cos(u) * 5) * j, math.sin(math.deg(tick() / 7 + ((index * #tools) / math.max(0.1, 5)) / 360)) * 2, (math.sin(u) * 5) * j)).p
-                J.CFrame = CFrame.new(A.Position, z)
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-        elseif Preset == "halo (visualizer)" then
-
-            local smoothingFactor = 0.1
-        
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)
-                local z = (targethrp).Position
-                local b = G.PlaybackLoudness
-                local w = b / 150
-        
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    continue
-                end
-        
-
-                local minLoudness = 0 
-                local maxLoudness = 1000 
-                local minHeight = -2 
-                local maxHeight = 2 
-        
-               
-                local targetYOffset = math.clamp((b - minLoudness) / (maxLoudness - minLoudness), 0, 1) * (maxHeight - minHeight) + minHeight
-        
-                
-                local currentYOffset = tool.Handle.CFrame.Position.Y - h.Position.Y
-                local smoothedYOffset = currentYOffset + (targetYOffset - currentYOffset) * smoothingFactor
-        
-                
-                local J = ((h * CFrame.Angles(0, math.rad(y + index * (360 / #tools)), 0)) * CFrame.new(0, smoothedYOffset, ScriptSettings.Visualizer.Radius + w / 3)).Position
-                local j = CFrame.new(J, z + Vector3.new(0, smoothedYOffset, 0))
-        
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = j
-                end
-            end
-            y = y + ScriptSettings.Visualizer.Speed
-
-        elseif Preset == "wings (reactive)" then
-
-            for index, tool in pairs(tools) do
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    continue
-                end
-        
-                local G = GetSoundSource()
-                local b = G.PlaybackLoudness
-        
-                local handle = tool:FindFirstChild("Handle")
-                local bodyGyro = handle:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", handle)
-                bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-                bodyGyro.P = 10000
-        
-                local distanceBehind = ScriptSettings.Visualizer.Radius / 2
-        
-                local parabolaCoefficient = 0.5 * (b / 400)
-                parabolaCoefficient = math.clamp(parabolaCoefficient, 0.1, 1)
-        
-                local horizontalSpacing = 2 / (parabolaCoefficient + 1)
-                local xOffset
-                local yOffset
-                if index == 1 then
-                    xOffset = ((#tools + 1) - (#tools / 2)) * horizontalSpacing
-                    yOffset = parabolaCoefficient * ((#tools + 1) - (#tools / 2))^2
-                else
-                    xOffset = (index - (#tools / 2)) * horizontalSpacing
-                    yOffset = parabolaCoefficient * (index - (#tools / 2))^2
-                end
-        
-                local behindPosition = targethrp.CFrame * CFrame.new(xOffset, yOffset, distanceBehind)
-                handle.CFrame = behindPosition
-        
-                bodyGyro.CFrame = CFrame.new(handle.Position, targethrp.Position)
-            end
-
-        elseif Preset == "wave wings" then
-
-
-            for index, tool in pairs(tools) do
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    continue
-                end
-        
-                local G = GetSoundSource()
-                local b = G.PlaybackLoudness
-        
-                local handle = tool:FindFirstChild("Handle")
-                local bodyGyro = handle:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", handle)
-                bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-                bodyGyro.P = 10000
-        
-
-                local distanceBehind = -0.5
-                local verticalSpacing = 1.5
-                local horizontalSpacing = 2
-                local outwardSpacing = -1
-        
-                local line = (index % 2 == 0) and 1 or -1
-        
-                local xOffset = line * horizontalSpacing - (line * outwardSpacing * (math.floor((index + 1) / 2)))
-                local yOffset = (math.floor((index + 1) / 2)) * verticalSpacing
-                local zOffset = -distanceBehind - (math.floor((index + 1) / 2)) * outwardSpacing
-        
-                local behindPosition = targethrp.CFrame * CFrame.new(xOffset, yOffset, zOffset)
-                handle.CFrame = behindPosition
-        
-                local waveAmplitude = 30
-                local waveFrequency = 4 * ScriptSettings.Visualizer.Speed
-                local waveOffset = index * (360 / #tools)
-        
-                local rotationAngle = math.rad(waveAmplitude * math.sin(tick() * waveFrequency + waveOffset))
-        
-                handle.CFrame = handle.CFrame * CFrame.Angles(0, rotationAngle, 0)
-        
-                bodyGyro.CFrame = CFrame.new(handle.Position, targethrp.Position)
-            end
-
-        elseif Preset == "backpack" then
-
-
-            for index, tool in pairs(tools) do
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    continue
-                end
-        
-                local G = GetSoundSource()
-                local b = G.PlaybackLoudness
-        
-                local handle = tool:FindFirstChild("Handle")
-                local bodyGyro = handle:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", handle)
-                bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-                bodyGyro.P = 10000
-        
-        
-                local xOffset = 0
-                local yOffset = 0
-                local zOffset = ScriptSettings.Visualizer.Radius / 5
-        
-                local behindPosition = targethrp.CFrame * CFrame.new(xOffset, yOffset, zOffset)
-                handle.CFrame = behindPosition * CFrame.Angles(0, math.rad(180), 0)
-        
-                local waveAmplitude = 30
-                local waveFrequency = 4 * ScriptSettings.Visualizer.Speed
-                local waveOffset = (360 / #tools)
-        
-                local rotationAngle = math.rad(waveAmplitude * math.sin(tick() * waveFrequency + waveOffset))
-        
-                handle.CFrame = handle.CFrame * CFrame.Angles(0, 0, rotationAngle)
-        
-                bodyGyro.CFrame = CFrame.new(handle.Position, targethrp.Position)
-            end
-
-        elseif Preset == "lemniscate" then
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)
-                local z = (targethrp).Position
-                
-                if not tool and not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local b = 500
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools))
-                
-                
-                local amplitudeX = ScriptSettings.Visualizer.Radius  
-                local amplitudeY = 2  
-                local frequency = 1   
-                
-                
-                local x = amplitudeX * math.sin(u)
-                local y = amplitudeY * math.sin(2 * u)  
-                local z_offset = amplitudeX * math.cos(u)
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                
-                
-                A.Position = (h * CFrame.new(x * j, y, z_offset * j)).p
-                J.CFrame = CFrame.new(A.Position, z)
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-        elseif Preset == "figure-8" then
-        
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position) 
-                local z = (targethrp).Position 
-                
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local b = 500
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools)) 
-                
-                
-                local amplitude = ScriptSettings.Visualizer.Radius  
-                local verticalAmplitude = 3  
-                local speed = 2  
-                
-                
-                local x = amplitude * math.sin(u) 
-                local z_offset = amplitude * math.sin(2 * u) 
-                local y_offset = verticalAmplitude * math.cos(u) 
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                
-                
-                A.Position = (h * CFrame.new(x * j, y_offset * j, z_offset * j)).p
-                J.CFrame = CFrame.new(A.Position, z) 
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-        elseif Preset == "lissajous curve" then
-
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position) 
-                local z = (targethrp).Position 
-                
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local b = 500
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools)) 
-                
-                
-                local lissajousA = ScriptSettings.Visualizer.Radius 
-                local lissajousB = ScriptSettings.Visualizer.Radius 
-                local lissajousFreqX = 2 
-                local lissajousFreqZ = 3 
-                local lissajousSpeed = 2 
-                
-                
-                local x = lissajousA * math.sin(lissajousFreqX * u)
-                local z_offset = lissajousB * math.sin(lissajousFreqZ * u)
-                local y_offset = 0 
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                
-                
-                A.Position = (h * CFrame.new(x * j, y_offset * j, z_offset * j)).p
-                J.CFrame = CFrame.new(A.Position, z)
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-        
-        elseif Preset == "orbiting rings" then
-
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)
-                local z = (targethrp).Position
-                
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local b = 500
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools)) 
-                
-                
-                local ringRadius = ScriptSettings.Visualizer.Radius 
-                local ringSpeed = 2   
-                local ringCount = 3  
-                local ringSpacing = 15 
-                
-                
-                local ringIndex = index % ringCount 
-                local ringAngle = math.rad(ringSpacing * ringIndex) 
-                
-                
-                local x = ringRadius * math.cos(u) * math.cos(ringAngle)
-                local z_offset = ringRadius * math.sin(u) * math.cos(ringAngle)
-                local y_offset = ringRadius * math.sin(ringAngle) 
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                
-                
-                A.Position = (h * CFrame.new(x * j, y_offset * j, z_offset * j)).p
-                J.CFrame = CFrame.new(A.Position, z) 
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-        elseif Preset == "dome" then
-
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)  -- Target position (your position)
-                local z = (targethrp).Position  -- Target position (your position)
-                
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local b = 500
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools))  -- Angle for each tool
-                
-                -- Multiple Orbiting Rings parameters
-                local ringRadius = ScriptSettings.Visualizer.Radius  -- Radius of the rings
-                local ringSpeed = 2   -- Speed of the rings
-                local ringCount = 6   -- Number of rings
-                local ringSpacing = 15  -- Angular spacing between rings (in degrees)
-                
-                -- Calculate the position for each ring
-                local ringIndex = index % ringCount  -- Distribute tools across rings
-                local ringAngle = math.rad(ringSpacing * ringIndex)  -- Angle for this ring's orientation
-                
-                -- Calculate the position in 3D space
-                local x = ringRadius * math.cos(u) * math.cos(ringAngle)
-                local z_offset = ringRadius * math.sin(u) * math.cos(ringAngle)
-                local y_offset = ringRadius * math.sin(ringAngle)  -- Vertical offset for this ring
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                
-                -- Apply the motion for this ring
-                A.Position = (h * CFrame.new(x * j, y_offset * j, z_offset * j)).p
-                J.CFrame = CFrame.new(A.Position, z)  -- Make the tool face the target
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-
-        elseif Preset == "infinity symbol" then
-
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)  -- Target position (your position)
-                local z = (targethrp).Position  -- Target position (your position)
-                
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local b = 500
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools))  -- Angle for each tool
-                
-                -- Infinity Symbol parameters
-                local infinityScale = ScriptSettings.Visualizer.Radius  -- Size of the infinity symbol
-                local infinitySpeed = 2  -- Speed of the motion
-                
-                -- Calculate the Infinity Symbol position
-                local x = infinityScale * math.sin(u)
-                local z_offset = infinityScale * math.sin(2 * u)
-                local y_offset = 0  -- No vertical motion (or add some if desired)
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                
-                -- Apply the Infinity Symbol motion around the target (you)
-                A.Position = (h * CFrame.new(x * j, y_offset * j, z_offset * j)).p
-                J.CFrame = CFrame.new(A.Position, z)  -- Make the tool face the target
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-        elseif Preset == "heart" then
-
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)  -- Target position (your position)
-                local z = (targethrp).Position  -- Target position (your position)
-                
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local b = 500
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools))  -- Angle for each tool
-                
-                -- Heart Shape parameters
-                local heartScale = ScriptSettings.Visualizer.Radius  -- Size of the heart
-                local heartSpeed = 2  -- Speed of the motion
-                
-                -- Calculate the Heart Shape position
-                local x = heartScale * 16 * math.sin(u)^3
-                local z_offset = heartScale * (13 * math.cos(u) - 5 * math.cos(2 * u) - 2 * math.cos(3 * u) - math.cos(4 * u))
-                local y_offset = 0  -- No vertical motion (or add some if desired)
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                
-                -- Apply the Heart Shape motion around the target (you)
-                A.Position = (h * CFrame.new(x * j, y_offset * j, z_offset * j)).p
-                J.CFrame = CFrame.new(A.Position, z)  -- Make the tool face the target
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-        
-        elseif Preset == "rose curve" then
-
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)  -- Target position (your position)
-                local z = (targethrp).Position  -- Target position (your position)
-                
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local b = 500
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed * 20
-                local u = math.rad(d + index * (360 / #tools))  -- Angle for each tool
-                
-                -- Rose Curve parameters
-                local roseScale = ScriptSettings.Visualizer.Radius  -- Size of the rose curve
-                local rosePetals = 3  -- Number of petals
-                local roseSpeed = 0.5   -- Speed of the motion
-                
-                -- Calculate the Rose Curve position
-                local x = roseScale * math.cos(rosePetals * u) * math.cos(u)
-                local z_offset = roseScale * math.cos(rosePetals * u) * math.sin(u)
-                local y_offset = 0  -- No vertical motion (or add some if desired)
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                
-                -- Apply the Rose Curve motion around the target (you)
-                A.Position = (h * CFrame.new(x * j, y_offset * j, z_offset * j)).p
-                J.CFrame = CFrame.new(A.Position, z)  -- Make the tool face the target
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-
-        elseif Preset == "trefoil knot" then
-
-            for index, tool in pairs(tools) do
-                local G = GetSoundSource()
-                local h = CFrame.new((targethrp).Position)  -- Target position (your position)
-                local z = (targethrp).Position  -- Target position (your position)
-                
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-                
-                local b = 500
-                local w
-                local j = b * (1 / 150)
-                local d = 0 + tick() * ScriptSettings.Visualizer.Speed
-                local u = math.rad(d + index * (360 / #tools))  -- Angle for each tool
-                
-                -- Trefoil Knot parameters
-                local trefoilScale = ScriptSettings.Visualizer.Radius  -- Size of the trefoil knot
-                
-                -- Calculate the Trefoil Knot position
-                local x = trefoilScale * (math.sin(u) + 2 * math.sin(2 * u))
-                local z_offset = trefoilScale * (math.cos(u) - 2 * math.cos(2 * u))
-                local y_offset = trefoilScale * (-math.sin(3 * u))  -- Vertical motion
-                
-                local A = tool:FindFirstChild("Handle")
-                local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                
-                -- Apply the Trefoil Knot motion around the target (you)
-                A.Position = (h * CFrame.new(x * j, y_offset * j, z_offset * j)).p
-                J.CFrame = CFrame.new(A.Position, z)  -- Make the tool face the target
-                w = A.CFrame
-                
-                if tool:FindFirstChild("Handle") then
-                    tool.Handle.CFrame = w
-                end
-            end
-            y = y + 1
-
-        elseif Preset == "dna" then
-
-            -- First, make sure you have enough tools - you'll need at least 6 for a good effect
-            if #tools >= 6 then
-                local helixTools = math.floor(#tools * 0.66)  -- 2/3 for helix, 1/3 for rungs
-                local rungTools = #tools - helixTools
-                
-                -- DNA parameters
-                local helixRadius = ScriptSettings.Visualizer.Radius
-                local helixHeight = 10
-                local rotationSpeed = ScriptSettings.Visualizer.Speed
-                local currentTime = tick() * rotationSpeed
-                
-                local targetPos = targethrp.Position
-                local baseCFrame = CFrame.new(targetPos)
-                
-                for index, tool in pairs(tools) do
-                    if not tool or not tool:FindFirstChild("Handle", true) then
-                        continue
-                    end
-                    
-                    local A = tool:FindFirstChild("Handle")
-                    local J = A:FindFirstChild("BodyGyro") or Instance.new("BodyGyro", A)
-                    local distanceScale = 500 * (1 / 150)
-                    
-                    if index <= helixTools then
-                        -- This is a helix tool (main strands)
-                        local strand = index % 2  -- 0 or 1 to alternate strands
-                        local angle = math.rad(currentTime * 50 + index * (360 / (helixTools/2)))
-                        
-                        -- Calculate DNA helix position
-                        local x = helixRadius * math.cos(angle)
-                        local z_offset = helixRadius * math.sin(angle)
-                        local y_offset = helixHeight * (index / helixTools) - (helixHeight / 2)
-                        
-                        -- Alternate the strands
-                        if strand == 1 then
-                            x = -x
-                            z_offset = -z_offset
-                        end
-                        
-                        -- Apply position
-                        A.Position = (baseCFrame * CFrame.new(x * distanceScale, y_offset * distanceScale, z_offset * distanceScale)).p
-                        J.CFrame = CFrame.new(A.Position, targetPos)
-                    else
-                        -- This is a rung tool (connecting lines)
-                        local rungIndex = index - helixTools
-                        local progress = rungIndex / rungTools
-                        local angle = math.rad(currentTime * 50 + progress * 360)
-                        
-                        -- Calculate position between strands
-                        local x1 = helixRadius * math.cos(angle)
-                        local z1 = helixRadius * math.sin(angle)
-                        local x2 = -x1
-                        local z2 = -z1
-                        local y_offset = helixHeight * progress - (helixHeight / 2)
-                        
-                        -- Position at midpoint between strands
-                        local midX = (x1 + x2) / 2
-                        local midZ = (z1 + z2) / 2
-                        
-                        -- Apply position
-                        A.Position = (baseCFrame * CFrame.new(midX * distanceScale, y_offset * distanceScale, midZ * distanceScale)).p
-                        
-                        -- Make the rung tool point from one strand to the other
-                        local pointTarget = baseCFrame * CFrame.new(x2 * distanceScale, y_offset * distanceScale, z2 * distanceScale)
-                        J.CFrame = CFrame.new(A.Position, pointTarget.p)
-                    end
-                    
-                    if tool:FindFirstChild("Handle") then
-                        tool.Handle.CFrame = A.CFrame
-                    end
-                end
-            end
-            y = y + 1
-
-        elseif Preset == "REVAMPED WINGS - Emo Caine" then
-            local chest = targethrp
-        
-            for index, tool in pairs(tools) do
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    continue
-                end
-                
-                local handle = tool.Handle
-                local sound = handle:FindFirstChild("Sound")
-                
-                -- Create or get BodyGyro for rotation control
-                local gyro = handle:FindFirstChild("BodyGyro") or Instance.new("BodyGyro")
-                gyro.P = 10000
-                gyro.D = 1000
-                gyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-                gyro.Parent = handle
-                
-                -- Wing configuration
-                local wingSpan = ScriptSettings.Visualizer.Radius or 5  -- Width of the wings
-                local baseHeight = 0.6  -- Base height of the wing center
-                local wingDepth = 2  -- How far behind the chest the wings are
-                local wingCount = 2   -- Number of wings (2 for left and right)
-                
-                -- Flapping animation parameters
-                local flapSpeed = ScriptSettings.Visualizer.Speed or 1
-                local flapIntensity = 2.0  -- How dramatic the flap is
-                local flapPhase = tick() * flapSpeed
-                
-                -- Current flap state (0-1 value representing flap position)
-                local flapProgress = (math.sin(flapPhase) + 1) / 2  -- Normalize to 0-1
-                
-                -- Calculate wing position (alternates between left and right wings)
-                local wingSide = index % wingCount == 0 and 1 or -1  -- 1 for right, -1 for left
-                local wingIndex = math.floor((index - 1) / wingCount) + 1  -- Which row in the wing
-                
-                -- Total tools per wing
-                local toolsPerWing = math.ceil(#tools / wingCount)
-                
-                -- Wing formation calculations with flapping
-                local normalizedPosition = wingIndex / toolsPerWing  -- 0 to 1 from center to tip
-                
-                -- X position (side to side)
-                local x = wingSide * wingSpan * normalizedPosition
-                
-                -- Y position - tips move more than center
-                local flapAmount = flapIntensity * (1 - math.cos(normalizedPosition * math.pi)) * (flapProgress - 0.5)
-                local y = baseHeight + flapAmount
-                
-                -- Z position (depth)
-                local z = wingDepth - (normalizedPosition * 0.5)  -- Slightly deeper at tips
-                
-                -- Add slight wing folding effect during upstroke
-                if flapProgress > 0.5 then
-                    x = x * (1.1 - (flapProgress - 0.5) * 0.2)
-                end
-                
-                -- Position relative to chest
-                local offset = Vector3.new(x, y, z)
-                local worldPosition = chest.CFrame:PointToWorldSpace(offset)
-                
-                -- Apply position and rotation
-                handle.Position = worldPosition
-                
-                -- Make tools angle according to flap position
-                local angleFactor = (normalizedPosition * 2 - 1) * flapAmount * 0.5
-                local targetLook = chest.Position + Vector3.new(0, angleFactor, 0)
-                gyro.CFrame = CFrame.new(handle.Position, targetLook)
+        -- keep the parts "awake" (anti sleep) without letting the velocity pile up
+        for _, tool in next, tools do
+            local handle = tool:FindFirstChild("Handle")
+            if handle and not wd.busy[tool] then
+                handle.Velocity = Vector3.new(0, 0, -30.9995)
+                handle.RotVelocity = Vector3.zero
             end
         end
-        game:GetService("RunService").Heartbeat:wait()
-    until not character:FindFirstChildWhichIsA("Tool") or (character:WaitForChild("Humanoid")).Health <= 25
 
-
-    for _,tool in tools do
-        if tool and tool:FindFirstChild("Handle") then
-            if tool.Handle:FindFirstChild("BodyGyro") then
-                tool.Handle.BodyGyro:Destroy()
+        local preset = Presets[ScriptSettings.Visualizer.SetVisualizer]
+        if preset then
+            ctx.cf = CFrame.new(targethrp.Position)
+            ctx.pos = targethrp.Position
+            ctx.hrp = targethrp
+            ctx.loud = GetLoudness(tools)
+            local n = #tools
+            for index, tool in ipairs(tools) do
+                if tool.Parent and not wd.busy[tool] and not wd.dead[tool] and tool:FindFirstChild("Handle") then
+                    pcall(preset, tool, index, n, ctx)
+                end
             end
+            ctx.y = ctx.y + 1
         end
-    end
 
+        RunService.Heartbeat:Wait()
+    until (not character:FindFirstChildWhichIsA("Tool") and wd.busyCount == 0) or humanoid.Health <= 25
+
+    -- FIX: stop the tools from drifting away after the visualizer ends
+    StopTools(tools, targethrp.Parent and targethrp or nil)
 end
 
-
+----------------------------------------------------------------
+-- Visualizer 2
+----------------------------------------------------------------
 local Visualize2 = function()
-    
     local character, backpack, hrp = GetLPlrImportant()
-
+    if not character then return end
     local Preset = ScriptSettings.Visualizer2.SetVisualizer
 
-
-    workspace.FallenPartsDestroyHeight = 0 / 0
-    character:WaitForChild("Humanoid"):UnequipTools()
-    task.wait(.2)
-
-    local tools = {}
-    for index, tool in next, backpack:GetChildren() do
-        if tool:IsA("Tool") and tool:FindFirstChild("Handle", true) then
-            tools[#tools+1] = tool
-            tool.Parent = character
-            tool.Parent = backpack
+    -- not enough tools? stop here, before anything gets equipped or dropped
+    if Preset == "boombox man" or Preset == "rc car" then
+        local have = #CollectTools()
+        if have < 7 then
+            return Notif:Notify("not enough tools: " .. have .. "/7", 3, "error")
         end
     end
+
+    local tools = PrepareTools()
 
     local car = nil
     local wheels = {}
-    local G2L = {};
+    local G2L = {}
     local isCarControlActive = false
+
     if Preset == "rc car" then
-        if #tools < 7 then return Notif:Notify("you dont have enough boomboxes: ".. tostring(#tools).."/7", 3, "error") end
+        if #tools < 7 then
+            StopTools(tools, hrp)
+            return Notif:Notify("you dont have enough tools: " .. tostring(#tools) .. "/7", 3, "error")
+        end
 
         car = Instance.new("Model")
         car.Name = "LocalPlayerCar"
@@ -1576,10 +1140,8 @@ local Visualize2 = function()
         chassis.Anchored = false
         chassis.Massless = false
         chassis.CanCollide = true
-        chassis.Parent = car
         chassis.Transparency = 1
-
-        wheels = {}
+        chassis.Parent = car
 
         local function createWheel(pos)
             local wheel = Instance.new("Part")
@@ -1603,10 +1165,6 @@ local Visualize2 = function()
             table.insert(wheels, { wheel = wheel, motor = motor })
         end
 
-        
-        
-        
-
         createWheel(Vector3.new(-2, -1, -2))
         createWheel(Vector3.new(2, -1, -2))
         createWheel(Vector3.new(-2, -1, 2))
@@ -1616,62 +1174,42 @@ local Visualize2 = function()
         car:SetPrimaryPartCFrame(character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -8))
         car.Parent = workspace
 
-        G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
-        G2L["1"]["Name"] = [[CarGuiSyndicate]];
-        G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
-        G2L["1"]["ResetOnSpawn"] = false;
+        G2L["1"] = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+        G2L["1"].Name = "CarGuiSyndicate"
+        G2L["1"].ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        G2L["1"].ResetOnSpawn = false
 
-        G2L["2"] = Instance.new("Frame", G2L["1"]);
-        G2L["2"]["BorderSizePixel"] = 0;
-        G2L["2"]["BackgroundColor3"] = Color3.fromRGB(51, 51, 51);
-        G2L["2"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-        G2L["2"]["BackgroundTransparency"] = 0.44999998807907104;
-        G2L["2"]["Size"] = UDim2.new(0, 200, 0, 50);
-        G2L["2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-        G2L["2"]["Position"] = UDim2.new(0.5, 0, 0.8500000238418579, 0);
+        G2L["2"] = Instance.new("Frame", G2L["1"])
+        G2L["2"].BorderSizePixel = 0
+        G2L["2"].BackgroundColor3 = Color3.fromRGB(51, 51, 51)
+        G2L["2"].AnchorPoint = Vector2.new(0.5, 0.5)
+        G2L["2"].BackgroundTransparency = 0.45
+        G2L["2"].Size = UDim2.new(0, 200, 0, 50)
+        G2L["2"].Position = UDim2.new(0.5, 0, 0.85, 0)
 
-        G2L["3"] = Instance.new("TextButton", G2L["2"]);
-        G2L["3"]["BorderSizePixel"] = 0;
-        G2L["3"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-        G2L["3"]["TextSize"] = 14;
-        G2L["3"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-        G2L["3"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
-        G2L["3"]["Size"] = UDim2.new(1, 0, 1, 0);
-        G2L["3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-        G2L["3"]["Text"] = [[Enable car]];
-        G2L["3"]["BackgroundTransparency"] = 1;
+        G2L["3"] = Instance.new("TextButton", G2L["2"])
+        G2L["3"].BorderSizePixel = 0
+        G2L["3"].TextSize = 14
+        G2L["3"].TextColor3 = Color3.fromRGB(255, 255, 255)
+        G2L["3"].Size = UDim2.new(1, 0, 1, 0)
+        G2L["3"].Text = "Enable car"
+        G2L["3"].BackgroundTransparency = 1
 
-        local turnSpeed = 10
-        local maxSpeed = 30
-        local currentSpeed = 0
-        local acceleration = 2
-        local deceleration = 4
+        local turnSpeed, maxSpeed, currentSpeed, acceleration, deceleration = 10, 30, 0, 2, 4
 
         local function toggleCarControl()
             isCarControlActive = not isCarControlActive
-            
-            if isCarControlActive then
-                character.Humanoid.PlatformStand = true
-                character.HumanoidRootPart.Anchored = true
-            else
-                character.Humanoid.PlatformStand = false
-                character.HumanoidRootPart.Anchored = false
-            end
+            character.Humanoid.PlatformStand = isCarControlActive
+            character.HumanoidRootPart.Anchored = isCarControlActive
         end
 
         local function controlCar()
             while isCarControlActive do
-                local moveDirection = Vector3.new(0, 0, 0)
                 local turning = 0
-                
-                if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.W) then
-                    if currentSpeed < maxSpeed then
-                        currentSpeed = currentSpeed + acceleration
-                    end
-                elseif game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.S) then
-                    if currentSpeed > -maxSpeed then
-                        currentSpeed = currentSpeed - acceleration
-                    end
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                    if currentSpeed < maxSpeed then currentSpeed = currentSpeed + acceleration end
+                elseif UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                    if currentSpeed > -maxSpeed then currentSpeed = currentSpeed - acceleration end
                 else
                     if currentSpeed > 0 then
                         currentSpeed = currentSpeed - deceleration
@@ -1679,28 +1217,18 @@ local Visualize2 = function()
                         currentSpeed = currentSpeed + deceleration
                     end
                 end
-                
-                if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.D) then
-                    turning = turning - turnSpeed
-                end
-                if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.A) then
-                    turning = turning + turnSpeed
-                end
-                
+
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then turning = turning - turnSpeed end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then turning = turning + turnSpeed end
+
                 chassis.CFrame = chassis.CFrame * CFrame.Angles(0, turning * math.rad(1), 0)
-                
                 chassis.Velocity = chassis.CFrame.LookVector * currentSpeed
-                
+
                 if currentSpeed ~= 0 then
                     for _, wheelData in ipairs(wheels) do
-                        local motor = wheelData.motor
-                        motor.Transform = motor.Transform * CFrame.Angles(-math.rad(currentSpeed), 0, 0)
+                        wheelData.motor.Transform = wheelData.motor.Transform * CFrame.Angles(-math.rad(currentSpeed), 0, 0)
                     end
                 end
-                
-                
-                
-                
                 wait(0.1)
             end
         end
@@ -1708,11 +1236,7 @@ local Visualize2 = function()
         local uishit = false
         G2L["3"].MouseButton1Down:Connect(function()
             uishit = not uishit
-            if uishit then
-                G2L["3"].Text = "Disable car"
-            else
-                G2L["3"].Text = "Enable car"
-            end
+            G2L["3"].Text = uishit and "Disable car" or "Enable car"
             toggleCarControl()
             if isCarControlActive then
                 controlCar()
@@ -1720,270 +1244,225 @@ local Visualize2 = function()
         end)
     end
 
-
-
     local FakeCharacter = nil
     if Preset == "boombox man" then
-        if #tools < 7 then return Notif:Notify("you dont have enough boomboxes: ".. tostring(#tools).."/7", 3, "error") end
+        if #tools < 7 then
+            StopTools(tools, hrp)
+            return Notif:Notify("you dont have enough tools: " .. tostring(#tools) .. "/7", 3, "error")
+        end
         character.Archivable = true
         FakeCharacter = character:Clone()
         FakeCharacter.Parent = workspace
-    
 
-        for i,v in pairs(FakeCharacter:GetDescendants()) do
+        for _, v in pairs(FakeCharacter:GetDescendants()) do
             if v:IsA("BasePart") then
                 v.Transparency = 1
             end
         end
-        for i,v in pairs(FakeCharacter.Torso:GetChildren()) do
+        for _, v in pairs(FakeCharacter.Torso:GetChildren()) do
             if v:IsA("Motor6D") then
-                v.C0 = CFrame.new(v.C0.X*1.5,v.C0.Y*1.5,v.C0.Z*1.5) * v.C0.Rotation
-                v.C1 = CFrame.new(v.C1.X*1.5,v.C1.Y*1.5,v.C1.Z*1.5) * v.C1.Rotation
+                v.C0 = CFrame.new(v.C0.X * 1.5, v.C0.Y * 1.5, v.C0.Z * 1.5) * v.C0.Rotation
+                v.C1 = CFrame.new(v.C1.X * 1.5, v.C1.Y * 1.5, v.C1.Z * 1.5) * v.C1.Rotation
             end
         end
         FakeCharacter.Humanoid.HipHeight = 1.2
-        FakeCharacter.Head.face:Destroy()
-    
-        TweenService:Create(hrp, TweenInfo.new(1), {CFrame = hrp.CFrame * CFrame.new(0, 50, 0)}):Play()
+        if FakeCharacter.Head:FindFirstChild("face") then
+            FakeCharacter.Head.face:Destroy()
+        end
+
+        TweenService:Create(hrp, TweenInfo.new(1), { CFrame = hrp.CFrame * CFrame.new(0, 50, 0) }):Play()
         task.wait(1)
         character.HumanoidRootPart.Anchored = true
         workspace.CurrentCamera.CameraSubject = FakeCharacter.Humanoid
-    
 
         local animator = FakeCharacter.Humanoid:FindFirstChildOfClass("Animator")
         if not animator then
             animator = Instance.new("Animator")
             animator.Parent = FakeCharacter.Humanoid
         end
-    
 
-        local animationIds = {
-            walk = 180426354, 
-            run = 180426354, 
-            idle = 180435571,   
-            jump = 125750702 
-        }
-    
-        
         local walkAnim = Instance.new("Animation")
-        walkAnim.AnimationId = "rbxassetid://"..animationIds.walk
+        walkAnim.AnimationId = "rbxassetid://180426354"
         walkAnim.Name = "WalkAnim"
         walkAnim.Parent = FakeCharacter
-    
+
         local idleAnim = Instance.new("Animation")
-        idleAnim.AnimationId = "rbxassetid://"..animationIds.idle
+        idleAnim.AnimationId = "rbxassetid://180435571"
         idleAnim.Name = "IdleAnim"
         idleAnim.Parent = FakeCharacter
-    
+
         local walkTrack = animator:LoadAnimation(walkAnim)
         local idleTrack = animator:LoadAnimation(idleAnim)
-    
         idleTrack:Play()
-    
-        local moveKeys = {
-            W = false,
-            A = false,
-            S = false,
-            D = false
-        }
-        local moveDirection = Vector3.zero
+
+        local moveKeys = { W = false, A = false, S = false, D = false }
         local lastMoveState = false
-    
+        local walkSpeed = 30
+
         local function updateMovement()
-            local x = (moveKeys.D and -3 or 0) + (moveKeys.A and 3 or 0)
-            local z = (moveKeys.W and -3 or 0) + (moveKeys.S and 3 or 0)
-            
-            if x == 0 and z == 0 then
-                moveDirection = Vector3.zero
-                if lastMoveState then
-                    walkTrack:Stop()
-                    idleTrack:Play()
-                    lastMoveState = false
-                end
-            else
-                moveDirection = Vector3.new(x, 0, z).Unit * 3
-                if not lastMoveState then
-                    idleTrack:Stop()
-                    walkTrack:Play()
-                    lastMoveState = true
-                end
+            local moving = moveKeys.W or moveKeys.A or moveKeys.S or moveKeys.D
+            if moving and not lastMoveState then
+                idleTrack:Stop()
+                walkTrack:Play()
+                lastMoveState = true
+            elseif not moving and lastMoveState then
+                walkTrack:Stop()
+                idleTrack:Play()
+                lastMoveState = false
             end
         end
-    
-        local function onInputBegan(input, gameProcessed)
-            if gameProcessed then return end
-    
-            if input.KeyCode == Enum.KeyCode.W then moveKeys.W = true end
-            if input.KeyCode == Enum.KeyCode.A then moveKeys.A = true end
-            if input.KeyCode == Enum.KeyCode.S then moveKeys.S = true end
-            if input.KeyCode == Enum.KeyCode.D then moveKeys.D = true end
-    
-            updateMovement()
+
+        local function setKey(input, state)
+            local name = input.KeyCode.Name
+            if moveKeys[name] ~= nil then
+                moveKeys[name] = state
+                updateMovement()
+            end
         end
-    
-        local function onInputEnded(input, gameProcessed)
-            if gameProcessed then return end
-    
-            if input.KeyCode == Enum.KeyCode.W then moveKeys.W = false end
-            if input.KeyCode == Enum.KeyCode.A then moveKeys.A = false end
-            if input.KeyCode == Enum.KeyCode.S then moveKeys.S = false end
-            if input.KeyCode == Enum.KeyCode.D then moveKeys.D = false end
-    
-            updateMovement()
-        end
-    
-        UserInputService.InputBegan:Connect(onInputBegan)
-        UserInputService.InputEnded:Connect(onInputEnded)
-    
+
+        _G.Connections["BoomBoxManIn"] = UserInputService.InputBegan:Connect(function(input, gp)
+            if gp then return end
+            setKey(input, true)
+        end)
+        _G.Connections["BoomBoxManOut"] = UserInputService.InputEnded:Connect(function(input)
+            setKey(input, false)
+        end)
+
+        -- movement is relative to the camera and the model turns to face where it walks
         _G.Connections["BoomBoxMan"] = RunService.RenderStepped:Connect(function(deltaTime)
-            if FakeCharacter and FakeCharacter:FindFirstChild("HumanoidRootPart") then
-                FakeCharacter.HumanoidRootPart.CFrame = FakeCharacter.HumanoidRootPart.CFrame * CFrame.new(moveDirection * deltaTime * 10)
-            end
+            local fhrp = FakeCharacter and FakeCharacter:FindFirstChild("HumanoidRootPart")
+            if not fhrp then return end
+
+            local forward = (moveKeys.W and 1 or 0) - (moveKeys.S and 1 or 0)
+            local side = (moveKeys.D and 1 or 0) - (moveKeys.A and 1 or 0)
+            if forward == 0 and side == 0 then return end
+
+            local cam = workspace.CurrentCamera
+            local look = Vector3.new(cam.CFrame.LookVector.X, 0, cam.CFrame.LookVector.Z)
+            local right = Vector3.new(cam.CFrame.RightVector.X, 0, cam.CFrame.RightVector.Z)
+            if look.Magnitude < 0.001 or right.Magnitude < 0.001 then return end
+
+            local dir = look.Unit * forward + right.Unit * side
+            if dir.Magnitude < 0.001 then return end
+            dir = dir.Unit
+
+            local newPos = fhrp.Position + dir * walkSpeed * deltaTime
+            local targetRot = CFrame.lookAt(Vector3.zero, dir)
+            local rot = fhrp.CFrame.Rotation:Lerp(targetRot, math.min(1, deltaTime * 14))
+            fhrp.CFrame = CFrame.new(newPos) * rot
         end)
     end
 
-    task.spawn(function()
-        task.wait(.15)
+    task.wait(.03)
+    task.spawn(PlayAudio)
 
-        for index, tool in next, character:GetChildren() do
-            if ((tool.Name:sub(1, 5)):lower()):find("boom") and tool:FindFirstChild("Remote") then
-            end
+    local targethrp = ResolveTarget(hrp)
+    if not targethrp then
+        StopTools(tools, hrp)
+        return Notif:Notify("player not found", 3, "error")
+    end
+
+    local humanoid = character:WaitForChild("Humanoid")
+
+    local wd = CreateWatchdog(tools, function()
+        if Preset == "boombox man" and FakeCharacter then
+            local r = FakeCharacter:FindFirstChild("HumanoidRootPart")
+            return r and r.Position or nil
+        elseif Preset == "rc car" and car and car.PrimaryPart then
+            return car.PrimaryPart.Position
         end
-
-        for index, value in pairs((character:WaitForChild("Humanoid")):GetPlayingAnimationTracks()) do
-            if value.Name == "ToolNoneAnim" then
-                value:Stop()
-            end
-        end
-
-        task.wait(1)
-        for index, tool in pairs(tools) do
-            if tool:FindFirstChild("Handle") then
-            end
-        end
-
+        return nil
+    end, function()
+        return 40
     end)
 
-    for index, tool in pairs(tools) do
-        tool.Parent = character
-        tool.Parent = backpack
-        tool.Parent = character:WaitForChild("Humanoid")
-        tool.Parent = character
-        tool.Handle.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
-    end
-    wait(.03)
-    PlayAudio()
-
-
-    local y = 0
-
-    local target, targethrp
-    if string.lower(ScriptSettings.Visualizer.Target) ~= "me" then
-        if GetPlayer(ScriptSettings.Visualizer.Target) then
-            target = GetPlayer(ScriptSettings.Visualizer.Target)
-            targethrp = target.Character.HumanoidRootPart
-        else
-            return Notif:Notify("player not found", 3, "error")
-        end
-    else
-        target = LocalPlayer
-        targethrp = hrp
-    end
-
-
-
-    
     repeat
+        if LocalPlayer.Character ~= character then break end
 
-        (coroutine.wrap(function()
-            for index, tool in next, tools do
-                if tool:FindFirstChild("Handle") then
-                    local handle = tool:FindFirstChild("Handle")
-                    handle.Velocity = Vector3.new(0, 0, -30.9995)
-                    handle.RotVelocity = Vector3.new(0, 0, 0)
-                end
+        wd.scan()
+
+        -- only the tools that are actually used get the anti-sleep velocity
+        for i = 1, math.min(#tools, 7) do
+            local handle = tools[i]:FindFirstChild("Handle")
+            if handle and not wd.busy[tools[i]] then
+                handle.Velocity = Vector3.new(0, 0, -30.9995)
+                handle.RotVelocity = Vector3.zero
             end
-        end))()
-
-
-        if Preset == "boombox man" then
-
-            if #tools < 7 then
-                continue
-            end
-
-            for _,tool in pairs(tools) do
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-            end
-
-            local char = FakeCharacter
-            local SleepOffset = Vector3.new(0,math.sin(tick()*15)*0.05,0)
-            tools[1].Handle.CFrame = char.Head.CFrame + SleepOffset
-            tools[2].Handle.CFrame = char.Torso.CFrame * CFrame.Angles(0,0,math.rad(-180)) + char.Torso.CFrame.UpVector * .5 + SleepOffset
-            tools[3].Handle.CFrame = char.Torso.CFrame + char.Torso.CFrame.UpVector * -.5 + SleepOffset
-            tools[4].Handle.CFrame = char["Right Arm"].CFrame * CFrame.Angles(0,0,math.rad(-90)) + SleepOffset
-            tools[5].Handle.CFrame = char["Right Leg"].CFrame * CFrame.Angles(0,0,math.rad(-90)) + char["Right Leg"].CFrame.UpVector * .25 + SleepOffset + char["Right Leg"].CFrame.RightVector * .1
-            tools[6].Handle.CFrame = char["Left Arm"].CFrame * CFrame.Angles(0,0,math.rad(90)) + SleepOffset
-            tools[7].Handle.CFrame = char["Left Leg"].CFrame * CFrame.Angles(0,0,math.rad(90)) + char["Left Leg"].CFrame.UpVector * .25 + SleepOffset + char["Left Leg"].CFrame.RightVector * -.1
-
-        elseif Preset == "rc car" then
-            if #tools < 5 then
-                continue
-            end
-
-            for _,tool in pairs(tools) do
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-            end
-
-            tools[1].Handle.CFrame = wheels[1].wheel.CFrame * CFrame.Angles(0,math.rad(90),0) * CFrame.new(0, 0, .2)
-            tools[2].Handle.CFrame = wheels[2].wheel.CFrame * CFrame.Angles(0,math.rad(90),0) * CFrame.new(0, 0, -.2)
-            tools[3].Handle.CFrame = wheels[3].wheel.CFrame * CFrame.Angles(0,math.rad(90),0) * CFrame.new(0, 0, .2)
-            tools[4].Handle.CFrame = wheels[4].wheel.CFrame * CFrame.Angles(0,math.rad(90),0) * CFrame.new(0, 0, -.2)
-
-            tools[5].Handle.CFrame = car.PrimaryPart.CFrame * CFrame.Angles(math.rad(90),0,math.rad(90)) * CFrame.new(-1, 0, .5)
-            tools[6].Handle.CFrame = car.PrimaryPart.CFrame * CFrame.Angles(math.rad(90),0,math.rad(90)) * CFrame.new(0, 0, .5)
-            tools[7].Handle.CFrame = car.PrimaryPart.CFrame * CFrame.Angles(math.rad(90),0,math.rad(90)) * CFrame.new(1, 0, .5)
-
-        elseif Preset == "sniper" then
-            if #tools < 5 then
-                continue
-            end
-        
-            for _,tool in pairs(tools) do
-                if not tool or not tool:FindFirstChild("Handle", true) then
-                    return
-                end
-            end
-
         end
-        game:GetService("RunService").Heartbeat:wait()
-    until not character:FindFirstChildWhichIsA("Tool") or (character:WaitForChild("Humanoid")).Health <= 25
 
-    workspace.CurrentCamera.CameraSubject = character.Humanoid
-    character.HumanoidRootPart.Anchored = false
-    character.Humanoid.PlatformStand = false
-    if FakeCharacter then
-        FakeCharacter:Destroy()
+        local allOk = #tools >= 7
+        for _, tool in pairs(tools) do
+            if not tool.Parent or not tool:FindFirstChild("Handle") then
+                allOk = false
+            end
+        end
+
+        if allOk then
+            -- extra tools (more than 7) are parked on the model so they can't drift away
+            local parkCF
+            if Preset == "boombox man" and FakeCharacter and FakeCharacter:FindFirstChild("Torso") then
+                parkCF = FakeCharacter.Torso.CFrame
+            elseif Preset == "rc car" and car and car.PrimaryPart then
+                parkCF = car.PrimaryPart.CFrame
+            end
+            if parkCF then
+                for i = 8, #tools do
+                    local h = tools[i]:FindFirstChild("Handle")
+                    if h and not wd.busy[tools[i]] then
+                        h.CFrame = parkCF
+                        h.Velocity = Vector3.zero
+                    end
+                end
+            end
+
+            if Preset == "boombox man" and FakeCharacter and FakeCharacter:FindFirstChild("Torso") then
+                local char = FakeCharacter
+                local SleepOffset = Vector3.new(0, math.sin(tick() * 15) * 0.05, 0)
+                tools[1].Handle.CFrame = char.Head.CFrame + SleepOffset
+                tools[2].Handle.CFrame = char.Torso.CFrame * CFrame.Angles(0, 0, math.rad(-180)) + char.Torso.CFrame.UpVector * .5 + SleepOffset
+                tools[3].Handle.CFrame = char.Torso.CFrame + char.Torso.CFrame.UpVector * -.5 + SleepOffset
+                tools[4].Handle.CFrame = char["Right Arm"].CFrame * CFrame.Angles(0, 0, math.rad(-90)) + SleepOffset
+                tools[5].Handle.CFrame = char["Right Leg"].CFrame * CFrame.Angles(0, 0, math.rad(-90)) + char["Right Leg"].CFrame.UpVector * .25 + SleepOffset + char["Right Leg"].CFrame.RightVector * .1
+                tools[6].Handle.CFrame = char["Left Arm"].CFrame * CFrame.Angles(0, 0, math.rad(90)) + SleepOffset
+                tools[7].Handle.CFrame = char["Left Leg"].CFrame * CFrame.Angles(0, 0, math.rad(90)) + char["Left Leg"].CFrame.UpVector * .25 + SleepOffset + char["Left Leg"].CFrame.RightVector * -.1
+
+            elseif Preset == "rc car" and car and car.PrimaryPart then
+                tools[1].Handle.CFrame = wheels[1].wheel.CFrame * CFrame.Angles(0, math.rad(90), 0) * CFrame.new(0, 0, .2)
+                tools[2].Handle.CFrame = wheels[2].wheel.CFrame * CFrame.Angles(0, math.rad(90), 0) * CFrame.new(0, 0, -.2)
+                tools[3].Handle.CFrame = wheels[3].wheel.CFrame * CFrame.Angles(0, math.rad(90), 0) * CFrame.new(0, 0, .2)
+                tools[4].Handle.CFrame = wheels[4].wheel.CFrame * CFrame.Angles(0, math.rad(90), 0) * CFrame.new(0, 0, -.2)
+                tools[5].Handle.CFrame = car.PrimaryPart.CFrame * CFrame.Angles(math.rad(90), 0, math.rad(90)) * CFrame.new(-1, 0, .5)
+                tools[6].Handle.CFrame = car.PrimaryPart.CFrame * CFrame.Angles(math.rad(90), 0, math.rad(90)) * CFrame.new(0, 0, .5)
+                tools[7].Handle.CFrame = car.PrimaryPart.CFrame * CFrame.Angles(math.rad(90), 0, math.rad(90)) * CFrame.new(1, 0, .5)
+            end
+        end
+
+        RunService.Heartbeat:Wait()
+    until (not character:FindFirstChildWhichIsA("Tool") and wd.busyCount == 0) or humanoid.Health <= 25
+
+    StopTools(tools, character:FindFirstChild("HumanoidRootPart"))
+
+    if character.Parent then
+        workspace.CurrentCamera.CameraSubject = humanoid
+        character.HumanoidRootPart.Anchored = false
+        humanoid.PlatformStand = false
     end
-
-    if car then
-        car:Destroy()
+    if FakeCharacter then FakeCharacter:Destroy() end
+    if car then car:Destroy() end
+    if G2L["1"] then G2L["1"]:Destroy() end
+    for _, k in ipairs({ "BoomBoxMan", "BoomBoxManIn", "BoomBoxManOut" }) do
+        if _G.Connections[k] then
+            _G.Connections[k]:Disconnect()
+            _G.Connections[k] = nil
+        end
     end
-
-    if G2L and G2L["1"] then
-        G2L["1"]:Destroy()
-    end
-
     isCarControlActive = false
-
 end
 
-
-local Wm = library:Watermark("syndicate visualizer | v" .. library.version ..  " | " .. library:GetUsername())
+----------------------------------------------------------------
+-- UI
+----------------------------------------------------------------
+local Wm = library:Watermark("syndicate visualizer | v" .. library.version .. " | " .. library:GetUsername())
 local FpsWm = Wm:AddWatermark("fps: " .. library.fps)
 coroutine.wrap(function()
     while wait(.75) do
@@ -1991,11 +1470,10 @@ coroutine.wrap(function()
     end
 end)()
 
-library.title = "syndicate visualizer Updated And Cracked By C00LHACK"
-
+library.title = "Syndicate Visualizer Updated & Cracked By C00LHACK"
 library:Introduction()
---wait(1)
 
+print("[syndicate] building ui...")
 local Init = library:Init()
 local PlayerTab = Init:NewTab("Audio player")
 local VisualizerTab = Init:NewTab("Visualizer")
@@ -2006,38 +1484,48 @@ local MiscTab = Init:NewTab("Misc")
 local FunTab = Init:NewTab("Fun")
 local SettingsTab = Init:NewTab("Settings")
 
-SettingsTab:NewSelector("Antilogger type", "syndicate!", {"syndicate!", "fanta"}, function(val)
+SettingsTab:NewSelector("Antilogger type", "syndicate!", { "syndicate!", "fanta" }, function(val)
     ScriptSettings.Settings.AntiLoggerType = val
 end)
-
-SettingsTab:NewLabel("credits to syndicate and to fanta for their anti logger",  "center")
+SettingsTab:NewLabel("credits to syndicate and to fanta for their anti logger", "center")
 
 PlayerTab:NewTextbox("Audio Id", "", "00000000", "all", "small", true, false, function(val)
-    ScriptSettings.Player.AudioId = tonumber(val)
+    local num = tostring(val or ""):match("%d+")
+    ScriptSettings.Player.AudioId = num and tonumber(num) or nil
 end)
-PlayerTab:NewTextbox("Pitch", "", "1", "all", "small", true, false, function(val)
-    ScriptSettings.Player.Pitch = tonumber(val)
+PlayerTab:NewSelector("Send mode", "Auto", { "Auto", "Obfuscated", "Plain" }, function(val)
+    ScriptSettings.Player.Mode = val
 end)
 PlayerTab:NewButton("Play", function()
-    EquipAll()
-    task.wait(.2)
-    PlayAudio()
+    task.spawn(function()
+        local ok, err = pcall(function()
+            EquipAudioTools()
+            task.wait(.25)
+            PlayAudio()
+        end)
+        if not ok then
+            Notif:Notify("play error: " .. tostring(err), 5, "error")
+            warn("[syndicate] play error:", err)
+        end
+    end)
 end)
 PlayerTab:NewButton("Sync", function()
-    SyncAudio()
+    task.spawn(function()
+        local ok, err = pcall(SyncAudio)
+        if not ok then
+            Notif:Notify("sync error: " .. tostring(err), 5, "error")
+            warn("[syndicate] sync error:", err)
+        end
+    end)
 end)
 
 
 DupeTab:NewTextbox("Amount", "", "1", "all", "small", true, false, function(val)
     ScriptSettings.Duper.Ammount = tonumber(val)
 end)
-
-
 DupeTab:NewToggle("Vip gamepass?", false, function(value)
     ScriptSettings.Duper.Vip = value
 end)
-
-
 DupeTab:NewButton("Dupe", function()
     DupeBoomboxes()
 end)
@@ -2045,40 +1533,36 @@ DupeTab:NewButton("Stop", function()
     ScriptSettings.Duper.PanicStop = true
 end)
 
-
-
 VisualizerTab:NewSelector("Preset", "halo (visualizer)", visualizers, function(val)
     ScriptSettings.Visualizer.SetVisualizer = val
 end)
+VisualizerTab:NewToggle("Auto recover lost tools", true, function(value)
+    ScriptSettings.Visualizer.AutoRecover = value
+end)
 
-VisualizerTab:NewSlider("Speed", "", true, "/", {min = 1, max = 50, default = 1}, function(value)
+VisualizerTab:NewSelector("Visualize tools", "All Tools", { "All Tools", "Only Boombox" }, function(val)
+    ScriptSettings.Visualizer.ToolMode = val
+end)
+
+VisualizerTab:NewSlider("Speed", "", true, "/", { min = 1, max = 50, default = 1 }, function(value)
     ScriptSettings.Visualizer.Speed = value
 end)
-
-VisualizerTab:NewSlider("Radius", "", true, "/", {min = 1, max = 50, default = 1}, function(value)
+VisualizerTab:NewSlider("Radius", "", true, "/", { min = 1, max = 50, default = 6 }, function(value)
     ScriptSettings.Visualizer.Radius = value
 end)
-
 VisualizerTab:NewTextbox("Target (me for local plr)", "", "me", "all", "small", true, false, function(val)
     ScriptSettings.Visualizer.Target = val
 end)
-
 VisualizerTab:NewButton("Visualize", function()
     Visualize()
 end)
 
-
-
-Visualizer2Tab:NewSelector("Preset", "boombox man", {"boombox man", "rc car"}, function(val)
+Visualizer2Tab:NewSelector("Preset", "boombox man", { "boombox man", "rc car" }, function(val)
     ScriptSettings.Visualizer2.SetVisualizer = val
 end)
-
 Visualizer2Tab:NewButton("Visualize", function()
     Visualize2()
 end)
-
-
-
 
 local removedMeshes = {}
 
@@ -2087,7 +1571,6 @@ MiscTab:NewToggle("Remove Mesh", false, function(value)
         if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
             local handle = tool.Handle
             local mesh = handle:FindFirstChild("Mesh")
-
             if value then
                 if mesh then
                     removedMeshes[handle] = mesh:Clone()
@@ -2111,10 +1594,7 @@ MiscTab:NewToggle("Boombox ripper", false, function(value)
     ScriptSettings.Misc.Stealing = value
 end)
 
-
-
-MiscTab:NewToggle("Anti fling (stops those fucking faggots)", false, function(value)
-
+MiscTab:NewToggle("Anti fling", false, function(value)
     if value then
         _G.Connections["AntiFling"] = RunService.Stepped:Connect(function()
             for _, player in pairs(Players:GetPlayers()) do
@@ -2135,12 +1615,10 @@ MiscTab:NewToggle("Anti fling (stops those fucking faggots)", false, function(va
             Notif:Notify("Disabled anti fling", 3, "success")
         end
     end
-
 end)
 
-
 VisualizerTab:NewButton("disable roll off", function()
-    for _,tool in next, LocalPlayer.Character:GetChildren() do
+    for _, tool in next, LocalPlayer.Character:GetChildren() do
         if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
             for _, sound in pairs(tool.Handle:GetChildren()) do
                 if sound:IsA("Sound") then
@@ -2153,28 +1631,20 @@ end)
 
 _G.Connections["DisableUi"] = LocalPlayer.Character.ChildAdded:Connect(function(child)
     if child:IsA("Tool") and child:FindFirstChild("Client") then
-        if ScriptSettings.Misc.DisableUi then
-            child.Client.Enabled = false
-        else
-            child.Client.Enabled = true
-        end
+        child.Client.Enabled = not ScriptSettings.Misc.DisableUi
     end
 end)
-
 
 _G.Connections["BoomBoxStealer"] = game.Workspace.ChildAdded:Connect(function(child)
     if child:IsA("BackpackItem") and child:FindFirstChild("Handle") and ScriptSettings.Misc.Stealing then
         task.spawn(function()
             LocalPlayer.Character.Humanoid:EquipTool(child)
-
             task.wait(.15)
-
-            for _,v in next, LocalPlayer.Character:GetChildren() do
+            for _, v in next, LocalPlayer.Character:GetChildren() do
                 if v:IsA("Tool") and v:FindFirstChild("Handle") then
                     v.Parent = LocalPlayer.Backpack
                 end
             end
-
             Notif:Notify("yoinked some skids boombox", 3, "success")
         end)
     end
@@ -2190,7 +1660,6 @@ local GoodSongs = {
 }
 
 local songNames = {}
-
 for songName, _ in pairs(GoodSongs) do
     table.insert(songNames, songName)
 end
@@ -2200,13 +1669,11 @@ SongsTab:NewSelector("Selector", "none", songNames, function(val)
 end)
 
 SongsTab:NewButton("Set song", function()
-    local selectedSongName = ScriptSettings.Songs.Selected
-    local songID = GoodSongs[selectedSongName]
+    local songID = GoodSongs[ScriptSettings.Songs.Selected]
     if songID then
         ScriptSettings.Player.AudioId = songID
     end
 end)
-
 
 if not game.Workspace:FindFirstChild("colli") then
     local colli = game:GetObjects("rbxassetid://91309023015769")[1]
@@ -2214,7 +1681,6 @@ if not game.Workspace:FindFirstChild("colli") then
     colli:MoveTo(Vector3.new(10000, 5000, 10000))
     colli.Name = "colli"
 end
-
 
 local arewethereyet = false
 local ogposfromarewethereyet = LocalPlayer.Character.HumanoidRootPart.CFrame
@@ -2229,62 +1695,28 @@ FunTab:NewButton("syndicate hangout", function()
     end
 end)
 
-
---loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/scriptrea21"))()
-
-
 if setsimulationradius ~= nil and sethiddenproperty ~= nil then
-    --[[local sethiddenproperty = function(obj, prop, value)
-        setscriptable(obj, prop, true)
-        obj[prop] = value
-    end
-    
-    
-    local NetworkAccess = coroutine.create(function()
-        settings().Physics.AllowSleep = false
-        while game:GetService("RunService").RenderStepped:Wait() do
-            for _, Players in next, game:GetService("Players"):GetPlayers() do
-                if Players ~= game:GetService("Players").LocalPlayer then
-                    Players.MaximumSimulationRadius = 0 
-                    sethiddenproperty(Players, "SimulationRadius", 0) 
-                end 
-            end
-            game:GetService("Players").LocalPlayer.MaximumSimulationRadius = math.pow(math.huge,math.huge)
-            --setsimulationradius(math.huge) 
-        end 
-    end) 
-    coroutine.resume(NetworkAccess)
-]]
-
-    spawn(
-        function()
-            for _, ServerPlayer in pairs(Players:GetPlayers()) do
-                if ServerPlayer.Name == LocalPlayer.Name then
-                    _G.Connections[LocalPlayer.Name] = RunService.Stepped:Connect(
-                        function()
-                            settings().Physics.AllowSleep = false
-                            setsimulationradius(math.huge * math.huge, math.huge * math.huge)
-                        end
-                    )
-                else
-                    _G.Connections[ServerPlayer.Name] = RunService.Stepped:Connect(
-                        function()
-                            sethiddenproperty(ServerPlayer, "MaximumSimulationRadius", 0)
-                            sethiddenproperty(ServerPlayer, "SimulationRadius", 0)
-                        end
-                    )
-                end
-            end
-        end
-    )
-    Players.PlayerAdded:Connect(
-        function(ServerPlayer)
-            _G.Connections[ServerPlayer.Name] = RunService.Stepped:Connect(
-                function()
+    spawn(function()
+        for _, ServerPlayer in pairs(Players:GetPlayers()) do
+            if ServerPlayer.Name == LocalPlayer.Name then
+                _G.Connections[LocalPlayer.Name] = RunService.Stepped:Connect(function()
+                    settings().Physics.AllowSleep = false
+                    setsimulationradius(math.huge * math.huge, math.huge * math.huge)
+                end)
+            else
+                _G.Connections[ServerPlayer.Name] = RunService.Stepped:Connect(function()
                     sethiddenproperty(ServerPlayer, "MaximumSimulationRadius", 0)
                     sethiddenproperty(ServerPlayer, "SimulationRadius", 0)
-                end
-            )
+                end)
+            end
         end
-    )
+    end)
+    Players.PlayerAdded:Connect(function(ServerPlayer)
+        _G.Connections[ServerPlayer.Name] = RunService.Stepped:Connect(function()
+            sethiddenproperty(ServerPlayer, "MaximumSimulationRadius", 0)
+            sethiddenproperty(ServerPlayer, "SimulationRadius", 0)
+        end)
+    end)
 end
+
+print("Thanks for supporting syndicate!")
