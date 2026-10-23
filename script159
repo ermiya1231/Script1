@@ -238,24 +238,49 @@ miniBtn.ZIndex = 3
 miniBtn.Parent = title
 corner(miniBtn, 8)
 
--- درگ از تایتل
-do
-	local dragging, dragStart, startPos
-	title.InputBegan:Connect(function(input)
+-- سیستم درگ (handle = جایی که می‌گیریش، targetFrame = چیزی که حرکت می‌کنه)
+local function makeDraggable(targetFrame, handle)
+	handle = handle or targetFrame
+	local uis = game:GetService("UserInputService")
+	local tweenService = game:GetService("TweenService")
+
+	local dragging, dragInput, dragStart, startPos
+
+	handle.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging, dragStart, startPos = true, input.Position, main.Position
+			dragging = true
+			dragStart = input.Position
+			startPos = targetFrame.Position
+
 			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then dragging = false end
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
 			end)
 		end
 	end)
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local d = input.Position - dragStart
-			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+
+	handle.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	uis.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			local delta = input.Position - dragStart
+			local newPos = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+			tweenService:Create(targetFrame, TweenInfo.new(0.15), { Position = newPos }):Play()
 		end
 	end)
 end
+
+makeDraggable(main, title)
 
 -- بدنه
 local body = Instance.new("Frame")
