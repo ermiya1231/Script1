@@ -1,0 +1,468 @@
+-- LocalScript: بذارش توی StarterPlayer > StarterPlayerScripts
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local DENSITY_MIN, DENSITY_MAX = 0, 100
+local FRAME_BUDGET = 0.002 -- حداکثر ۲ میلی‌ثانیه کار در هر فریم => بدون لگ
+
+local enabled = false
+local appliedDensity = 0
+local sliderDensity = 0
+local originals = setmetatable({}, { __mode = "k" })
+local modifiedCount = 0
+
+----------------------------------------------------------------
+-- سیستم صف (پردازش تدریجی، بدون لگ)
+----------------------------------------------------------------
+local queue, qHead, qTail = {}, 1, 0
+local mode = "apply" -- "apply" | "restore"
+local addedConn
+
+local function resetQueue(newQueue, newMode)
+	queue = newQueue or {}
+	qHead, qTail = 1, #queue
+	mode = newMode
+end
+
+local function push(inst)
+	qTail += 1
+	queue[qTail] = inst
+end
+
+local function makeProps(density)
+	return PhysicalProperties.new(math.max(density, 0.01), 0.3, 0.5, 1, 1)
+end
+
+-- پارت‌های پلیرها نادیده گرفته میشن
+local function isPlayerPart(part)
+	local model = part:FindFirstAncestorOfClass("Model")
+	while model do
+		if Players:GetPlayerFromCharacter(model) then
+			return true
+		end
+		model = model:FindFirstAncestorOfClass("Model")
+	end
+	return false
+end
+
+local function lighten(part)
+	if not part:IsA("BasePart") then return end
+	local o = originals[part]
+	if o then
+		if o.Density == appliedDensity then return end -- قبلاً اعمال شده، لازم نیست دوباره
+	elseif isPlayerPart(part) then
+		return
+	else
+		o = { Massless = part.Massless, Props = part.CustomPhysicalProperties }
+		originals[part] = o
+		modifiedCount += 1
+	end
+	o.Density = appliedDensity
+	pcall(function()
+		part.Massless = true
+		part.CustomPhysicalProperties = makeProps(appliedDensity)
+	end)
+end
+
+local function restore(part)
+	local o = originals[part]
+	if not o then return end
+	if part.Parent then
+		pcall(function()
+			part.Massless = o.Massless
+			part.CustomPhysicalProperties = o.Props
+		end)
+	end
+	originals[part] = nil
+	modifiedCount = math.max(modifiedCount - 1, 0)
+end
+
+RunService.Heartbeat:Connect(function()
+	if qHead > qTail then
+		if qTail > 0 then queue, qHead, qTail = {}, 1, 0 end
+		return
+	end
+	local t = os.clock()
+	local fn = (mode == "apply") and lighten or restore
+	while qHead <= qTail and os.clock() - t < FRAME_BUDGET do
+		local item = queue[qHead]
+		queue[qHead] = nil
+		qHead += 1
+		if item then fn(item) end
+	end
+end)
+
+local function startApply()
+	if addedConn then addedConn:Disconnect() end
+	resetQueue(workspace:GetDescendants(), "apply") -- صف همون لیسته، بدون کپی اضافه
+	addedConn = workspace.DescendantAdded:Connect(function(d)
+		if d:IsA("BasePart") then push(d) end
+	end)
+end
+
+local function startRestore()
+	if addedConn then addedConn:Disconnect() addedConn = nil end
+	local list = {}
+	for part in pairs(originals) do
+		list[#list + 1] = part
+	end
+	resetQueue(list, "restore")
+end
+
+----------------------------------------------------------------
+-- ابزار UI
+----------------------------------------------------------------
+local gradients = {}
+local RAINBOW = ColorSequence.new({
+	ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 80)),
+	ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 200, 0)),
+	ColorSequenceKeypoint.new(0.33, Color3.fromRGB(80, 255, 0)),
+	ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 255, 220)),
+	ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 80, 255)),
+	ColorSequenceKeypoint.new(0.83, Color3.fromRGB(200, 0, 255)),
+	ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 80)),
+})
+
+local function rgbStroke(parent, thickness)
+	local s = Instance.new("UIStroke")
+	s.Thickness = thickness
+	s.Color = Color3.new(1, 1, 1)
+	s.Parent = parent
+	local g = Instance.new("UIGradient")
+	g.Color = RAINBOW
+	g.Parent = s
+	gradients[#gradients + 1] = g
+	return s
+end
+
+local function corner(parent, r)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, r)
+	c.Parent = parent
+	return c
+end
+
+local function hover(btn, normal, over)
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.15), { BackgroundColor3 = over }):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.15), { BackgroundColor3 = normal() }):Play()
+	end)
+end
+
+-- یک لوپ برای همه‌ی گرادیانت‌ها (سبک)
+do
+	local rot = 0
+	RunService.RenderStepped:Connect(function(dt)
+		rot = (rot + dt * 120) % 360
+		for _, g in ipairs(gradients) do
+			g.Rotation = rot
+		end
+	end)
+end
+
+----------------------------------------------------------------
+-- UI اصلی
+----------------------------------------------------------------
+local gui = Instance.new("ScreenGui")
+gui.Name = "MasslessPanel"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local FULL_SIZE = UDim2.fromOffset(310, 250)
+local MINI_SIZE = UDim2.fromOffset(310, 42)
+
+local main = Instance.new("Frame")
+main.Size = UDim2.fromOffset(0, 0)
+main.Position = UDim2.new(0.5, -155, 0.5, -125)
+main.BackgroundColor3 = Color3.fromRGB(16, 16, 24)
+main.BorderSizePixel = 0
+main.Active = true
+main.ClipsDescendants = false
+main.Parent = gui
+corner(main, 14)
+rgbStroke(main, 3) -- حاشیه RGB دور پنل
+
+local mainGrad = Instance.new("UIGradient")
+mainGrad.Color = ColorSequence.new(Color3.fromRGB(26, 22, 44), Color3.fromRGB(12, 14, 22))
+mainGrad.Rotation = 90
+mainGrad.Parent = main
+
+-- تایتل
+local title = Instance.new("Frame")
+title.Size = UDim2.new(1, 0, 0, 42)
+title.BackgroundColor3 = Color3.new(1, 1, 1)
+title.BorderSizePixel = 0
+title.Parent = main
+corner(title, 14)
+local tg = Instance.new("UIGradient")
+tg.Color = ColorSequence.new(Color3.fromRGB(110, 50, 255), Color3.fromRGB(0, 190, 255))
+tg.Parent = title
+task.spawn(function()
+	local r = 0
+	while gui.Parent do
+		r = (r + 2) % 360
+		tg.Rotation = r
+		task.wait(0.04)
+	end
+end)
+
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, -50, 1, 0)
+titleText.Position = UDim2.fromOffset(12, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "⚡ MASSLESS HUB"
+titleText.Font = Enum.Font.GothamBlack
+titleText.TextSize = 20
+titleText.TextColor3 = Color3.new(1, 1, 1)
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.ZIndex = 2
+titleText.Parent = title
+rgbStroke(titleText, 1.5) -- حاشیه RGB دور متن
+
+local miniBtn = Instance.new("TextButton")
+miniBtn.Size = UDim2.fromOffset(30, 30)
+miniBtn.Position = UDim2.new(1, -38, 0, 6)
+miniBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+miniBtn.BackgroundTransparency = 0.3
+miniBtn.Text = "–"
+miniBtn.Font = Enum.Font.GothamBold
+miniBtn.TextSize = 20
+miniBtn.TextColor3 = Color3.new(1, 1, 1)
+miniBtn.ZIndex = 3
+miniBtn.Parent = title
+corner(miniBtn, 8)
+
+-- درگ از تایتل
+do
+	local dragging, dragStart, startPos
+	title.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging, dragStart, startPos = true, input.Position, main.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then dragging = false end
+			end)
+		end
+	end)
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local d = input.Position - dragStart
+			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+		end
+	end)
+end
+
+-- بدنه
+local body = Instance.new("Frame")
+body.Size = UDim2.new(1, 0, 1, -42)
+body.Position = UDim2.fromOffset(0, 42)
+body.BackgroundTransparency = 1
+body.Parent = main
+
+-- دکمه ON/OFF
+local OFF_COLOR, ON_COLOR = Color3.fromRGB(200, 50, 60), Color3.fromRGB(40, 180, 90)
+local toggle = Instance.new("TextButton")
+toggle.Size = UDim2.new(1, -30, 0, 46)
+toggle.Position = UDim2.fromOffset(15, 14)
+toggle.BackgroundColor3 = OFF_COLOR
+toggle.Text = "OFF"
+toggle.Font = Enum.Font.GothamBlack
+toggle.TextSize = 22
+toggle.TextColor3 = Color3.new(1, 1, 1)
+toggle.AutoButtonColor = false
+toggle.Parent = body
+corner(toggle, 10)
+rgbStroke(toggle, 2)
+
+-- وضعیت
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, -30, 0, 18)
+status.Position = UDim2.fromOffset(15, 68)
+status.BackgroundTransparency = 1
+status.Text = "Status: Idle"
+status.Font = Enum.Font.GothamMedium
+status.TextSize = 13
+status.TextColor3 = Color3.fromRGB(170, 175, 200)
+status.TextXAlignment = Enum.TextXAlignment.Left
+status.Parent = body
+
+-- متن Density
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, -30, 0, 24)
+label.Position = UDim2.fromOffset(15, 98)
+label.BackgroundTransparency = 1
+label.Text = "Density: 0"
+label.Font = Enum.Font.GothamBold
+label.TextSize = 17
+label.TextColor3 = Color3.new(1, 1, 1)
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.Parent = body
+rgbStroke(label, 1) -- حاشیه RGB دور متن
+
+-- اسلایدر
+local track = Instance.new("Frame")
+track.Size = UDim2.new(1, -115, 0, 10)
+track.Position = UDim2.fromOffset(15, 148)
+track.BackgroundColor3 = Color3.fromRGB(45, 45, 66)
+track.BorderSizePixel = 0
+track.Parent = body
+corner(track, 5)
+
+local fill = Instance.new("Frame")
+fill.Size = UDim2.fromScale(0, 1)
+fill.BackgroundColor3 = Color3.new(1, 1, 1)
+fill.BorderSizePixel = 0
+fill.Parent = track
+corner(fill, 5)
+local fg = Instance.new("UIGradient")
+fg.Color = ColorSequence.new(Color3.fromRGB(120, 70, 255), Color3.fromRGB(0, 200, 255))
+fg.Parent = fill
+
+local knob = Instance.new("Frame")
+knob.Size = UDim2.fromOffset(22, 22)
+knob.AnchorPoint = Vector2.new(0.5, 0.5)
+knob.Position = UDim2.fromScale(0, 0.5)
+knob.BackgroundColor3 = Color3.new(1, 1, 1)
+knob.BorderSizePixel = 0
+knob.ZIndex = 2
+knob.Parent = track
+corner(knob, 11)
+rgbStroke(knob, 2)
+
+-- دکمه Apply سبز
+local APPLY_COLOR = Color3.fromRGB(40, 195, 90)
+local apply = Instance.new("TextButton")
+apply.Size = UDim2.fromOffset(78, 32)
+apply.Position = UDim2.new(1, -93, 0, 137)
+apply.BackgroundColor3 = APPLY_COLOR
+apply.Text = "Apply"
+apply.Font = Enum.Font.GothamBold
+apply.TextSize = 16
+apply.TextColor3 = Color3.new(1, 1, 1)
+apply.AutoButtonColor = false
+apply.Visible = false
+apply.Parent = body
+corner(apply, 8)
+local applyStroke = Instance.new("UIStroke")
+applyStroke.Color = Color3.fromRGB(150, 255, 190)
+applyStroke.Thickness = 1.5
+applyStroke.Parent = apply
+
+local hint = Instance.new("TextLabel")
+hint.Size = UDim2.new(1, -30, 0, 16)
+hint.Position = UDim2.fromOffset(15, 180)
+hint.BackgroundTransparency = 1
+hint.Text = "Players are ignored • min effective density 0.01"
+hint.Font = Enum.Font.Gotham
+hint.TextSize = 11
+hint.TextColor3 = Color3.fromRGB(120, 125, 150)
+hint.TextXAlignment = Enum.TextXAlignment.Left
+hint.Parent = body
+
+hover(toggle, function() return enabled and ON_COLOR or OFF_COLOR end,
+	Color3.fromRGB(255, 255, 255):Lerp(OFF_COLOR, 0.7))
+hover(apply, function() return APPLY_COLOR end, Color3.fromRGB(70, 225, 120))
+
+----------------------------------------------------------------
+-- منطق UI
+----------------------------------------------------------------
+toggle.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	toggle.Text = enabled and "ON" or "OFF"
+	TweenService:Create(toggle, TweenInfo.new(0.25), {
+		BackgroundColor3 = enabled and ON_COLOR or OFF_COLOR,
+	}):Play()
+	if enabled then startApply() else startRestore() end
+end)
+
+local function updateSlider(density)
+	sliderDensity = density
+	local a = (density - DENSITY_MIN) / (DENSITY_MAX - DENSITY_MIN)
+	fill.Size = UDim2.fromScale(a, 1)
+	knob.Position = UDim2.fromScale(a, 0.5)
+	label.Text = ("Density: %.2f"):format(density)
+	local changed = math.abs(density - appliedDensity) > 1e-4
+	if changed and not apply.Visible then
+		apply.Visible = true
+		apply.Size = UDim2.fromOffset(0, 32)
+		TweenService:Create(apply, TweenInfo.new(0.2, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(78, 32) }):Play()
+	elseif not changed then
+		apply.Visible = false
+	end
+end
+
+do
+	local sliding = false
+	local function fromInput(x)
+		local a = math.clamp((x - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+		updateSlider(math.floor((DENSITY_MIN + a * (DENSITY_MAX - DENSITY_MIN)) * 100 + 0.5) / 100)
+	end
+	local function begin(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			sliding = true
+			fromInput(input.Position.X)
+		end
+	end
+	track.InputBegan:Connect(begin)
+	knob.InputBegan:Connect(begin)
+	UserInputService.InputChanged:Connect(function(input)
+		if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			fromInput(input.Position.X)
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			sliding = false
+		end
+	end)
+end
+
+apply.MouseButton1Click:Connect(function()
+	appliedDensity = sliderDensity
+	apply.Visible = false
+	if enabled then startApply() end
+end)
+
+-- مینیمایز
+local minimized = false
+miniBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	miniBtn.Text = minimized and "+" or "–"
+	if minimized then body.Visible = false end
+	local tw = TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+		Size = minimized and MINI_SIZE or FULL_SIZE,
+	})
+	tw:Play()
+	if not minimized then
+		tw.Completed:Once(function() body.Visible = true end)
+	end
+end)
+
+-- وضعیت زنده (هر ۰.۱۵ ثانیه، سبک)
+task.spawn(function()
+	while gui.Parent do
+		local pending = qTail - qHead + 1
+		if pending > 0 then
+			status.Text = ("Status: Working... (%d left)"):format(pending)
+			status.TextColor3 = Color3.fromRGB(255, 200, 80)
+		elseif enabled then
+			status.Text = ("Status: Active • %d parts"):format(modifiedCount)
+			status.TextColor3 = Color3.fromRGB(80, 230, 130)
+		else
+			status.Text = "Status: Idle"
+			status.TextColor3 = Color3.fromRGB(170, 175, 200)
+		end
+		task.wait(0.15)
+	end
+end)
+
+-- انیمیشن باز شدن
+updateSlider(0)
+TweenService:Create(main, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+	Size = FULL_SIZE,
+}):Play()
