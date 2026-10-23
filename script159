@@ -172,7 +172,7 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "MasslessPanel"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = game.CoreGui
 
 local FULL_SIZE = UDim2.fromOffset(310, 250)
 local MINI_SIZE = UDim2.fromOffset(310, 42)
