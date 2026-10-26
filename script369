@@ -1,0 +1,1737 @@
+-- =========================================================
+-- F3X Advanced Map Exporter & Importer (Async Faces Version) - Optimized
+-- Fixed & Compatible with all Exporters (Seat / VehicleSeat / Spawn Support)
+-- Unanchored Delay Fix & Cylinder Mesh/Size Fix Applied
+-- =========================================================
+
+local LIGHT_ALL_PARTS = false
+local GLOBAL_LIGHT_RANGE = 20
+local GLOBAL_LIGHT_BRIGHTNESS = 0.011
+local DISCO_POINTLIGHTS = true
+local DISCO_INTERVAL = 0.5
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Player = Players.LocalPlayer
+
+local tool
+for _, v in ipairs(Player:GetDescendants()) do if v.Name == "SyncAPI" then tool = v.Parent break end end
+if not tool then for _, v in ipairs(ReplicatedStorage:GetDescendants()) do if v.Name == "SyncAPI" then tool = v.Parent break end end end
+if not tool or not tool:FindFirstChild("SyncAPI") then warn("خطا: ابزار F3X پیدا نشد!") return end
+
+local remote = tool.SyncAPI.ServerEndpoint
+local ActiveSyncs = 0
+
+local CHUNK_SIZE = 250 -- تعداد پارت‌ها در هر بسته ارسالی به سرور
+
+local function FireMassiveSync(action, dataArray, extraArg)
+    if not dataArray or #dataArray == 0 then return end
+    
+    -- تقسیم کردن آرایه بزرگ به بسته‌های کوچکتر
+    for i = 1, #dataArray, CHUNK_SIZE do
+        local chunk = {}
+        for j = i, math.min(i + CHUNK_SIZE - 1, #dataArray) do
+            table.insert(chunk, dataArray[j])
+        end
+        
+        ActiveSyncs = ActiveSyncs + 1
+        task.spawn(function()
+            pcall(function()
+                if extraArg ~= nil then 
+                    remote:InvokeServer(action, chunk, extraArg)
+                else 
+                    remote:InvokeServer(action, chunk) 
+                end
+            end)
+            ActiveSyncs = ActiveSyncs - 1
+        end)
+        
+        task.wait() -- یک مکث بسیار کوتاه تا صف شبکه روبلاکس قفل نشود
+    end
+end
+
+local function safeNum(val, default) return tonumber(val) or default or 0 end
+
+local function SetFreeze(state)
+    local char = Player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.Anchored = state
+    end
+end
+
+---------------------------------------------------------
+-- [کدهای خام خود را در کادر زیر کپی کن] ------------------
+---------------------------------------------------------
+local RawData = [[
+Part 1:
+Position: (-385.217, 637.956, 7161.860)
+Rotation: (0.000, -2.001, 89.996)
+Size: (10.356, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 2:
+Position: (-388.990, 633.021, 7161.728)
+Rotation: (0.000, -1.998, 0.000)
+Size: (7.065, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 3:
+Position: (-392.762, 637.956, 7161.596)
+Rotation: (0.000, -2.001, 89.996)
+Size: (10.356, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 4:
+Position: (-388.966, 637.739, 7161.753)
+Rotation: (-90.000, 177.999, 0.000)
+Size: (7.162, 0.484, 9.823)
+Shape: Normal
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Plastic
+Transparency: 0.000
+Decal.Bottom = 15352045046
+
+Part 5:
+Position: (-388.990, 642.892, 7161.728)
+Rotation: (0.000, -1.998, 0.000)
+Size: (7.065, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 6:
+Position: (-410.415, 633.298, 7161.385)
+Rotation: (0.000, 0.000, 0.000)
+Size: (7.091, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 7:
+Position: (-414.203, 638.252, 7161.385)
+Rotation: (0.000, 0.000, 90.000)
+Size: (10.394, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 8:
+Position: (-406.626, 638.252, 7161.386)
+Rotation: (0.000, 0.000, 90.000)
+Size: (10.394, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 9:
+Position: (-410.391, 638.033, 7161.409)
+Rotation: (-90.000, 180.000, 0.000)
+Size: (7.188, 0.486, 9.860)
+Shape: Normal
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Plastic
+Transparency: 0.000
+Decal.Bottom = 10544464380
+
+Part 10:
+Position: (-410.415, 643.206, 7161.385)
+Rotation: (0.000, 0.000, 0.000)
+Size: (7.091, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 11:
+Position: (-365.358, 638.112, 7161.632)
+Rotation: (0.000, 0.000, 90.000)
+Size: (10.394, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 12:
+Position: (-369.147, 633.158, 7161.631)
+Rotation: (0.000, 0.000, 0.000)
+Size: (7.091, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 13:
+Position: (-372.935, 638.112, 7161.631)
+Rotation: (0.000, 0.000, 90.000)
+Size: (10.394, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 14:
+Position: (-369.122, 637.894, 7161.656)
+Rotation: (-90.000, 180.000, 0.000)
+Size: (7.188, 0.486, 9.860)
+Shape: Normal
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Plastic
+Transparency: 0.000
+Decal.Bottom = 10544464380
+
+Part 15:
+Position: (-369.147, 643.066, 7161.631)
+Rotation: (0.000, 0.000, 0.000)
+Size: (7.091, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 16:
+Position: (-435.868, 638.330, 7161.274)
+Rotation: (0.000, -2.001, 90.003)
+Size: (10.356, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 17:
+Position: (-432.072, 638.112, 7161.432)
+Rotation: (-90.000, 177.999, 0.000)
+Size: (7.162, 0.484, 9.823)
+Shape: Normal
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Plastic
+Transparency: 0.000
+Decal.Bottom = 15352045046
+
+Part 18:
+Position: (-432.096, 633.394, 7161.406)
+Rotation: (0.000, -1.998, 0.000)
+Size: (7.065, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 19:
+Position: (-428.323, 638.330, 7161.538)
+Rotation: (0.000, -2.001, 90.003)
+Size: (10.356, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 20:
+Position: (-432.096, 643.266, 7161.406)
+Rotation: (0.000, -1.998, 0.000)
+Size: (7.065, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 21:
+Position: (-407.608, 655.370, 7106.965)
+Rotation: (0.000, 0.000, 0.000)
+Size: (0.944, 1.670, 2.323)
+Shape: Cylinder
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Metal
+Transparency: 0.000
+
+Part 22:
+Position: (-406.810, 655.360, 7106.966)
+Rotation: (0.000, -90.000, 0.000)
+Size: (1.381, 1.379, 0.692)
+Shape: Normal
+ClassName: Part
+Color: 1.000, 0.000, 0.000
+Material: Neon
+Transparency: 0.000
+CanCollide: False
+Light: True
+LightRange: 60.00
+LightBrightness: 9.48
+
+Part 23:
+Position: (-411.610, 654.635, 7103.342)
+Rotation: (0.000, 0.000, 0.000)
+Size: (2.000, 0.200, 2.000)
+Shape: Normal
+ClassName: Part
+Color: 1.000, 0.000, 0.000
+Material: Neon
+Transparency: 0.000
+Light: True
+LightRange: 35.00
+LightBrightness: 11.80
+
+Part 24:
+Position: (-411.610, 654.635, 7103.342)
+Rotation: (0.000, 0.000, 0.000)
+Size: (2.400, 0.200, 2.400)
+Shape: Normal
+ClassName: Part
+Color: 0.388, 0.373, 0.384
+Material: SmoothPlastic
+Transparency: 0.000
+
+Part 25:
+Position: (-401.033, 623.990, 7103.785)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.600)
+Shape: Normal
+ClassName: Part
+Color: 0.000, 0.561, 0.612
+Material: Plastic
+Transparency: 0.000
+
+Part 26:
+Position: (-391.133, 623.990, 7123.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.600, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.482, 0.184, 0.482
+Material: Plastic
+Transparency: 0.000
+
+Part 27:
+Position: (-411.033, 623.990, 7108.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.945, 0.906, 0.780
+Material: Plastic
+Transparency: 0.000
+
+Part 28:
+Position: (-406.033, 623.990, 7103.785)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.600)
+Shape: Normal
+ClassName: Part
+Color: 0.122, 0.502, 0.114
+Material: Plastic
+Transparency: 0.000
+
+Part 29:
+Position: (-411.033, 623.990, 7113.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.584, 0.537, 0.533
+Material: Plastic
+Transparency: 0.000
+
+Part 30:
+Position: (-406.033, 623.990, 7113.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.780, 0.675, 0.471
+Material: Plastic
+Transparency: 0.000
+
+Part 31:
+Position: (-396.133, 623.990, 7103.785)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.600, 0.200, 4.600)
+Shape: Normal
+ClassName: Part
+Color: 0.420, 0.196, 0.486
+Material: Plastic
+Transparency: 0.000
+
+Part 32:
+Position: (-401.033, 623.990, 7113.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.886, 0.608, 0.251
+Material: Plastic
+Transparency: 0.000
+
+Part 33:
+Position: (-391.133, 623.990, 7113.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.600, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 1.000, 0.788, 0.788
+Material: Plastic
+Transparency: 0.000
+
+Part 34:
+Position: (-396.033, 623.990, 7113.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.227, 0.490, 0.082
+Material: Plastic
+Transparency: 0.000
+
+Part 35:
+Position: (-396.033, 623.990, 7123.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.063, 0.165, 0.863
+Material: Plastic
+Transparency: 0.000
+
+Part 36:
+Position: (-401.133, 623.990, 7123.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (5.000, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.384, 0.145, 0.820
+Material: Plastic
+Transparency: 0.000
+
+Part 37:
+Position: (-401.233, 623.990, 7118.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.769, 0.157, 0.110
+Material: Plastic
+Transparency: 0.000
+
+Part 38:
+Position: (-406.033, 623.990, 7108.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.733, 0.702, 0.698
+Material: Plastic
+Transparency: 0.000
+
+Part 39:
+Position: (-396.033, 623.990, 7108.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.533, 0.243, 0.243
+Material: Plastic
+Transparency: 0.000
+
+Part 40:
+Position: (-391.233, 623.990, 7103.785)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.600)
+Shape: Normal
+ClassName: Part
+Color: 0.063, 0.165, 0.863
+Material: Plastic
+Transparency: 0.000
+
+Part 41:
+Position: (-401.033, 623.990, 7108.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.843, 0.773, 0.604
+Material: Plastic
+Transparency: 0.000
+
+Part 42:
+Position: (-391.133, 623.990, 7108.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.600, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.792, 0.749, 0.639
+Material: Plastic
+Transparency: 0.000
+
+Part 43:
+Position: (-411.133, 623.990, 7118.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.600, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 1.000, 0.788, 0.788
+Material: Plastic
+Transparency: 0.000
+
+Part 44:
+Position: (-396.133, 623.990, 7118.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (5.000, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.624, 0.678, 0.753
+Material: Plastic
+Transparency: 0.000
+
+Part 45:
+Position: (-411.133, 623.990, 7123.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.600, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.800, 1.000, 0.800
+Material: Plastic
+Transparency: 0.000
+
+Part 46:
+Position: (-411.033, 623.990, 7103.785)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.600)
+Shape: Normal
+ClassName: Part
+Color: 0.459, 0.000, 0.000
+Material: Plastic
+Transparency: 0.000
+
+Part 47:
+Position: (-406.233, 623.990, 7123.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.384, 0.145, 0.820
+Material: Plastic
+Transparency: 0.000
+
+Part 48:
+Position: (-391.133, 623.990, 7118.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.600, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.804, 0.804, 0.804
+Material: Plastic
+Transparency: 0.000
+
+Part 49:
+Position: (-406.233, 623.990, 7118.685)
+Rotation: (0.000, 180.000, 0.000)
+Size: (4.800, 0.200, 4.800)
+Shape: Normal
+ClassName: Part
+Color: 0.000, 1.000, 1.000
+Material: Plastic
+Transparency: 0.000
+
+Part 50:
+Position: (-378.301, 638.535, 7066.110)
+Rotation: (0.000, 179.000, 90.003)
+Size: (10.356, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 51:
+Position: (-370.754, 638.535, 7066.242)
+Rotation: (0.000, 179.000, 90.003)
+Size: (10.356, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 52:
+Position: (-374.528, 633.599, 7066.176)
+Rotation: (0.000, 179.001, 0.000)
+Size: (7.065, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 53:
+Position: (-374.551, 638.318, 7066.151)
+Rotation: (-90.000, -1.000, 0.000)
+Size: (7.162, 0.484, 9.823)
+Shape: Normal
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Plastic
+Transparency: 0.000
+Decal.Bottom = 15352045046
+
+Part 54:
+Position: (-374.528, 643.471, 7066.176)
+Rotation: (0.000, 179.001, 0.000)
+Size: (7.065, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 55:
+Position: (-361.307, 654.635, 7111.222)
+Rotation: (0.000, 0.000, 0.000)
+Size: (2.000, 0.200, 2.000)
+Shape: Normal
+ClassName: Part
+Color: 1.000, 0.000, 0.000
+Material: Neon
+Transparency: 0.000
+Light: True
+LightRange: 35.00
+LightBrightness: 11.80
+
+Part 56:
+Position: (-361.307, 654.635, 7111.222)
+Rotation: (0.000, 0.000, 0.000)
+Size: (2.400, 0.200, 2.400)
+Shape: Normal
+ClassName: Part
+Color: 0.388, 0.373, 0.384
+Material: SmoothPlastic
+Transparency: 0.000
+
+Part 57:
+Position: (-349.159, 647.962, 7109.581)
+Rotation: (0.000, -88.997, 0.000)
+Size: (2.757, 1.804, 1.077)
+Shape: Normal
+ClassName: Part
+Color: 0.000, 0.000, 0.000
+Material: Plastic
+Transparency: 0.000
+CanCollide: False
+
+Part 58:
+Position: (-349.096, 645.623, 7113.270)
+Rotation: (0.000, -88.997, 0.000)
+Size: (12.659, 10.073, 1.215)
+Shape: Normal
+ClassName: Part
+Color: 0.000, 0.000, 0.000
+Material: Plastic
+Transparency: 0.000
+CanCollide: False
+
+Part 59:
+Position: (-399.209, 638.658, 7066.019)
+Rotation: (0.000, 177.999, 90.003)
+Size: (10.394, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 60:
+Position: (-391.637, 638.658, 7066.284)
+Rotation: (0.000, 177.999, 90.003)
+Size: (10.394, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 61:
+Position: (-395.447, 638.440, 7066.126)
+Rotation: (-90.000, -2.001, 0.000)
+Size: (7.188, 0.486, 9.860)
+Shape: Normal
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Plastic
+Transparency: 0.000
+Decal.Bottom = 10544464380
+
+Part 62:
+Position: (-395.423, 633.704, 7066.151)
+Rotation: (0.000, 178.002, 0.000)
+Size: (7.091, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 63:
+Position: (-395.423, 643.612, 7066.151)
+Rotation: (0.000, 178.002, 0.000)
+Size: (7.091, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 64:
+Position: (-436.650, 633.745, 7066.437)
+Rotation: (0.000, -179.001, 0.000)
+Size: (7.091, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 65:
+Position: (-432.862, 638.700, 7066.371)
+Rotation: (0.000, -179.000, 89.997)
+Size: (10.394, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 66:
+Position: (-440.438, 638.700, 7066.503)
+Rotation: (0.000, -179.000, 89.997)
+Size: (10.394, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 67:
+Position: (-436.674, 638.481, 7066.413)
+Rotation: (-90.000, 1.000, 0.000)
+Size: (7.188, 0.486, 9.860)
+Shape: Normal
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Plastic
+Transparency: 0.000
+Decal.Bottom = 10544464380
+
+Part 68:
+Position: (-436.650, 643.654, 7066.437)
+Rotation: (0.000, -179.001, 0.000)
+Size: (7.091, 0.486, 1.409)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 69:
+Position: (-421.165, 638.305, 7066.291)
+Rotation: (0.000, 179.000, 90.003)
+Size: (10.356, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 70:
+Position: (-417.415, 638.087, 7066.333)
+Rotation: (-90.000, -1.000, 0.000)
+Size: (7.162, 0.484, 9.823)
+Shape: Normal
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Plastic
+Transparency: 0.000
+Decal.Bottom = 15352045046
+
+Part 71:
+Position: (-413.617, 638.305, 7066.423)
+Rotation: (0.000, 179.000, 90.003)
+Size: (10.356, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 72:
+Position: (-417.391, 633.369, 7066.357)
+Rotation: (0.000, 179.001, 0.000)
+Size: (7.065, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 73:
+Position: (-417.391, 643.241, 7066.357)
+Rotation: (0.000, 179.001, 0.000)
+Size: (7.065, 0.484, 1.403)
+Shape: Normal
+ClassName: Part
+Color: 0.627, 0.373, 0.208
+Material: Wood
+Transparency: 0.000
+
+Part 74:
+Position: (-367.145, 624.364, 7110.720)
+Rotation: (0.232, -175.894, -2.882)
+Size: (1.000, 1.200, 2.000)
+Shape: Wedge
+ClassName: WedgePart
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+
+Part 75:
+Position: (-370.020, 624.220, 7114.485)
+Rotation: (-0.232, 4.106, 2.882)
+Size: (1.000, 1.200, 2.000)
+Shape: Wedge
+ClassName: WedgePart
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+
+Part 76:
+Position: (-368.462, 625.501, 7114.147)
+Rotation: (-31.154, 2.375, 3.365)
+Size: (4.000, 0.400, 3.000)
+Shape: Normal
+ClassName: Part
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+Stud.Top: True
+
+Part 77:
+Position: (-366.887, 624.722, 7114.553)
+Rotation: (2.879, -85.880, 31.195)
+Size: (1.000, 1.600, 1.000)
+Shape: Normal
+ClassName: Part
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+Stud.Top: True
+
+Part 78:
+Position: (-370.165, 624.555, 7110.745)
+Rotation: (2.881, -85.883, -30.730)
+Size: (1.000, 1.600, 1.000)
+Shape: Normal
+ClassName: Part
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+Stud.Top: True
+
+Part 79:
+Position: (-368.629, 625.540, 7111.854)
+Rotation: (2.881, -85.883, -30.730)
+Size: (2.000, 0.400, 4.000)
+Shape: Normal
+ClassName: Part
+Color: 0.157, 0.498, 0.278
+Material: Plastic
+Transparency: 0.000
+
+Part 80:
+Position: (-368.651, 625.711, 7111.660)
+Rotation: (-2.881, 94.117, 30.730)
+Size: (2.000, 0.400, 4.000)
+Shape: Normal
+ClassName: Part
+Color: 0.949, 0.953, 0.953
+Material: Plastic
+Transparency: 0.000
+Decal.Top = 54856635
+
+Part 81:
+Position: (-368.677, 625.489, 7111.150)
+Rotation: (30.685, 5.830, 3.347)
+Size: (4.000, 0.400, 3.000)
+Shape: Normal
+ClassName: Part
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+Stud.Top: True
+
+Part 82:
+Position: (-368.512, 625.674, 7113.575)
+Rotation: (-2.879, 94.120, -31.195)
+Size: (2.000, 0.400, 4.000)
+Shape: Normal
+ClassName: Part
+Color: 0.949, 0.953, 0.953
+Material: Plastic
+Transparency: 0.000
+Decal.Top = 93398284
+
+Part 83:
+Position: (-368.504, 625.579, 7113.614)
+Rotation: (2.879, -85.880, 31.195)
+Size: (2.000, 0.400, 4.000)
+Shape: Normal
+ClassName: Part
+Color: 0.157, 0.498, 0.278
+Material: Plastic
+Transparency: 0.000
+
+Part 84:
+Position: (-369.876, 624.571, 7114.769)
+Rotation: (2.879, -85.880, 31.195)
+Size: (1.000, 1.600, 1.000)
+Shape: Normal
+ClassName: Part
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+Stud.Top: True
+
+Part 85:
+Position: (-367.176, 624.705, 7110.529)
+Rotation: (2.881, -85.883, -30.730)
+Size: (1.000, 1.600, 1.000)
+Shape: Normal
+ClassName: Part
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+Stud.Top: True
+
+Part 86:
+Position: (-370.273, 624.206, 7111.019)
+Rotation: (0.232, -175.894, -2.882)
+Size: (1.000, 1.200, 2.000)
+Shape: Wedge
+ClassName: WedgePart
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+
+Part 87:
+Position: (-366.884, 624.378, 7114.359)
+Rotation: (-0.232, 4.106, 2.882)
+Size: (1.000, 1.200, 2.000)
+Shape: Wedge
+ClassName: WedgePart
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+
+Part 88:
+Position: (-368.496, 624.834, 7112.635)
+Rotation: (-0.232, 4.106, 2.882)
+Size: (4.000, 0.400, 1.000)
+Shape: Normal
+ClassName: Part
+Color: 0.412, 0.251, 0.157
+Material: Wood
+Transparency: 0.000
+Stud.Top: True
+
+Part 89:
+Position: (-378.158, 625.963, 7113.976)
+Rotation: (0.021, 88.593, -0.046)
+Size: (16.200, 4.200, 5.300)
+Shape: Normal
+ClassName: Part
+Color: 0.106, 0.165, 0.208
+Material: Metal
+Transparency: 0.000
+Unanchored: True
+
+Part 90:
+Position: (-375.212, 623.914, 7111.339)
+Rotation: (-2.205, -158.129, 95.447)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.000, 0.561, 0.612
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 91:
+Position: (-375.094, 623.913, 7113.301)
+Rotation: (-6.126, -160.187, 90.013)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 1.000, 1.000, 0.000
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 92:
+Position: (-374.984, 623.916, 7114.024)
+Rotation: (-3.602, 69.300, -93.924)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.835, 0.451, 0.239
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 93:
+Position: (-375.180, 623.916, 7116.855)
+Rotation: (5.815, 171.012, 84.037)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 1.000, 0.349, 0.349
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 94:
+Position: (-376.278, 628.102, 7115.596)
+Rotation: (0.664, 172.876, 86.351)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.063, 0.165, 0.863
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 95:
+Position: (-376.009, 628.085, 7114.097)
+Rotation: (1.052, 165.099, 88.795)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.204, 0.557, 0.251
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 96:
+Position: (-375.678, 628.280, 7119.685)
+Rotation: (-2.762, 176.993, 85.155)
+Size: (0.100, 1.500, 1.600)
+Shape: Cylinder
+ClassName: Part
+Color: 0.067, 0.067, 0.067
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 97:
+Position: (-373.140, 626.161, 7114.066)
+Rotation: (-0.574, 88.668, 0.011)
+Size: (16.100, 4.600, 6.200)
+Shape: Cylinder
+ClassName: Part
+Color: 1.000, 0.000, 0.000
+Material: Concrete
+Transparency: 0.000
+Unanchored: True
+
+Part 98:
+Position: (-376.261, 628.147, 7116.866)
+Rotation: (-0.307, 171.453, 82.448)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 1.000, 0.000, 0.000
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 99:
+Position: (-375.560, 628.221, 7119.657)
+Rotation: (-1.681, 176.879, 85.200)
+Size: (0.100, 7.700, 3.300)
+Shape: Cylinder
+ClassName: Part
+Color: 0.973, 0.973, 0.973
+Material: Concrete
+Transparency: 0.000
+Unanchored: True
+
+Part 100:
+Position: (-375.257, 623.932, 7116.238)
+Rotation: (-2.093, -176.479, 91.497)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.914, 0.855, 0.855
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 101:
+Position: (-375.176, 628.235, 7108.702)
+Rotation: (-0.632, 178.262, 84.393)
+Size: (0.100, 7.700, 3.300)
+Shape: Cylinder
+ClassName: Part
+Color: 0.973, 0.973, 0.973
+Material: Concrete
+Transparency: 0.000
+Unanchored: True
+
+Part 102:
+Position: (-375.043, 628.423, 7108.608)
+Rotation: (-1.615, -157.812, 82.903)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.067, 0.067, 0.067
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 103:
+Position: (-376.315, 628.087, 7116.863)
+Rotation: (0.264, 172.117, 84.013)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 1.000, 0.000, 0.000
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 104:
+Position: (-376.007, 628.093, 7111.391)
+Rotation: (1.608, 177.810, 91.449)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.929, 0.918, 0.918
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 105:
+Position: (-377.196, 628.552, 7114.252)
+Rotation: (-0.050, 88.701, -0.039)
+Size: (4.000, 1.000, 1.000)
+Shape: Cylinder
+ClassName: Part
+Color: 0.624, 0.631, 0.675
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 106:
+Position: (-375.021, 628.369, 7108.620)
+Rotation: (-2.966, -163.159, 84.757)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.067, 0.067, 0.067
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 107:
+Position: (-375.202, 623.936, 7114.835)
+Rotation: (-0.440, -173.484, -89.542)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.745, 0.408, 0.384
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 108:
+Position: (-376.177, 628.064, 7112.720)
+Rotation: (0.105, 178.185, 90.078)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.000, 1.000, 0.000
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 109:
+Position: (-374.808, 623.925, 7112.562)
+Rotation: (-4.967, 126.141, 85.887)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.561, 0.298, 0.165
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 110:
+Position: (-375.340, 623.932, 7115.728)
+Rotation: (1.149, 177.890, -89.442)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.486, 0.361, 0.275
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 111:
+Position: (-375.312, 628.285, 7108.665)
+Rotation: (-1.410, 176.899, 85.252)
+Size: (0.100, 1.500, 1.600)
+Shape: Cylinder
+ClassName: Part
+Color: 0.067, 0.067, 0.067
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 112:
+Position: (-375.081, 623.929, 7111.974)
+Rotation: (1.694, 177.262, -88.938)
+Size: (0.100, 1.000, 0.400)
+Shape: Cylinder
+ClassName: Part
+Color: 0.639, 0.635, 0.647
+Material: Neon
+Transparency: 0.000
+Unanchored: True
+
+Part 113:
+Position: (-400.307, 638.787, 7163.612)
+Rotation: (0.000, 0.000, 0.000)
+Size: (107.200, 29.794, 3.792)
+Shape: Normal
+ClassName: Part
+Color: 0.624, 0.631, 0.675
+Material: Concrete
+Transparency: 0.000
+
+Part 114:
+Position: (-400.307, 623.486, 7114.462)
+Rotation: (0.000, 0.000, 0.000)
+Size: (106.832, 0.808, 97.367)
+Shape: Normal
+ClassName: Part
+Color: 0.357, 0.365, 0.412
+Material: Concrete
+Transparency: 0.000
+
+Part 115:
+Position: (-440.435, 623.972, 7112.034)
+Rotation: (0.000, 0.000, 0.000)
+Size: (12.000, 0.164, 12.000)
+Shape: Spawn
+ClassName: SpawnLocation
+SpawnPoint: True
+Color: 0.639, 0.635, 0.647
+Material: Plastic
+Transparency: 0.000
+Decal.Top = 6045248793
+
+Part 116:
+Position: (-452.970, 638.622, 7114.247)
+Rotation: (0.000, 0.000, 0.000)
+Size: (1.809, 29.463, 96.939)
+Shape: Normal
+ClassName: Part
+Color: 0.357, 0.365, 0.412
+Material: Concrete
+Transparency: 0.000
+
+Part 117:
+Position: (-400.346, 638.672, 7065.247)
+Rotation: (0.000, 0.000, 0.000)
+Size: (106.765, 29.564, 1.642)
+Shape: Normal
+ClassName: Part
+Color: 0.624, 0.631, 0.675
+Material: Concrete
+Transparency: 0.000
+
+Part 118:
+Position: (-347.042, 638.932, 7113.654)
+Rotation: (0.000, 0.000, 0.000)
+Size: (2.674, 30.084, 97.689)
+Shape: Normal
+ClassName: Part
+Color: 0.624, 0.631, 0.675
+Material: Concrete
+Transparency: 0.000
+
+Part 119:
+Position: (-400.550, 654.035, 7114.581)
+Rotation: (0.000, 0.000, 0.000)
+Size: (108.024, 1.000, 100.108)
+Shape: Normal
+ClassName: Part
+Color: 0.357, 0.365, 0.412
+Material: Concrete
+Transparency: 0.000
+
+Part 120:
+Position: (-359.331, 623.940, 7112.793)
+Rotation: (0.000, -88.997, 0.000)
+Size: (7.000, 0.100, 10.000)
+Shape: Normal
+ClassName: Part
+Color: 0.592, 0.000, 0.000
+Material: Plastic
+Transparency: 0.000
+Decal.Top = 5560339235
+]]
+---------------------------------------------------------
+
+local function RemoveAllPlayers()
+    local playerParts = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= Player and p.Character then
+            for _, child in ipairs(p.Character:GetDescendants()) do
+                if child:IsA("BasePart") then table.insert(playerParts, child) end
+            end
+        end
+    end
+    FireMassiveSync("SetLocked", playerParts, false)
+    FireMassiveSync("Remove", playerParts)
+end
+
+local function FastClearMap()
+    local mapParts = {}
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if (v:IsA("BasePart") or v:IsA("UnionOperation")) and v.Name ~= "Terrain" then
+            if not (Player.Character and v:IsDescendantOf(Player.Character)) then
+                table.insert(mapParts, v)
+            end
+        end
+    end
+    FireMassiveSync("SetLocked", mapParts, false)
+    FireMassiveSync("Remove", mapParts)
+end
+
+local function BuildAndVerifyMap(data)
+    local partsToBuild = {}
+    
+    local cleanData = data:gsub("Part %d+:", "|||")
+    for partBlock in cleanData:gmatch("([^|]+)") do
+        local x, y, z = partBlock:match("Position:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+        if x and y and z then
+            local rx, ry, rz = partBlock:match("Rotation:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+            local sx, sy, sz = partBlock:match("Size:%s*%(([^,]+),%s*([^,]+),%s*([^)]+)%)")
+            
+            local shape = partBlock:match("Shape:%s*([%a%d]+)")
+            local className = partBlock:match("Class:%s*([%a%d]+)") or partBlock:match("ClassName:%s*([%a%d]+)") or partBlock:match("Type:%s*([%a%d]+)")
+            
+            local r, g, b = partBlock:match("Color:%s*([^,]+),%s*([^,]+),%s*([^%s\r\n]+)")
+            local mat = partBlock:match("Material:%s*([%a%d]+)")
+            local trans = partBlock:match("Transparency:%s*([%d%.]+)")
+            
+            local decals = {}
+            for face in string.gmatch("Top Bottom Left Right Front Back", "%a+") do
+                local dId = partBlock:match("Decal%." .. face .. "%s*=%s*(%d+)")
+                if dId then decals[face] = dId end
+            end
+            
+            local textures = {}
+            for face in string.gmatch("Top Bottom Left Right Front Back", "%a+") do
+                local tId = partBlock:match("Texture%." .. face .. "%s*=%s*(%d+)")
+                if tId then textures[face] = tId end
+            end
+            
+            local surfaces = {}
+            local generalStud = (partBlock:match("Stud:%s*[Tt]rue") or partBlock:match("Studs:%s*[Tt]rue")) and true or false
+            for face in string.gmatch("Top Bottom Left Right Front Back", "%a+") do
+                local faceStud = (partBlock:match("Stud%." .. face .. ":%s*[Tt]rue") or partBlock:match("Studs%." .. face .. ":%s*[Tt]rue")) and true or false
+                if faceStud or generalStud then
+                    surfaces[face] = Enum.SurfaceType.Studs
+                end
+            end
+            
+            local meshType = partBlock:match("MeshType:%s*(%a+)")
+            local meshId = partBlock:match("MeshId:%s*(%S+)") or partBlock:match("Mesh:%s*(%S+)")
+            local meshTextureId = partBlock:match("MeshTextureId:%s*(%S+)") or partBlock:match("MeshTexture:%s*(%S+)")
+            
+            local msStr = partBlock:match("MeshScale:%s*([^\n\r]+)")
+            local msX, msY, msZ = 1, 1, 1
+            if msStr then
+                local ex, ey, ez = msStr:match("([%d%.]+)%s*,%s*([%d%.]+)%s*,%s*([%d%.]+)")
+                if ex and ey and ez then msX, msY, msZ = ex, ey, ez end
+            end
+            
+            -- بررسی و دریافت LightRange و LightBrightness (جاهای حاوی Light: True نادیده گرفته می‌شوند)
+            local lRangeStr = partBlock:match("LightRange:%s*(%-?[%d%.]+)")
+            local lBrightStr = partBlock:match("LightBrightness:%s*(%-?[%d%.]+)")
+            local lightRange = tonumber(lRangeStr)
+            local lightBrightness = tonumber(lBrightStr)
+            local hasLight = (lightRange ~= nil or lightBrightness ~= nil)
+
+            local hasFire = partBlock:match("Fire:%s*[Tt]rue") and true or false
+            local hasSparkles = partBlock:match("Sparkles:%s*[Tt]rue") and true or false
+            local hasSmoke = partBlock:match("Smoke:%s*[Tt]rue") and true or false
+            local isUnanchored = partBlock:match("Unanchored:%s*[Tt]rue") and true or false
+            
+            local f3xShape = "Normal"
+            if partBlock:match("SpawnPoint:%s*[Tt]rue") or shape == "Spawn" or className == "SpawnLocation" then 
+                f3xShape = "Spawn"
+            elseif partBlock:match("VehicleSeat:%s*[Tt]rue") or shape == "VehicleSeat" or className == "VehicleSeat" then 
+                f3xShape = "Vehicle Seat"
+            elseif partBlock:match("Seat:%s*[Tt]rue") or shape == "Seat" or className == "Seat" then 
+                f3xShape = "Seat"
+            elseif shape == "Cylinder" or className == "CylinderPart" then 
+                f3xShape = "Cylinder"
+            elseif shape == "Ball" or shape == "Sphere" then 
+                f3xShape = "Ball"
+            elseif shape == "Wedge" or className == "WedgePart" then 
+                f3xShape = "Wedge"
+            elseif shape == "Corner" or shape == "CornerWedge" or className == "CornerWedgePart" then 
+                f3xShape = "Corner"
+            elseif shape == "Truss" or className == "TrussPart" then 
+                f3xShape = "Truss" 
+            end
+            
+            local pColor = Color3.new(1, 1, 1)
+            if r and g and b then
+                local rn, gn, bn = safeNum(r), safeNum(g), safeNum(b)
+                if rn > 1 or gn > 1 or bn > 1 then pColor = Color3.fromRGB(rn, gn, bn)
+                else pColor = Color3.new(rn, gn, bn) end
+            end
+            
+            table.insert(partsToBuild, {
+                pos = Vector3.new(safeNum(x), safeNum(y), safeNum(z)),
+                rot = Vector3.new(safeNum(rx), safeNum(ry), safeNum(rz)),
+                shape = f3xShape, size = Vector3.new(safeNum(sx,1), safeNum(sy,1), safeNum(sz,1)),
+                color = pColor, material = mat or "Plastic", transparency = safeNum(trans),
+                decals = decals, textures = textures, surfaces = surfaces,
+                meshType = meshType, meshId = meshId, meshTextureId = meshTextureId, 
+                meshScale = Vector3.new(safeNum(msX, 1), safeNum(msY, 1), safeNum(msZ, 1)),
+                hasLight = hasLight, lightRange = lightRange, lightBrightness = lightBrightness,
+                hasFire = hasFire, hasSparkles = hasSparkles, hasSmoke = hasSmoke,
+                collision = not (partBlock:match("CanCollide:%s*[Ff]alse")),
+                isUnanchored = isUnanchored
+            })
+        end
+    end
+    
+    local totalParts = #partsToBuild
+    if totalParts == 0 then warn("خطا: پارتی یافت نشد!") return end
+
+    local batches = {
+        resize = {}, color = {}, material = {}, anchor = {}, unanchor = {}, collision = {},
+        meshCreate = {}, meshSync = {}, 
+        lightCreate = {}, lightSync = {}, decorationCreate = {}, surface = {},
+        decalCreate = {Top={}, Bottom={}, Left={}, Right={}, Front={}, Back={}},
+        decalSync = {Top={}, Bottom={}, Left={}, Right={}, Front={}, Back={}}
+    }
+    
+    local completed = 0
+
+    for i, pData in ipairs(partsToBuild) do
+        if i % 50 == 0 then
+            RunService.Heartbeat:Wait()
+        end
+
+        task.spawn(function()
+            local baseCFrame = CFrame.new(pData.pos) * CFrame.fromOrientation(math.rad(pData.rot.X), math.rad(pData.rot.Y), math.rad(pData.rot.Z))
+
+            local success, p = pcall(function()
+                return remote:InvokeServer("CreatePart", pData.shape, baseCFrame, workspace)
+            end)
+            
+            if success and p and typeof(p) == "Instance" then
+                table.insert(batches.resize, {Part = p, CFrame = baseCFrame, Size = pData.size})
+                table.insert(batches.color, {Part = p, Color = pData.color})
+                
+                table.insert(batches.anchor, {Part = p, Anchored = true})
+                if pData.isUnanchored then
+                    table.insert(batches.unanchor, {Part = p, Anchored = false})
+                end
+
+                table.insert(batches.collision, {Part = p, CanCollide = pData.collision})
+                
+                local matSuccess, matEnum = pcall(function() return Enum.Material[pData.material:gsub("%s+", "")] end)
+                table.insert(batches.material, {Part = p, Material = matSuccess and matEnum or Enum.Material.Plastic, Transparency = pData.transparency})
+                
+                if next(pData.surfaces) ~= nil then
+                    local appliedSurfaces = {}
+                    for faceKey, surfEnum in pairs(pData.surfaces) do
+                        appliedSurfaces[faceKey] = surfEnum
+                    end
+                    table.insert(batches.surface, {Part = p, Surfaces = appliedSurfaces})
+                end
+                
+                if pData.hasLight or LIGHT_ALL_PARTS then
+                    local targetRange = pData.lightRange or tonumber(GLOBAL_LIGHT_RANGE) or 20
+                    local targetBright = pData.lightBrightness or tonumber(GLOBAL_LIGHT_BRIGHTNESS) or 0.011
+                    
+                    table.insert(batches.lightCreate, {Part = p, LightType = "PointLight"})
+                    table.insert(batches.lightSync, {
+                        Part = p, LightType = "PointLight", Range = targetRange, 
+                        Brightness = targetBright, Color = Color3.new(1, 1, 1), Shadows = false
+                    })
+                end
+                
+                if pData.hasFire then table.insert(batches.decorationCreate, {Part = p, DecorationType = "Fire"}) end
+                if pData.hasSparkles then table.insert(batches.decorationCreate, {Part = p, DecorationType = "Sparkles"}) end
+                if pData.hasSmoke then table.insert(batches.decorationCreate, {Part = p, DecorationType = "Smoke"}) end
+                
+                if pData.meshId or pData.meshType then
+                    table.insert(batches.meshCreate, {Part = p})
+                    local mTypeEnum = Enum.MeshType.FileMesh
+                    if pData.meshType then
+                        local meshTypeMap = {
+                            File = "FileMesh", FileMesh = "FileMesh", Block = "Brick", Brick = "Brick",
+                            Head = "Head", Sphere = "Sphere", Wedge = "Wedge", Cylinder = "Cylinder"
+                        }
+                        local mappedType = meshTypeMap[pData.meshType] or pData.meshType
+                        local typeSuccess, typeEnum = pcall(function() return Enum.MeshType[mappedType] end)
+                        if typeSuccess and typeEnum then mTypeEnum = typeEnum end
+                    end
+                    
+                    local mId, tId = "", ""
+                    if pData.meshId then local x = pData.meshId:match("%d+") if x then mId = "rbxassetid://"..x end end
+                    if pData.meshTextureId then local x = pData.meshTextureId:match("%d+") if x then tId = "rbxassetid://"..x end end
+                    
+                    table.insert(batches.meshSync, {
+                        Part = p, MeshType = mTypeEnum, MeshId = mId, 
+                        TextureId = tId, Scale = pData.meshScale, Offset = Vector3.new(0, 0, 0)
+                    })
+                end
+                
+                for faceName, dId in pairs(pData.decals) do
+                    local formattedFace = faceName:sub(1,1):upper() .. faceName:sub(2):lower()
+                    local faceSuccess, faceEnum = pcall(function() return Enum.NormalId[formattedFace] end)
+                    if faceSuccess and faceEnum and dId:match("%d+") then
+                        table.insert(batches.decalCreate[formattedFace], {Part = p, Face = faceEnum, TextureType = "Decal"})
+                        table.insert(batches.decalSync[formattedFace], {Part = p, Face = faceEnum, TextureType = "Decal", Texture = "rbxassetid://"..dId:match("%d+")})
+                    end
+                end
+
+                for faceName, tId in pairs(pData.textures) do
+                    local formattedFace = faceName:sub(1,1):upper() .. faceName:sub(2):lower()
+                    local faceSuccess, faceEnum = pcall(function() return Enum.NormalId[formattedFace] end)
+                    if faceSuccess and faceEnum and tId:match("%d+") then
+                        table.insert(batches.decalCreate[formattedFace], {Part = p, Face = faceEnum, TextureType = "Texture"})
+                        table.insert(batches.decalSync[formattedFace], {Part = p, Face = faceEnum, TextureType = "Texture", Texture = "rbxassetid://"..tId:match("%d+")})
+                    end
+                end
+            end
+            completed = completed + 1
+        end)
+    end
+    
+    while completed < totalParts do RunService.Heartbeat:Wait() end
+    
+    FireMassiveSync("SyncResize", batches.resize)
+    FireMassiveSync("SyncColor", batches.color)
+    FireMassiveSync("SyncMaterial", batches.material)
+    FireMassiveSync("SyncAnchor", batches.anchor)
+    FireMassiveSync("SyncCollision", batches.collision)
+    
+    if #batches.surface > 0 then
+        FireMassiveSync("SyncSurface", batches.surface)
+    end
+    
+    if #batches.lightCreate > 0 then 
+        FireMassiveSync("CreateLights", batches.lightCreate)
+        FireMassiveSync("SyncLighting", batches.lightSync)
+    end
+    
+    if #batches.decorationCreate > 0 then
+        FireMassiveSync("CreateDecorations", batches.decorationCreate)
+    end
+    
+    if #batches.meshCreate > 0 then 
+        FireMassiveSync("CreateMeshes", batches.meshCreate)
+        FireMassiveSync("SyncMesh", batches.meshSync)
+    end
+
+    local hasAnyDecal = false
+    for _, faceBatch in pairs(batches.decalCreate) do
+        if #faceBatch > 0 then hasAnyDecal = true break end
+    end
+
+    if hasAnyDecal then 
+        for faceName, faceBatch in pairs(batches.decalCreate) do
+            if #faceBatch > 0 then
+                FireMassiveSync("CreateTextures", faceBatch)
+                FireMassiveSync("SyncTexture", batches.decalSync[faceName])
+            end
+        end
+    end
+
+    while ActiveSyncs > 0 do 
+        RunService.Heartbeat:Wait() 
+    end
+    
+    if #batches.unanchor > 0 then
+        FireMassiveSync("SyncAnchor", batches.unanchor)
+        while ActiveSyncs > 0 do 
+            RunService.Heartbeat:Wait() 
+        end
+    end
+    
+end
+local function StartDisco()
+    if not DISCO_POINTLIGHTS then return end
+
+    -- پیدا کردن همه‌ی پارت‌هایی که PointLight دارند
+    local lightParts = {}
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if v:IsA("PointLight") and v.Parent and v.Parent:IsA("BasePart") then
+            table.insert(lightParts, v.Parent)
+        end
+    end
+    if #lightParts == 0 then return end
+
+    task.spawn(function()
+        while DISCO_POINTLIGHTS do
+            local batch = {}
+            for _, part in ipairs(lightParts) do
+                if part and part.Parent then
+                    table.insert(batch, {
+                        Part = part,
+                        LightType = "PointLight",
+                        Color = Color3.fromHSV(math.random(), 1, 1) -- رنگ تصادفی و زنده برای هر لایت
+                    })
+                end
+            end
+            FireMassiveSync("SyncLighting", batch)
+            task.wait(DISCO_INTERVAL)
+        end
+    end)
+end
+
+task.spawn(function()
+    SetFreeze(true)              
+    RemoveAllPlayers()        
+    FastClearMap()
+    
+    while ActiveSyncs > 0 do RunService.Heartbeat:Wait() end
+            
+    BuildAndVerifyMap(RawData)
+    SetFreeze(false)
+    local p, p2 = game.Players.LocalPlayer.Character, {}
+    for _, v in pairs(workspace:GetDescendants()) do 
+        if v:IsA("SpawnLocation") then table.insert(p2, v) end 
+    end
+    p:PivotTo(#p2 > 0 and p2[math.random(#p2)].CFrame + Vector3.new(0, 3, 0) or CFrame.new(0, 5, 0))   
+        StartDisco()           
+    -- ارسال سه پیام متفاوت در چت با فاصله‌ی ۱ ثانیه
+local MESSAGES = {
+	";music 91522881145883",
+	";volume inf",
+	";pitch 0.5",
+}
+local DELAY = 0.5 -- ثانیه
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+repeat task.wait() until Players.LocalPlayer
+task.wait(1)
+
+-- روش 1: چت جدید (TextChatService)
+local function sendNew(msg)
+	return pcall(function()
+		local channels = TextChatService:WaitForChild("TextChannels", 5)
+		local general = channels:FindFirstChild("RBXGeneral")
+		assert(general, "RBXGeneral not found")
+		general:SendAsync(msg)
+	end)
+end
+
+-- روش 2: چت قدیمی (Legacy Chat)
+local function sendLegacy(msg)
+	return pcall(function()
+		local events = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents", 5)
+		assert(events, "DefaultChatSystemChatEvents not found")
+		events:WaitForChild("SayMessageRequest", 5):FireServer(msg, "All")
+	end)
+end
+
+-- روش 3: ریموت‌های چت سفارشی بازی
+local function sendCustom(msg)
+	return pcall(function()
+		local found = false
+		for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
+			if obj:IsA("RemoteEvent") then
+				local n = obj.Name:lower()
+				if n:find("chat") and (n:find("say") or n:find("send") or n:find("message")) then
+					obj:FireServer(msg, "All")
+					found = true
+				end
+			end
+		end
+		assert(found, "no custom chat remote found")
+	end)
+end
+
+-- روشی که برای اولین پیام جواب داد را برای بقیه هم استفاده می‌کند
+local methods = {
+	{ name = "new_chat", fn = sendNew },
+	{ name = "legacy_chat", fn = sendLegacy },
+	{ name = "custom_chat", fn = sendCustom },
+}
+local working = nil
+
+for i, msg in ipairs(MESSAGES) do
+	local ok = false
+
+	if working then
+		ok = working.fn(msg)
+	else
+		for _, m in ipairs(methods) do
+			if m.fn(msg) then
+				working = m
+				ok = true
+				break
+			end
+		end
+	end
+
+	if i < #MESSAGES then
+		task.wait(DELAY)
+	end
+end
+end)
