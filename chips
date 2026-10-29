@@ -2,7 +2,7 @@ local localPlayer = game.Players.LocalPlayer
 local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 
-local targetTouchInterest = workspace:WaitForChild("chipsgive"):WaitForChild("TouchInterest")
+local targetTouchInterest = workspace.HarborGardenIsland.EdgeObby.chipsgive.TouchInterest
 local parentPart = targetTouchInterest.Parent
 
 -- شروع تماس (Touch)
