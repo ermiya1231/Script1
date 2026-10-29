@@ -1,31 +1,44 @@
--- Global Levitate Script for R6 with FESeraphic Theme UI
+-- Global Levitate Script for R6 with FESeraphic Theme UI (Fixed Animation Replication)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
--- بررسی اینکه آیا ریگ کاراکتر R6 است یا خیر (اگر R15 باشد ارور می‌دهد)
+-- بررسی R6
 if humanoid.RigType ~= Enum.HumanoidRigType.R6 then
     error("This script only works on R6! Please change your avatar rig to R6.")
-    return
 end
 
 local rootPart = character:WaitForChild("HumanoidRootPart")
 local BASE_HIP_HEIGHT = 6.5
+local IDLE_FREEZE_TIME = 0.90 -- نقطه‌ی فریز Idle
+local WALK_FREEZE_TIME = 0.6 -- نقطه‌ی فریز Walk (بالاتر = فریم جلوتر)
 
--- ساخت UI با تم FESeraphic
-local ScreenGui = Instance.new('ScreenGui')
-ScreenGui.Parent = game.CoreGui
+----------------------------------------------------------------
+-- UI
+----------------------------------------------------------------
+local guiParent = game:GetService("CoreGui")
+do
+    local ok = pcall(function() local _ = guiParent.Name end)
+    if not ok then guiParent = player:WaitForChild("PlayerGui") end
+end
+
+local old = guiParent:FindFirstChild("FESeraphicGUI")
+if old then old:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FESeraphicGUI"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = guiParent
 
 local G2L = {}
 
-G2L[1] = Instance.new('Frame')
+G2L[1] = Instance.new("Frame")
 G2L[1].Parent = ScreenGui
 G2L[1].Name = "Frame"
 G2L[1].Size = UDim2.new(0, 220, 0, 130)
@@ -37,7 +50,7 @@ G2L[1].Visible = true
 G2L[1].ZIndex = 1
 G2L[1].BorderSizePixel = 0
 
-G2L[2] = Instance.new('UIStroke')
+G2L[2] = Instance.new("UIStroke")
 G2L[2].Parent = G2L[1]
 G2L[2].Name = "UIStroke"
 G2L[2].Thickness = 1
@@ -45,19 +58,19 @@ G2L[2].Color = Color3.fromRGB(0, 0, 0)
 G2L[2].ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
 G2L[2].LineJoinMode = Enum.LineJoinMode.Round
 
-G2L[3] = Instance.new('UICorner')
+G2L[3] = Instance.new("UICorner")
 G2L[3].Parent = G2L[1]
 G2L[3].Name = "UICorner"
 G2L[3].CornerRadius = UDim.new(0, 10)
 
-G2L[4] = Instance.new('UIGradient')
+G2L[4] = Instance.new("UIGradient")
 G2L[4].Parent = G2L[1]
 G2L[4].Name = "UIGradient"
 G2L[4].Rotation = 90
-G2L[4].Scale = 1
+G2L[4].Scale = Vector2.new(1, 1)
 
--- عنوان UI
-G2L[5] = Instance.new('TextLabel')
+-- عنوان
+G2L[5] = Instance.new("TextLabel")
 G2L[5].Parent = G2L[1]
 G2L[5].Name = "TextLabel"
 G2L[5].Size = UDim2.new(1, 0, 0, 30)
@@ -72,17 +85,17 @@ G2L[5].Font = Enum.Font.GothamBold
 G2L[5].TextScaled = true
 G2L[5].TextWrapped = true
 
-G2L[6] = Instance.new('UICorner')
+G2L[6] = Instance.new("UICorner")
 G2L[6].Parent = G2L[5]
 G2L[6].CornerRadius = UDim.new(0, 8)
 
-G2L[7] = Instance.new('UIStroke')
+G2L[7] = Instance.new("UIStroke")
 G2L[7].Parent = G2L[5]
 G2L[7].Thickness = 1
 G2L[7].Color = Color3.fromRGB(0, 0, 0)
 
 -- دکمه RUN
-G2L[8] = Instance.new('TextButton')
+G2L[8] = Instance.new("TextButton")
 G2L[8].Parent = G2L[1]
 G2L[8].Name = "RunButton"
 G2L[8].Size = UDim2.new(0.8, 0, 0, 32)
@@ -97,17 +110,17 @@ G2L[8].TextScaled = true
 G2L[8].TextWrapped = true
 G2L[8].AutoButtonColor = true
 
-G2L[9] = Instance.new('UICorner')
+G2L[9] = Instance.new("UICorner")
 G2L[9].Parent = G2L[8]
 G2L[9].CornerRadius = UDim.new(0, 8)
 
-G2L[10] = Instance.new('UIStroke')
+G2L[10] = Instance.new("UIStroke")
 G2L[10].Parent = G2L[8]
 G2L[10].Thickness = 1
 G2L[10].Color = Color3.fromRGB(0, 0, 0)
 
--- دکمه RESET / STOP
-G2L[11] = Instance.new('TextButton')
+-- دکمه STOP
+G2L[11] = Instance.new("TextButton")
 G2L[11].Parent = G2L[1]
 G2L[11].Name = "StopButton"
 G2L[11].Size = UDim2.new(0.8, 0, 0, 32)
@@ -122,22 +135,22 @@ G2L[11].TextScaled = true
 G2L[11].TextWrapped = true
 G2L[11].AutoButtonColor = true
 
-G2L[12] = Instance.new('UICorner')
+G2L[12] = Instance.new("UICorner")
 G2L[12].Parent = G2L[11]
 G2L[12].CornerRadius = UDim.new(0, 8)
 
-G2L[13] = Instance.new('UIStroke')
+G2L[13] = Instance.new("UIStroke")
 G2L[13].Parent = G2L[11]
 G2L[13].Thickness = 1
 G2L[13].Color = Color3.fromRGB(0, 0, 0)
 
--- سیستم درگ کردن پنجره UI
+-- درگ کردن پنجره
 local function applyDrag(frame)
-    local UIS = game:GetService("UserInputService")
     local dragToggle, dragInput, dragStart, startPos
-    
+
     frame.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UIS:GetFocusedTextBox() == nil then
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch)
+            and UIS:GetFocusedTextBox() == nil then
             dragToggle = true
             dragStart = input.Position
             startPos = frame.Position
@@ -148,27 +161,32 @@ local function applyDrag(frame)
             end)
         end
     end)
-    
+
     frame.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
     end)
-    
+
     UIS.InputChanged:Connect(function(input)
         if input == dragInput and dragToggle then
-            local Delta = input.Position - dragStart
+            local delta = input.Position - dragStart
             TweenService:Create(frame, TweenInfo.new(0.15), {
-                Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+                Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
             }):Play()
         end
     end)
 end
 applyDrag(G2L[1])
 
+----------------------------------------------------------------
 -- متغیرها و وضعیت‌ها
+----------------------------------------------------------------
 local isRunning = false
 local isFloating = false
+local currentState = nil -- "idle" | "walk"
+local freezeToken = 0
+local floatTimer = 0
 local originalHipHeight = humanoid.HipHeight
 local originalSpeed = humanoid.WalkSpeed
 
@@ -178,173 +196,210 @@ local INTRO_ANIM_2 = "rbxassetid://70439247"
 local IDLE_ID = "rbxassetid://214744412"
 local WALK_ID = "rbxassetid://218504594"
 
-local SOUND_ID_1 = "rbxassetid://137463716" 
-local SOUND_ID_2 = "rbxassetid://743521450" 
+local SOUND_ID_1 = "rbxassetid://137463716"
+local SOUND_ID_2 = "rbxassetid://743521450"
 
 local animator = humanoid:WaitForChild("Animator")
 
--- لود کردن انیمیشن‌ها
-local introAnim1Obj = Instance.new("Animation")
-introAnim1Obj.AnimationId = INTRO_ANIM_1
-local introTrack1 = animator:LoadAnimation(introAnim1Obj)
+local introAnim1Obj = Instance.new("Animation"); introAnim1Obj.AnimationId = INTRO_ANIM_1
+local introAnim2Obj = Instance.new("Animation"); introAnim2Obj.AnimationId = INTRO_ANIM_2
+local idleAnim = Instance.new("Animation");      idleAnim.AnimationId = IDLE_ID
+local walkAnim = Instance.new("Animation");      walkAnim.AnimationId = WALK_ID
 
-local introAnim2Obj = Instance.new("Animation")
-introAnim2Obj.AnimationId = INTRO_ANIM_2
-local introTrack2 = animator:LoadAnimation(introAnim2Obj)
+local introTrack1, introTrack2, idleTrack, walkTrack
 
-local idleAnim = Instance.new("Animation")
-idleAnim.AnimationId = IDLE_ID
-local idleTrack = animator:LoadAnimation(idleAnim)
-
-local walkAnim = Instance.new("Animation")
-walkAnim.AnimationId = WALK_ID
-local walkTrack = animator:LoadAnimation(walkAnim)
-
--- ساخت موزیک‌ها در Workspace
-local sound1 = Instance.new("Sound")
-sound1.SoundId = SOUND_ID_1
-sound1.Pitch = 0.3
-sound1.Volume = 8
-sound1.Parent = Workspace
-
-local sound2 = Instance.new("Sound")
-sound2.SoundId = SOUND_ID_2
-sound2.Pitch = 1.0
-sound2.Volume = 8
-sound2.Parent = Workspace
-
-player.CharacterAdded:Connect(function(newChar)
-    character = newChar
-    humanoid = character:WaitForChild("Humanoid")
-    
-    if humanoid.RigType ~= Enum.HumanoidRigType.R6 then
-        return
-    end
-    
-    rootPart = character:WaitForChild("HumanoidRootPart")
-    animator = humanoid:WaitForChild("Animator")
-    
+local function loadTracks()
     introTrack1 = animator:LoadAnimation(introAnim1Obj)
     introTrack2 = animator:LoadAnimation(introAnim2Obj)
-    idleTrack = animator:LoadAnimation(idleAnim)
-    walkTrack = animator:LoadAnimation(walkAnim)
-    
+    idleTrack   = animator:LoadAnimation(idleAnim)
+    walkTrack   = animator:LoadAnimation(walkAnim)
+
+    for _, t in ipairs({introTrack1, introTrack2, idleTrack, walkTrack}) do
+        t.Priority = Enum.AnimationPriority.Action4
+    end
+    idleTrack.Looped = true
+    walkTrack.Looped = true
+end
+loadTracks()
+
+-- توقف ترک‌های پیش‌فرض (Animate) که با ترک‌های ما تداخل دارن
+local function stopDefaultTracks()
+    for _, t in ipairs(animator:GetPlayingAnimationTracks()) do
+        if t ~= introTrack1 and t ~= introTrack2 and t ~= idleTrack and t ~= walkTrack then
+            t:Stop(0)
+        end
+    end
+end
+
+-- فریز قابل replicate: پلی با سرعت عادی، رسیدن به زمان هدف، بعد سرعت صفر
+local function playFrozenAt(track, targetTime)
+    freezeToken += 1
+    local myToken = freezeToken
+    track:Play(0, 1, 1) -- fade صفر، weight یک، speed یک
+    task.spawn(function()
+        local startClock = os.clock()
+        -- تایم‌اوت: اگه انیمیشن کوتاه‌تر از زمان هدف بود و لوپ شد، گیر نکنه
+        while myToken == freezeToken and track.IsPlaying and track.TimePosition < targetTime
+            and (os.clock() - startClock) < 2 do
+            task.wait()
+        end
+        if myToken == freezeToken and track.IsPlaying then
+            track:AdjustSpeed(0)
+        end
+    end)
+end
+
+-- موزیک‌ها
+local sound1, sound2
+
+local function createSounds()
     if sound1 then sound1:Destroy() end
     if sound2 then sound2:Destroy() end
-    
+
     sound1 = Instance.new("Sound")
     sound1.SoundId = SOUND_ID_1
     sound1.Pitch = 0.3
     sound1.Volume = 8
     sound1.Parent = Workspace
-    
+
     sound2 = Instance.new("Sound")
     sound2.SoundId = SOUND_ID_2
     sound2.Pitch = 1.0
     sound2.Volume = 8
     sound2.Parent = Workspace
-    
-    isRunning = false
-    isFloating = false
-end)
+end
+createSounds()
 
--- تابع ریست کامل
+----------------------------------------------------------------
+-- ریست کامل
+----------------------------------------------------------------
 local function resetEverything()
     isRunning = false
     isFloating = false
-    
+    freezeToken += 1
+    currentState = nil
+
     if sound1 and sound1.IsPlaying then sound1:Stop() end
     if sound2 and sound2.IsPlaying then sound2:Stop() end
-    
-    introTrack1:Stop()
-    introTrack2:Stop()
-    idleTrack:Stop()
-    walkTrack:Stop()
-    
+
+    introTrack1:Stop(0)
+    introTrack2:Stop(0)
+    idleTrack:Stop(0)
+    walkTrack:Stop(0)
+
     if rootPart then
         rootPart.Anchored = false
     end
-    
+
     humanoid.HipHeight = originalHipHeight
     humanoid.WalkSpeed = originalSpeed
-    
+
     local animateScript = character:FindFirstChild("Animate")
     if animateScript then animateScript.Disabled = false end
 end
 
--- کلیک روی دکمه Run
+-- ریسپاون
+player.CharacterAdded:Connect(function(newChar)
+    freezeToken += 1
+    currentState = nil
+    isRunning = false
+    isFloating = false
+
+    character = newChar
+    humanoid = character:WaitForChild("Humanoid")
+
+    if humanoid.RigType ~= Enum.HumanoidRigType.R6 then
+        return
+    end
+
+    rootPart = character:WaitForChild("HumanoidRootPart")
+    animator = humanoid:WaitForChild("Animator")
+    originalHipHeight = humanoid.HipHeight
+    originalSpeed = humanoid.WalkSpeed
+
+    loadTracks()
+    createSounds()
+end)
+
+----------------------------------------------------------------
+-- دکمه Run
+----------------------------------------------------------------
 G2L[8].MouseButton1Click:Connect(function()
     if isRunning then return end
     isRunning = true
     isFloating = false
-    
+    currentState = nil
+
     originalHipHeight = humanoid.HipHeight
     originalSpeed = humanoid.WalkSpeed
     humanoid.WalkSpeed = 30
-    
+
     local animateScript = character:FindFirstChild("Animate")
     if animateScript then animateScript.Disabled = true end
-    
-    -- ۱. انکر کردن کاراکتر در ابتدای کار
+    stopDefaultTracks()
+
+    -- ۱. انکر کردن کاراکتر
     rootPart.Anchored = true
-    
-    -- ۲. پلی کردن انیمیشن‌های اینترو و آهنگ اول
-    introTrack1:Play()
-    introTrack2:Play()
+
+    -- ۲. انیمیشن‌های اینترو و آهنگ اول
+    introTrack1:Play(0, 1, 1)
+    introTrack2:Play(0, 1, 1)
     sound1:Play()
-    
-    -- ۳. دقیقاً ۳ ثانیه بعد از شروع آهنگ اول: پخش آهنگ دوم و شروع بالا رفتن نرم و روان
+
+    -- ۳. ۳ ثانیه بعد: آهنگ دوم و بالا رفتن نرم
     task.delay(3, function()
         if not isRunning then return end
-        
+
         sound2:Play()
-        
+
         task.spawn(function()
             while isRunning and humanoid.HipHeight < BASE_HIP_HEIGHT do
                 humanoid.HipHeight = math.min(humanoid.HipHeight + 0.05, BASE_HIP_HEIGHT)
                 task.wait(0.02)
             end
-            
-            -- ۴. به محض رسیدن کامل به HipHeight 6.5، کاراکتر Unanchor شده و انیمیشن‌های اصلی فعال می‌شوند
+
+            -- ۴. رسیدن به ارتفاع: آنانکر و فعال شدن انیمیشن‌های اصلی
             if isRunning then
                 rootPart.Anchored = false
-                introTrack1:Stop()
-                introTrack2:Stop()
+                introTrack1:Stop(0)
+                introTrack2:Stop(0)
+                stopDefaultTracks()
+                currentState = nil
                 isFloating = true
             end
         end)
     end)
 end)
 
--- کلیک روی دکمه Reset / Stop
+-- دکمه Stop
 G2L[11].MouseButton1Click:Connect(function()
     resetEverything()
 end)
 
--- حلقه شناوری و انیمیشن‌های اصلی پس از اتمام بالا آمدن
-local floatTimer = 0
-RunService.RenderStepped:Connect(function(dt)
-    if not isRunning or not isFloating or not character or not character:FindFirstChild("HumanoidRootPart") then return end
-    
-    -- افکت بالا و پایین رفتن نرم شناوری
-    floatTimer = floatTimer + (dt * 2)
-    local hoverOffset = math.sin(floatTimer) * 1.5
-    humanoid.HipHeight = BASE_HIP_HEIGHT + hoverOffset
-    
-    -- مدیریت انیمیشن‌های اصلی (Idle و Walk)
-    if humanoid.MoveDirection.Magnitude > 0 then
-        if not walkTrack.IsPlaying then
-            idleTrack:Stop()
-            walkTrack:Play()
-            walkTrack.TimePosition = 0.90
-            walkTrack.Speed = 0
-        end
-    else
-        if not idleTrack.IsPlaying then
-            walkTrack:Stop()
-            idleTrack:Play()
-            idleTrack.TimePosition = 0.90
-            idleTrack.Speed = 0
+----------------------------------------------------------------
+-- حلقه شناوری و انیمیشن‌های اصلی
+----------------------------------------------------------------
+RunService.Heartbeat:Connect(function(dt)
+    if not isRunning or not isFloating or not character or not character:FindFirstChild("HumanoidRootPart") then
+        currentState = nil
+        return
+    end
+
+    -- افکت بالا و پایین رفتن نرم
+    floatTimer += dt * 2
+    humanoid.HipHeight = BASE_HIP_HEIGHT + math.sin(floatTimer) * 1.5
+
+    -- فقط هنگام تغییر وضعیت انیمیشن عوض میشه
+    local newState = humanoid.MoveDirection.Magnitude > 0 and "walk" or "idle"
+    if newState ~= currentState then
+        currentState = newState
+        stopDefaultTracks()
+        if newState == "walk" then
+            idleTrack:Stop(0)
+            playFrozenAt(walkTrack, WALK_FREEZE_TIME)
+        else
+            walkTrack:Stop(0)
+            playFrozenAt(idleTrack, IDLE_FREEZE_TIME)
         end
     end
 end)
