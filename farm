@@ -1,37 +1,201 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
-task.spawn(function()
-    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local hrp = character:FindFirstChild("HumanoidRootPart")
+local LOOP_DELAY = 130 -- ثانیه بین هر دور Auto Farm
 
-    if hrp then
+----------------------------------------------------------------
+-- منطق Farm
+----------------------------------------------------------------
+local function billboardHasDollar(gui)
+    for _, obj in ipairs(gui:GetDescendants()) do
+        if (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox"))
+            and obj.Text:find("$", 1, true) then
+            return true
+        end
+    end
+    return false
+end
+
+local function getAnchorPart(gui)
+    local adornee = gui.Adornee
+    if adornee then
+        if adornee:IsA("BasePart") then return adornee end
+        if adornee:IsA("Attachment") and adornee.Parent:IsA("BasePart") then
+            return adornee.Parent
+        end
+    end
+    local p = gui.Parent
+    if p then
+        if p:IsA("BasePart") then return p end
+        if p:IsA("Attachment") and p.Parent:IsA("BasePart") then return p.Parent end
+    end
+    return nil
+end
+
+local function findPromptFor(part)
+    local direct = part:FindFirstChildWhichIsA("ProximityPrompt", true)
+    if direct then return direct end
+    local model = part:FindFirstAncestorOfClass("Model")
+    if model then
+        return model:FindFirstChildWhichIsA("ProximityPrompt", true)
+    end
+    return nil
+end
+
+local farming = false -- جلوگیری از اجرای همزمان دو Farm
+
+local function runFarm()
+    if farming then return end
+    farming = true
+
+    local ok, err = pcall(function()
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
         local originalCFrame = hrp.CFrame
+        local done = {}
 
-        -- پیمایش یک‌باره‌ی تمام ProximityPromptها در Workspace
-        for _, prompt in pairs(Workspace:GetDescendants()) do
-            if prompt:IsA("ProximityPrompt") then
-                local parentPart = prompt.Parent
-                if parentPart and parentPart:IsA("BasePart") then
-                    local color = parentPart.Color
-                    local isGreen = (color.G > 0.5 and color.R < 0.5)
-
-                    -- شرط بررسی رنگ سبز یا کلمات مرتبط با پول/دریافت
-                    if isGreen or prompt.ObjectText:lower():find("money") or prompt.ActionText:lower():find("get") then
-                        hrp.CFrame = parentPart.CFrame + Vector3.new(0, 3, 0)
-                        task.wait(0.2)
-                        fireproximityprompt(prompt)
-                        task.wait(prompt.HoldDuration + 0.2)
+        for _, gui in ipairs(Workspace:GetDescendants()) do
+            if gui:IsA("BillboardGui") and billboardHasDollar(gui) then
+                local part = getAnchorPart(gui)
+                if part then
+                    local prompt = findPromptFor(part)
+                    if prompt and not done[prompt] then
+                        done[prompt] = true
+                        local target = prompt.Parent
+                        if target:IsA("Attachment") then target = target.Parent end
+                        if target and target:IsA("BasePart") then
+                            hrp.CFrame = target.CFrame + Vector3.new(0, 3, 0)
+                            task.wait(0.2)
+                            fireproximityprompt(prompt)
+                            task.wait(prompt.HoldDuration + 0.2)
+                        end
                     end
                 end
             end
         end
+        hrp.CFrame = originalCFrame
+    end)
 
-        -- بازگشت به موقعیت اولیه بعد از اتمام کار
-        task.wait(0.5)
-        if hrp then 
-            hrp.CFrame = originalCFrame 
+    if not ok then warn("Farm error:", err) end
+    farming = false
+end
+
+----------------------------------------------------------------
+-- GUI
+----------------------------------------------------------------
+local parentGui = (gethui and gethui()) or game:GetService("CoreGui")
+local old = parentGui:FindFirstChild("FarmGUI")
+if old then old:Destroy() end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FarmGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = parentGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.fromOffset(200, 130)
+frame.Position = UDim2.new(0.5, -100, 0.4, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Parent = screenGui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "Farm Gui By C00LHACK"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.Parent = frame
+
+local function makeButton(text, yPos)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -20, 0, 36)
+    b.Position = UDim2.new(0, 10, 0, yPos)
+    b.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.Font = Enum.Font.GothamSemibold
+    b.TextSize = 14
+    b.Text = text
+    b.AutoButtonColor = true
+    b.Parent = frame
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    return b
+end
+
+local farmBtn = makeButton("Farm", 38)
+local autoBtn = makeButton("Auto Farm = OFF", 82)
+
+local function makeDraggable(targetFrame)
+    local uis = game:GetService("UserInputService")
+    local tweenService = game:GetService("TweenService")
+    
+    local dragging, dragInput, dragStart, startPos
+    
+    targetFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = targetFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
+    end)
+    
+    targetFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    uis.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local newPos = UDim2.new(
+                startPos.X.Scale, 
+                startPos.X.Offset + delta.X, 
+                startPos.Y.Scale, 
+                startPos.Y.Offset + delta.Y
+            )
+            tweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+        end
+    end)
+end
+
+makeDraggable(frame)
+
+----------------------------------------------------------------
+-- دکمه‌ها
+----------------------------------------------------------------
+farmBtn.MouseButton1Click:Connect(function()
+    task.spawn(runFarm)
+end)
+
+local autoFarm = false
+
+autoBtn.MouseButton1Click:Connect(function()
+    autoFarm = not autoFarm
+    autoBtn.Text = "Auto Farm = " .. (autoFarm and "ON" or "OFF")
+    autoBtn.BackgroundColor3 = autoFarm and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(60, 60, 70)
+
+    if autoFarm then
+        task.spawn(function()
+            while autoFarm do
+                runFarm()
+                -- صبر ۱۳۰ ثانیه (ثانیه‌به‌ثانیه چک می‌شود تا با OFF کردن فوراً متوقف شود)
+                for _ = 1, LOOP_DELAY do
+                    if not autoFarm then break end
+                    task.wait(1)
+                end
+            end
+        end)
     end
 end)
