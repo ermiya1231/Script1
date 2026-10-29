@@ -1,0 +1,352 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+-- Re-run support: clean up the previous run before starting
+if _G.__BTOOLS_CLEANUP then
+	pcall(_G.__BTOOLS_CLEANUP)
+end
+
+local connections = {}
+local function track(conn)
+	table.insert(connections, conn)
+	return conn
+end
+
+local function destroyOldStuff()
+	local gui = player:FindFirstChildOfClass("PlayerGui")
+	if gui then
+		for _, v in ipairs(gui:GetChildren()) do
+			if v:GetAttribute("BToolsMade") then
+				v:Destroy()
+			end
+		end
+	end
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	if backpack then
+		for _, v in ipairs(backpack:GetChildren()) do
+			if v:GetAttribute("BToolsMade") then
+				v:Destroy()
+			end
+		end
+	end
+	if player.Character then
+		for _, v in ipairs(player.Character:GetChildren()) do
+			if v:IsA("Tool") and v:GetAttribute("BToolsMade") then
+				v:Destroy()
+			end
+		end
+	end
+end
+
+_G.__BTOOLS_CLEANUP = function()
+	for _, c in ipairs(connections) do
+		pcall(function()
+			c:Disconnect()
+		end)
+	end
+	table.clear(connections)
+	destroyOldStuff()
+end
+
+destroyOldStuff()
+
+local ICONS = {
+	Hammer = {tool = "rbxassetid://5432160999", cursor = "rbxasset://textures/HammerCursor.png"},
+	Clone = {tool = "rbxassetid://99873037808444", cursor = "rbxasset://textures/CloneCursor.png"},
+	Grab = {tool = "rbxassetid://11202377805", cursor = "rbxasset://textures/GrabCursor.png"},
+}
+
+local CORE_COLOR = Color3.fromRGB(255, 30, 30)
+local GLOW_COLOR = Color3.fromRGB(255, 0, 0)
+
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+
+-- Pointer tracking (mouse + touch)
+local touchPos = nil
+local touching = false
+
+track(UserInputService.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		touching = true
+		touchPos = Vector2.new(input.Position.X, input.Position.Y)
+	end
+end))
+
+track(UserInputService.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		touchPos = Vector2.new(input.Position.X, input.Position.Y)
+	end
+end))
+
+track(UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		touching = false
+	end
+end))
+
+local function getRay()
+	local camera = workspace.CurrentCamera
+	if not camera then
+		return nil
+	end
+	if isMobile then
+		if not touchPos then
+			return nil
+		end
+		return camera:ViewportPointToRay(touchPos.X, touchPos.Y)
+	end
+	local m = UserInputService:GetMouseLocation()
+	return camera:ViewportPointToRay(m.X, m.Y)
+end
+
+local function getTarget()
+	local ray = getRay()
+	if not ray then
+		return nil, nil
+	end
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	if player.Character then
+		params.FilterDescendantsInstances = {player.Character}
+	end
+	local result = workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
+	if result and result.Instance and result.Instance:IsA("BasePart") then
+		if not result.Instance:IsA("Terrain") then
+			return result.Instance, result.Position
+		end
+	end
+	return nil, nil
+end
+
+-- Raycast for the grab tool: ignores the grabbed part and the character
+local function getSurfaceHit(ignore)
+	local ray = getRay()
+	if not ray then
+		return nil
+	end
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	local list = {ignore}
+	if player.Character then
+		table.insert(list, player.Character)
+	end
+	params.FilterDescendantsInstances = list
+	return workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
+end
+
+-- Half-size of the part measured along a given direction (so it rests ON the surface)
+local function extentAlongNormal(part, normal)
+	local cf = part.CFrame
+	local s = part.Size / 2
+	return math.abs(normal:Dot(cf.RightVector)) * s.X
+		+ math.abs(normal:Dot(cf.UpVector)) * s.Y
+		+ math.abs(normal:Dot(cf.LookVector)) * s.Z
+end
+
+-- Neon-style outline: bright thin core + wider transparent glow layer
+local function makeOutline()
+	local gui = player:WaitForChild("PlayerGui")
+
+	local glow = Instance.new("SelectionBox")
+	glow.Name = "BToolsGlow"
+	glow.Color3 = GLOW_COLOR
+	glow.LineThickness = 0.12
+	glow.Transparency = 0.65
+	glow.SurfaceTransparency = 1
+	glow:SetAttribute("BToolsMade", true)
+	glow.Parent = gui
+
+	local core = Instance.new("SelectionBox")
+	core.Name = "BToolsCore"
+	core.Color3 = CORE_COLOR
+	core.LineThickness = 0.04
+	core.Transparency = 0
+	core.SurfaceTransparency = 1
+	core:SetAttribute("BToolsMade", true)
+	core.Parent = gui
+
+	return {
+		set = function(adornee)
+			glow.Adornee = adornee
+			core.Adornee = adornee
+		end,
+		destroy = function()
+			glow:Destroy()
+			core:Destroy()
+		end,
+	}
+end
+
+local function makeTool(name, tip, icon)
+	local tool = Instance.new("Tool")
+	tool.Name = name
+	tool.ToolTip = tip
+	tool.TextureId = icon.tool
+	tool.RequiresHandle = false
+	tool.CanBeDropped = false
+	tool:SetAttribute("BToolsMade", true)
+	return tool
+end
+
+local function updateHover(outline, forced)
+	if forced then
+		outline.set(forced)
+		return
+	end
+	if isMobile and not touching then
+		outline.set(nil)
+		return
+	end
+	local t = getTarget()
+	outline.set(t)
+end
+
+-- Click tools (Delete / Copy)
+local function makeClickTool(name, tip, icon, onClick)
+	local tool = makeTool(name, tip, icon)
+
+	tool.Equipped:Connect(function(mouse)
+		mouse.Icon = icon.cursor
+		local outline = makeOutline()
+
+		local hover = RunService.RenderStepped:Connect(function()
+			updateHover(outline, nil)
+		end)
+
+		local click = tool.Activated:Connect(function()
+			local t, pos = getTarget()
+			if t then
+				onClick(t, pos)
+			end
+		end)
+
+		tool.Unequipped:Once(function()
+			mouse.Icon = ""
+			hover:Disconnect()
+			click:Disconnect()
+			outline.destroy()
+		end)
+	end)
+
+	return tool
+end
+
+-- Grab tool: the part slides along other surfaces under the cursor.
+-- If the cursor points at nothing (sky), the part does not move.
+local function makeGrabTool()
+	local tool = makeTool("Grab", "Hold and drag a part", ICONS.Grab)
+
+	tool.Equipped:Connect(function(mouse)
+		mouse.Icon = ICONS.Grab.cursor
+		local outline = makeOutline()
+
+		local target = nil
+		local wasAnchored = false
+		local drag = nil
+
+		local function release()
+			if drag then
+				drag:Disconnect()
+				drag = nil
+			end
+			if target and target.Parent then
+				target.Anchored = wasAnchored
+				if not wasAnchored then
+					target.AssemblyLinearVelocity = Vector3.zero
+					target.AssemblyAngularVelocity = Vector3.zero
+				end
+			end
+			target = nil
+		end
+
+		local hover = RunService.RenderStepped:Connect(function()
+			updateHover(outline, target)
+		end)
+
+		local activated = tool.Activated:Connect(function()
+			local t = getTarget()
+			if not t then
+				return
+			end
+			target = t
+			wasAnchored = t.Anchored
+			t.Anchored = true
+
+			drag = RunService.Heartbeat:Connect(function()
+				if not target or not target.Parent then
+					release()
+					return
+				end
+
+				local result = getSurfaceHit(target)
+				if not result then
+					return -- pointing at the sky / nothing: do not move
+				end
+
+				local normal = result.Normal
+				local gap = extentAlongNormal(target, normal) + 0.01
+				local goal = result.Position + normal * gap
+				local rotation = target.CFrame - target.Position
+				target.CFrame = CFrame.new(goal) * rotation
+			end)
+		end)
+
+		local deactivated = tool.Deactivated:Connect(release)
+
+		tool.Unequipped:Once(function()
+			release()
+			mouse.Icon = ""
+			hover:Disconnect()
+			activated:Disconnect()
+			deactivated:Disconnect()
+			outline.destroy()
+		end)
+	end)
+
+	return tool
+end
+
+local function giveTools()
+	local backpack = player:WaitForChild("Backpack")
+
+	-- Remove any leftover copies so we never end up with duplicates
+	for _, v in ipairs(backpack:GetChildren()) do
+		if v:GetAttribute("BToolsMade") then
+			v:Destroy()
+		end
+	end
+
+	-- Delete (Hammer) + explosion effect
+	local deleteTool = makeClickTool("Delete", "Click a part to delete it", ICONS.Hammer, function(t)
+		local ex = Instance.new("Explosion")
+		ex.Position = t.Position
+		ex.BlastRadius = 8
+		ex.BlastPressure = 0
+		ex.DestroyJointRadiusPercent = 0
+		ex.Parent = workspace
+		t:Destroy()
+	end)
+
+	-- Copy (Clone)
+	local cloneTool = makeClickTool("Copy", "Click a part to clone it", ICONS.Clone, function(t)
+		local copy = t:Clone()
+		copy.CFrame = t.CFrame + Vector3.new(0, t.Size.Y + 0.1, 0)
+		copy.Parent = t.Parent
+	end)
+
+	local grabTool = makeGrabTool()
+
+	deleteTool.Parent = backpack
+	cloneTool.Parent = backpack
+	grabTool.Parent = backpack
+end
+
+giveTools()
+
+track(player.CharacterAdded:Connect(function()
+	task.wait(0.5)
+	giveTools()
+end))
