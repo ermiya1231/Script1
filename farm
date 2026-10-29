@@ -1,9 +1,204 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
-local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 
 local LOOP_DELAY = 130 -- ثانیه بین هر دور Auto Farm
+
+----------------------------------------------------------------
+-- اسکریپتی که توی Queue میره (بعد از هر سرورهاپ خودش اجرا میشه)
+----------------------------------------------------------------
+local UF_SRC = [==[
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+repeat task.wait() until Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer
+
+local stopped = false
+
+-- دوباره خودش رو توی Queue میذاره (SELF از بالای این اسکریپت میاد)
+local function requeue()
+    local q = queue_on_teleport or (syn and syn.queue_on_teleport)
+    if q then
+        q(string.format("local SELF=%q\n", SELF) .. SELF)
+    end
+end
+
+---------------- GUI وسط صفحه ----------------
+local parentGui = (gethui and gethui()) or game:GetService("CoreGui")
+local old = parentGui:FindFirstChild("UltraFarmGUI")
+if old then old:Destroy() end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "UltraFarmGUI"
+gui.ResetOnSpawn = false
+gui.Parent = parentGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.fromOffset(240, 100)
+frame.Position = UDim2.new(0.5, -120, 0.5, -50)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, 0, 0, 36)
+status.BackgroundTransparency = 1
+status.Text = "Ultra Fast Farm: Loading..."
+status.TextColor3 = Color3.fromRGB(255, 255, 255)
+status.Font = Enum.Font.GothamBold
+status.TextSize = 15
+status.Parent = frame
+
+local stopBtn = Instance.new("TextButton")
+stopBtn.Size = UDim2.new(1, -20, 0, 40)
+stopBtn.Position = UDim2.new(0, 10, 0, 46)
+stopBtn.BackgroundColor3 = Color3.fromRGB(190, 50, 50)
+stopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+stopBtn.Font = Enum.Font.GothamBold
+stopBtn.TextSize = 16
+stopBtn.Text = "Stop FARM"
+stopBtn.Parent = frame
+Instance.new("UICorner", stopBtn).CornerRadius = UDim.new(0, 8)
+
+stopBtn.MouseButton1Click:Connect(function()
+    stopped = true
+    status.Text = "Stopped"
+    task.wait(0.6)
+    gui:Destroy()
+end)
+
+---------------- منطق Farm ----------------
+local function billboardHasDollar(g)
+    for _, obj in ipairs(g:GetDescendants()) do
+        if (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox"))
+            and obj.Text:find("$", 1, true) then
+            return true
+        end
+    end
+    return false
+end
+
+local function getAnchorPart(g)
+    local adornee = g.Adornee
+    if adornee then
+        if adornee:IsA("BasePart") then return adornee end
+        if adornee:IsA("Attachment") and adornee.Parent:IsA("BasePart") then
+            return adornee.Parent
+        end
+    end
+    local p = g.Parent
+    if p then
+        if p:IsA("BasePart") then return p end
+        if p:IsA("Attachment") and p.Parent:IsA("BasePart") then return p.Parent end
+    end
+    return nil
+end
+
+local function findPromptFor(part)
+    local direct = part:FindFirstChildWhichIsA("ProximityPrompt", true)
+    if direct then return direct end
+    local model = part:FindFirstAncestorOfClass("Model")
+    if model then
+        return model:FindFirstChildWhichIsA("ProximityPrompt", true)
+    end
+    return nil
+end
+
+local function runFarm()
+    local ok, err = pcall(function()
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        local done = {}
+        for _, g in ipairs(Workspace:GetDescendants()) do
+            if stopped then return end
+            if g:IsA("BillboardGui") and billboardHasDollar(g) then
+                local part = getAnchorPart(g)
+                if part then
+                    local prompt = findPromptFor(part)
+                    if prompt and not done[prompt] then
+                        done[prompt] = true
+                        local target = prompt.Parent
+                        if target:IsA("Attachment") then target = target.Parent end
+                        if target and target:IsA("BasePart") then
+                            hrp.CFrame = target.CFrame + Vector3.new(0, 3, 0)
+                            task.wait(0.22)
+                            fireproximityprompt(prompt)
+                            task.wait(prompt.HoldDuration + 0.22)
+                        end
+                    end
+                end
+            end
+        end
+    end)
+    if not ok then warn("Farm error:", err) end
+end
+
+---------------- Server Hop ----------------
+local function getServers()
+    local url = ("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Asc&limit=100"):format(game.PlaceId)
+    local ok, res = pcall(function() return game:HttpGet(url) end)
+    if not ok then return {} end
+    local ok2, data = pcall(function() return HttpService:JSONDecode(res) end)
+    if not ok2 or not data or not data.data then return {} end
+    local list = {}
+    for _, s in ipairs(data.data) do
+        if s.id ~= game.JobId and s.playing and s.maxPlayers and s.playing < s.maxPlayers then
+            table.insert(list, s.id)
+        end
+    end
+    return list
+end
+
+local function hop()
+    while not stopped do
+        status.Text = "Server hopping..."
+        requeue()
+        local list = getServers()
+        local ok
+        if #list > 0 then
+            ok = pcall(function()
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, list[math.random(#list)], LocalPlayer)
+            end)
+        else
+            ok = pcall(function()
+                TeleportService:Teleport(game.PlaceId, LocalPlayer)
+            end)
+        end
+        -- اگه تلپورت موفق باشه اسکریپت همینجا با بسته شدن سرور تموم میشه
+        task.wait(8) -- اگه هنوز اینجاییم یعنی فیل شده، دوباره تلاش کن
+    end
+end
+
+TeleportService.TeleportInitFailed:Connect(function()
+    if not stopped then task.wait(1) end
+end)
+
+---------------- اجرا ----------------
+task.wait(5) -- صبر برای لود شدن مپ
+if not stopped then
+    status.Text = "Ultra Fast Farm: Farming..."
+    runFarm()
+end
+if not stopped then
+    hop()
+end
+]==]
+
+local function startUltraQueue()
+    local q = queue_on_teleport or (syn and syn.queue_on_teleport)
+    if not q then
+        warn("executor شما queue_on_teleport رو ساپورت نمیکنه")
+        return false
+    end
+    q(string.format("local SELF=%q\n", UF_SRC) .. UF_SRC)
+    return true
+end
 
 ----------------------------------------------------------------
 -- منطق Farm
@@ -46,7 +241,8 @@ end
 
 local farming = false -- جلوگیری از اجرای همزمان دو Farm
 
-local function runFarm()
+-- returnBack = false یعنی بعد از Farm به جای اولیه برنگرد (برای Ultra Fast Farm)
+local function runFarm(returnBack)
     if farming then return end
     farming = true
 
@@ -67,15 +263,17 @@ local function runFarm()
                         if target:IsA("Attachment") then target = target.Parent end
                         if target and target:IsA("BasePart") then
                             hrp.CFrame = target.CFrame + Vector3.new(0, 3, 0)
-                            task.wait(0.2)
+                            task.wait(0.22)
                             fireproximityprompt(prompt)
-                            task.wait(prompt.HoldDuration + 0.2)
+                            task.wait(prompt.HoldDuration + 0.22)
                         end
                     end
                 end
             end
         end
-        hrp.CFrame = originalCFrame
+        if returnBack ~= false then
+            hrp.CFrame = originalCFrame
+        end
     end)
 
     if not ok then warn("Farm error:", err) end
@@ -95,7 +293,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = parentGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.fromOffset(200, 130)
+frame.Size = UDim2.fromOffset(200, 174)
 frame.Position = UDim2.new(0.5, -100, 0.4, 0)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
 frame.BorderSizePixel = 0
@@ -129,19 +327,21 @@ end
 
 local farmBtn = makeButton("Farm", 38)
 local autoBtn = makeButton("Auto Farm = OFF", 82)
+local ultraBtn = makeButton("Ultra Fast Farm", 126)
+ultraBtn.BackgroundColor3 = Color3.fromRGB(140, 60, 160)
 
 local function makeDraggable(targetFrame)
     local uis = game:GetService("UserInputService")
     local tweenService = game:GetService("TweenService")
-    
+
     local dragging, dragInput, dragStart, startPos
-    
+
     targetFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = targetFrame.Position
-            
+
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -149,20 +349,20 @@ local function makeDraggable(targetFrame)
             end)
         end
     end)
-    
+
     targetFrame.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
     end)
-    
+
     uis.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
             local newPos = UDim2.new(
-                startPos.X.Scale, 
-                startPos.X.Offset + delta.X, 
-                startPos.Y.Scale, 
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
                 startPos.Y.Offset + delta.Y
             )
             tweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
@@ -198,4 +398,37 @@ autoBtn.MouseButton1Click:Connect(function()
             end
         end)
     end
+end)
+
+-- Ultra Fast Farm: یک Farm (بدون برگشت به جای اول) -> سرورهاپ با Queue
+-- در سرور بعدی اسکریپت Queue یه GUI با دکمه Stop FARM میسازه، Farm میکنه و دوباره هاپ میکنه
+local ultraBusy = false
+ultraBtn.MouseButton1Click:Connect(function()
+    if ultraBusy then return end
+    ultraBusy = true
+    autoFarm = false
+    autoBtn.Text = "Auto Farm = OFF"
+    autoBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+
+    task.spawn(function()
+        ultraBtn.Text = "Farming..."
+        runFarm(false)
+
+        if not startUltraQueue() then
+            ultraBtn.Text = "No queue support!"
+            task.wait(2)
+            ultraBtn.Text = "Ultra Fast Farm"
+            ultraBusy = false
+            return
+        end
+
+        ultraBtn.Text = "Hopping..."
+        local ok = pcall(function()
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+        end)
+        if not ok then
+            ultraBtn.Text = "Ultra Fast Farm"
+            ultraBusy = false
+        end
+    end)
 end)
