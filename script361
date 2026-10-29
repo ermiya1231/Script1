@@ -1,0 +1,236 @@
+-- LocalScript: Advanced ScreenGui Manager (Filtered)
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- ساخت منوی اصلی داخل CoreGui (با پشتیبانی از حالت امن)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ScreenGuiManagerPanel"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local success = pcall(function()
+	screenGui.Parent = CoreGui
+end)
+if not success then
+	screenGui.Parent = PlayerGui -- در صورت محدودیت دسترسی، فال‌بک به PlayerGui
+end
+
+-- فریم اصلی پنل
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 440, 0, 520)
+mainFrame.Position = UDim2.new(0.5, -220, 0.5, -260)
+mainFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(60, 60, 80)
+stroke.Thickness = 2
+stroke.Parent = mainFrame
+
+-- هدر و عنوان پنل
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 50)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Text = "GUI Enabler By C00LHACK"
+titleLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
+titleLabel.TextSize = 15
+titleLabel.Parent = mainFrame
+
+-- کادر اسکرول هوشمند
+local scrollingFrame = Instance.new("ScrollingFrame")
+scrollingFrame.Size = UDim2.new(1, -20, 1, -70)
+scrollingFrame.Position = UDim2.new(0, 10, 0, 60)
+scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.BorderSizePixel = 0
+scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scrollingFrame.ScrollBarThickness = 6
+scrollingFrame.Parent = mainFrame
+
+local uiList = Instance.new("UIListLayout")
+uiList.SortOrder = Enum.SortOrder.LayoutOrder
+uiList.Padding = UDim.new(0, 8)
+uiList.Parent = scrollingFrame
+
+-- جدول نگهداری اطلاعات هر GUI
+local guiDataMap = {}
+
+-- تابع بررسی برای نادیده گرفتن نام‌های مشخص شده
+local function shouldIgnore(name)
+	if name:find("HDAdmin") or name:find("Topbar") or name:find("Backpack") or name:find("Satchel") or name:find("Avalog") then
+		return true
+	end
+	return false
+end
+
+local function createRow(gui)
+	if gui == screenGui or guiDataMap[gui] or shouldIgnore(gui.Name) then return end
+
+	-- ردیف هر ScreenGui
+	local row = Instance.new("Frame")
+	row.Size = UDim2.new(1, -6, 0, 48)
+	row.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
+	row.BorderSizePixel = 0
+	row.Parent = scrollingFrame
+	
+	local rowCorner = Instance.new("UICorner")
+	rowCorner.CornerRadius = UDim.new(0, 6)
+	rowCorner.Parent = row
+	
+	-- نمایش نام ScreenGui
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size = UDim2.new(1, -80, 1, 0)
+	nameLabel.Position = UDim2.new(0, 14, 0, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Font = Enum.Font.GothamMedium
+	nameLabel.Text = gui.Name
+	nameLabel.TextColor3 = Color3.fromRGB(220, 220, 230)
+	nameLabel.TextSize = 14
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.Parent = row
+	
+	-- کلید تیک‌دار (Switch)
+	local toggleBtn = Instance.new("TextButton")
+	toggleBtn.Size = UDim2.new(0, 48, 0, 24)
+	toggleBtn.Position = UDim2.new(1, -58, 0.5, -12)
+	toggleBtn.BackgroundColor3 = Color3.fromRGB(55, 55, 68)
+	toggleBtn.Text = ""
+	toggleBtn.AutoButtonColor = false
+	toggleBtn.Parent = row
+	
+	local tCorner = Instance.new("UICorner")
+	tCorner.CornerRadius = UDim.new(1, 0)
+	tCorner.Parent = toggleBtn
+	
+	local circle = Instance.new("Frame")
+	circle.Size = UDim2.new(0, 20, 0, 20)
+	circle.Position = UDim2.new(0, 2, 0.5, -10)
+	circle.BackgroundColor3 = Color3.fromRGB(200, 200, 210)
+	circle.Parent = toggleBtn
+	
+	local cCorner = Instance.new("UICorner")
+	cCorner.CornerRadius = UDim.new(1, 0)
+	cCorner.Parent = circle
+
+	local entry = {
+		Row = row,
+		ToggleBtn = toggleBtn,
+		Circle = circle,
+		IsOn = false,
+		Backup = {}
+	}
+	guiDataMap[gui] = entry
+
+	-- رویداد کلیک روی دکمه ضامن با قابلیت بکاپ و ریستور
+	toggleBtn.MouseButton1Click:Connect(function()
+		entry.IsOn = not entry.IsOn
+		
+		if entry.IsOn then
+			-- روشن کردن و گرفتن بکاپ از وضعیت فعلی تمام اجزای داخلی
+			entry.Backup = {}
+			for _, desc in ipairs(gui:GetDescendants()) do
+				local props = {}
+				if desc:IsA("Frame") or desc:IsA("TextButton") or desc:IsA("TextLabel") then
+					props.Visible = desc.Visible
+					props.Active = desc.Active
+					desc.Visible = true
+					desc.Active = true
+				elseif desc:IsA("LocalScript") then
+					props.Enabled = desc.Enabled
+					desc.Enabled = true
+				end
+				entry.Backup[desc] = props
+			end
+			
+			toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+			circle:TweenPosition(UDim2.new(1, -22, 0.5, -10), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		else
+			-- خاموش کردن و بازگردانی از روی بکاپ قبلی
+			for desc, props in pairs(entry.Backup) do
+				if desc and desc.Parent then
+					if props.Visible ~= nil and (desc:IsA("Frame") or desc:IsA("TextButton") or desc:IsA("TextLabel")) then
+						desc.Visible = props.Visible
+					end
+					if props.Active ~= nil and (desc:IsA("Frame") or desc:IsA("TextButton") or desc:IsA("TextLabel")) then
+						desc.Active = props.Active
+					end
+					if props.Enabled ~= nil and desc:IsA("LocalScript") then
+						desc.Enabled = props.Enabled
+					end
+				end
+			end
+			
+			toggleBtn.BackgroundColor3 = Color3.fromRGB(55, 55, 68)
+			circle:TweenPosition(UDim2.new(0, 2, 0.5, -10), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		end
+	end)
+end
+
+local function removeRow(gui)
+	if guiDataMap[gui] then
+		if guiDataMap[gui].Row then
+			guiDataMap[gui].Row:Destroy()
+		end
+		guiDataMap[gui] = nil
+	end
+end
+
+-- بارگذاری اولیه ScreenGui های موجود با اعمال فیلتر
+for _, gui in ipairs(PlayerGui:GetChildren()) do
+	if gui:IsA("ScreenGui") then
+		createRow(gui)
+	end
+end
+
+-- بروزرسانی خودکار و بلادرنگ با درنظر گرفتن فیلتر جدید
+PlayerGui.ChildAdded:Connect(function(child)
+	if child:IsA("ScreenGui") then
+		createRow(child)
+	end
+end)
+
+PlayerGui.ChildRemoved:Connect(function(child)
+	if child:IsA("ScreenGui") then
+		removeRow(child)
+	end
+end)
+
+-- قابلیت جابجایی پنل با موس یا لمس (Draggable) روی هدر
+local dragging, dragInput, dragStart, startPos
+
+titleLabel.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+		
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+titleLabel.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
