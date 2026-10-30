@@ -9,7 +9,7 @@ local player = Players.LocalPlayer
 
 -- تنظیمات کول‌دان
 local GLOBAL_COOLDOWN = 0   -- فاصله بین هر دو کلیک (روی کل دکمه‌ها)
-local BUTTON_COOLDOWN = 3.0   -- کول‌دان مخصوص هر دکمه
+local BUTTON_COOLDOWN = 0   -- کول‌دان مخصوص هر دکمه
 
 local isBusy = false          -- فقط یک عملیات در هر لحظه
 local lastUsed = {}           -- زمان آخرین استفاده از هر پرامپت
