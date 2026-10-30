@@ -1,0 +1,667 @@
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlaceId = game.PlaceId
+local CurrentJobId = game.JobId
+
+local GuiParent = (gethui and gethui()) or CoreGui
+for _, p in ipairs({CoreGui, GuiParent}) do
+    local old = p:FindFirstChild("ServerBrowserUI")
+    if old then old:Destroy() end
+end
+
+local clipFn = setclipboard or toclipboard or (Clipboard and Clipboard.set)
+
+local WIDTH, HEIGHT, TITLE_H = 650, 470, 42
+local BG = Color3.fromRGB(13, 13, 17)
+local PANEL = Color3.fromRGB(21, 21, 28)
+local ROW = Color3.fromRGB(29, 29, 38)
+local EDGE = Color3.fromRGB(52, 52, 70)
+local TEXT = Color3.fromRGB(240, 240, 245)
+local MUTED = Color3.fromRGB(140, 140, 155)
+local GREEN = Color3.fromRGB(0, 170, 95)
+local ORANGE = Color3.fromRGB(230, 130, 30)
+local TOOL_GRAY = Color3.fromRGB(52, 52, 70)
+
+------------------------------------------------------------------
+-- HTTP
+------------------------------------------------------------------
+local function getJSON(url)
+    local ok, res = pcall(function() return game:HttpGet(url) end)
+    if ok and res then
+        local ok2, data = pcall(function() return HttpService:JSONDecode(res) end)
+        if ok2 then return data end
+    end
+end
+
+local function fetchServers(cursor)
+    local path = string.format("/v1/games/%d/servers/Public?sortOrder=Asc&limit=100%s",
+        PlaceId, cursor and ("&cursor=" .. cursor) or "")
+    return getJSON("https://games.roblox.com" .. path) or getJSON("https://games.roproxy.com" .. path)
+end
+
+------------------------------------------------------------------
+-- Helpers
+------------------------------------------------------------------
+local function rainbow()
+    return ColorSequence.new({
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 80)),
+        ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 200, 0)),
+        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 120)),
+        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 200, 255)),
+        ColorSequenceKeypoint.new(0.67, Color3.fromRGB(120, 80, 255)),
+        ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 200)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 80)),
+    })
+end
+
+local function tween(obj, t, props)
+    TweenService:Create(obj, TweenInfo.new(t, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
+end
+
+local function corner(obj, r)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = r == "full" and UDim.new(1, 0) or UDim.new(0, r)
+    c.Parent = obj
+    return c
+end
+
+local function stroke(obj, color, thickness)
+    local s = Instance.new("UIStroke")
+    s.Color = color or EDGE
+    s.Thickness = thickness or 1
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.Parent = obj
+    return s
+end
+
+local function hoverable(btn, base)
+    local function getBase()
+        return typeof(base) == "function" and base() or base
+    end
+    btn.MouseEnter:Connect(function()
+        tween(btn, 0.12, {BackgroundColor3 = getBase():Lerp(Color3.new(1, 1, 1), 0.2)})
+    end)
+    btn.MouseLeave:Connect(function()
+        tween(btn, 0.12, {BackgroundColor3 = getBase()})
+    end)
+end
+
+local conns = {}
+local function track(c) table.insert(conns, c) return c end
+
+------------------------------------------------------------------
+-- Draggable
+------------------------------------------------------------------
+local function makeDraggable(handle, targetFrame)
+    targetFrame = targetFrame or handle
+    local dragging, dragInput, dragStart, startPos
+
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = targetFrame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    track(UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local cam = workspace.CurrentCamera
+            local v = cam and cam.ViewportSize or Vector2.new(1280, 720)
+            local x = math.clamp(startPos.X.Offset + delta.X, -targetFrame.AbsoluteSize.X + 80, v.X - 80)
+            local y = math.clamp(startPos.Y.Offset + delta.Y, 0, v.Y - TITLE_H)
+            local newPos = UDim2.new(startPos.X.Scale, x, startPos.Y.Scale, y)
+            TweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+        end
+    end))
+end
+
+------------------------------------------------------------------
+-- UI
+------------------------------------------------------------------
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ServerBrowserUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = GuiParent
+
+local cam = workspace.CurrentCamera
+local vp = cam and cam.ViewportSize or Vector2.new(1280, 720)
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.fromOffset(WIDTH, HEIGHT)
+Main.Position = UDim2.fromOffset(vp.X / 2 - WIDTH / 2, vp.Y / 2 - HEIGHT / 2)
+Main.BackgroundColor3 = BG
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.ClipsDescendants = true
+Main.Parent = ScreenGui
+corner(Main, 14)
+
+local MainStroke = stroke(Main, Color3.new(1, 1, 1), 2.5)
+local MainGrad = Instance.new("UIGradient")
+MainGrad.Color = rainbow()
+MainGrad.Parent = MainStroke
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, TITLE_H)
+TitleBar.BackgroundColor3 = PANEL
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = Main
+corner(TitleBar, 14)
+
+local TitleFill = Instance.new("Frame")
+TitleFill.Size = UDim2.new(1, 0, 0, 14)
+TitleFill.Position = UDim2.new(0, 0, 1, -14)
+TitleFill.BackgroundColor3 = PANEL
+TitleFill.BorderSizePixel = 0
+TitleFill.Parent = TitleBar
+
+local gameName = "Unknown Game"
+local ok, info = pcall(function()
+    return MarketplaceService:GetProductInfo(game.PlaceId)
+end)
+if ok and info and info.Name then
+    gameName = info.Name
+end
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -130, 1, 0)
+Title.Position = UDim2.fromOffset(16, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Server Finder Made By C00LHACK -  " .. gameName
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Title.ZIndex = 3
+Title.Parent = TitleBar
+local TitleGrad = Instance.new("UIGradient")
+TitleGrad.Color = rainbow()
+TitleGrad.Parent = Title
+
+local Accent = Instance.new("Frame")
+Accent.Size = UDim2.new(1, 0, 0, 2)
+Accent.Position = UDim2.new(0, 0, 1, -2)
+Accent.BackgroundColor3 = Color3.new(1, 1, 1)
+Accent.BorderSizePixel = 0
+Accent.ZIndex = 2
+Accent.Parent = TitleBar
+local AccentGrad = Instance.new("UIGradient")
+AccentGrad.Color = rainbow()
+AccentGrad.Parent = Accent
+
+local function titleButton(text, xFromRight, color)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.fromOffset(34, 26)
+    b.Position = UDim2.new(1, xFromRight, 0.5, -13)
+    b.BackgroundColor3 = color
+    b.BorderSizePixel = 0
+    b.Text = text
+    b.TextColor3 = TEXT
+    b.TextSize = 14
+    b.Font = Enum.Font.GothamBold
+    b.AutoButtonColor = false
+    b.ZIndex = 3
+    b.Parent = TitleBar
+    corner(b, 8)
+    stroke(b, color:Lerp(Color3.new(1, 1, 1), 0.25), 1)
+    hoverable(b, color)
+    return b
+end
+local CloseBtn = titleButton("X", -44, Color3.fromRGB(200, 50, 60))
+local MinBtn = titleButton("-", -84, Color3.fromRGB(50, 50, 66))
+
+local Body = Instance.new("Frame")
+Body.Size = UDim2.new(1, 0, 1, -TITLE_H)
+Body.Position = UDim2.fromOffset(0, TITLE_H)
+Body.BackgroundTransparency = 1
+Body.Parent = Main
+
+local function toolButton(text, x, w, color)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.fromOffset(w, 30)
+    b.Position = UDim2.fromOffset(x, 12)
+    b.BackgroundColor3 = color
+    b.BorderSizePixel = 0
+    b.Text = text
+    b.TextColor3 = TEXT
+    b.TextSize = 13
+    b.Font = Enum.Font.GothamBold
+    b.AutoButtonColor = false
+    b.Parent = Body
+    corner(b, 8)
+    local s = stroke(b, color:Lerp(Color3.new(1, 1, 1), 0.3), 1.2)
+    return b, s
+end
+
+local excludeFull = false
+local ExcludeBtn, ExcludeStroke = toolButton("Exclude Full Servers: OFF", 12, 198, TOOL_GRAY)
+hoverable(ExcludeBtn, function() return excludeFull and GREEN or TOOL_GRAY end)
+
+local SortBtn = toolButton("Sort: Lowest Players", 218, 180, TOOL_GRAY)
+hoverable(SortBtn, TOOL_GRAY)
+
+-- ✅ دکمه رفرش دستی
+local RefreshBtn = toolButton("🔄 Refresh", 406, 110, Color3.fromRGB(0, 120, 200))
+hoverable(RefreshBtn, Color3.fromRGB(0, 120, 200))
+
+local Search = Instance.new("TextBox")
+Search.Size = UDim2.new(1, -24, 0, 30)
+Search.Position = UDim2.fromOffset(12, 48)
+Search.BackgroundColor3 = PANEL
+Search.BorderSizePixel = 0
+Search.PlaceholderText = "Search server id..."
+Search.PlaceholderColor3 = MUTED
+Search.Text = ""
+Search.TextColor3 = TEXT
+Search.TextSize = 13
+Search.Font = Enum.Font.Gotham
+Search.ClearTextOnFocus = false
+Search.TextXAlignment = Enum.TextXAlignment.Left
+Search.Parent = Body
+corner(Search, 8)
+local SearchStroke = stroke(Search, EDGE, 1.2)
+local SearchPad = Instance.new("UIPadding")
+SearchPad.PaddingLeft = UDim.new(0, 12)
+SearchPad.Parent = Search
+Search.Focused:Connect(function() tween(SearchStroke, 0.15, {Color = Color3.fromRGB(0, 160, 255)}) end)
+Search.FocusLost:Connect(function() tween(SearchStroke, 0.15, {Color = EDGE}) end)
+
+local Info = Instance.new("TextLabel")
+Info.Size = UDim2.new(1, -24, 0, 18)
+Info.Position = UDim2.fromOffset(12, 84)
+Info.BackgroundTransparency = 1
+Info.Text = "Idle"
+Info.TextColor3 = MUTED
+Info.TextSize = 12
+Info.Font = Enum.Font.Gotham
+Info.TextXAlignment = Enum.TextXAlignment.Left
+Info.Parent = Body
+
+local List = Instance.new("ScrollingFrame")
+List.Size = UDim2.new(1, -24, 1, -138)
+List.Position = UDim2.fromOffset(12, 106)
+List.BackgroundColor3 = PANEL
+List.BorderSizePixel = 0
+List.ScrollBarThickness = 4
+List.ScrollBarImageColor3 = Color3.fromRGB(0, 160, 255)
+List.CanvasSize = UDim2.new()
+List.AutomaticCanvasSize = Enum.AutomaticSize.Y
+List.Parent = Body
+corner(List, 10)
+local ListStroke = stroke(List, Color3.new(1, 1, 1), 1.5)
+local ListGrad = Instance.new("UIGradient")
+ListGrad.Color = rainbow()
+ListGrad.Parent = ListStroke
+local ListPad = Instance.new("UIPadding")
+ListPad.PaddingTop = UDim.new(0, 6)
+ListPad.PaddingBottom = UDim.new(0, 6)
+ListPad.Parent = List
+
+local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0, 6)
+Layout.SortOrder = Enum.SortOrder.LayoutOrder
+Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+Layout.Parent = List
+
+local Footer = Instance.new("TextLabel")
+Footer.Size = UDim2.new(1, -24, 0, 18)
+Footer.Position = UDim2.new(0, 12, 1, -24)
+Footer.BackgroundTransparency = 1
+Footer.Text = "Ready"
+Footer.TextColor3 = MUTED
+Footer.TextSize = 12
+Footer.Font = Enum.Font.GothamBold
+Footer.TextXAlignment = Enum.TextXAlignment.Center
+Footer.Parent = Body
+
+makeDraggable(TitleBar, Main)
+
+------------------------------------------------------------------
+-- RGB
+------------------------------------------------------------------
+local hue = 0
+track(RunService.RenderStepped:Connect(function(dt)
+    if not Main.Visible then return end
+    hue = (hue + dt * 0.25) % 1
+    local rot = (MainGrad.Rotation + dt * 120) % 360
+    MainGrad.Rotation = rot
+    ListGrad.Rotation = 360 - rot
+    local t = tick()
+    TitleGrad.Offset = Vector2.new(math.sin(t * 1.5) * 0.5, 0)
+    AccentGrad.Offset = Vector2.new(math.sin(t * 2) * 0.5, 0)
+    List.ScrollBarImageColor3 = Color3.fromHSV(hue, 0.9, 1)
+end))
+
+------------------------------------------------------------------
+-- Minimize / Close / Toggle
+------------------------------------------------------------------
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    MinBtn.Text = minimized and "+" or "-"
+
+    if minimized then
+        tween(Main, 0.25, {Size = UDim2.fromOffset(WIDTH, TITLE_H)})
+        task.delay(0.27, function()
+            if minimized then
+                Body.Visible = false
+                TitleFill.Visible = false
+                Accent.Visible = false
+            end
+        end)
+    else
+        Body.Visible = true
+        TitleFill.Visible = true
+        Accent.Visible = true
+        tween(Main, 0.25, {Size = UDim2.fromOffset(WIDTH, HEIGHT)})
+    end
+end)
+
+local function cleanup()
+    for _, c in ipairs(conns) do
+        pcall(function() c:Disconnect() end)
+    end
+    table.clear(conns)
+end
+ScreenGui.Destroying:Connect(cleanup)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+track(UserInputService.InputBegan:Connect(function(input, gp)
+    if not gp and input.KeyCode == Enum.KeyCode.RightShift then
+        Main.Visible = not Main.Visible
+    end
+end))
+
+------------------------------------------------------------------
+-- منطق سرورها
+------------------------------------------------------------------
+local SORT_MODES = {"Lowest Players", "Highest Players", "Best Ping"}
+local sortMode = 1
+local loading = false
+local servers = {}
+
+local function sortServers()
+    local mode = SORT_MODES[sortMode]
+    table.sort(servers, function(a, b)
+        if mode == "Highest Players" then
+            return (a.playing or 0) > (b.playing or 0)
+        elseif mode == "Lowest Players" then
+            return (a.playing or 0) < (b.playing or 0)
+        else
+            local pa, pb = a.ping or math.huge, b.ping or math.huge
+            if pa ~= pb then return pa < pb end
+            return (a.playing or 0) < (b.playing or 0)
+        end
+    end)
+end
+
+local function joinServer(id)
+    Info.Text = "Joining " .. id:sub(1, 8) .. "..."
+    local ok, err = pcall(function()
+        TeleportService:TeleportToPlaceInstance(PlaceId, id, LocalPlayer)
+    end)
+    if not ok then Info.Text = "Teleport failed: " .. tostring(err) end
+end
+
+local function clearList()
+    for _, c in ipairs(List:GetChildren()) do
+        if c:IsA("Frame") then c:Destroy() end
+    end
+end
+
+local function pingColor(ping)
+    if not ping then return MUTED end
+    if ping < 80 then return Color3.fromRGB(80, 230, 110) end
+    if ping < 150 then return Color3.fromRGB(245, 205, 60) end
+    return Color3.fromRGB(245, 80, 80)
+end
+
+local function buildRow(server, order)
+    local isCurrent = server.id == CurrentJobId
+    local playing, maxP = server.playing or 0, math.max(server.maxPlayers or 1, 1)
+    local isFull = playing >= maxP
+
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, -14, 0, 58)
+    row.BackgroundColor3 = ROW
+    row.BackgroundTransparency = 1
+    row.BorderSizePixel = 0
+    row.LayoutOrder = order
+    row.Parent = List
+    corner(row, 10)
+    local rowStroke = stroke(row, EDGE, 1)
+    tween(row, 0.25, {BackgroundTransparency = 0})
+
+    row.MouseEnter:Connect(function()
+        tween(row, 0.12, {BackgroundColor3 = Color3.fromRGB(40, 40, 54)})
+        tween(rowStroke, 0.12, {Color = Color3.fromRGB(0, 160, 255)})
+    end)
+    row.MouseLeave:Connect(function()
+        tween(row, 0.12, {BackgroundColor3 = ROW})
+        tween(rowStroke, 0.12, {Color = EDGE})
+    end)
+
+    local idHolder = Instance.new("Frame")
+    idHolder.Size = UDim2.fromOffset(370, 18)
+    idHolder.Position = UDim2.fromOffset(12, 6)
+    idHolder.BackgroundTransparency = 1
+    idHolder.Parent = row
+    local idLayout = Instance.new("UIListLayout")
+    idLayout.FillDirection = Enum.FillDirection.Horizontal
+    idLayout.Padding = UDim.new(0, 8)
+    idLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    idLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    idLayout.Parent = idHolder
+
+    local idLabel = Instance.new("TextLabel")
+    idLabel.AutomaticSize = Enum.AutomaticSize.X
+    idLabel.Size = UDim2.fromOffset(0, 18)
+    idLabel.BackgroundTransparency = 1
+    idLabel.Text = (isCurrent and "[CURRENT] " or "") .. server.id
+    idLabel.TextColor3 = isCurrent and Color3.fromRGB(0, 200, 255) or TEXT
+    idLabel.TextSize = 12
+    idLabel.Font = Enum.Font.Gotham
+    idLabel.TextXAlignment = Enum.TextXAlignment.Left
+    idLabel.LayoutOrder = 1
+    idLabel.Parent = idHolder
+
+    local copyColor = Color3.fromRGB(52, 52, 70)
+    local copyBtn = Instance.new("TextButton")
+    copyBtn.Size = UDim2.fromOffset(48, 16)
+    copyBtn.BackgroundColor3 = copyColor
+    copyBtn.BorderSizePixel = 0
+    copyBtn.Text = "Copy"
+    copyBtn.TextColor3 = TEXT
+    copyBtn.TextSize = 11
+    copyBtn.Font = Enum.Font.GothamBold
+    copyBtn.AutoButtonColor = false
+    copyBtn.LayoutOrder = 2
+    copyBtn.Parent = idHolder
+    corner(copyBtn, 6)
+    stroke(copyBtn, copyColor:Lerp(Color3.new(1, 1, 1), 0.3), 1)
+    hoverable(copyBtn, copyColor)
+    copyBtn.MouseButton1Click:Connect(function()
+        if clipFn then
+            pcall(clipFn, server.id)
+            copyBtn.Text = "Copied"
+            task.delay(1, function()
+                if copyBtn.Parent then copyBtn.Text = "Copy" end
+            end)
+        else
+            Info.Text = "Clipboard not supported by your executor"
+        end
+    end)
+
+    local stats = Instance.new("TextLabel")
+    stats.Size = UDim2.fromOffset(300, 14)
+    stats.Position = UDim2.fromOffset(12, 28)
+    stats.BackgroundTransparency = 1
+    stats.Text = string.format("%d/%d players   |   %s",
+        playing, maxP,
+        server.ping and (server.ping .. " ms") or "? ms")
+    stats.TextColor3 = pingColor(server.ping)
+    stats.TextSize = 12
+    stats.Font = Enum.Font.Gotham
+    stats.TextXAlignment = Enum.TextXAlignment.Left
+    stats.Parent = row
+
+    local barBg = Instance.new("Frame")
+    barBg.Size = UDim2.fromOffset(170, 4)
+    barBg.Position = UDim2.fromOffset(12, 46)
+    barBg.BackgroundColor3 = Color3.fromRGB(46, 46, 60)
+    barBg.BorderSizePixel = 0
+    barBg.Parent = row
+    corner(barBg, "full")
+    local fill = Instance.new("Frame")
+    fill.Size = UDim2.new(math.clamp(playing / maxP, 0, 1), 0, 1, 0)
+    fill.BackgroundColor3 = isFull and Color3.fromRGB(245, 80, 80) or pingColor(server.ping)
+    fill.BorderSizePixel = 0
+    fill.Parent = barBg
+    corner(fill, "full")
+
+    local canJoin = not isCurrent
+    local baseColor = isCurrent and Color3.fromRGB(64, 64, 78) or (isFull and ORANGE or GREEN)
+    local join = Instance.new("TextButton")
+    join.Size = UDim2.fromOffset(78, 38)
+    join.Position = UDim2.new(1, -90, 0.5, -19)
+    join.BackgroundColor3 = baseColor
+    join.BorderSizePixel = 0
+    join.Text = isCurrent and "Here" or "Join"
+    join.TextColor3 = TEXT
+    join.TextSize = 14
+    join.Font = Enum.Font.GothamBold
+    join.AutoButtonColor = false
+    join.Parent = row
+    corner(join, 9)
+    stroke(join, baseColor:Lerp(Color3.new(1, 1, 1), 0.3), 1.2)
+    if canJoin then
+        hoverable(join, baseColor)
+        join.MouseButton1Click:Connect(function()
+        	join.Text = "Joining..."
+        	joinServer(server.id)
+			task.wait(2)
+			join.Text = "Join"
+			end)
+    end
+end
+
+local function render()
+    if not ScreenGui.Parent then return end
+    local savedY = List.CanvasPosition.Y
+    clearList()
+    local q = Search.Text:lower()
+    local shown, total = 0, 0
+    for _, s in ipairs(servers) do
+        local isFull = (s.playing or 0) >= math.max(s.maxPlayers or 1, 1)
+        if not (excludeFull and isFull) then
+            total += 1
+            if q == "" or s.id:lower():find(q, 1, true) then
+                shown += 1
+                buildRow(s, shown)
+            end
+        end
+    end
+    Info.Text = string.format("%d / %d servers shown  |  Place %d", shown, total, PlaceId)
+    task.defer(function()
+        if List.Parent then List.CanvasPosition = Vector2.new(0, savedY) end
+    end)
+end
+
+local function refresh()
+    if loading then return end
+    loading = true
+    Footer.Text = "Refreshing..."
+    RefreshBtn.Text = "🔄 Loading..."
+    RefreshBtn.Interactable = false
+    
+    local ok, err = pcall(function()
+        Info.Text = "Loading servers..."
+
+        local newServers = {}
+        local cursor, pages = nil, 0
+        repeat
+            local data = fetchServers(cursor)
+            if not ScreenGui.Parent then return end
+            if not data or not data.data then break end
+            for _, s in ipairs(data.data) do
+                table.insert(newServers, s)
+            end
+            cursor = data.nextPageCursor
+            pages += 1
+            Info.Text = string.format("Loading servers... (%d found)", #newServers)
+        until not cursor or pages >= 3
+
+        if #newServers > 0 then
+            servers = newServers
+            sortServers()
+        else
+            Info.Text = "Failed to load servers"
+        end
+        if not ScreenGui.Parent then return end
+        if #newServers > 0 then render() end
+    end)
+    loading = false
+    
+    if not ok and ScreenGui.Parent then
+        Info.Text = "Error: " .. tostring(err)
+    end
+    
+    RefreshBtn.Text = "🔄 Refresh"
+    RefreshBtn.Interactable = true
+    Footer.Text = "Ready"
+end
+
+-- ✅ اتصال دکمه رفرش
+RefreshBtn.MouseButton1Click:Connect(function()
+    refresh()
+end)
+
+ExcludeBtn.MouseButton1Click:Connect(function()
+    excludeFull = not excludeFull
+    ExcludeBtn.Text = "Exclude Full Servers: " .. (excludeFull and "ON" or "OFF")
+    local c = excludeFull and GREEN or TOOL_GRAY
+    tween(ExcludeBtn, 0.15, {BackgroundColor3 = c})
+    ExcludeStroke.Color = c:Lerp(Color3.new(1, 1, 1), 0.3)
+    if not loading then render() end
+end)
+
+SortBtn.MouseButton1Click:Connect(function()
+    sortMode = sortMode % #SORT_MODES + 1
+    SortBtn.Text = "Sort: " .. SORT_MODES[sortMode]
+    sortServers()
+    if not loading then render() end
+end)
+
+local searchToken = 0
+Search:GetPropertyChangedSignal("Text"):Connect(function()
+    searchToken += 1
+    local mine = searchToken
+    task.delay(0.15, function()
+        if mine == searchToken and not loading then render() end
+    end)
+end)
+refresh()
