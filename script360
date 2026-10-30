@@ -1,21 +1,25 @@
---[================================================================]]--
---  ProximityPrompt Teleporter & Interactor Panel - B&W Clean --
---[================================================================]]--
+--[[================================================================]]--
+--  ProximityPrompt Teleporter & Interactor Panel - B&W Clean (Safe)
+--[[================================================================]]--
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
 
--- ایجاد ScreenGui
+-- تنظیمات کول‌دان
+local GLOBAL_COOLDOWN = 0   -- فاصله بین هر دو کلیک (روی کل دکمه‌ها)
+local BUTTON_COOLDOWN = 3.0   -- کول‌دان مخصوص هر دکمه
+
+local isBusy = false          -- فقط یک عملیات در هر لحظه
+local lastUsed = {}           -- زمان آخرین استفاده از هر پرامپت
+
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "PromptTeleporterGui"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = game.CoreGui
 
--- فریم اصلی (بزرگ‌تر، مکعبی و لبه‌تیز با بوردر سفید)
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 500, 0, 600)
 mainFrame.Position = UDim2.new(0.5, -250, 0.5, -300)
@@ -25,7 +29,6 @@ mainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 mainFrame.Active = true
 mainFrame.Parent = screenGui
 
--- عنوان پنل
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 45)
 titleBar.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
@@ -42,12 +45,10 @@ titleLabel.TextSize = 13
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = titleBar
 
--- دکمه بستن (X)
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 45, 1, 0)
 closeButton.Position = UDim2.new(1, -45, 0, 0)
-closeButton.BackgroundTransparency = 0
-closeButton.BackgroundColor3 = Color3.fromRGB(500, 500, 500)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.TextColor3 = Color3.fromRGB(5, 5, 5)
 closeButton.Text = "X"
 closeButton.TextSize = 16
@@ -56,7 +57,6 @@ closeButton.Parent = titleBar
 closeButton.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
-
 closeButton.MouseEnter:Connect(function()
     closeButton.TextColor3 = Color3.fromRGB(180, 0, 0)
 end)
@@ -64,7 +64,6 @@ closeButton.MouseLeave:Connect(function()
     closeButton.TextColor3 = Color3.fromRGB(12, 12, 12)
 end)
 
--- کادر جستجو
 local searchBox = Instance.new("TextBox")
 searchBox.Size = UDim2.new(1, -95, 0, 38)
 searchBox.Position = UDim2.new(0, 12, 0, 58)
@@ -79,7 +78,6 @@ searchBox.ClearTextOnFocus = false
 searchBox.Parent = mainFrame
 searchBox.Text = ""
 
--- دکمه پاک کردن سرچ
 local clearSearchBtn = Instance.new("TextButton")
 clearSearchBtn.Size = UDim2.new(0, 38, 0, 38)
 clearSearchBtn.Position = UDim2.new(1, -96, 0, 58)
@@ -95,7 +93,6 @@ clearSearchBtn.MouseButton1Click:Connect(function()
     searchBox.Text = ""
 end)
 
--- دکمه رفرش
 local refreshButton = Instance.new("TextButton")
 refreshButton.Size = UDim2.new(0, 38, 0, 38)
 refreshButton.Position = UDim2.new(1, -50, 0, 58)
@@ -107,7 +104,6 @@ refreshButton.Text = "RE"
 refreshButton.TextSize = 13
 refreshButton.Parent = mainFrame
 
--- اسکرول فریم
 local scrollingFrame = Instance.new("ScrollingFrame")
 scrollingFrame.Size = UDim2.new(1, -24, 1, -112)
 scrollingFrame.Position = UDim2.new(0, 12, 0, 104)
@@ -126,7 +122,15 @@ uiListLayout.Parent = scrollingFrame
 
 local promptButtons = {}
 
--- تابع اعمال فیلتر
+-- حالت ظاهری دکمه‌ها وقتی مشغول هستیم
+local function setButtonsBusy(state)
+    for _, btn in ipairs(promptButtons) do
+        if btn and btn.Parent then
+            btn.TextTransparency = state and 0.6 or 0
+        end
+    end
+end
+
 local function filterPrompts()
     local query = searchBox.Text:lower()
     local terms = {}
@@ -149,7 +153,118 @@ local function filterPrompts()
     end
 end
 
--- تابع بارگذاری دکمه‌ها
+-- اجرای امن: تلپورت، تعامل، و برگشت تضمینی به جای اصلی
+local function runPrompt(obj, part)
+    -- قفل‌ها
+    if isBusy then return end
+    local now = os.clock()
+    if lastUsed[obj] and (now - lastUsed[obj]) < BUTTON_COOLDOWN then return end
+
+    -- بررسی سالم بودن هدف
+    if not obj or not obj.Parent or not part or not part.Parent then return end
+
+    local character = player.Character
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not hrp or not humanoid or humanoid.Health <= 0 then return end
+
+    isBusy = true
+    lastUsed[obj] = now
+    setButtonsBusy(true)
+
+    local camera = Workspace.CurrentCamera
+    local originalCFrame = hrp.CFrame
+    local ghost
+
+    local function zeroVelocity()
+        if hrp and hrp.Parent then
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+        end
+    end
+
+    -- تمام مراحل داخل pcall تا هر خطایی بود، cleanup اجرا بشه
+    local ok, err = pcall(function()
+        -- ساخت گهوست
+        local wasArchivable = character.Archivable
+        character.Archivable = true
+        ghost = character:Clone()
+        character.Archivable = wasArchivable
+
+        if ghost then
+            for _, desc in ipairs(ghost:GetDescendants()) do
+                if desc:IsA("BasePart") then
+                    desc.CanCollide = false
+                    desc.Transparency = 0.6
+                    desc.Material = Enum.Material.ForceField
+                elseif desc:IsA("Script") or desc:IsA("LocalScript") then
+                    desc:Destroy()
+                end
+            end
+            local ghostRoot = ghost:FindFirstChild("HumanoidRootPart")
+            if ghostRoot then
+                ghostRoot.CFrame = originalCFrame
+                ghostRoot.Anchored = true
+            end
+            ghost.Parent = Workspace
+
+            local ghostHumanoid = ghost:FindFirstChildOfClass("Humanoid")
+            if ghostHumanoid and camera then
+                camera.CameraSubject = ghostHumanoid
+            end
+        end
+
+        zeroVelocity()
+
+        -- اگر پارت وسط کار حذف شده بود، تلپورت نکن
+        if not part.Parent then return end
+        hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
+        task.wait(0.2)
+
+        if obj.Parent then
+            if type(fireproximityprompt) == "function" then
+                fireproximityprompt(obj)
+            else
+                obj:InputHoldBegin()
+                task.wait(obj.HoldDuration + 0.05)
+                obj:InputHoldEnd()
+            end
+        end
+
+        task.wait(0.2)
+    end)
+
+    -- ===== Cleanup تضمینی (حتی اگر ارور بخوره یا کاراکتر بمیره) =====
+    local currentChar = player.Character
+    local currentHrp = currentChar and currentChar:FindFirstChild("HumanoidRootPart")
+    local currentHum = currentChar and currentChar:FindFirstChildOfClass("Humanoid")
+
+    -- فقط اگر هنوز همون کاراکتر زنده‌ست برگرد سر جای اصلی
+    if currentChar == character and currentHrp and currentHum and currentHum.Health > 0 then
+        currentHrp.CFrame = originalCFrame
+        currentHrp.AssemblyLinearVelocity = Vector3.zero
+        currentHrp.AssemblyAngularVelocity = Vector3.zero
+        currentHum:ChangeState(Enum.HumanoidStateType.Running)
+    end
+
+    if camera and currentHum then
+        camera.CameraSubject = currentHum
+    end
+
+    if ghost then
+        ghost:Destroy()
+    end
+
+    if not ok then
+        warn("[PromptTeleporter] error: " .. tostring(err))
+    end
+
+    -- کول‌دان کلی قبل از آزاد شدن قفل
+    task.wait(GLOBAL_COOLDOWN)
+    isBusy = false
+    setButtonsBusy(false)
+end
+
 local function loadPrompts()
     for _, btn in ipairs(promptButtons) do
         btn:Destroy()
@@ -170,11 +285,8 @@ local function loadPrompts()
             btn.TextSize = 10
             btn.TextXAlignment = Enum.TextXAlignment.Left
             btn.AutoButtonColor = false
-            
-            -- استفاده از نام ProximityPrompt (obj.Name) به جای نام پارت
             btn.Text = "  " .. obj.Name .. " (" .. objectText .. ")"
 
-            -- افکت هاور سیاه و سفید معکوس
             btn.MouseEnter:Connect(function()
                 btn.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
                 btn.TextColor3 = Color3.fromRGB(12, 12, 12)
@@ -186,73 +298,8 @@ local function loadPrompts()
                 btn.BorderColor3 = Color3.fromRGB(50, 50, 50)
             end)
 
-            -- رویداد کلیک همراه با گهوست کلون و تلپورت
             btn.MouseButton1Click:Connect(function()
-                local character = player.Character
-                if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-                local hrp = character.HumanoidRootPart
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                local camera = Workspace.CurrentCamera
-
-                local originalCFrame = hrp.CFrame
-
-                character.Archivable = true
-                local ghost = character:Clone()
-                character.Archivable = false
-
-                for _, desc in ipairs(ghost:GetDescendants()) do
-                    if desc:IsA("BasePart") then
-                        desc.CanCollide = false
-                        desc.Transparency = 0.6
-                        desc.Material = Enum.Material.ForceField
-                    elseif desc:IsA("Script") or desc:IsA("LocalScript") then
-                        desc:Destroy()
-                    end
-                end
-
-                if ghost:FindFirstChild("HumanoidRootPart") then
-                    ghost.HumanoidRootPart.CFrame = originalCFrame
-                end
-                ghost.Parent = Workspace
-
-                local ghostHumanoid = ghost:FindFirstChildOfClass("Humanoid")
-                if ghostHumanoid and camera then
-                    camera.CameraSubject = ghostHumanoid
-                end
-
-                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-
-                hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
-                task.wait(0.2)
-
-                pcall(function()
-                    if type(fireproximityprompt) == "function" then
-                        fireproximityprompt(obj)
-                    else
-                        obj:InputHoldBegin()
-                        task.wait(obj.HoldDuration + 0)
-                        obj:InputHoldEnd()
-                    end
-                end)
-
-                task.wait(0.2)
-                
-                hrp.CFrame = originalCFrame
-                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                
-                if humanoid and camera then
-                    camera.CameraSubject = humanoid
-                end
-
-                if ghost then
-                    ghost:Destroy()
-                end
-                
-                if humanoid then
-                    humanoid:ChangeState(Enum.HumanoidStateType.Running)
-                end
+                runPrompt(obj, part)
             end)
 
             btn.Parent = scrollingFrame
@@ -265,24 +312,24 @@ end
 loadPrompts()
 
 refreshButton.MouseButton1Click:Connect(function()
+    if isBusy then return end
     loadPrompts()
 end)
 
-searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-    filterPrompts()
-end)
+searchBox:GetPropertyChangedSignal("Text"):Connect(filterPrompts)
+
 local function makeDraggable(targetFrame)
     local uis = game:GetService("UserInputService")
     local tweenService = game:GetService("TweenService")
-    
+
     local dragging, dragInput, dragStart, startPos
-    
+
     targetFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = targetFrame.Position
-            
+
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -290,20 +337,20 @@ local function makeDraggable(targetFrame)
             end)
         end
     end)
-    
+
     targetFrame.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
     end)
-    
+
     uis.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
             local newPos = UDim2.new(
-                startPos.X.Scale, 
-                startPos.X.Offset + delta.X, 
-                startPos.Y.Scale, 
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
                 startPos.Y.Offset + delta.Y
             )
             tweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
