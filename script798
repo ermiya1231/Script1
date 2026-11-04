@@ -1,0 +1,574 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ساخت رابط کاربری پنل فروشگاه
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "RobloxShopPanel"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 350, 0, 500)
+mainFrame.Position = UDim2.new(0.5, -175, 0.5, -250)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.Parent = mainFrame
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 50)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "C00LHACK STORE"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 20
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = mainFrame
+
+local errorLabel = Instance.new("TextLabel")
+errorLabel.Size = UDim2.new(1, 0, 0, 30)
+errorLabel.Position = UDim2.new(0, 0, 0, 50)
+errorLabel.BackgroundTransparency = 1
+errorLabel.Text = ""
+errorLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+errorLabel.TextSize = 14
+errorLabel.Font = Enum.Font.GothamMedium
+errorLabel.TextXAlignment = Enum.TextXAlignment.Center
+errorLabel.Parent = mainFrame
+
+local scrollingFrame = Instance.new("ScrollingFrame")
+scrollingFrame.Size = UDim2.new(1, -20, 1, -176)
+scrollingFrame.Position = UDim2.new(0, 10, 0, 90)
+scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scrollingFrame.ScrollBarThickness = 6
+scrollingFrame.Parent = mainFrame
+
+local uiListLayout = Instance.new("UIListLayout")
+uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+uiListLayout.Padding = UDim.new(0, 10)
+uiListLayout.Parent = scrollingFrame
+-- لیست اقلام شما
+local items = {
+	{ name = "رنگارنگ", price = 25, type = "PromptByName", searchKey = "رنگارنگ" },
+	{ name = "چیپس لیمویی", price = 40, type = "PromptByName", searchKey = "چیپس لیمویی" },
+	{ name = "Hot Cocoa", price = 0, type = "Path", path = Workspace:WaitForChild("HarborGardenIsland"):WaitForChild("RightAlignedV7"):WaitForChild("SecretManCave"):WaitForChild("Bar"):WaitForChild("HotCocoaMachine"):WaitForChild("MachineBody"):WaitForChild("ProximityPrompt") },
+	{ name = "چیپس سرکه ای", price = 0, type = "TouchInterest", path = Workspace:WaitForChild("HarborGardenIsland"):WaitForChild("EdgeObby"):WaitForChild("chipsgive") }
+}
+
+-- تابع پیدا کردن ProximityPrompt بر اساس نام
+local function findPromptByName(targetName)
+	for _, obj in ipairs(Workspace:GetDescendants()) do
+		if obj:IsA("ProximityPrompt") then
+			if (obj.ActionText and obj.ActionText:find(targetName)) or (obj.ObjectText and obj.ObjectText:find(targetName)) or (obj.Parent and obj.Parent.Name:find(targetName)) then
+				return obj
+			end
+		end
+	end
+	return nil
+end
+
+-- تابع روح، متریال ForceField و سرعت ملایم‌تر و کنترل‌شده
+local function executePromptWithGhost(prompt)
+	local character = player.Character
+	if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+	local humanoidRootPart = character.HumanoidRootPart
+	local camera = Workspace.CurrentCamera
+
+	local originalCFrame = humanoidRootPart.CFrame
+	local promptPart = prompt.Parent
+	if not promptPart or not promptPart:IsA("BasePart") then return end
+
+	-- ۱. ساخت کلون روح
+	character.Archivable = true
+	local ghost = character:Clone()
+	ghost.Name = "SpiritGhost"
+
+	local ghostRoot = ghost:FindFirstChild("HumanoidRootPart")
+	if ghostRoot then
+		ghost.PrimaryPart = ghostRoot
+	end
+
+	-- تنظیمات متریال ForceField و مخفی کردن روت‌پارت روح
+	for _, obj in ipairs(ghost:GetDescendants()) do
+		if obj:IsA("Script") or obj:IsA("LocalScript") or obj:IsA("ModuleScript") then
+			obj:Destroy()
+		elseif obj:IsA("BasePart") then
+			obj.Anchored = true
+			obj.CanCollide = false
+			obj.Material = Enum.Material.ForceField
+
+			if obj.Name == "HumanoidRootPart" then
+				obj.Transparency = 1
+			else
+				obj.Transparency = 0.2
+				obj.Color = Color3.fromRGB(0, 170, 255)
+			end
+		end
+	end
+
+	ghost.Parent = Workspace
+	if ghost.PrimaryPart then
+		ghost:SetPrimaryPartCFrame(originalCFrame)
+	end
+
+	-- ۲. تنظیم دوربین روی روح و مکث بیشتر برای دیدن روح
+	local ghostHumanoid = ghost:FindFirstChildOfClass("Humanoid")
+	if ghostHumanoid then
+		camera.CameraSubject = ghostHumanoid
+	elseif ghost.PrimaryPart then
+		camera.CameraSubject = ghost.PrimaryPart
+	end
+
+	-- ۳. تلپورت کاراکتر اصلی به پرامپت با سرعت کمتر
+	humanoidRootPart.CFrame = promptPart.CFrame + Vector3.new(0, 3, 0)
+	task.wait(0.4) -- مکث قبل از فایر کردن پرامپت
+
+	fireproximityprompt(prompt)
+
+	task.wait(0.4) -- مکث بعد از فایر کردن پرامپت
+
+	-- ۴. بازگرداندن کاراکتر به جای اول همراه با فریز موقت و صفر کردن شتاب (بدون زمین خوردن)
+	humanoidRootPart.CFrame = originalCFrame
+	humanoidRootPart.Anchored = true
+	humanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+	humanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+
+	-- ۵. بازگشت دوربین و پاکسازی روح
+	local realHumanoid = character:FindFirstChildOfClass("Humanoid")
+	if realHumanoid then
+		camera.CameraSubject = realHumanoid
+	end
+	ghost:Destroy()
+	character.Archivable = false
+
+	task.wait(0.15)
+	humanoidRootPart.Anchored = false
+end
+
+-- متغیر کول‌دان دکمه‌ها
+local isBusy = false
+
+local function buyItem(itemData, buyBtn)
+	if isBusy then
+		errorLabel.Text = "لطفاً صبر کنید..."
+		return
+	end
+
+	errorLabel.Text = ""
+
+	local leaderstats = player:FindFirstChild("leaderstats")
+	if not leaderstats then
+		errorLabel.Text = "پوشه leaderstats پیدا نشد!"
+		return
+	end
+
+	local money = leaderstats:FindFirstChild("Money")
+	if not money then
+		errorLabel.Text = "متغیر Money پیدا نشد!"
+		return
+	end
+
+	if money.Value < itemData.price then
+		errorLabel.Text = "پول کافی نداری! (نیاز به " .. itemData.price .. "$)"
+		return
+	end
+
+	-- فعال شدن کول‌دان دکمه
+	isBusy = true
+	buyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+	buyBtn.Text = "..."
+
+	-- کسر پول
+	money.Value = money.Value - itemData.price
+
+	-- اجرای آیتم
+	if itemData.type == "Path" and itemData.path and itemData.path:IsA("ProximityPrompt") then
+		executePromptWithGhost(itemData.path)
+	elseif itemData.type == "PromptByName" then
+		local prompt = findPromptByName(itemData.searchKey)
+		if prompt then
+			executePromptWithGhost(prompt)
+		else
+			errorLabel.Text = "پرامپت مورد نظر پیدا نشد!"
+		end
+	elseif itemData.type == "TouchInterest" and itemData.path then
+		local part = itemData.path
+		local character = player.Character
+		if character and character:FindFirstChild("HumanoidRootPart") and part:IsA("BasePart") then
+			firetouchinterest(character.HumanoidRootPart, part, 0)
+			task.wait(0.1)
+			firetouchinterest(character.HumanoidRootPart, part, 1)
+		end
+	end
+
+	-- کول‌دان دکمه (۲ ثانیه تأخیر قبل از فعال شدن مجدد)
+	task.wait(2.0)
+	buyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+	buyBtn.Text = "Buy"
+	isBusy = false
+end
+
+-- ساخت دکمه‌ها در پنل
+for _, item in ipairs(items) do
+	local itemCard = Instance.new("Frame")
+	itemCard.Size = UDim2.new(1, 0, 0, 65)
+	itemCard.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+	itemCard.BorderSizePixel = 0
+	itemCard.Parent = scrollingFrame
+
+	local cardCorner = Instance.new("UICorner")
+	cardCorner.CornerRadius = UDim.new(0, 8)
+	cardCorner.Parent = itemCard
+
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size = UDim2.new(0.6, 0, 1, 0)
+	nameLabel.Position = UDim2.new(0, 15, 0, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text = item.name .. "\n(قیمت: " .. (item.price == 0 and "Free" or item.price .. "$") .. ")"
+	nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextSize = 15
+	nameLabel.Font = Enum.Font.GothamSemibold
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.Parent = itemCard
+
+	local buyBtn = Instance.new("TextButton")
+	buyBtn.Size = UDim2.new(0, 90, 0, 35)
+	buyBtn.Position = UDim2.new(1, -105, 0.5, -17.5)
+	buyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+	buyBtn.BorderSizePixel = 0
+	buyBtn.Text = "Buy"
+	buyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	buyBtn.TextSize = 16
+	buyBtn.Font = Enum.Font.GothamBold
+	buyBtn.Parent = itemCard
+
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(0, 6)
+	btnCorner.Parent = buyBtn
+
+	buyBtn.MouseButton1Click:Connect(function()
+		buyItem(item, buyBtn)
+	end)
+end
+
+--═══════════════════════════════════════════════════════
+-- Give All Buyed Items From Shop
+-- هر TextButton داخل Players.LocalPlayer.PlayerGui.ShopGui.Shop.Catalog.List
+-- را پیدا می‌کند و نامش را با ریموت EquipGear به سرور می‌فرستد.
+--═══════════════════════════════════════════════════════
+
+local GIVEALL = {
+	Delay = 0, -- ثانیه فاصله بین هر InvokeServer
+	DeepSearch = true, -- جستجوی تمام فرزندان List (نه فقط سطح اول)
+	UseLabelName = true, -- اگر نام دکمه خالی/پیش‌فرض بود، از TextLabel داخلش بخوان
+	SmartFilter = true, -- رد کردن دکمه‌های غیر آیتمی (Buy، قیمت، ...)
+	MaxItems = 0, -- 0 یعنی بدون محدودیت
+	OpenShopGui = true, -- اول ShopGui را روشن کن تا List پر شود
+	WaitForList = 5, -- چند ثانیه برای ظاهر شدن List صبر کن
+	Debug = true, -- پرینت نتیجه هر آیتم در Output
+}
+
+-- نام‌هایی که هیچ‌وقت آیتم حساب نمی‌شوند
+local GIVEALL_SKIP = {
+	Buy = true, Sell = true, Close = true, Exit = true, Equip = true,
+	Unequip = true, Use = true, Next = true, Previous = true, Back = true,
+	Tab1 = true, Tab2 = true, Tab3 = true, Frame = true, TextButton = true,
+}
+
+local GIVEALL_TEXT = "Give All Buyed Items From Shop"
+local GIVEALL_COLOR = Color3.fromRGB(255, 170, 40)
+local GIVEALL_HOVER = Color3.fromRGB(255, 195, 90)
+local GIVEALL_BUSY = Color3.fromRGB(110, 110, 125)
+
+local giveAllBtn
+local giveStatusLabel
+local giveAllRunning = false
+
+-- ریموت EquipGear را پیدا می‌کند
+local function getEquipGearRemote()
+	local shopShared = ReplicatedStorage:FindFirstChild("ShopShared")
+	local remotes = shopShared and shopShared:FindFirstChild("Remotes")
+	return remotes and remotes:FindFirstChild("EquipGear")
+end
+
+-- مسیر ShopGui.Shop.Catalog.List (با جستجوی بازگشتی، اگر چیدمان فرق داشت)
+local function findShopList()
+	local shopGui = playerGui:FindFirstChild("ShopGui")
+	if not shopGui then return nil, "ShopGui داخل PlayerGui نیست" end
+
+	local shop = shopGui:FindFirstChild("Shop", true)
+	if not shop then return nil, "فریم Shop پیدا نشد" end
+
+	local catalog = shop:FindFirstChild("Catalog", true)
+	if not catalog then return nil, "فریم Catalog پیدا نشد" end
+
+	local list = catalog:FindFirstChild("List", true)
+	if not list then return nil, "فریم List پیدا نشد" end
+
+	return list
+end
+
+-- نام همه TextButton های لیست فروشگاه را جمع می‌کند
+local function collectShopItemNames(list)
+	local names = {}
+	local seen = {}
+	local nodes
+
+	if GIVEALL.DeepSearch then
+		nodes = list:GetDescendants()
+	else
+		nodes = list:GetChildren()
+	end
+
+	for _, obj in ipairs(nodes) do
+		if obj:IsA("TextButton") then
+			local raw = obj.Name
+
+			-- نام خالی/پیش‌فرض → خواندن متن برچسب داخل دکمه
+			if GIVEALL.UseLabelName and (#raw < 3 or raw == "TextButton") then
+				local label = obj:FindFirstChildOfClass("TextLabel") or obj:FindFirstChildOfClass("TextButton", true)
+				if label and label.Text and #label.Text > 0 then
+					raw = label.Text
+				end
+			end
+
+			local cleanName = raw:match("^[^\r\n]+") or raw
+			cleanName = cleanName:gsub("^%s+", "")
+			cleanName = cleanName:gsub("%s+$", "")
+
+			local skip = #cleanName < 2 or seen[cleanName] == true
+
+			if not skip and GIVEALL.SmartFilter then
+				if GIVEALL_SKIP[cleanName] then
+					skip = true
+				elseif cleanName:find("%d") and (cleanName:find("%$") or cleanName:find("%%")) then
+					skip = true -- رد شدن ردیف‌های قیمت مثل «۲۵$»
+				elseif cleanName:find("^%d+$") then
+					skip = true
+				end
+			end
+
+			if not skip then
+				seen[cleanName] = true
+				table.insert(names, cleanName)
+				if GIVEALL.MaxItems > 0 and #names >= GIVEALL.MaxItems then
+					break
+				end
+			end
+		end
+	end
+
+	return names
+end
+
+local function setGiveAllState(busy, text)
+	giveAllRunning = busy
+	if not giveAllBtn then return end
+	giveAllBtn.Text = text or GIVEALL_TEXT
+	giveAllBtn.BackgroundColor3 = busy and GIVEALL_BUSY or GIVEALL_COLOR
+end
+
+-- تابع اصلی: اسکن لیست + Equip تک‌تک آیتم‌ها با ریموت
+local function giveAllBuyedItems()
+	if isBusy then
+		errorLabel.Text = "یک خرید در جریان است؛ کمی بعد امتحان کن..."
+		return
+	end
+	if giveAllRunning then return end
+
+	setGiveAllState(true, "در حال آماده‌سازی...")
+
+	task.defer(function()
+		-- ۱) ریموت
+		local equipGear = getEquipGearRemote()
+		if not equipGear then
+			errorLabel.Text = "ریموت EquipGear پیدا نشد!"
+			setGiveAllState(false)
+			return
+		end
+
+		-- ۲) باز کردن فروشگاه تا لیست ساخته شود
+		if GIVEALL.OpenShopGui then
+			local shopGui = playerGui:FindFirstChild("ShopGui")
+			if shopGui and not shopGui.Enabled then
+				shopGui.Enabled = true
+			end
+		end
+
+		-- ۳) صبر برای پیدا شدن List (اگر WaitForList = 0 باشد فقط یک بار بررسی می‌کند)
+		local list, lastError = findShopList()
+		local waited = 0
+		while not list and waited < GIVEALL.WaitForList do
+			task.wait(0.2)
+			waited += 0.2
+			list, lastError = findShopList()
+		end
+
+		if not list then
+			errorLabel.Text = lastError or "لیست فروشگاه پیدا نشد!"
+			setGiveAllState(false)
+			return
+		end
+
+		-- ۴) جمع کردن نام دکمه‌ها (یک بار تلاش مجدد اگر لیست هنوز خالی بود)
+		local names = collectShopItemNames(list)
+		if #names == 0 then
+			setGiveAllState(true, "لیست خالی است؛ دوباره بررسی می‌شود...")
+			task.wait(0.6)
+			names = collectShopItemNames(list)
+		end
+
+		if #names == 0 then
+			errorLabel.Text = "هیچ TextButton آیتمی داخل List پیدا نشد!"
+			setGiveAllState(false)
+			return
+		end
+
+		-- ۵) ارسال نام هر آیتم به ریموت
+		local equipped, failed = 0, 0
+		for index, itemName in ipairs(names) do
+			setGiveAllState(true, ("Equipping %d / %d  ·  %s"):format(index, #names, itemName))
+
+			local ok, err = pcall(function()
+				return equipGear:InvokeServer(itemName, true)
+			end)
+
+			if ok then
+				equipped += 1
+			else
+				failed += 1
+			end
+
+			if GIVEALL.Debug then
+				print("[ShopPanel][GiveAll] " .. itemName .. " → " .. (ok and "OK" or ("ERROR: " .. tostring(err))))
+			end
+
+			task.wait(GIVEALL.Delay)
+		end
+
+		errorLabel.Text = ""
+		giveStatusLabel.Text = ("%d آیتم Equip شد · %d خطا"):format(equipped, failed)
+		giveStatusLabel.TextColor3 = Color3.fromRGB(120, 255, 190)
+		setGiveAllState(false, GIVEALL_TEXT)
+
+		if GIVEALL.Debug then
+			print(("[ShopPanel][GiveAll] DONE ✅ %d ok / %d fail"):format(equipped, failed))
+		end
+	end)
+end
+
+-- دکمه داخل پنل
+giveAllBtn = Instance.new("TextButton")
+giveAllBtn.Name = "GiveAllBuyedItems"
+giveAllBtn.Size = UDim2.new(1, -20, 0, 36)
+giveAllBtn.Position = UDim2.new(0, 10, 1, -50)
+giveAllBtn.BackgroundColor3 = GIVEALL_COLOR
+giveAllBtn.BorderSizePixel = 0
+giveAllBtn.Text = GIVEALL_TEXT
+giveAllBtn.TextColor3 = Color3.fromRGB(28, 22, 12)
+giveAllBtn.TextSize = 15
+giveAllBtn.Font = Enum.Font.GothamBold
+giveAllBtn.AutoButtonColor = false
+giveAllBtn.Parent = mainFrame
+
+local giveAllCorner = Instance.new("UICorner")
+giveAllCorner.CornerRadius = UDim.new(0, 8)
+giveAllCorner.Parent = giveAllBtn
+
+local giveAllStroke = Instance.new("UIStroke")
+giveAllStroke.Color = Color3.fromRGB(255, 215, 150)
+giveAllStroke.Transparency = 0.55
+giveAllStroke.Thickness = 1
+giveAllStroke.Parent = giveAllBtn
+
+giveStatusLabel = Instance.new("TextLabel")
+giveStatusLabel.Size = UDim2.new(1, -20, 0, 18)
+giveStatusLabel.Position = UDim2.new(0, 10, 1, -72)
+giveStatusLabel.BackgroundTransparency = 1
+giveStatusLabel.Text = "همه آیتم‌های کاتالوگ فروشگاه را یک‌جا Equip می‌کند"
+giveStatusLabel.TextColor3 = Color3.fromRGB(170, 165, 190)
+giveStatusLabel.TextSize = 12
+giveStatusLabel.Font = Enum.Font.Gotham
+giveStatusLabel.TextTruncate = Enum.TextTruncate.AtEnd
+giveStatusLabel.Parent = mainFrame
+
+giveAllBtn.MouseEnter:Connect(function()
+	if giveAllRunning then return end
+	TweenService:Create(giveAllBtn, TweenInfo.new(0.14), {
+		BackgroundColor3 = GIVEALL_HOVER,
+		Size = UDim2.new(1, -14, 0, 38),
+		Position = UDim2.new(0, 7, 1, -51),
+	}):Play()
+end)
+
+giveAllBtn.MouseLeave:Connect(function()
+	if giveAllRunning then return end
+	TweenService:Create(giveAllBtn, TweenInfo.new(0.14), {
+		BackgroundColor3 = GIVEALL_COLOR,
+		Size = UDim2.new(1, -20, 0, 36),
+		Position = UDim2.new(0, 10, 1, -50),
+	}):Play()
+end)
+
+giveAllBtn.MouseButton1Click:Connect(giveAllBuyedItems)
+
+-- کلید میانبر: LeftAlt + G
+UserInputService.InputBegan:Connect(function(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.G and UserInputService:IsKeyDown(Enum.KeyCode.LeftAlt) then
+		giveAllBuyedItems()
+	end
+end)
+
+local function makeDraggable(targetFrame)
+    local uis = game:GetService("UserInputService")
+    local tweenService = game:GetService("TweenService")
+    
+    local dragging, dragInput, dragStart, startPos
+    
+    targetFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = targetFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    targetFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    uis.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local newPos = UDim2.new(
+                startPos.X.Scale, 
+                startPos.X.Offset + delta.X, 
+                startPos.Y.Scale, 
+                startPos.Y.Offset + delta.Y
+            )
+            tweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+        end
+    end)
+end
+
+makeDraggable(mainFrame)
