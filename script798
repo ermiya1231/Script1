@@ -7,18 +7,32 @@ local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- ساخت رابط کاربری پنل فروشگاه
+-- Connections that must be cleaned up when the panel is closed
+local connections = {}
+local function track(conn)
+	table.insert(connections, conn)
+	return conn
+end
+
+---------------------------------------------------------------------
+-- Panel UI
+---------------------------------------------------------------------
+local PANEL_WIDTH = 350
+local PANEL_HEIGHT = 500
+local HEADER_HEIGHT = 50
+
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "RobloxShopPanel"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 350, 0, 500)
-mainFrame.Position = UDim2.new(0.5, -175, 0.5, -250)
+mainFrame.Size = UDim2.new(0, PANEL_WIDTH, 0, PANEL_HEIGHT)
+mainFrame.Position = UDim2.new(0.5, -PANEL_WIDTH / 2, 0.5, -PANEL_HEIGHT / 2)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
+mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
 local uiCorner = Instance.new("UICorner")
@@ -26,13 +40,39 @@ uiCorner.CornerRadius = UDim.new(0, 12)
 uiCorner.Parent = mainFrame
 
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 50)
+titleLabel.Size = UDim2.new(1, -90, 0, HEADER_HEIGHT)
+titleLabel.Position = UDim2.new(0, 15, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "C00LHACK STORE"
+titleLabel.Text = "C00LHACK STORE FE Bypass"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextSize = 20
+titleLabel.TextSize = 19
 titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = mainFrame
+
+-- Header buttons: Collapse/Expand and Close
+local function makeHeaderButton(text, xOffset, color)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0, 30, 0, 30)
+	btn.Position = UDim2.new(1, xOffset, 0, 10)
+	btn.BackgroundColor3 = color
+	btn.BorderSizePixel = 0
+	btn.Text = text
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextSize = 16
+	btn.Font = Enum.Font.GothamBold
+	btn.AutoButtonColor = true
+	btn.Parent = mainFrame
+
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 6)
+	c.Parent = btn
+
+	return btn
+end
+
+local closeBtn = makeHeaderButton("X", -40, Color3.fromRGB(200, 60, 60))
+local collapseBtn = makeHeaderButton("-", -75, Color3.fromRGB(70, 70, 95))
 
 local errorLabel = Instance.new("TextLabel")
 errorLabel.Size = UDim2.new(1, 0, 0, 30)
@@ -49,6 +89,7 @@ local scrollingFrame = Instance.new("ScrollingFrame")
 scrollingFrame.Size = UDim2.new(1, -20, 1, -176)
 scrollingFrame.Position = UDim2.new(0, 10, 0, 90)
 scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.BorderSizePixel = 0
 scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 scrollingFrame.ScrollBarThickness = 6
@@ -58,15 +99,57 @@ local uiListLayout = Instance.new("UIListLayout")
 uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 uiListLayout.Padding = UDim.new(0, 10)
 uiListLayout.Parent = scrollingFrame
--- لیست اقلام شما
+
+-- Smart scroll: only enabled when the list is taller than the panel
+scrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+scrollingFrame.ElasticBehavior = Enum.ElasticBehavior.Never
+scrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 150)
+
+local scrollPadding = Instance.new("UIPadding")
+scrollPadding.PaddingRight = UDim.new(0, 8) -- keeps the scrollbar off the cards
+scrollPadding.Parent = scrollingFrame
+
+local function updateSmartScroll()
+	local needScroll = uiListLayout.AbsoluteContentSize.Y > scrollingFrame.AbsoluteSize.Y
+	scrollingFrame.ScrollingEnabled = needScroll
+	scrollingFrame.ScrollBarThickness = needScroll and 6 or 0
+end
+
+uiListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSmartScroll)
+scrollingFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateSmartScroll)
+task.defer(updateSmartScroll)
+
+---------------------------------------------------------------------
+-- Items
+-- NOTE: searchKey stays in Persian because it must match the in-game prompt text.
+---------------------------------------------------------------------
 local items = {
 	{ name = "رنگارنگ", price = 25, type = "PromptByName", searchKey = "رنگارنگ" },
 	{ name = "چیپس لیمویی", price = 40, type = "PromptByName", searchKey = "چیپس لیمویی" },
 	{ name = "Hot Cocoa", price = 0, type = "Path", path = Workspace:WaitForChild("HarborGardenIsland"):WaitForChild("RightAlignedV7"):WaitForChild("SecretManCave"):WaitForChild("Bar"):WaitForChild("HotCocoaMachine"):WaitForChild("MachineBody"):WaitForChild("ProximityPrompt") },
-	{ name = "چیپس سرکه ای", price = 0, type = "TouchInterest", path = Workspace:WaitForChild("HarborGardenIsland"):WaitForChild("EdgeObby"):WaitForChild("chipsgive") }
+	{ name = "چیپس سرکه ای", price = 0, type = "TouchInterest", path = Workspace:WaitForChild("HarborGardenIsland"):WaitForChild("EdgeObby"):WaitForChild("chipsgive") },
+
+	-- Slaps
+	{ name = "Slap", price = 0, type = "Slap", slapId = "Slap", owned = true },
+	{ name = "Gravity Slap", price = 5000, type = "Slap", slapId = "GravitySlap", owned = false },
+	{ name = "Fire Slap", price = 7500, type = "Slap", slapId = "FireSlap", owned = false },
 }
 
--- تابع پیدا کردن ProximityPrompt بر اساس نام
+-- Price text (becomes Free after purchase)
+local function getPriceText(item)
+	if item.price == 0 or item.owned then
+		return "Free"
+	end
+	return item.price .. "$"
+end
+
+local function refreshItemLabel(item)
+	if item.nameLabel then
+		item.nameLabel.Text = item.name .. "\n(Price: " .. getPriceText(item) .. ")"
+	end
+end
+
+-- Find a ProximityPrompt by name
 local function findPromptByName(targetName)
 	for _, obj in ipairs(Workspace:GetDescendants()) do
 		if obj:IsA("ProximityPrompt") then
@@ -78,7 +161,7 @@ local function findPromptByName(targetName)
 	return nil
 end
 
--- تابع روح، متریال ForceField و سرعت ملایم‌تر و کنترل‌شده
+-- Ghost function: ForceField material clone, smooth and controlled timing
 local function executePromptWithGhost(prompt)
 	local character = player.Character
 	if not character or not character:FindFirstChild("HumanoidRootPart") then return end
@@ -89,7 +172,7 @@ local function executePromptWithGhost(prompt)
 	local promptPart = prompt.Parent
 	if not promptPart or not promptPart:IsA("BasePart") then return end
 
-	-- ۱. ساخت کلون روح
+	-- 1. Create the ghost clone
 	character.Archivable = true
 	local ghost = character:Clone()
 	ghost.Name = "SpiritGhost"
@@ -99,7 +182,7 @@ local function executePromptWithGhost(prompt)
 		ghost.PrimaryPart = ghostRoot
 	end
 
-	-- تنظیمات متریال ForceField و مخفی کردن روت‌پارت روح
+	-- ForceField material and hide the ghost's root part
 	for _, obj in ipairs(ghost:GetDescendants()) do
 		if obj:IsA("Script") or obj:IsA("LocalScript") or obj:IsA("ModuleScript") then
 			obj:Destroy()
@@ -122,7 +205,7 @@ local function executePromptWithGhost(prompt)
 		ghost:SetPrimaryPartCFrame(originalCFrame)
 	end
 
-	-- ۲. تنظیم دوربین روی روح و مکث بیشتر برای دیدن روح
+	-- 2. Point the camera at the ghost
 	local ghostHumanoid = ghost:FindFirstChildOfClass("Humanoid")
 	if ghostHumanoid then
 		camera.CameraSubject = ghostHumanoid
@@ -130,21 +213,21 @@ local function executePromptWithGhost(prompt)
 		camera.CameraSubject = ghost.PrimaryPart
 	end
 
-	-- ۳. تلپورت کاراکتر اصلی به پرامپت با سرعت کمتر
+	-- 3. Teleport the real character to the prompt
 	humanoidRootPart.CFrame = promptPart.CFrame + Vector3.new(0, 3, 0)
-	task.wait(0.4) -- مکث قبل از فایر کردن پرامپت
+	task.wait(0.4) -- pause before firing the prompt
 
 	fireproximityprompt(prompt)
 
-	task.wait(0.4) -- مکث بعد از فایر کردن پرامپت
+	task.wait(0.4) -- pause after firing the prompt
 
-	-- ۴. بازگرداندن کاراکتر به جای اول همراه با فریز موقت و صفر کردن شتاب (بدون زمین خوردن)
+	-- 4. Return the character with a temporary freeze and zero velocity (no fall damage)
 	humanoidRootPart.CFrame = originalCFrame
 	humanoidRootPart.Anchored = true
 	humanoidRootPart.AssemblyLinearVelocity = Vector3.zero
 	humanoidRootPart.AssemblyAngularVelocity = Vector3.zero
 
-	-- ۵. بازگشت دوربین و پاکسازی روح
+	-- 5. Restore the camera and clean up the ghost
 	local realHumanoid = character:FindFirstChildOfClass("Humanoid")
 	if realHumanoid then
 		camera.CameraSubject = realHumanoid
@@ -156,43 +239,86 @@ local function executePromptWithGhost(prompt)
 	humanoidRootPart.Anchored = false
 end
 
--- متغیر کول‌دان دکمه‌ها
+-- Shared busy flag (button cooldown)
 local isBusy = false
 
 local function buyItem(itemData, buyBtn)
 	if isBusy then
-		errorLabel.Text = "لطفاً صبر کنید..."
+		errorLabel.Text = "Please wait..."
 		return
 	end
 
 	errorLabel.Text = ""
 
 	local leaderstats = player:FindFirstChild("leaderstats")
-	if not leaderstats then
-		errorLabel.Text = "پوشه leaderstats پیدا نشد!"
+	local money = leaderstats and leaderstats:FindFirstChild("Money")
+
+	---------------------------------------------------
+	-- Slaps: pay the first time, afterwards just Select
+	---------------------------------------------------
+	if itemData.type == "Slap" then
+		local needPay = (not itemData.owned) and itemData.price > 0
+
+		if needPay and money and money.Value < itemData.price then
+			errorLabel.Text = "Not enough money! (Need " .. itemData.price .. "$)"
+			return
+		end
+
+		local slapRemote = ReplicatedStorage:FindFirstChild("SlapActionRemote")
+		if not slapRemote then
+			errorLabel.Text = "SlapActionRemote not found!"
+			return
+		end
+
+		isBusy = true
+		buyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+		buyBtn.Text = "..."
+
+		local ok = pcall(function()
+			slapRemote:FireServer("BuyOrSelect", itemData.slapId)
+		end)
+
+		if ok then
+			itemData.owned = true
+			refreshItemLabel(itemData) -- price becomes Free
+		else
+			errorLabel.Text = "Failed to send remote!"
+		end
+
+		task.wait(1)
+		buyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+		buyBtn.Text = itemData.owned and "Select" or "Buy"
+		isBusy = false
 		return
 	end
 
-	local money = leaderstats:FindFirstChild("Money")
+	---------------------------------------------------
+	-- Other items
+	---------------------------------------------------
+	if not leaderstats then
+		errorLabel.Text = "leaderstats folder not found!"
+		return
+	end
+
 	if not money then
-		errorLabel.Text = "متغیر Money پیدا نشد!"
+		errorLabel.Text = "Money value not found!"
 		return
 	end
 
 	if money.Value < itemData.price then
-		errorLabel.Text = "پول کافی نداری! (نیاز به " .. itemData.price .. "$)"
+		errorLabel.Text = "Not enough money! (Need " .. itemData.price .. "$)"
 		return
 	end
 
-	-- فعال شدن کول‌دان دکمه
+	-- Button cooldown on
 	isBusy = true
 	buyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 	buyBtn.Text = "..."
 
-	-- کسر پول
+	-- Deduct money
 	money.Value = money.Value - itemData.price
 
-	-- اجرای آیتم
+	-- Run the item
 	if itemData.type == "Path" and itemData.path and itemData.path:IsA("ProximityPrompt") then
 		executePromptWithGhost(itemData.path)
 	elseif itemData.type == "PromptByName" then
@@ -200,7 +326,7 @@ local function buyItem(itemData, buyBtn)
 		if prompt then
 			executePromptWithGhost(prompt)
 		else
-			errorLabel.Text = "پرامپت مورد نظر پیدا نشد!"
+			errorLabel.Text = "Prompt not found!"
 		end
 	elseif itemData.type == "TouchInterest" and itemData.path then
 		local part = itemData.path
@@ -212,14 +338,14 @@ local function buyItem(itemData, buyBtn)
 		end
 	end
 
-	-- کول‌دان دکمه (۲ ثانیه تأخیر قبل از فعال شدن مجدد)
+	-- Button cooldown (2 second delay before it can be used again)
 	task.wait(2.0)
 	buyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
 	buyBtn.Text = "Buy"
 	isBusy = false
 end
 
--- ساخت دکمه‌ها در پنل
+-- Build the item cards
 for _, item in ipairs(items) do
 	local itemCard = Instance.new("Frame")
 	itemCard.Size = UDim2.new(1, 0, 0, 65)
@@ -235,19 +361,21 @@ for _, item in ipairs(items) do
 	nameLabel.Size = UDim2.new(0.6, 0, 1, 0)
 	nameLabel.Position = UDim2.new(0, 15, 0, 0)
 	nameLabel.BackgroundTransparency = 1
-	nameLabel.Text = item.name .. "\n(قیمت: " .. (item.price == 0 and "Free" or item.price .. "$") .. ")"
 	nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	nameLabel.TextSize = 15
 	nameLabel.Font = Enum.Font.GothamSemibold
 	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	nameLabel.Parent = itemCard
 
+	item.nameLabel = nameLabel
+	refreshItemLabel(item)
+
 	local buyBtn = Instance.new("TextButton")
 	buyBtn.Size = UDim2.new(0, 90, 0, 35)
 	buyBtn.Position = UDim2.new(1, -105, 0.5, -17.5)
 	buyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
 	buyBtn.BorderSizePixel = 0
-	buyBtn.Text = "Buy"
+	buyBtn.Text = (item.type == "Slap" and item.owned) and "Select" or "Buy"
 	buyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	buyBtn.TextSize = 16
 	buyBtn.Font = Enum.Font.GothamBold
@@ -264,22 +392,23 @@ end
 
 --═══════════════════════════════════════════════════════
 -- Give All Buyed Items From Shop
--- هر TextButton داخل Players.LocalPlayer.PlayerGui.ShopGui.Shop.Catalog.List
--- را پیدا می‌کند و نامش را با ریموت EquipGear به سرور می‌فرستد.
+-- Finds every TextButton inside
+-- Players.LocalPlayer.PlayerGui.ShopGui.Shop.Catalog.List
+-- and sends its name to the EquipGear remote.
 --═══════════════════════════════════════════════════════
 
 local GIVEALL = {
-	Delay = 0, -- ثانیه فاصله بین هر InvokeServer
-	DeepSearch = true, -- جستجوی تمام فرزندان List (نه فقط سطح اول)
-	UseLabelName = true, -- اگر نام دکمه خالی/پیش‌فرض بود، از TextLabel داخلش بخوان
-	SmartFilter = true, -- رد کردن دکمه‌های غیر آیتمی (Buy، قیمت، ...)
-	MaxItems = 0, -- 0 یعنی بدون محدودیت
-	OpenShopGui = true, -- اول ShopGui را روشن کن تا List پر شود
-	WaitForList = 5, -- چند ثانیه برای ظاهر شدن List صبر کن
-	Debug = true, -- پرینت نتیجه هر آیتم در Output
+	Delay = 0, -- seconds between each InvokeServer
+	DeepSearch = true, -- search all descendants of List (not only the first level)
+	UseLabelName = true, -- if the button name is empty/default, read its inner TextLabel
+	SmartFilter = true, -- skip non-item buttons (Buy, prices, ...)
+	MaxItems = 0, -- 0 means unlimited
+	OpenShopGui = true, -- enable ShopGui first so the List gets populated
+	WaitForList = 5, -- seconds to wait for the List to appear
+	Debug = true, -- print each item's result to Output
 }
 
--- نام‌هایی که هیچ‌وقت آیتم حساب نمی‌شوند
+-- Names that are never counted as items
 local GIVEALL_SKIP = {
 	Buy = true, Sell = true, Close = true, Exit = true, Equip = true,
 	Unequip = true, Use = true, Next = true, Previous = true, Back = true,
@@ -290,36 +419,37 @@ local GIVEALL_TEXT = "Give All Buyed Items From Shop"
 local GIVEALL_COLOR = Color3.fromRGB(255, 170, 40)
 local GIVEALL_HOVER = Color3.fromRGB(255, 195, 90)
 local GIVEALL_BUSY = Color3.fromRGB(110, 110, 125)
+local GIVEALL_STATUS_DEFAULT = "Equips every item in the shop catalog at once"
 
 local giveAllBtn
 local giveStatusLabel
 local giveAllRunning = false
 
--- ریموت EquipGear را پیدا می‌کند
+-- Find the EquipGear remote
 local function getEquipGearRemote()
 	local shopShared = ReplicatedStorage:FindFirstChild("ShopShared")
 	local remotes = shopShared and shopShared:FindFirstChild("Remotes")
 	return remotes and remotes:FindFirstChild("EquipGear")
 end
 
--- مسیر ShopGui.Shop.Catalog.List (با جستجوی بازگشتی، اگر چیدمان فرق داشت)
+-- ShopGui.Shop.Catalog.List path (recursive search in case the layout differs)
 local function findShopList()
 	local shopGui = playerGui:FindFirstChild("ShopGui")
-	if not shopGui then return nil, "ShopGui داخل PlayerGui نیست" end
+	if not shopGui then return nil, "ShopGui is not in PlayerGui" end
 
 	local shop = shopGui:FindFirstChild("Shop", true)
-	if not shop then return nil, "فریم Shop پیدا نشد" end
+	if not shop then return nil, "Shop frame not found" end
 
 	local catalog = shop:FindFirstChild("Catalog", true)
-	if not catalog then return nil, "فریم Catalog پیدا نشد" end
+	if not catalog then return nil, "Catalog frame not found" end
 
 	local list = catalog:FindFirstChild("List", true)
-	if not list then return nil, "فریم List پیدا نشد" end
+	if not list then return nil, "List frame not found" end
 
 	return list
 end
 
--- نام همه TextButton های لیست فروشگاه را جمع می‌کند
+-- Collect the names of all TextButtons in the shop list
 local function collectShopItemNames(list)
 	local names = {}
 	local seen = {}
@@ -335,7 +465,7 @@ local function collectShopItemNames(list)
 		if obj:IsA("TextButton") then
 			local raw = obj.Name
 
-			-- نام خالی/پیش‌فرض → خواندن متن برچسب داخل دکمه
+			-- Empty/default name -> read the label text inside the button
 			if GIVEALL.UseLabelName and (#raw < 3 or raw == "TextButton") then
 				local label = obj:FindFirstChildOfClass("TextLabel") or obj:FindFirstChildOfClass("TextButton", true)
 				if label and label.Text and #label.Text > 0 then
@@ -353,7 +483,7 @@ local function collectShopItemNames(list)
 				if GIVEALL_SKIP[cleanName] then
 					skip = true
 				elseif cleanName:find("%d") and (cleanName:find("%$") or cleanName:find("%%")) then
-					skip = true -- رد شدن ردیف‌های قیمت مثل «۲۵$»
+					skip = true -- skip price rows like "25$"
 				elseif cleanName:find("^%d+$") then
 					skip = true
 				end
@@ -379,26 +509,26 @@ local function setGiveAllState(busy, text)
 	giveAllBtn.BackgroundColor3 = busy and GIVEALL_BUSY or GIVEALL_COLOR
 end
 
--- تابع اصلی: اسکن لیست + Equip تک‌تک آیتم‌ها با ریموت
+-- Main function: scan the list and Equip every item through the remote
 local function giveAllBuyedItems()
 	if isBusy then
-		errorLabel.Text = "یک خرید در جریان است؛ کمی بعد امتحان کن..."
+		errorLabel.Text = "A purchase is in progress; try again shortly..."
 		return
 	end
 	if giveAllRunning then return end
 
-	setGiveAllState(true, "در حال آماده‌سازی...")
+	setGiveAllState(true, "Preparing...")
 
 	task.defer(function()
-		-- ۱) ریموت
+		-- 1) Remote
 		local equipGear = getEquipGearRemote()
 		if not equipGear then
-			errorLabel.Text = "ریموت EquipGear پیدا نشد!"
+			errorLabel.Text = "EquipGear remote not found!"
 			setGiveAllState(false)
 			return
 		end
 
-		-- ۲) باز کردن فروشگاه تا لیست ساخته شود
+		-- 2) Open the shop so the list gets built
 		if GIVEALL.OpenShopGui then
 			local shopGui = playerGui:FindFirstChild("ShopGui")
 			if shopGui and not shopGui.Enabled then
@@ -406,7 +536,7 @@ local function giveAllBuyedItems()
 			end
 		end
 
-		-- ۳) صبر برای پیدا شدن List (اگر WaitForList = 0 باشد فقط یک بار بررسی می‌کند)
+		-- 3) Wait for the List to appear (if WaitForList = 0 it only checks once)
 		local list, lastError = findShopList()
 		local waited = 0
 		while not list and waited < GIVEALL.WaitForList do
@@ -416,26 +546,26 @@ local function giveAllBuyedItems()
 		end
 
 		if not list then
-			errorLabel.Text = lastError or "لیست فروشگاه پیدا نشد!"
+			errorLabel.Text = lastError or "Shop list not found!"
 			setGiveAllState(false)
 			return
 		end
 
-		-- ۴) جمع کردن نام دکمه‌ها (یک بار تلاش مجدد اگر لیست هنوز خالی بود)
+		-- 4) Collect button names (retry once if the list is still empty)
 		local names = collectShopItemNames(list)
 		if #names == 0 then
-			setGiveAllState(true, "لیست خالی است؛ دوباره بررسی می‌شود...")
+			setGiveAllState(true, "List is empty; checking again...")
 			task.wait(0.6)
 			names = collectShopItemNames(list)
 		end
 
 		if #names == 0 then
-			errorLabel.Text = "هیچ TextButton آیتمی داخل List پیدا نشد!"
+			errorLabel.Text = "No item TextButton found inside List!"
 			setGiveAllState(false)
 			return
 		end
 
-		-- ۵) ارسال نام هر آیتم به ریموت
+		-- 5) Send each item name to the remote
 		local equipped, failed = 0, 0
 		for index, itemName in ipairs(names) do
 			setGiveAllState(true, ("Equipping %d / %d  ·  %s"):format(index, #names, itemName))
@@ -458,7 +588,7 @@ local function giveAllBuyedItems()
 		end
 
 		errorLabel.Text = ""
-		giveStatusLabel.Text = ("%d آیتم Equip شد · %d خطا"):format(equipped, failed)
+		giveStatusLabel.Text = ("%d items equipped · %d errors"):format(equipped, failed)
 		giveStatusLabel.TextColor3 = Color3.fromRGB(120, 255, 190)
 		setGiveAllState(false, GIVEALL_TEXT)
 
@@ -468,7 +598,7 @@ local function giveAllBuyedItems()
 	end)
 end
 
--- دکمه داخل پنل
+-- Button inside the panel
 giveAllBtn = Instance.new("TextButton")
 giveAllBtn.Name = "GiveAllBuyedItems"
 giveAllBtn.Size = UDim2.new(1, -20, 0, 36)
@@ -496,7 +626,7 @@ giveStatusLabel = Instance.new("TextLabel")
 giveStatusLabel.Size = UDim2.new(1, -20, 0, 18)
 giveStatusLabel.Position = UDim2.new(0, 10, 1, -72)
 giveStatusLabel.BackgroundTransparency = 1
-giveStatusLabel.Text = "همه آیتم‌های کاتالوگ فروشگاه را یک‌جا Equip می‌کند"
+giveStatusLabel.Text = GIVEALL_STATUS_DEFAULT
 giveStatusLabel.TextColor3 = Color3.fromRGB(170, 165, 190)
 giveStatusLabel.TextSize = 12
 giveStatusLabel.Font = Enum.Font.Gotham
@@ -523,52 +653,108 @@ end)
 
 giveAllBtn.MouseButton1Click:Connect(giveAllBuyedItems)
 
--- کلید میانبر: LeftAlt + G
-UserInputService.InputBegan:Connect(function(input, processed)
+-- Hotkey: LeftAlt + G
+track(UserInputService.InputBegan:Connect(function(input, processed)
 	if processed then return end
 	if input.KeyCode == Enum.KeyCode.G and UserInputService:IsKeyDown(Enum.KeyCode.LeftAlt) then
 		giveAllBuyedItems()
 	end
-end)
+end))
 
+---------------------------------------------------------------------
+-- Collapse / Expand and Close
+---------------------------------------------------------------------
+local collapsed = false
+local collapseToken = 0
+
+-- Everything in the panel body that gets hidden while collapsed
+local bodyElements = { errorLabel, scrollingFrame, giveAllBtn, giveStatusLabel }
+
+local function setBodyVisible(visible)
+	for _, element in ipairs(bodyElements) do
+		element.Visible = visible
+	end
+end
+
+local function toggleCollapse()
+	collapsed = not collapsed
+	collapseToken += 1
+	local myToken = collapseToken
+
+	if collapsed then
+		collapseBtn.Text = "+"
+		setBodyVisible(false)
+		TweenService:Create(mainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+			Size = UDim2.new(0, PANEL_WIDTH, 0, HEADER_HEIGHT),
+		}):Play()
+	else
+		collapseBtn.Text = "-"
+		local tween = TweenService:Create(mainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+			Size = UDim2.new(0, PANEL_WIDTH, 0, PANEL_HEIGHT),
+		})
+		tween:Play()
+		tween.Completed:Connect(function()
+			-- Only show the body if the user didn't collapse again in the meantime
+			if myToken == collapseToken and not collapsed then
+				setBodyVisible(true)
+				updateSmartScroll()
+			end
+		end)
+	end
+end
+
+local function closePanel()
+	for _, conn in ipairs(connections) do
+		conn:Disconnect()
+	end
+	table.clear(connections)
+	screenGui:Destroy()
+end
+
+collapseBtn.MouseButton1Click:Connect(toggleCollapse)
+closeBtn.MouseButton1Click:Connect(closePanel)
+
+---------------------------------------------------------------------
+-- Dragging
+---------------------------------------------------------------------
 local function makeDraggable(targetFrame)
-    local uis = game:GetService("UserInputService")
-    local tweenService = game:GetService("TweenService")
-    
-    local dragging, dragInput, dragStart, startPos
-    
-    targetFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = targetFrame.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-    
-    targetFrame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-    
-    uis.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            local newPos = UDim2.new(
-                startPos.X.Scale, 
-                startPos.X.Offset + delta.X, 
-                startPos.Y.Scale, 
-                startPos.Y.Offset + delta.Y
-            )
-            tweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
-        end
-    end)
+	local uis = game:GetService("UserInputService")
+	local tweenService = game:GetService("TweenService")
+
+	local dragging, dragInput, dragStart, startPos
+
+	targetFrame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = targetFrame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	targetFrame.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	track(uis.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			local delta = input.Position - dragStart
+			local newPos = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+			tweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+		end
+	end))
 end
 
 makeDraggable(mainFrame)
