@@ -1,0 +1,188 @@
+-- Place this script inside StarterPlayer.StarterPlayerScripts (as a LocalScript)
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ==================== ساخت رابط کاربری (UI) پنل ====================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FESplashSoundGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 240, 0, 160)
+mainFrame.Position = UDim2.new(0.5, -120, 0.4, -80)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+-- گوشه‌های گرد پنل
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 10)
+uiCorner.Parent = mainFrame
+
+-- حاشیه نئونی آبی
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(0, 170, 255)
+uiStroke.Thickness = 2
+uiStroke.Parent = mainFrame
+
+-- عنوان پنل
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "FE Splash Sound"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 16
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = mainFrame
+
+-- دکمه بستن (X)
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextSize = 14
+closeButton.Font = Enum.Font.GothamBold
+mainFrame.ClipsDescendants = true
+closeButton.Parent = mainFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = closeButton
+
+-- دکمه تک‌ضرب (Single-Action Button)
+local actionButton = Instance.new("TextButton")
+actionButton.Size = UDim2.new(0.8, 0, 0, 50)
+actionButton.Position = UDim2.new(0.1, 0, 0, 65)
+actionButton.BackgroundColor3 = Color3.fromRGB(0, 130, 255)
+actionButton.Text = "Splash"
+actionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+actionButton.TextSize = 15
+actionButton.Font = Enum.Font.GothamBold
+actionButton.Parent = mainFrame
+
+local actionCorner = Instance.new("UICorner")
+actionCorner.CornerRadius = UDim.new(0, 8)
+actionCorner.Parent = actionButton
+
+-- ==================== تابع درگ روان (با TweenService) ====================
+local function makeDraggable(targetFrame)
+    local dragging, dragInput, dragStart, startPos
+    
+    targetFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = targetFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    targetFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local newPos = UDim2.new(
+                startPos.X.Scale, 
+                startPos.X.Offset + delta.X, 
+                startPos.Y.Scale, 
+                startPos.Y.Offset + delta.Y
+            )
+            TweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+        end
+    end)
+end
+
+makeDraggable(mainFrame)
+
+-- ==================== منطق کاراکتر ====================
+local currentCharacter = nil
+local currentHumanoid = nil
+local currentRootPart = nil
+
+local function setupCharacter(character)
+    currentCharacter = character
+    currentHumanoid = character:WaitForChild("Humanoid")
+    currentRootPart = character:WaitForChild("HumanoidRootPart")
+end
+
+if player.Character then
+    setupCharacter(player.Character)
+end
+player.CharacterAdded:Connect(setupCharacter)
+
+-- تابع اجرای پرش و بازگشت آنی به جای خود
+local function triggerSplashJump()
+    if currentCharacter and currentHumanoid and currentRootPart and currentHumanoid.Health > 0 then
+        -- ۱. ذخیره موقعیت دقیق فعلی کاراکتر قبل از پرش
+        local originalCFrame = currentRootPart.CFrame
+        
+        -- ۲. تغییر حالت به Swimming و اعمال نیروی پرش ۶۰۰
+        currentHumanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+        
+        currentRootPart.AssemblyLinearVelocity = Vector3.new(
+            currentRootPart.AssemblyLinearVelocity.X, 
+            1000, 
+            currentRootPart.AssemblyLinearVelocity.Z
+        )
+        
+        -- ۳. ساخت پارت آب موقت برای پخش صدا در محل اصلی
+        local splashTrigger = Instance.new("Part")
+        splashTrigger.Size = Vector3.new(10, 3, 10)
+        splashTrigger.Position = originalCFrame.Position - Vector3.new(0, 2, 0)
+        splashTrigger.Transparency = 1
+        splashTrigger.CanCollide = false
+        splashTrigger.Anchored = true
+        splashTrigger.Material = Enum.Material.Water
+        splashTrigger.Parent = Workspace
+        
+        -- ۴. بازگرداندن آنی کاراکتر به موقعیت اصلی و صفر کردن سرعت قبل از رفتن به هوا
+        task.defer(function()
+            if currentRootPart then
+            	task.wait(0)
+                currentRootPart.CFrame = originalCFrame
+                currentRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            end
+        end)
+        
+        -- ۵. پاکسازی پارت آب پس از مدت زمان مشخص
+        task.delay(0.15, function()
+            if splashTrigger and splashTrigger.Parent then
+                splashTrigger:Destroy()
+            end
+        end)
+    end
+end
+
+-- دکمه تک‌ضرب
+actionButton.MouseButton1Click:Connect(function()
+    triggerSplashJump()
+    
+    -- افکت انیمیشن فشرده شدن دکمه
+    TweenService:Create(actionButton, TweenInfo.new(0.05), {BackgroundColor3 = Color3.fromRGB(0, 180, 255)}):Play()
+    task.delay(0.05, function()
+        TweenService:Create(actionButton, TweenInfo.new(0.05), {BackgroundColor3 = Color3.fromRGB(0, 130, 255)}):Play()
+    end)
+end)
+
+-- دکمه بستن پنل (X)
+closeButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+end)
