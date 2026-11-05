@@ -9,12 +9,22 @@ local LP = Players.LocalPlayer
 local C = {
     bg = Color3.fromRGB(8, 12, 8),
     bar = Color3.fromRGB(0, 40, 10),
-    row = Color3.fromRGB(14, 22, 14),
+    -- رنگ‌های پس‌زمینه ردیف ریموت‌ها (تک‌تک تفکیک شده برای Event و Function)
+    rowEvent1 = Color3.fromRGB(14, 28, 18),
+    rowEvent2 = Color3.fromRGB(20, 38, 24),
+    rowFunc1 = Color3.fromRGB(12, 22, 38),
+    rowFunc2 = Color3.fromRGB(18, 32, 50),
     green = Color3.fromRGB(0, 255, 70),
     dim = Color3.fromRGB(0, 160, 50),
     fire = Color3.fromRGB(255, 140, 0),
+    fireAlt = Color3.fromRGB(230, 110, 0),
     invoke = Color3.fromRGB(30, 120, 255),
+    invokeAlt = Color3.fromRGB(20, 95, 210),
+    copy = Color3.fromRGB(0, 150, 180),
+    copyAlt = Color3.fromRGB(30, 110, 160),
     red = Color3.fromRGB(220, 30, 30),
+    filterOn = Color3.fromRGB(110, 40, 190),
+    filterOff = Color3.fromRGB(50, 50, 50),
     input = Color3.fromRGB(0, 0, 0),
 }
 
@@ -46,7 +56,7 @@ end
 
 local function button(text, color, size, pos, parent)
     return make("TextButton", {
-        Text = text, Font = Enum.Font.Code, TextSize = 13,
+        Text = text, Font = Enum.Font.Code, TextSize = 12,
         TextColor3 = Color3.new(1, 1, 1), BackgroundColor3 = color,
         BorderSizePixel = 1, BorderColor3 = C.green,
         Size = size, Position = pos, AutoButtonColor = true,
@@ -78,15 +88,24 @@ make("TextLabel", {
 local closeBtn = button("X", C.red, UDim2.new(0, 28, 0, 22), UDim2.new(1, -32, 0, 3), titleBar)
 closeBtn.Activated:Connect(function() gui:Destroy() end)
 
--- نوار ابزار بالا (Fire All / Invoke All / Search)
-local fireAll = button("Fire All", C.fire, UDim2.new(0, 70, 0, 24), UDim2.new(0, 6, 0, 33), frame)
-local invokeAll = button("Invoke All", C.invoke, UDim2.new(0, 80, 0, 24), UDim2.new(0, 82, 0, 33), frame)
+-- نوار ابزار بالا
+local fireAll = button("Fire All", C.fire, UDim2.new(0, 65, 0, 24), UDim2.new(0, 6, 0, 33), frame)
+local invokeAll = button("Invoke All", C.invoke, UDim2.new(0, 75, 0, 24), UDim2.new(0, 74, 0, 33), frame)
+
+local filterAdmin = true
+local filterBtn = button("Filter: ON", C.filterOn, UDim2.new(0, 118, 0, 24), UDim2.new(0, 152, 0, 33), frame)
+filterBtn.Activated:Connect(function()
+    filterAdmin = not filterAdmin
+    filterBtn.Text = filterAdmin and "Filter: ON" or "Filter: OFF"
+    filterBtn.BackgroundColor3 = filterAdmin and C.filterOn or C.filterOff
+    filterBtn.TextColor3 = filterAdmin and Color3.new(1, 1, 1) or C.dim
+end)
 
 local search = make("TextBox", {
     PlaceholderText = "Search...", Text = "", Font = Enum.Font.Code, TextSize = 13,
     TextColor3 = C.green, PlaceholderColor3 = C.dim, BackgroundColor3 = C.input,
     BorderSizePixel = 1, BorderColor3 = C.green, ClearTextOnFocus = false,
-    Size = UDim2.new(1, -176, 0, 24), Position = UDim2.new(0, 168, 0, 33),
+    Size = UDim2.new(1, -278, 0, 24), Position = UDim2.new(0, 274, 0, 33),
     TextXAlignment = Enum.TextXAlignment.Left, ClipsDescendants = true,
 }, frame)
 
@@ -102,13 +121,13 @@ local list = make("ScrollingFrame", {
 make("UIListLayout", { Padding = UDim.new(0, 3), SortOrder = Enum.SortOrder.LayoutOrder }, list)
 make("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingLeft = UDim.new(0, 3), PaddingRight = UDim.new(0, 3) }, list)
 
--- کادر آرگومان (بزرگ)
+-- کادر آرگومان
 make("TextLabel", {
     Text = "Arguments:", Font = Enum.Font.Code, TextSize = 12,
     TextColor3 = C.dim, BackgroundTransparency = 1,
-    Size = UDim2.new(1, -12, 0, 16), Position = UDim2.new(1, 0, 1, -104),
+    Size = UDim2.new(1, -12, 0, 16), Position = UDim2.new(0, 6, 1, -106),
     TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
-}, frame).Position = UDim2.new(0, 6, 1, -106)
+}, frame)
 
 local argBox = make("TextBox", {
     PlaceholderText = "args here...", Text = "", Font = Enum.Font.Code, TextSize = 13,
@@ -131,7 +150,7 @@ local function getArgs()
             if ok then return res end
         end
     end
-    return table.pack(text) -- اگه پارس نشد، به صورت رشته ساده
+    return table.pack(text)
 end
 
 -- ====== اجرای ریموت ======
@@ -140,14 +159,38 @@ local function run(remote)
     if remote:IsA("RemoteEvent") then
         pcall(function() remote:FireServer(table.unpack(args, 1, args.n)) end)
     elseif remote:IsA("RemoteFunction") then
-        task.spawn(function() -- InvokeServer yield می‌کنه
+        task.spawn(function()
             pcall(function() remote:InvokeServer(table.unpack(args, 1, args.n)) end)
         end)
     end
 end
 
+-- ====== کپی کردن مسیر ======
+local function copyPath(remote)
+    local path = remote:GetFullName()
+    pcall(function()
+        if setclipboard then
+            setclipboard(path)
+        elseif syn and syn.write_clipboard then
+            syn.write_clipboard(path)
+        elseif toclipboard then
+            tostring(toclipboard(path))
+        end
+    end)
+end
+
+-- ====== تشخیص ریموت‌های بلک‌لیست ======
+local function isBlacklistedRemote(remote)
+    local p = remote:GetFullName():lower()
+    if p:find("hdadminhdclient", 1, true) ~= nil then return true end
+    if p:find("kohl", 1, true) ~= nil then return true end
+    if p:find("replicatedstorage.zap", 1, true) ~= nil then return true end
+    if p:find("replicatedstorage.defaultchatsystemchatevents", 1, true) ~= nil then return true end
+    return false
+end
+
 -- ====== مدیریت ردیف‌ها ======
-local rows = {} -- [remote] = {frame=, path=, pathLabel=, visible=}
+local rows = {}
 local order = 0
 
 local function isRemote(o)
@@ -166,9 +209,26 @@ local function addRow(remote)
     if rows[remote] then return end
     order += 1
     local isEvent = remote:IsA("RemoteEvent")
+    
+    -- تنوع رنگ پس‌زمینه خود ریموت‌ها (Eventها سبزتر، Functionها آبی‌تر)
+    local rowColor
+    if isEvent then
+        rowColor = (order % 2 == 1) and C.rowEvent1 or C.rowEvent2
+    else
+        rowColor = (order % 2 == 1) and C.rowFunc1 or C.rowFunc2
+    end
+    
+    -- تنوع رنگ دکمه‌ها
+    local actColor
+    if isEvent then
+        actColor = (order % 2 == 1) and C.fire or C.fireAlt
+    else
+        actColor = (order % 2 == 1) and C.invoke or C.invokeAlt
+    end
+    local copyColor = (order % 2 == 1) and C.copy or C.copyAlt
 
     local row = make("Frame", {
-        Size = UDim2.new(1, -6, 0, 44), BackgroundColor3 = C.row,
+        Size = UDim2.new(1, -6, 0, 44), BackgroundColor3 = rowColor,
         BorderSizePixel = 1, BorderColor3 = C.dim,
         LayoutOrder = order, ClipsDescendants = true,
     }, list)
@@ -176,7 +236,7 @@ local function addRow(remote)
     local nameLabel = make("TextLabel", {
         Text = remote.Name .. (isEvent and "  [Event]" or "  [Function]"),
         Font = Enum.Font.Code, TextSize = 14, TextColor3 = C.green,
-        BackgroundTransparency = 1, Size = UDim2.new(1, -130, 0, 20),
+        BackgroundTransparency = 1, Size = UDim2.new(1, -178, 0, 20),
         Position = UDim2.new(0, 6, 0, 2), TextXAlignment = Enum.TextXAlignment.Left,
         TextTruncate = Enum.TextTruncate.AtEnd,
     }, row)
@@ -184,15 +244,27 @@ local function addRow(remote)
     local pathLabel = make("TextLabel", {
         Text = remote:GetFullName(), Font = Enum.Font.Code, TextSize = 11,
         TextColor3 = C.dim, BackgroundTransparency = 1,
-        Size = UDim2.new(1, -130, 0, 18), Position = UDim2.new(0, 6, 0, 23),
+        Size = UDim2.new(1, -178, 0, 18), Position = UDim2.new(0, 6, 0, 23),
         TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
     }, row)
 
-    local actBtn = button(isEvent and "Fire" or "Invoke", isEvent and C.fire or C.invoke,
-        UDim2.new(0, 56, 0, 30), UDim2.new(1, -122, 0, 7), row)
-    local delBtn = button("Delete", C.red, UDim2.new(0, 56, 0, 30), UDim2.new(1, -62, 0, 7), row)
+    local actBtn = button(isEvent and "Fire" or "Invoke", actColor,
+        UDim2.new(0, 52, 0, 30), UDim2.new(1, -172, 0, 7), row)
+    local copyBtn = button("Copy Path", copyColor,
+        UDim2.new(0, 56, 0, 30), UDim2.new(1, -116, 0, 7), row)
+        copyBtn.TextSize = 11
+    local delBtn = button("Delete", C.red,
+        UDim2.new(0, 52, 0, 30), UDim2.new(1, -56, 0, 7), row)
 
     actBtn.Activated:Connect(function() run(remote) end)
+    	
+    copyBtn.Activated:Connect(function()
+    	copyBtn.Text = "Copied!"
+    	copyPath(remote)
+        task.wait(1)
+        copyBtn.Text = "Copy Path"
+        end)
+
     delBtn.Activated:Connect(function()
         pcall(function() remote:Destroy() end)
         removeRow(remote)
@@ -201,7 +273,7 @@ local function addRow(remote)
     rows[remote] = { frame = row, pathLabel = pathLabel, nameLabel = nameLabel, path = pathLabel.Text, shown = true }
 end
 
--- ====== ثبت ریموت‌ها با Event (بدون اسکن سنگین) ======
+-- ====== ثبت ریموت‌ها ======
 local roots = { RS, LP, workspace }
 
 local function hook(root)
@@ -220,7 +292,7 @@ end
 
 for _, r in ipairs(roots) do hook(r) end
 
--- ====== آپدیت هر 0.1 ثانیه (فقط تغییرات) ======
+-- ====== آپدیت هر 0.1 ثانیه ======
 task.spawn(function()
     while gui.Parent do
         local q = search.Text:lower()
@@ -233,7 +305,10 @@ task.spawn(function()
                     r.path = p
                     r.pathLabel.Text = p
                 end
-                local match = q == "" or remote.Name:lower():find(q, 1, true) ~= nil or p:lower():find(q, 1, true) ~= nil
+                
+                local blacklisted = filterAdmin and isBlacklistedRemote(remote)
+                local match = (not blacklisted) and (q == "" or remote.Name:lower():find(q, 1, true) ~= nil or p:lower():find(q, 1, true) ~= nil)
+                
                 if match ~= r.shown then
                     r.shown = match
                     r.frame.Visible = match
@@ -244,7 +319,7 @@ task.spawn(function()
     end
 end)
 
--- ====== Fire All / Invoke All (فقط ریموت‌های قابل مشاهده در لیست) ======
+-- ====== Fire All / Invoke All ======
 fireAll.Activated:Connect(function()
     for remote, r in pairs(rows) do
         if r.shown and remote:IsA("RemoteEvent") then run(remote) end
@@ -257,7 +332,7 @@ invokeAll.Activated:Connect(function()
     end
 end)
 
--- ====== سیستم درگ (همون سیستم خودت، با کمی اصلاح) ======
+-- ====== سیستم درگ ======
 local function makeDraggable(handle, targetFrame)
     local dragging, dragInput, dragStart, startPos
 
