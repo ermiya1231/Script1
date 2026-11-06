@@ -262,7 +262,7 @@ local function refreshStatus()
 	status.Text = #logs .. " logs" .. (paused and " (paused)" or "")
 end
 
-local function select(e)
+local function selectLog(e)
 	selected = e
 	codeBox.Text = e.code
 	for _, l in ipairs(logs) do
@@ -286,7 +286,7 @@ local function addButton(e)
 	b.LayoutOrder = -e.id
 	b.Visible = matches(e)
 	b.Parent = list
-	b.MouseButton1Click:Connect(function() select(e) end)
+	b.MouseButton1Click:Connect(function() selectLog(e) end)
 	e.btn = b
 end
 
@@ -349,6 +349,7 @@ local function record(remote, method, args, n)
 end
 
 -- Hook
+local inHook = false
 local oldNc
 oldNc = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
 	local method = getnamecallmethod()
@@ -363,8 +364,39 @@ oldNc = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
 		task.defer(record, self, method, args, n)
 	end
 	if setnamecallmethod then setnamecallmethod(method) end
+	if method == "FireServer" then
+		inHook = true
+		local r = table.pack(oldNc(self, ...))
+		inHook = false
+		return table.unpack(r, 1, r.n)
+	end
 	return oldNc(self, ...)
 end))
+
+-- Fallback: وقتی بازی FireServer را به‌صورت تابع کش کرده (بدون namecall)
+pcall(function()
+	if not hookfunction then return end
+	local function wrap(method, orig)
+		return newcclosure(function(self, ...)
+			if not inHook and not paused and not checkcaller() and typeof(self) == "Instance" then
+				local n = select("#", ...)
+				local raw = {...}
+				local args = {}
+				for i = 1, n do args[i] = snap(raw[i]) end
+				task.defer(record, self, method, args, n)
+			end
+			return orig(self, ...)
+		end)
+	end
+	local re = Instance.new("RemoteEvent")
+	local oldFire
+	oldFire = hookfunction(re.FireServer, wrap("FireServer", function(...) return oldFire(...) end))
+	local rf = Instance.new("RemoteFunction")
+	local oldInvoke
+	oldInvoke = hookfunction(rf.InvokeServer, wrap("InvokeServer", function(...) return oldInvoke(...) end))
+end)
+
+print("[OutgoingLogger] active")
 
 -- Buttons
 pauseBtn.MouseButton1Click:Connect(function()
