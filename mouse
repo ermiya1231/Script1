@@ -1,0 +1,52 @@
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-- کلید جابه‌جایی؛ می‌توانی عوض کنی (مثلاً Enum.KeyCode.LeftControl یا Enum.KeyCode.M)
+local TOGGLE_KEY = Enum.KeyCode.LeftAlt
+
+local unlocked = false
+
+-- یک دکمه نامرئی با Modal = true؛ این روش مطمئن‌ترین راه برای آزاد کردن ماوس در حالت اول‌شخص است
+local gui = Instance.new("ScreenGui")
+gui.Name = "MouseToggleGui"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local modalButton = Instance.new("TextButton")
+modalButton.Name = "ModalButton"
+modalButton.Size = UDim2.fromOffset(0, 0)
+modalButton.BackgroundTransparency = 1
+modalButton.Text = ""
+modalButton.Modal = false
+modalButton.Parent = gui
+
+local function setUnlocked(state: boolean)
+	unlocked = state
+	modalButton.Modal = state -- true = ماوس آزاد، false = برمی‌گردد به رفتار عادی بازی
+
+	if state then
+		UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+		UserInputService.MouseIconEnabled = true
+	end
+end
+
+-- جلوگیری از اینکه اسکریپت دوربین بازی دوباره ماوس را قفل کند
+RunService.RenderStepped:Connect(function()
+	if unlocked then
+		if UserInputService.MouseBehavior ~= Enum.MouseBehavior.Default then
+			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+		end
+		UserInputService.MouseIconEnabled = true
+	end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end -- مثلاً وقتی داری در چت تایپ می‌کنی کار نکند
+	if input.KeyCode == TOGGLE_KEY then
+		setUnlocked(not unlocked)
+	end
+end)
