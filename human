@@ -1,0 +1,583 @@
+-- Services
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local Debris = game:GetService("Debris")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- Clean up previous run (hat orbit connections) and GUI to prevent stacking bugs
+if getgenv().HumanBulletCleanup then
+	pcall(getgenv().HumanBulletCleanup)
+	getgenv().HumanBulletCleanup = nil
+end
+
+if CoreGui:FindFirstChild("HumanBulletGui") then
+	CoreGui.HumanBulletGui:Destroy()
+end
+
+if getgenv().HumanBulletConnection then
+	getgenv().HumanBulletConnection:Disconnect()
+	getgenv().HumanBulletConnection = nil
+end
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "HumanBulletGui"
+screenGui.Parent = CoreGui
+
+-- Create Main Panel
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 260, 0, 285)
+frame.Position = UDim2.new(0.5, -130, 0.7, -180)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = frame
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(60, 60, 75)
+stroke.Thickness = 2
+stroke.Parent = frame
+
+-- Draggable Panel Logic (Only via Title Area)
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundTransparency = 1
+titleBar.Parent = frame
+
+local dragging, dragInput, dragStart, startPos
+titleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+-- Title Label
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -40, 0, 35)
+title.Position = UDim2.new(0, 15, 0, 5)
+title.BackgroundTransparency = 1
+title.Text = "Human Launcher"
+title.TextColor3 = Color3.fromRGB(240, 240, 240)
+title.TextSize = 15
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = titleBar
+
+-- Close Button (X)
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 25, 0, 25)
+closeButton.Position = UDim2.new(1, -30, 0, 8)
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextSize = 14
+closeButton.Font = Enum.Font.GothamBold
+closeButton.Parent = frame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = closeButton
+
+closeButton.MouseButton1Click:Connect(function()
+	-- Stop Hat Orbit (connections) before closing
+	if getgenv().HumanBulletCleanup then
+		pcall(getgenv().HumanBulletCleanup)
+		getgenv().HumanBulletCleanup = nil
+	end
+	if getgenv().HumanBulletConnection then
+		getgenv().HumanBulletConnection:Disconnect()
+		getgenv().HumanBulletConnection = nil
+	end
+	screenGui:Destroy()
+end)
+
+-- Helper function to create sliders (parent is optional, default = main panel)
+local function createSlider(name, defaultVal, minVal, maxVal, posY, color, callback, parent)
+	parent = parent or frame
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -30, 0, 20)
+	label.Position = UDim2.new(0, 15, 0, posY)
+	label.BackgroundTransparency = 1
+	label.Text = name .. ": " .. defaultVal
+	label.TextColor3 = Color3.fromRGB(200, 200, 200)
+	label.TextSize = 13
+	label.Font = Enum.Font.GothamMedium
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = parent
+
+	local sliderBg = Instance.new("Frame")
+	sliderBg.Size = UDim2.new(1, -30, 0, 8)
+	sliderBg.Position = UDim2.new(0, 15, 0, posY + 22)
+	sliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+	sliderBg.BorderSizePixel = 0
+	sliderBg.Parent = parent
+
+	local sliderCorner = Instance.new("UICorner")
+	sliderCorner.CornerRadius = UDim.new(1, 0)
+	sliderCorner.Parent = sliderBg
+
+	local fill = Instance.new("Frame")
+	fill.Size = UDim2.new((defaultVal - minVal) / (maxVal - minVal), 0, 1, 0)
+	fill.BackgroundColor3 = color
+	fill.BorderSizePixel = 0
+	fill.Parent = sliderBg
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(1, 0)
+	fillCorner.Parent = fill
+
+	local localDragging = false
+
+	sliderBg.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			localDragging = true
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			localDragging = false
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if localDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local mousePos = input.Position.X
+			local absPos = sliderBg.AbsolutePosition.X
+			local absSize = sliderBg.AbsoluteSize.X
+			local clampedX = math.clamp((mousePos - absPos) / absSize, 0, 1)
+
+			fill.Size = UDim2.new(clampedX, 0, 1, 0)
+			local finalVal = minVal + (maxVal - minVal) * clampedX
+			callback(finalVal, label)
+		end
+	end)
+end
+
+-- --- VALUES ---
+local forwardVal = 200
+local upwardVal = 50
+local deathDelayVal = 0.165
+
+-- Shared spawn point (declared BEFORE any function that uses it)
+local lastLaunchCFrame = nil
+
+-- --- CREATE SLIDERS ---
+createSlider("Forward Power", forwardVal, 50, 500, 45, Color3.fromRGB(220, 60, 60), function(val, lbl)
+	forwardVal = math.floor(val)
+	lbl.Text = "Forward Power: " .. forwardVal
+end)
+
+createSlider("Upward Power", upwardVal, 50, 500, 105, Color3.fromRGB(60, 120, 220), function(val, lbl)
+	upwardVal = math.floor(val)
+	lbl.Text = "Upward Power: " .. upwardVal
+end)
+
+createSlider("Death Delay", deathDelayVal, 0, 1.0, 165, Color3.fromRGB(220, 180, 50), function(val, lbl)
+	deathDelayVal = math.floor(val * 100) / 100
+	lbl.Text = "Death Delay: " .. string.format("%.2f", deathDelayVal) .. "s"
+end)
+
+-- =====================================================================
+-- HAT ORBIT (left side panel)
+-- One click: your character dies (server-visible death) and your hats
+-- orbit around the body until you respawn. You respawn where you died.
+-- Other players see the hats orbit, because we keep network ownership.
+-- =====================================================================
+
+-- Orbit settings (edit freely)
+local ORBIT_RADIUS = 5        -- distance of the hats from the body (studs) - changed by the Radius slider
+local ORBIT_HEIGHT = 0.5      -- height of the orbit center above the body
+local BOB_AMOUNT = 1          -- up/down bobbing of the hats
+local SPIN_SPEED = 3          -- how fast each hat spins on itself
+local RAMP_TIME = 1.5         -- seconds to smoothly open the orbit after the click
+local MAX_ORBIT_TIME = 30     -- safety limit (the orbit also ends when you respawn)
+local NETLESS_SPEED = 25.05   -- netless velocity (keeps hats owned by you)
+
+-- Orbit state
+local orbitActive = false
+local orbitSpeed = 2
+local orbitModes = { "Ring", "Vertical Ring", "Sphere", "Tornado", "Infinity", "Space" }
+local orbitModeIndex = 1
+local orbitAngle = 0
+local orbitTime = 0
+local orbitStartClock = 0
+local orbitConns = {}
+local orbitChar = nil
+local orbitHandles = {}
+local lastCenter = nil
+local netlessSign = 1
+
+-- Side panel (child of the main panel so it moves together with it)
+local sidePanel = Instance.new("Frame")
+sidePanel.Name = "HatOrbitPanel"
+sidePanel.Size = UDim2.new(0, 225, 0, 255)
+sidePanel.Position = UDim2.new(0, -235, 0, 0)
+sidePanel.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+sidePanel.BorderSizePixel = 0
+sidePanel.Parent = frame
+
+local sideCorner = Instance.new("UICorner")
+sideCorner.CornerRadius = UDim.new(0, 12)
+sideCorner.Parent = sidePanel
+
+local sideStroke = Instance.new("UIStroke")
+sideStroke.Color = Color3.fromRGB(60, 60, 75)
+sideStroke.Thickness = 2
+sideStroke.Parent = sidePanel
+
+local sideTitle = Instance.new("TextLabel")
+sideTitle.Size = UDim2.new(1, -30, 0, 35)
+sideTitle.Position = UDim2.new(0, 15, 0, 5)
+sideTitle.BackgroundTransparency = 1
+sideTitle.Text = "Hat Orbit"
+sideTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
+sideTitle.TextSize = 15
+sideTitle.Font = Enum.Font.GothamBold
+sideTitle.TextXAlignment = Enum.TextXAlignment.Left
+sideTitle.Parent = sidePanel
+
+-- Normal click button
+local orbitButton = Instance.new("TextButton")
+orbitButton.Size = UDim2.new(1, -30, 0, 38)
+orbitButton.Position = UDim2.new(0, 15, 0, 45)
+orbitButton.BackgroundColor3 = Color3.fromRGB(40, 100, 180)
+orbitButton.Text = "HAT ORBIT"
+orbitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+orbitButton.TextSize = 14
+orbitButton.Font = Enum.Font.GothamBold
+orbitButton.Parent = sidePanel
+
+local orbitCorner = Instance.new("UICorner")
+orbitCorner.CornerRadius = UDim.new(0, 8)
+orbitCorner.Parent = orbitButton
+
+-- Orbit speed slider
+createSlider("Orbit Speed", orbitSpeed, 0.2, 10, 95, Color3.fromRGB(150, 90, 230), function(val, lbl)
+	orbitSpeed = math.floor(val * 10) / 10
+	lbl.Text = "Orbit Speed: " .. string.format("%.1f", orbitSpeed)
+end, sidePanel)
+
+-- Radius slider (distance of the hats from the body, works in every mode)
+createSlider("Radius", ORBIT_RADIUS, 2, 30, 155, Color3.fromRGB(60, 200, 190), function(val, lbl)
+	ORBIT_RADIUS = math.floor(val * 10) / 10
+	lbl.Text = "Radius: " .. string.format("%.1f", ORBIT_RADIUS)
+end, sidePanel)
+
+-- Mode / orbit type button (click to cycle)
+local modeButton = Instance.new("TextButton")
+modeButton.Size = UDim2.new(1, -30, 0, 34)
+modeButton.Position = UDim2.new(0, 15, 0, 210)
+modeButton.BackgroundColor3 = Color3.fromRGB(90, 70, 160)
+modeButton.Text = "MODE: " .. orbitModes[orbitModeIndex]
+modeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+modeButton.TextSize = 13
+modeButton.Font = Enum.Font.GothamBold
+modeButton.Parent = sidePanel
+
+local modeCorner = Instance.new("UICorner")
+modeCorner.CornerRadius = UDim.new(0, 8)
+modeCorner.Parent = modeButton
+
+modeButton.MouseButton1Click:Connect(function()
+	orbitModeIndex = orbitModeIndex % #orbitModes + 1
+	modeButton.Text = "MODE: " .. orbitModes[orbitModeIndex]
+end)
+
+-- Position of one hat for the current mode
+-- i = hat number, n = hat count, a = orbit angle, t = time
+local function getOffset(mode, i, n, a, t)
+	local frac = i / n
+	if mode == "Ring" then
+		local ang = a + frac * math.pi * 2
+		return Vector3.new(math.cos(ang) * ORBIT_RADIUS, math.sin(t * 1.5 + i) * BOB_AMOUNT, math.sin(ang) * ORBIT_RADIUS)
+
+	elseif mode == "Vertical Ring" then
+		local ang = a + frac * math.pi * 2
+		local p = Vector3.new(math.cos(ang) * ORBIT_RADIUS, math.sin(ang) * ORBIT_RADIUS, 0)
+		return CFrame.Angles(0, t * 0.6, 0):VectorToWorldSpace(p)
+
+	elseif mode == "Sphere" then
+		local y = 1 - 2 * (i - 0.5) / n
+		local r = math.sqrt(math.max(0, 1 - y * y))
+		local phi = i * 2.399963
+		local p = Vector3.new(math.cos(phi) * r, y, math.sin(phi) * r) * ORBIT_RADIUS
+		return (CFrame.Angles(0, a, 0) * CFrame.Angles(a * 0.5, 0, 0)):VectorToWorldSpace(p)
+
+	elseif mode == "Tornado" then
+		local ang = a * 1.5 + i * 1.1
+		local height = frac * 9 - 3
+		local radius = ORBIT_RADIUS * (0.35 + 0.65 * frac)
+		return Vector3.new(math.cos(ang) * radius, height, math.sin(ang) * radius)
+
+	elseif mode == "Space" then
+		-- Every hat is a little "moon": its own tilted, slightly elliptical orbit,
+		-- inner moons are faster than outer ones (Kepler), slow precession + floating bob.
+		local seed = i * 12.9898
+		local rnd1 = (math.sin(seed) * 43758.5453) % 1           -- stable pseudo random per hat
+		local rnd2 = (math.sin(seed * 1.7 + 3.1) * 24634.6345) % 1
+		local rFactor = 0.65 + 0.7 * rnd1                         -- each moon has its own distance
+		local speedFactor = 1 / (rFactor ^ 1.5)
+		local incl = (rnd2 - 0.5) * 1.6                           -- tilt of the orbit plane
+		local node = i * 2.399963 + t * 0.08                      -- slow precession of the plane
+		local ang = frac * math.pi * 2 + a * 0.6 * speedFactor
+		local r = ORBIT_RADIUS * rFactor
+		local p = Vector3.new(math.cos(ang) * r, 0, math.sin(ang) * r * 0.9)
+		p = CFrame.Angles(0, node, 0):VectorToWorldSpace(CFrame.Angles(incl, 0, 0):VectorToWorldSpace(p))
+		return p + Vector3.new(0, math.sin(t * 1.2 + i * 1.7) * BOB_AMOUNT * 0.6, 0)
+
+	else -- Infinity
+		local s = a + frac * math.pi * 2
+		local d = 1 + math.sin(s) ^ 2
+		return Vector3.new(
+			ORBIT_RADIUS * 1.4 * math.cos(s) / d,
+			math.sin(t * 1.5 + i) * BOB_AMOUNT,
+			ORBIT_RADIUS * 2.2 * math.sin(s) * math.cos(s) / d
+		)
+	end
+end
+
+-- Cut the weld of an accessory so its Handle becomes a free part we can move
+local function grabAccessory(accessory)
+	local handle = accessory:FindFirstChild("Handle") or accessory:WaitForChild("Handle", 2)
+	if not (handle and handle:IsA("BasePart")) then return end
+	for _, child in ipairs(handle:GetChildren()) do
+		if child:IsA("Weld") or child:IsA("WeldConstraint") or child:IsA("Motor6D") or child:IsA("ManualWeld") then
+			child:Destroy()
+		end
+	end
+	handle.Massless = false
+	handle.CanCollide = false
+	if not table.find(orbitHandles, handle) then
+		table.insert(orbitHandles, handle)
+	end
+end
+
+-- Place every hat on its orbit spot around the body
+local function placeAll()
+	if not orbitActive then return end
+
+	local hrp = orbitChar and orbitChar:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		lastCenter = hrp.Position
+	end
+	if not lastCenter then return end
+
+	local ramp = math.clamp((os.clock() - orbitStartClock) / RAMP_TIME, 0, 1)
+	local center = lastCenter + Vector3.new(0, ORBIT_HEIGHT, 0)
+	local mode = orbitModes[orbitModeIndex]
+	local n = #orbitHandles
+
+	for i, handle in ipairs(orbitHandles) do
+		if handle:IsDescendantOf(Workspace) then
+			local offset = getOffset(mode, i, n, orbitAngle, orbitTime) * ramp
+			local rot
+			if mode == "Space" then
+				-- slow, floating tumble like a moon
+				rot = CFrame.Angles(orbitTime * 0.35 + i, orbitTime * 0.6 + i * 2, orbitTime * 0.2)
+			else
+				rot = CFrame.Angles(0, orbitTime * SPIN_SPEED + i, 0)
+			end
+			handle.CFrame = CFrame.new(center + offset) * rot
+		end
+	end
+end
+
+-- Keep network ownership of the hats so OTHER PLAYERS see them orbit
+local function keepOwnership()
+	pcall(function() sethiddenproperty(player, "SimulationRadius", 1e9) end)
+	pcall(function() sethiddenproperty(player, "MaximumSimulationRadius", 1e9) end)
+end
+
+-- NETLESS: small velocity every frame so you keep ownership of the hats
+local function applyNetless()
+	if not orbitActive then return end
+	netlessSign = -netlessSign
+	local vel = Vector3.new(0, NETLESS_SPEED * netlessSign, 0)
+	for _, handle in ipairs(orbitHandles) do
+		if handle:IsDescendantOf(Workspace) then
+			handle.AssemblyLinearVelocity = vel
+			handle.AssemblyAngularVelocity = Vector3.zero
+		end
+	end
+end
+
+-- Kill the character in a way the SERVER sees too:
+-- ChangeState(Dead) is replicated from the owner, and the server then breaks the joints
+-- (that is what really frees the hats for everyone).
+local function killCharacter(hum)
+	pcall(function() hum:ChangeState(Enum.HumanoidStateType.Dead) end)
+	hum.Health = 0
+	task.delay(0.3, function()
+		if hum and hum.Parent then
+			pcall(function() hum:ChangeState(Enum.HumanoidStateType.Dead) end)
+			hum.Health = 0
+		end
+	end)
+end
+
+local function stopOrbit()
+	for _, conn in ipairs(orbitConns) do
+		conn:Disconnect()
+	end
+	orbitConns = {}
+	orbitActive = false
+	orbitHandles = {}
+	orbitChar = nil
+	lastCenter = nil
+
+	orbitButton.Text = "HAT ORBIT"
+	orbitButton.BackgroundColor3 = Color3.fromRGB(40, 100, 180)
+end
+
+local function startOrbit()
+	if orbitActive then return end
+
+	local char = player.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not (hum and hrp) or hum.Health <= 0 then return end
+
+	-- You respawn where you died
+	lastLaunchCFrame = hrp.CFrame
+
+	orbitActive = true
+	orbitStartClock = os.clock()
+	orbitAngle = 0
+	orbitTime = 0
+	orbitChar = char
+	orbitHandles = {}
+	lastCenter = hrp.Position
+
+	-- Network ownership (client side way) + keep replicating around the world
+	pcall(function() player.ReplicationFocus = Workspace end)
+	pcall(function() settings().Physics.AllowSleep = false end)
+	keepOwnership()
+
+	-- Free every hat from the head
+	for _, accessory in ipairs(hum:GetAccessories()) do
+		task.spawn(grabAccessory, accessory)
+	end
+
+	-- Before physics, after physics (+ netless) and every rendered frame
+	table.insert(orbitConns, RunService.Stepped:Connect(function()
+		placeAll()
+	end))
+	table.insert(orbitConns, RunService.Heartbeat:Connect(function()
+		placeAll()
+		applyNetless()
+		keepOwnership()
+	end))
+	table.insert(orbitConns, RunService.RenderStepped:Connect(function(dt)
+		orbitAngle = orbitAngle + orbitSpeed * dt
+		orbitTime = orbitTime + dt
+		placeAll()
+
+		-- The orbit ends when you respawn (the old body is removed) or after the safety limit
+		if not (orbitChar and orbitChar:IsDescendantOf(Workspace)) or orbitTime > MAX_ORBIT_TIME then
+			stopOrbit()
+		end
+	end))
+
+	orbitButton.Text = "ORBITING..."
+	orbitButton.BackgroundColor3 = Color3.fromRGB(50, 180, 90)
+
+	killCharacter(hum)
+end
+
+orbitButton.MouseButton1Click:Connect(startOrbit)
+
+-- So the close button / re-running the script can stop everything cleanly
+getgenv().HumanBulletCleanup = function()
+	stopOrbit()
+end
+
+-- --- LAUNCH BUTTON ---
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1, -30, 0, 45)
+button.Position = UDim2.new(0, 15, 0, 225)
+button.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+button.Text = "LAUNCH BULLET"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.TextSize = 15
+button.Font = Enum.Font.GothamBold
+button.Parent = frame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = button
+
+-- Dynamic Custom Spawn Point Management
+getgenv().HumanBulletConnection = player.CharacterAdded:Connect(function(newChar)
+	if lastLaunchCFrame then
+		task.spawn(function()
+			local hrp = newChar:WaitForChild("HumanoidRootPart", 5)
+			if hrp then
+				task.wait(0.05)
+				hrp.CFrame = lastLaunchCFrame + Vector3.new(0, 3, 0)
+			end
+		end)
+	end
+end)
+
+-- Launch Logic
+button.MouseButton1Click:Connect(function()
+	local character = player.Character
+	if not character then return end
+
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local head = character:FindFirstChild("Head")
+
+	if head then
+		local sound = Instance.new("Sound")
+		sound.Parent = head
+		sound.SoundId = "rbxassetid://133773862421542"
+		sound.Volume = 0.5
+		sound:Play()
+		Debris:AddItem(sound, 2)
+	end
+
+	if humanoidRootPart and humanoid then
+		lastLaunchCFrame = humanoidRootPart.CFrame
+
+		local lookVector = humanoidRootPart.CFrame.LookVector
+		local launchDirection = (lookVector * forwardVal) + Vector3.new(0, upwardVal, 0)
+		humanoidRootPart.AssemblyLinearVelocity = launchDirection
+
+		task.delay(deathDelayVal, function()
+			if humanoid and humanoid.Health > 0 then
+				humanoid.Health = 0
+			end
+		end)
+	end
+end)
