@@ -1,0 +1,173 @@
+-- NoClip Camera | LocalScript
+-- محل قرارگیری: StarterPlayer > StarterPlayerScripts  (یا StarterGui)
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local ORIGINAL_OCCLUSION = player.DevCameraOcclusionMode
+local ORIGINAL_MIN_ZOOM = player.CameraMinZoomDistance
+local ORIGINAL_MAX_ZOOM = player.CameraMaxZoomDistance
+
+local MIN_ZOOM = 0.5
+local MAX_ZOOM = 128
+local ZOOM_STEP = 1.15     -- ضریب هر نوچ اسکرول
+local ZOOM_SMOOTH = 14     -- هرچی بیشتر، زوم سریع‌تر می‌شینه
+
+local enabled = false
+local currentZoom, targetZoom = 12, 12
+
+-- ========== سیستم درگ ==========
+local function makeDraggable(targetFrame)
+	local uis = game:GetService("UserInputService")
+	local tweenService = game:GetService("TweenService")
+
+	local dragging, dragInput, dragStart, startPos
+
+	targetFrame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = targetFrame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	targetFrame.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	uis.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			local delta = input.Position - dragStart
+			local newPos = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+			tweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+		end
+	end)
+end
+
+-- ========== GUI ==========
+local gui = Instance.new("ScreenGui")
+gui.Name = "NoClipCameraGui"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = playerGui
+
+local panel = Instance.new("Frame")
+panel.Name = "Panel"
+panel.Size = UDim2.fromOffset(220, 110)
+panel.Position = UDim2.new(0.5, -110, 0.15, 0)
+panel.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+panel.BorderSizePixel = 0
+panel.Active = true
+panel.Parent = gui
+Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 12)
+
+local stroke = Instance.new("UIStroke", panel)
+stroke.Color = Color3.fromRGB(70, 70, 85)
+stroke.Thickness = 1.5
+
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Size = UDim2.new(1, 0, 0, 36)
+title.BackgroundTransparency = 1
+title.Text = "NoClip Camera"
+title.TextColor3 = Color3.fromRGB(240, 240, 245)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.Parent = panel
+
+local toggle = Instance.new("TextButton")
+toggle.Name = "Toggle"
+toggle.Size = UDim2.new(1, -32, 0, 44)
+toggle.Position = UDim2.new(0, 16, 0, 52)
+toggle.BackgroundColor3 = Color3.fromRGB(190, 55, 55)
+toggle.Text = "OFF"
+toggle.TextColor3 = Color3.new(1, 1, 1)
+toggle.Font = Enum.Font.GothamBold
+toggle.TextSize = 20
+toggle.AutoButtonColor = false
+toggle.Parent = panel
+Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 10)
+
+makeDraggable(panel)
+
+-- ========== زوم نرم (جایگزین زوم پیش‌فرض در حالت NoClip) ==========
+local function applyZoom(dt)
+	local cam = workspace.CurrentCamera
+	if not cam then return end
+
+	-- اینترپولیشن مستقل از فریم‌ریت => بدون پرش و گلیچ
+	local alpha = 1 - math.exp(-ZOOM_SMOOTH * dt)
+	currentZoom = currentZoom + (targetZoom - currentZoom) * alpha
+
+	local focusPos = cam.Focus.Position
+	local rotation = cam.CFrame - cam.CFrame.Position
+	cam.CFrame = CFrame.new(focusPos) * rotation * CFrame.new(0, 0, currentZoom)
+end
+
+UserInputService.InputChanged:Connect(function(input)
+	if not enabled then return end
+	if input.UserInputType == Enum.UserInputType.MouseWheel then
+		if input.Position.Z > 0 then
+			targetZoom = math.clamp(targetZoom / ZOOM_STEP, MIN_ZOOM, MAX_ZOOM)
+		else
+			targetZoom = math.clamp(targetZoom * ZOOM_STEP, MIN_ZOOM, MAX_ZOOM)
+		end
+	end
+end)
+
+UserInputService.TouchPinch:Connect(function(_, scale, velocity, state)
+	if not enabled then return end
+	targetZoom = math.clamp(targetZoom - velocity * 0.15, MIN_ZOOM, MAX_ZOOM)
+end)
+
+-- ========== منطق NoClip دوربین ==========
+local function setNoClip(state)
+	enabled = state
+	local cam = workspace.CurrentCamera
+
+	if state then
+		-- فاصلهٔ فعلی دوربین رو بگیر و زوم پیش‌فرض رو قفل کن تا با زوم ما تداخل نکنه
+		currentZoom = (cam.CFrame.Position - cam.Focus.Position).Magnitude
+		targetZoom = math.clamp(currentZoom, MIN_ZOOM, MAX_ZOOM)
+		currentZoom = targetZoom
+
+		player.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
+		player.CameraMaxZoomDistance = targetZoom
+		player.CameraMinZoomDistance = targetZoom
+
+		RunService:BindToRenderStep("NoClipCameraZoom", Enum.RenderPriority.Camera.Value + 1, applyZoom)
+	else
+		RunService:UnbindFromRenderStep("NoClipCameraZoom")
+
+		player.DevCameraOcclusionMode = ORIGINAL_OCCLUSION
+		player.CameraMinZoomDistance = ORIGINAL_MIN_ZOOM
+		player.CameraMaxZoomDistance = math.max(ORIGINAL_MAX_ZOOM, currentZoom)
+	end
+
+	toggle.Text = state and "ON" or "OFF"
+	TweenService:Create(toggle, TweenInfo.new(0.2), {
+		BackgroundColor3 = state and Color3.fromRGB(50, 170, 90) or Color3.fromRGB(190, 55, 55),
+	}):Play()
+end
+
+toggle.MouseButton1Click:Connect(function()
+	setNoClip(not enabled)
+end)
