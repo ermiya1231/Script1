@@ -1,12 +1,61 @@
 local TextChatService = game:GetService("TextChatService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
-local generalChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+-- ۱. پیدا کردن ریموت‌های مرتبط با کلمه chat در کل بازی
+local function findChatRemotes()
+    local chatRemotes = {}
+    
+    -- جستجو در ReplicatedStorage و بقیه مکان‌های رایج
+    for _, descendant in ipairs(game:GetDescendants()) do
+        if (descendant:IsA("RemoteEvent") or descendant:IsA("RemoteFunction")) then
+            -- بررسی اینکه آیا نام ریموت شامل کلمه chat (بدون حساسیت به بزرگی و کوچکی حروف) است
+            if string.match(string.lower(descendant.Name), "chat") then
+                table.insert(chatRemotes, descendant)
+            end
+        end
+    end
+    
+    return chatRemotes
+end
 
-generalChannel:SendAsync(";fog 9999")
-generalChannel:SendAsync(";fogend inf")
-task.wait(0.5)
+-- چاپ ریموت‌های پیدا شده برای بررسی
+local remotes = findChatRemotes()
+print("تعداد ریموت‌های چت پیدا شده: " .. #remotes)
+for _, remote in ipairs(remotes) do
+    print("ریموت پیدا شد: " .. remote:GetFullName())
+end
 
-generalChannel:SendAsync(";fogcolor black")
+-- ۲. ارسال دستورات با استفاده از متد استاندارد چت یا ریموت‌ها
+local function sendCommand(message)
+    -- تلاش برای استفاده از TextChatService جدید
+    local success, err = pcall(function()
+        local textChannels = TextChatService:FindFirstChild("TextChannels")
+        if textChannels then
+            local general = textChannels:FindFirstChild("RBXGeneral")
+            if general then
+                general:SendAsync(message)
+                return
+            end
+        end
+        -- روش جایگزین برای چت کردن بازیکن
+        player:Chat(message)
+    end)
+    
+    if not success then
+        -- اگر روش بالا خطا داد، از متد کلاسیک چت استفاده می‌کنیم
+        player:Chat(message)
+    end
+end
 
--- هیچ وقت پنلمو نمیتونی بگیری دزد نوب
+-- اجرای دستورات شما با تأخیر مشخص
+task.spawn(function()
+    sendCommand(";fogcolor black")
+    task.wait(0.8)
+    sendCommand(";time 12")
+    task.wait(0.8)
+    sendCommand(";fog 9999")
+    task.wait(0.8)
+    sendCommand(";fogend 999999")
+end)
