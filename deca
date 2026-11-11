@@ -1,0 +1,405 @@
+-- Decal Finder (بدون intro، GUI جدید، نادیده گرفتن Decalهای کاراکترها)
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+if PlayerGui:FindFirstChild("DecalFinder") then
+	PlayerGui.DecalFinder:Destroy()
+end
+
+local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+
+-- رنگ‌ها
+local C = {
+	bg = Color3.fromRGB(18, 18, 24),
+	panel = Color3.fromRGB(26, 26, 36),
+	item = Color3.fromRGB(34, 34, 48),
+	accent = Color3.fromRGB(110, 90, 255),
+	accentBusy = Color3.fromRGB(230, 160, 50),
+	text = Color3.fromRGB(235, 235, 245),
+	sub = Color3.fromRGB(150, 150, 170),
+	danger = Color3.fromRGB(220, 70, 80),
+	ok = Color3.fromRGB(60, 190, 120),
+}
+
+local function round(obj, r)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, r)
+	c.Parent = obj
+	return c
+end
+
+local function stroke(obj, color, t)
+	local s = Instance.new("UIStroke")
+	s.Color = color
+	s.Thickness = t or 1
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	s.Parent = obj
+	return s
+end
+
+local function make(class, props, parent)
+	local o = Instance.new(class)
+	for k, v in pairs(props) do
+		o[k] = v
+	end
+	o.Parent = parent
+	return o
+end
+
+-- GUI اصلی
+local ScreenGui = make("ScreenGui", {
+	Name = "DecalFinder",
+	ResetOnSpawn = false,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+}, PlayerGui)
+
+local MainFrame = make("Frame", {
+	Name = "MainFrame",
+	Size = isMobile and UDim2.new(0.92, 0, 0.75, 0) or UDim2.new(0, 400, 0, 480),
+	Position = UDim2.new(0.5, 0, 0.5, 0),
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	BackgroundColor3 = C.bg,
+	BorderSizePixel = 0,
+	ClipsDescendants = true,
+}, ScreenGui)
+round(MainFrame, 12)
+stroke(MainFrame, C.accent, 1.5)
+
+-- نوار عنوان
+local TitleBar = make("Frame", {
+	Size = UDim2.new(1, 0, 0, 40),
+	BackgroundColor3 = C.panel,
+	BorderSizePixel = 0,
+}, MainFrame)
+
+make("TextLabel", {
+	Size = UDim2.new(1, -60, 1, 0),
+	Position = UDim2.new(0, 14, 0, 0),
+	BackgroundTransparency = 1,
+	Text = "Decal Finder Remake By C00LHACK",
+	TextColor3 = C.text,
+	Font = Enum.Font.GothamBold,
+	TextSize = 16,
+	TextXAlignment = Enum.TextXAlignment.Left,
+}, TitleBar)
+
+local CloseButton = make("TextButton", {
+	Size = UDim2.new(0, 28, 0, 28),
+	Position = UDim2.new(1, -36, 0, 6),
+	BackgroundColor3 = C.danger,
+	Text = "×",
+	TextColor3 = Color3.new(1, 1, 1),
+	Font = Enum.Font.GothamBold,
+	TextSize = 20,
+	AutoButtonColor = true,
+}, TitleBar)
+round(CloseButton, 8)
+
+-- درگ (موس و موبایل)
+do
+	local dragging, dragStart, startPos
+	TitleBar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = MainFrame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+	UIS.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local d = input.Position - dragStart
+			MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+		end
+	end)
+end
+
+-- دکمه‌ها
+local SearchButton = make("TextButton", {
+	Size = UDim2.new(1, -28, 0, 38),
+	Position = UDim2.new(0, 14, 0, 52),
+	BackgroundColor3 = C.accent,
+	Text = "Search Decals",
+	TextColor3 = Color3.new(1, 1, 1),
+	Font = Enum.Font.GothamBold,
+	TextSize = 14,
+}, MainFrame)
+round(SearchButton, 8)
+
+-- فیلتر
+local FilterBox = make("TextBox", {
+	Size = UDim2.new(1, -28, 0, 32),
+	Position = UDim2.new(0, 14, 0, 98),
+	BackgroundColor3 = C.item,
+	PlaceholderText = "Filter by ID / name...",
+	PlaceholderColor3 = C.sub,
+	Text = "",
+	TextColor3 = C.text,
+	Font = Enum.Font.Gotham,
+	TextSize = 13,
+	ClearTextOnFocus = false,
+	TextXAlignment = Enum.TextXAlignment.Left,
+}, MainFrame)
+round(FilterBox, 8)
+make("UIPadding", { PaddingLeft = UDim.new(0, 10) }, FilterBox)
+
+local StatusLabel = make("TextLabel", {
+	Size = UDim2.new(1, -28, 0, 18),
+	Position = UDim2.new(0, 14, 0, 136),
+	BackgroundTransparency = 1,
+	Text = "Ready to search",
+	TextColor3 = C.sub,
+	Font = Enum.Font.Gotham,
+	TextSize = 12,
+	TextXAlignment = Enum.TextXAlignment.Left,
+}, MainFrame)
+
+local ResultsFrame = make("Frame", {
+	Size = UDim2.new(1, -28, 1, -166),
+	Position = UDim2.new(0, 14, 0, 158),
+	BackgroundColor3 = C.panel,
+	BorderSizePixel = 0,
+}, MainFrame)
+round(ResultsFrame, 10)
+
+local ScrollingFrame = make("ScrollingFrame", {
+	Size = UDim2.new(1, -8, 1, -8),
+	Position = UDim2.new(0, 4, 0, 4),
+	BackgroundTransparency = 1,
+	BorderSizePixel = 0,
+	ScrollBarThickness = 5,
+	ScrollBarImageColor3 = C.accent,
+	ScrollingDirection = Enum.ScrollingDirection.Y,
+	CanvasSize = UDim2.new(0, 0, 0, 0),
+	AutomaticCanvasSize = Enum.AutomaticSize.Y,
+}, ResultsFrame)
+
+local UIListLayout = make("UIListLayout", {
+	Padding = UDim.new(0, 5),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+}, ScrollingFrame)
+
+-- کمکی‌ها
+local function copyText(text)
+	local fn = setclipboard or toclipboard or (syn and syn.write_clipboard)
+	if fn then
+		fn(text)
+		return true
+	end
+	return false
+end
+
+local function flash(button, text, normal)
+	button.Text = text
+	task.delay(1.2, function()
+		if button.Parent then
+			button.Text = normal
+		end
+	end)
+end
+
+-- فیلتر: Decalهای مربوط به کاراکترها (اجزای بدن، اکسسوری، ابزار) نادیده گرفته می‌شوند
+local function isCharacterModel(inst)
+	if not inst:IsA("Model") then
+		return false
+	end
+	if inst:FindFirstChildOfClass("Humanoid") then
+		return true
+	end
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr.Character == inst then
+			return true
+		end
+	end
+	return false
+end
+
+local function shouldSkipSubtree(inst)
+	-- کاراکتر (بازیکنان و NPCها)
+	if isCharacterModel(inst) then
+		return true
+	end
+	-- اطلاعات بازیکن‌های دیگر (Backpack و ...)
+	if inst:IsA("Player") and inst ~= LocalPlayer then
+		return true
+	end
+	-- GUI خودمان
+	if inst == ScreenGui then
+		return true
+	end
+	return false
+end
+
+-- نتایج
+local entries = {}
+local searching = false
+
+local function applyFilter()
+	local q = string.lower(FilterBox.Text)
+	local shown = 0
+	for _, e in ipairs(entries) do
+		local match = q == "" or string.find(e.key, q, 1, true) ~= nil
+		e.frame.Visible = match
+		if match then
+			shown += 1
+		end
+	end
+	return shown
+end
+
+FilterBox:GetPropertyChangedSignal("Text"):Connect(function()
+	if #entries > 0 then
+		local shown = applyFilter()
+		StatusLabel.Text = ("Showing %d of %d"):format(shown, #entries)
+	end
+end)
+
+local function addEntry(instance, texture, index)
+	local frame = make("Frame", {
+		Size = UDim2.new(1, -6, 0, 100),
+		BackgroundColor3 = C.item,
+		BorderSizePixel = 0,
+		LayoutOrder = index,
+	}, ScrollingFrame)
+	round(frame, 8)
+
+	local thumb = make("ImageLabel", {
+		Size = UDim2.new(0, 80, 0, 80),
+		Position = UDim2.new(0, 6, 0, 6),
+		BackgroundColor3 = C.bg,
+		BorderSizePixel = 0,
+		Image = texture,
+		ScaleType = Enum.ScaleType.Fit,
+	}, frame)
+	round(thumb, 6)
+
+	make("TextLabel", {
+		Size = UDim2.new(1, -176, 0, 20),
+		Position = UDim2.new(0, 102, 0, 22),
+		BackgroundTransparency = 1,
+		Text = texture,
+		TextColor3 = C.text,
+		Font = Enum.Font.Gotham,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+	}, frame)
+
+	make("TextLabel", {
+		Size = UDim2.new(1, -176, 0, 16),
+		Position = UDim2.new(0, 102, 0, 46),
+		BackgroundTransparency = 1,
+		Text = instance.Parent and instance.Parent.Name or "?",
+		TextColor3 = C.sub,
+		Font = Enum.Font.Gotham,
+		TextSize = 11,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+	}, frame)
+
+	local copy = make("TextButton", {
+		Size = UDim2.new(0, 62, 0, 28),
+		Position = UDim2.new(1, -68, 0.5, -14),
+		BackgroundColor3 = C.accent,
+		Text = "Copy",
+		TextColor3 = Color3.new(1, 1, 1),
+		Font = Enum.Font.GothamBold,
+		TextSize = 12,
+	}, frame)
+	round(copy, 6)
+
+	copy.MouseButton1Click:Connect(function()
+		if copyText(texture) then
+			flash(copy, "Copied!", "Copy")
+		else
+			flash(copy, "No clip", "Copy")
+		end
+	end)
+
+	table.insert(entries, {
+		frame = frame,
+		texture = texture,
+		key = string.lower(texture .. " " .. (instance.Parent and instance.Parent.Name or "")),
+	})
+end
+
+local function clearEntries()
+	for _, e in ipairs(entries) do
+		e.frame:Destroy()
+	end
+	table.clear(entries)
+end
+
+-- جستجو
+local function search()
+	if searching then
+		return
+	end
+	searching = true
+
+	clearEntries()
+	StatusLabel.Text = "Searching decals..."
+	SearchButton.Text = "Searching..."
+	SearchButton.BackgroundColor3 = C.accentBusy
+
+	local seen = {}
+	local found, skipped, visited = 0, 0, 0
+	local stack = {}
+
+	-- فقط Workspace اسکن می‌شود
+	table.insert(stack, workspace)
+
+	while #stack > 0 do
+		local inst = table.remove(stack)
+		visited += 1
+
+		if visited % 1500 == 0 then
+			StatusLabel.Text = ("Searching... %d found"):format(found)
+			task.wait()
+		end
+
+		local ok, skip = pcall(shouldSkipSubtree, inst)
+		if ok and skip then
+			skipped += 1
+		else
+			if inst:IsA("Decal") or inst:IsA("Texture") then
+				local ok2, tex = pcall(function()
+					return inst.Texture
+				end)
+				if ok2 and tex and tex ~= "" and not seen[tex] then
+					seen[tex] = true
+					found += 1
+					addEntry(inst, tex, found)
+				end
+			end
+
+			local ok3, children = pcall(inst.GetChildren, inst)
+			if ok3 then
+				for _, child in ipairs(children) do
+					table.insert(stack, child)
+				end
+			end
+		end
+	end
+
+	applyFilter()
+	StatusLabel.Text = ("Done! %d unique decals (skipped %d characters)"):format(found, skipped)
+	SearchButton.Text = "Search Again"
+	SearchButton.BackgroundColor3 = C.accent
+	searching = false
+end
+
+SearchButton.MouseButton1Click:Connect(search)
+
+CloseButton.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
