@@ -1,8 +1,7 @@
--- Decal Finder (بدون intro، GUI جدید، نادیده گرفتن Decalهای کاراکترها)
+-- Decal Finder (GUI جدید + Search Options)
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -60,7 +59,7 @@ local ScreenGui = make("ScreenGui", {
 
 local MainFrame = make("Frame", {
 	Name = "MainFrame",
-	Size = isMobile and UDim2.new(0.92, 0, 0.75, 0) or UDim2.new(0, 400, 0, 480),
+	Size = isMobile and UDim2.new(0.92, 0, 0.85, 0) or UDim2.new(0, 420, 0, 560),
 	Position = UDim2.new(0.5, 0, 0.5, 0),
 	AnchorPoint = Vector2.new(0.5, 0.5),
 	BackgroundColor3 = C.bg,
@@ -100,14 +99,20 @@ local CloseButton = make("TextButton", {
 }, TitleBar)
 round(CloseButton, 8)
 
--- درگ (موس و موبایل)
-do
-	local dragging, dragStart, startPos
-	TitleBar.InputBegan:Connect(function(input)
+-- درگ (موس و موبایل) با انیمیشن Tween
+local function makeDraggable(handle, targetFrame)
+	targetFrame = targetFrame or handle
+	local uis = game:GetService("UserInputService")
+	local tweenService = game:GetService("TweenService")
+
+	local dragging, dragInput, dragStart, startPos
+
+	handle.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			dragStart = input.Position
-			startPos = MainFrame.Position
+			startPos = targetFrame.Position
+
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
 					dragging = false
@@ -115,32 +120,138 @@ do
 			end)
 		end
 	end)
-	UIS.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local d = input.Position - dragStart
-			MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+
+	handle.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	uis.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			local delta = input.Position - dragStart
+			local newPos = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+			tweenService:Create(targetFrame, TweenInfo.new(0.15), { Position = newPos }):Play()
 		end
 	end)
 end
 
--- دکمه‌ها
-local SearchButton = make("TextButton", {
-	Size = UDim2.new(1, -28, 0, 38),
-	Position = UDim2.new(0, 14, 0, 52),
+makeDraggable(TitleBar, MainFrame)
+
+-- ==================== Search Options ====================
+local OptionsPanel = make("Frame", {
+	Size = UDim2.new(1, -28, 0, 146),
+	Position = UDim2.new(0, 14, 0, 50),
+	BackgroundColor3 = C.panel,
+	BorderSizePixel = 0,
+}, MainFrame)
+round(OptionsPanel, 10)
+
+make("TextLabel", {
+	Size = UDim2.new(1, -20, 0, 22),
+	Position = UDim2.new(0, 12, 0, 6),
+	BackgroundTransparency = 1,
+	Text = "Search Options",
+	TextColor3 = C.text,
+	Font = Enum.Font.GothamBold,
+	TextSize = 14,
+	TextXAlignment = Enum.TextXAlignment.Left,
+}, OptionsPanel)
+
+local function makeCheckbox(text, y, default, onChange)
+	local api = { value = default }
+
+	local row = make("TextButton", {
+		Size = UDim2.new(1, -20, 0, 24),
+		Position = UDim2.new(0, 10, 0, y),
+		BackgroundTransparency = 1,
+		Text = "",
+		AutoButtonColor = false,
+	}, OptionsPanel)
+
+	local box = make("Frame", {
+		Size = UDim2.new(0, 20, 0, 20),
+		Position = UDim2.new(0, 0, 0.5, -10),
+		BackgroundColor3 = C.item,
+		BorderSizePixel = 0,
+	}, row)
+	round(box, 5)
+	local boxStroke = stroke(box, C.sub, 1)
+
+	local check = make("TextLabel", {
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		Text = "✓",
+		TextColor3 = Color3.new(1, 1, 1),
+		Font = Enum.Font.GothamBold,
+		TextSize = 14,
+		Visible = false,
+	}, box)
+
+	make("TextLabel", {
+		Size = UDim2.new(1, -30, 1, 0),
+		Position = UDim2.new(0, 30, 0, 0),
+		BackgroundTransparency = 1,
+		Text = text,
+		TextColor3 = C.text,
+		Font = Enum.Font.Gotham,
+		TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left,
+	}, row)
+
+	api.row = row
+
+	function api.set(v)
+		api.value = v
+		check.Visible = v
+		box.BackgroundColor3 = v and C.accent or C.item
+		boxStroke.Color = v and C.accent or C.sub
+	end
+
+	row.MouseButton1Click:Connect(function()
+		api.set(not api.value)
+		if onChange then
+			onChange(api.value)
+		end
+	end)
+
+	api.set(default)
+	return api
+end
+
+local cbGuis, cbFilter, cbWorkspace
+local relayout
+
+cbGuis = makeCheckbox("Search GUIs (PlayerGui + CoreGui ScreenGuis, ImageLabels...)", 30, false, function()
+	relayout()
+end)
+
+cbFilter = makeCheckbox("Filter Not Showing Images (hide images we can't see)", 56, true)
+
+cbWorkspace = makeCheckbox("Search Workspace (decals / textures, skips characters)", 56, true)
+
+local StartButton = make("TextButton", {
+	Size = UDim2.new(1, -20, 0, 38),
+	Position = UDim2.new(0, 10, 0, 96),
 	BackgroundColor3 = C.accent,
-	Text = "Search Decals",
+	Text = "Start Scan",
 	TextColor3 = Color3.new(1, 1, 1),
 	Font = Enum.Font.GothamBold,
 	TextSize = 14,
-}, MainFrame)
-round(SearchButton, 8)
+}, OptionsPanel)
+round(StartButton, 8)
 
 -- فیلتر
 local FilterBox = make("TextBox", {
 	Size = UDim2.new(1, -28, 0, 32),
-	Position = UDim2.new(0, 14, 0, 98),
+	Position = UDim2.new(0, 14, 0, 206),
 	BackgroundColor3 = C.item,
-	PlaceholderText = "Filter by ID / name...",
+	PlaceholderText = "Filter by ID / name / class...",
 	PlaceholderColor3 = C.sub,
 	Text = "",
 	TextColor3 = C.text,
@@ -154,7 +265,7 @@ make("UIPadding", { PaddingLeft = UDim.new(0, 10) }, FilterBox)
 
 local StatusLabel = make("TextLabel", {
 	Size = UDim2.new(1, -28, 0, 18),
-	Position = UDim2.new(0, 14, 0, 136),
+	Position = UDim2.new(0, 14, 0, 244),
 	BackgroundTransparency = 1,
 	Text = "Ready to search",
 	TextColor3 = C.sub,
@@ -164,12 +275,25 @@ local StatusLabel = make("TextLabel", {
 }, MainFrame)
 
 local ResultsFrame = make("Frame", {
-	Size = UDim2.new(1, -28, 1, -166),
-	Position = UDim2.new(0, 14, 0, 158),
+	Size = UDim2.new(1, -28, 1, -276),
+	Position = UDim2.new(0, 14, 0, 266),
 	BackgroundColor3 = C.panel,
 	BorderSizePixel = 0,
 }, MainFrame)
 round(ResultsFrame, 10)
+
+relayout = function()
+	local off = cbGuis.value and 26 or 0
+	cbFilter.row.Visible = cbGuis.value
+	cbWorkspace.row.Position = UDim2.new(0, 10, 0, 56 + off)
+	OptionsPanel.Size = UDim2.new(1, -28, 0, 146 + off)
+	StartButton.Position = UDim2.new(0, 10, 0, 96 + off)
+	FilterBox.Position = UDim2.new(0, 14, 0, 206 + off)
+	StatusLabel.Position = UDim2.new(0, 14, 0, 244 + off)
+	ResultsFrame.Position = UDim2.new(0, 14, 0, 266 + off)
+	ResultsFrame.Size = UDim2.new(1, -28, 1, -(276 + off))
+end
+relayout()
 
 local ScrollingFrame = make("ScrollingFrame", {
 	Size = UDim2.new(1, -8, 1, -8),
@@ -183,12 +307,12 @@ local ScrollingFrame = make("ScrollingFrame", {
 	AutomaticCanvasSize = Enum.AutomaticSize.Y,
 }, ResultsFrame)
 
-local UIListLayout = make("UIListLayout", {
+make("UIListLayout", {
 	Padding = UDim.new(0, 5),
 	SortOrder = Enum.SortOrder.LayoutOrder,
 }, ScrollingFrame)
 
--- کمکی‌ها
+-- ==================== کمکی‌ها ====================
 local function copyText(text)
 	local fn = setclipboard or toclipboard or (syn and syn.write_clipboard)
 	if fn then
@@ -207,7 +331,14 @@ local function flash(button, text, normal)
 	end)
 end
 
--- فیلتر: Decalهای مربوط به کاراکترها (اجزای بدن، اکسسوری، ابزار) نادیده گرفته می‌شوند
+local function getFullName(inst)
+	local ok, name = pcall(function()
+		return inst:GetFullName()
+	end)
+	return ok and name or inst.Name
+end
+
+-- ==================== فیلتر کاراکترها ====================
 local function isCharacterModel(inst)
 	if not inst:IsA("Model") then
 		return false
@@ -223,37 +354,63 @@ local function isCharacterModel(inst)
 	return false
 end
 
-local function shouldSkipSubtree(inst)
-	-- کاراکتر (بازیکنان و NPCها)
+local function shouldSkipCharacters(inst)
 	if isCharacterModel(inst) then
 		return true
 	end
-	-- اطلاعات بازیکن‌های دیگر (Backpack و ...)
 	if inst:IsA("Player") and inst ~= LocalPlayer then
-		return true
-	end
-	-- GUI خودمان
-	if inst == ScreenGui then
 		return true
 	end
 	return false
 end
 
--- نتایج
+-- ==================== نتایج ====================
 local entries = {}
 local searching = false
 
+-- بندانگشتی‌ها فقط برای ردیف‌هایی که توی دید (یا نزدیک دید) هستن لود می‌شن
+local ROW_H = 105 -- ارتفاع ردیف (100) + فاصله (5)
+local visibleList = {}
+local loaded = {}
+
+local function refreshThumbs()
+	local y = ScrollingFrame.CanvasPosition.Y
+	local h = ScrollingFrame.AbsoluteSize.Y
+	local first = math.max(1, math.floor(y / ROW_H) - 1)
+	local last = math.min(#visibleList, math.ceil((y + h) / ROW_H) + 2)
+
+	local want = {}
+	for i = first, last do
+		local e = visibleList[i]
+		want[e] = true
+		if not loaded[e] then
+			e.thumb.Image = e.img
+			loaded[e] = true
+		end
+	end
+	for e in pairs(loaded) do
+		if not want[e] then
+			e.thumb.Image = ""
+			loaded[e] = nil
+		end
+	end
+end
+
+ScrollingFrame:GetPropertyChangedSignal("CanvasPosition"):Connect(refreshThumbs)
+ScrollingFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(refreshThumbs)
+
 local function applyFilter()
 	local q = string.lower(FilterBox.Text)
-	local shown = 0
+	table.clear(visibleList)
 	for _, e in ipairs(entries) do
 		local match = q == "" or string.find(e.key, q, 1, true) ~= nil
 		e.frame.Visible = match
 		if match then
-			shown += 1
+			table.insert(visibleList, e)
 		end
 	end
-	return shown
+	refreshThumbs()
+	return #visibleList
 end
 
 FilterBox:GetPropertyChangedSignal("Text"):Connect(function()
@@ -263,7 +420,29 @@ FilterBox:GetPropertyChangedSignal("Text"):Connect(function()
 	end
 end)
 
-local function addEntry(instance, texture, index)
+local function makeSmallButton(text, y, parent)
+	local b = make("TextButton", {
+		Size = UDim2.new(0, 70, 0, 28),
+		Position = UDim2.new(1, -76, 0, y),
+		BackgroundColor3 = C.accent,
+		Text = text,
+		TextColor3 = Color3.new(1, 1, 1),
+		Font = Enum.Font.GothamBold,
+		TextSize = 11,
+	}, parent)
+	round(b, 6)
+	return b
+end
+
+-- استخراج ID عددی از رشته‌ی عکس
+local function extractId(img)
+	local id = string.match(img, "[?&]id=(%d+)")
+		or string.match(img, "rbxassetid://(%d+)")
+		or string.match(img, "(%d%d%d+)")
+	return id or img
+end
+
+local function addEntry(instance, img, index, path)
 	local frame = make("Frame", {
 		Size = UDim2.new(1, -6, 0, 100),
 		BackgroundColor3 = C.item,
@@ -274,19 +453,19 @@ local function addEntry(instance, texture, index)
 
 	local thumb = make("ImageLabel", {
 		Size = UDim2.new(0, 80, 0, 80),
-		Position = UDim2.new(0, 6, 0, 6),
+		Position = UDim2.new(0, 6, 0, 10),
 		BackgroundColor3 = C.bg,
 		BorderSizePixel = 0,
-		Image = texture,
+		Image = "",
 		ScaleType = Enum.ScaleType.Fit,
 	}, frame)
 	round(thumb, 6)
 
 	make("TextLabel", {
-		Size = UDim2.new(1, -176, 0, 20),
-		Position = UDim2.new(0, 102, 0, 22),
+		Size = UDim2.new(1, -186, 0, 20),
+		Position = UDim2.new(0, 94, 0, 16),
 		BackgroundTransparency = 1,
-		Text = texture,
+		Text = img,
 		TextColor3 = C.text,
 		Font = Enum.Font.Gotham,
 		TextSize = 12,
@@ -295,110 +474,268 @@ local function addEntry(instance, texture, index)
 	}, frame)
 
 	make("TextLabel", {
-		Size = UDim2.new(1, -176, 0, 16),
-		Position = UDim2.new(0, 102, 0, 46),
+		Size = UDim2.new(1, -186, 0, 16),
+		Position = UDim2.new(0, 94, 0, 40),
 		BackgroundTransparency = 1,
-		Text = instance.Parent and instance.Parent.Name or "?",
-		TextColor3 = C.sub,
-		Font = Enum.Font.Gotham,
+		Text = instance.ClassName,
+		TextColor3 = C.ok,
+		Font = Enum.Font.GothamBold,
 		TextSize = 11,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextTruncate = Enum.TextTruncate.AtEnd,
 	}, frame)
 
-	local copy = make("TextButton", {
-		Size = UDim2.new(0, 62, 0, 28),
-		Position = UDim2.new(1, -68, 0.5, -14),
-		BackgroundColor3 = C.accent,
-		Text = "Copy",
-		TextColor3 = Color3.new(1, 1, 1),
-		Font = Enum.Font.GothamBold,
-		TextSize = 12,
+	make("TextLabel", {
+		Size = UDim2.new(1, -186, 0, 28),
+		Position = UDim2.new(0, 94, 0, 58),
+		BackgroundTransparency = 1,
+		Text = path,
+		TextColor3 = C.sub,
+		Font = Enum.Font.Gotham,
+		TextSize = 10,
+		TextWrapped = true,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		TextTruncate = Enum.TextTruncate.AtEnd,
 	}, frame)
-	round(copy, 6)
 
-	copy.MouseButton1Click:Connect(function()
-		if copyText(texture) then
-			flash(copy, "Copied!", "Copy")
+	local copyPath = makeSmallButton("Copy ID", 36, frame)
+
+	copyPath.MouseButton1Click:Connect(function()
+		if copyText(extractId(img)) then
+			flash(copyPath, "Copied!", "Copy ID")
 		else
-			flash(copy, "No clip", "Copy")
+			flash(copyPath, "No clip", "Copy ID")
 		end
 	end)
 
-	table.insert(entries, {
+	local entry = {
 		frame = frame,
-		texture = texture,
-		key = string.lower(texture .. " " .. (instance.Parent and instance.Parent.Name or "")),
-	})
+		thumb = thumb,
+		img = img,
+		key = string.lower(img .. " " .. instance.ClassName .. " " .. path),
+	}
+	table.insert(entries, entry)
+
+	local q = string.lower(FilterBox.Text)
+	local match = q == "" or string.find(entry.key, q, 1, true) ~= nil
+	frame.Visible = match
+	if match then
+		table.insert(visibleList, entry)
+	end
 end
 
 local function clearEntries()
+	table.clear(visibleList)
+	table.clear(loaded)
+	local n = 0
 	for _, e in ipairs(entries) do
+		e.thumb.Image = ""
 		e.frame:Destroy()
+		n += 1
+		if n % 100 == 0 then
+			task.wait()
+		end
 	end
 	table.clear(entries)
 end
 
--- جستجو
+-- ==================== جستجو ====================
+-- مسیرهایی که شامل این کلمات باشند نادیده گرفته می‌شوند
+local BLOCKED_WORDS = { "hdadmin", "kohl", "topbar", "emotes", "chat" }
+
+local function hasBlockedWord(str)
+	local l = string.lower(str)
+	for _, w in ipairs(BLOCKED_WORDS) do
+		if string.find(l, w, 1, true) then
+			return true
+		end
+	end
+	return false
+end
+
+-- آیا عکس واقعاً دیده می‌شود؟ (خودش + همه‌ی والدها)
+local function isActuallyVisible(inst)
+	local ok, result = pcall(function()
+		if inst:IsA("Decal") or inst:IsA("Texture") then
+			if inst.Transparency >= 1 then
+				return false
+			end
+		elseif inst:IsA("ImageLabel") then
+			if inst.ImageTransparency >= 1 then
+				return false
+			end
+		end
+		local cur = inst
+		while cur do
+			if cur:IsA("GuiObject") and not cur.Visible then
+				return false
+			end
+			if cur:IsA("LayerCollector") and not cur.Enabled then
+				return false
+			end
+			cur = cur.Parent
+		end
+		return true
+	end)
+	return ok and result
+end
+
+local function getImageOf(inst, includeGuiImages, filterVisible)
+	local img, kind
+	if inst:IsA("Decal") or inst:IsA("Texture") then
+		local ok, tex = pcall(function()
+			return inst.Texture
+		end)
+		if ok then
+			img, kind = tex, "tex"
+		end
+	elseif inst:IsA("SurfaceAppearance") then
+		local ok, tex = pcall(function()
+			return inst.ColorMap
+		end)
+		if ok then
+			img, kind = tex, "tex"
+		end
+	elseif includeGuiImages and inst:IsA("ImageLabel") then
+		local ok, v = pcall(function()
+			return inst.Image
+		end)
+		if ok then
+			img, kind = v, "gui"
+		end
+	end
+
+	if not img or img == "" then
+		return nil
+	end
+	-- عکس‌های داخلی روبلاکس (rbxasset://)
+	if string.sub(string.lower(img), 1, 11) == "rbxasset://" then
+		return nil
+	end
+	-- اگر Filter Not Showing Images روشن باشد فقط عکس‌های قابل مشاهده
+	if filterVisible and not isActuallyVisible(inst) then
+		return nil
+	end
+	-- hdadmin / kohl در مسیر
+	local path = getFullName(inst)
+	if hasBlockedWord(path) then
+		return nil
+	end
+	return img, kind, path
+end
+
 local function search()
 	if searching then
 		return
 	end
+
+	local doGuis = cbGuis.value
+	local doWorkspace = cbWorkspace.value
+
+	if not (doGuis or doWorkspace) then
+		StatusLabel.Text = "Select at least one search option!"
+		return
+	end
+
 	searching = true
-
 	clearEntries()
-	StatusLabel.Text = "Searching decals..."
-	SearchButton.Text = "Searching..."
-	SearchButton.BackgroundColor3 = C.accentBusy
+	StatusLabel.Text = "Searching..."
+	StartButton.Text = "Scanning..."
+	StartButton.BackgroundColor3 = C.accentBusy
 
-	local seen = {}
-	local found, skipped, visited = 0, 0, 0
+	-- ریشه‌های اسکن
 	local stack = {}
+	local function pushRoot(root)
+		if root then
+			table.insert(stack, root)
+		end
+	end
 
-	-- فقط Workspace اسکن می‌شود
-	table.insert(stack, workspace)
+	do
+		if doWorkspace then
+			pushRoot(workspace)
+		end
+		if doGuis then
+			pushRoot(PlayerGui)
+			local okCore, core = pcall(function()
+				return game:GetService("CoreGui")
+			end)
+			if okCore then
+				pushRoot(core)
+			end
+		end
+	end
+
+	local seenTex = {}   -- جلوگیری از تکرار ID (Decal / Texture)
+	local seenInst = {}  -- جلوگیری از اسکن دوباره‌ی یک Instance
+	local found, skipped, visited = 0, 0, 0
+	local sinceYield = 0
 
 	while #stack > 0 do
 		local inst = table.remove(stack)
-		visited += 1
 
-		if visited % 1500 == 0 then
-			StatusLabel.Text = ("Searching... %d found"):format(found)
-			task.wait()
-		end
+		if not seenInst[inst] and inst ~= ScreenGui then
+			seenInst[inst] = true
+			visited += 1
 
-		local ok, skip = pcall(shouldSkipSubtree, inst)
-		if ok and skip then
-			skipped += 1
-		else
-			if inst:IsA("Decal") or inst:IsA("Texture") then
-				local ok2, tex = pcall(function()
-					return inst.Texture
-				end)
-				if ok2 and tex and tex ~= "" and not seen[tex] then
-					seen[tex] = true
-					found += 1
-					addEntry(inst, tex, found)
-				end
+			if visited % 1500 == 0 then
+				StatusLabel.Text = ("Searching... %d found"):format(found)
+				task.wait()
 			end
 
-			local ok3, children = pcall(inst.GetChildren, inst)
-			if ok3 then
-				for _, child in ipairs(children) do
-					table.insert(stack, child)
+			local skip = hasBlockedWord(inst.Name)
+			if not skip then
+				local ok, s = pcall(shouldSkipCharacters, inst)
+				skip = ok and s
+			end
+
+			if skip then
+				skipped += 1
+			else
+				local img, kind, path = getImageOf(inst, doGuis, cbFilter.value)
+				if img then
+					if kind == "tex" then
+						-- Decal/Texture: ID تکراری فقط یک بار نشان داده می‌شود
+						if not seenTex[img] then
+							seenTex[img] = true
+							found += 1
+							addEntry(inst, img, found, path)
+							sinceYield += 1
+						end
+					else
+						-- ImageLabel/ImageButton: هر Instance جدا
+						found += 1
+						addEntry(inst, img, found, path)
+						sinceYield += 1
+					end
+					-- ساخت ردیف‌ها تدریجی انجام می‌شود تا فریم نپرد
+					if sinceYield >= 15 then
+						sinceYield = 0
+						StatusLabel.Text = ("Searching... %d found"):format(found)
+						task.wait()
+						refreshThumbs()
+					end
+				end
+
+				local ok3, children = pcall(inst.GetChildren, inst)
+				if ok3 then
+					for _, child in ipairs(children) do
+						table.insert(stack, child)
+					end
 				end
 			end
 		end
 	end
 
 	applyFilter()
-	StatusLabel.Text = ("Done! %d unique decals (skipped %d characters)"):format(found, skipped)
-	SearchButton.Text = "Search Again"
-	SearchButton.BackgroundColor3 = C.accent
+	StatusLabel.Text = ("Done! %d results"):format(found)
+	StartButton.Text = "Scan Again"
+	StartButton.BackgroundColor3 = C.accent
 	searching = false
 end
 
-SearchButton.MouseButton1Click:Connect(search)
+StartButton.MouseButton1Click:Connect(search)
 
 CloseButton.MouseButton1Click:Connect(function()
 	ScreenGui:Destroy()
