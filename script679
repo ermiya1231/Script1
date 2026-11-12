@@ -1,19 +1,43 @@
-
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hum = char:WaitForChild("Humanoid")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local runService = game:GetService("RunService")
 
+-- نامرئی کردن با F3X (Material Tool) + حذف Decal ها
 task.spawn(function()
-    local hd = ReplicatedStorage:FindFirstChild("HDAdmin") or ReplicatedStorage:FindFirstChild("HDAdminHDClient")
-    if hd then
-        local signals = hd:FindFirstChild("Signals") or (hd:FindFirstChild("HDClient") and hd.HDClient:FindFirstChild("Signals"))
-        local req = signals and signals:FindFirstChild("RequestCommandSilent")
-        if req then 
-            pcall(function() req:InvokeServer(";invisible me") end)
-            
+    local syncTool = player:FindFirstChild("SyncAPI", true) or ReplicatedStorage:FindFirstChild("SyncAPI", true)
+    if not syncTool then return end
+    local syncRemote = syncTool:IsA("RemoteFunction") and syncTool or syncTool:FindFirstChild("ServerEndpoint")
+    if not syncRemote then return end
+
+    local materialPacket = {}
+    local decalPacket = {}
+
+    for _, v in ipairs(char:GetDescendants()) do
+        if v:IsA("BasePart") then
+            table.insert(materialPacket, {Part = v, Transparency = 1})
+        elseif v:IsA("Decal") then
+            table.insert(decalPacket, {
+                Part = v.Parent,
+                Face = v.Face,
+                TextureType = "Decal",
+                Texture = v.Texture,
+                Transparency = 1
+            })
         end
+    end
+
+    if #materialPacket > 0 then
+        pcall(function()
+            syncRemote:InvokeServer("SyncMaterial", materialPacket)
+        end)
+    end
+
+    if #decalPacket > 0 then
+        pcall(function()
+            syncRemote:InvokeServer("SyncTexture", decalPacket)
+        end)
     end
 end)
 
