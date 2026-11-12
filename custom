@@ -1,0 +1,702 @@
+
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+-- ===================== Config =====================
+local SKYBOX_MESH_ID = "rbxassetid://111891702759441"
+local SKYBOX_SCALE   = Vector3.new(2000, 2000, 2000) -- mesh scale ("make it big")
+local SKYBOX_PART_SIZE = Vector3.new(2, 2, 2)
+local SKYBOX_NAME    = "Skybox"
+local HEIGHT_OFFSET  = 10 -- studs above the head
+-- ==================================================
+
+-- ===================== Tool detection =====================
+local function inspectTool(tool)
+	if not tool:IsA("Tool") then return nil end
+
+	local api = tool:FindFirstChild("SyncAPI")
+	if not api then return nil end
+
+	local endpoint
+	if api:IsA("RemoteFunction") or api:IsA("RemoteEvent") then
+		endpoint = api
+	else
+		endpoint = api:FindFirstChild("ServerEndpoint") or api:FindFirstChildWhichIsA("RemoteFunction")
+	end
+	if not endpoint then return nil end
+
+	local libraries = tool:FindFirstChild("Libraries")
+	local fastSpawn = libraries and libraries:FindFirstChild("fastSpawn")
+	local isFork = fastSpawn ~= nil and fastSpawn:IsA("ModuleScript")
+
+	return { Tool = tool, Endpoint = endpoint, IsFork = isFork }
+end
+
+local function scan()
+	local found = { F3X = nil, Fork = nil }
+	local containers = { player:FindFirstChildOfClass("Backpack"), player.Character }
+
+	for _, container in ipairs(containers) do
+		if container then
+			for _, child in ipairs(container:GetChildren()) do
+				local info = inspectTool(child)
+				if info then
+					if info.IsFork then
+						found.Fork = found.Fork or info
+					else
+						found.F3X = found.F3X or info
+					end
+				end
+			end
+		end
+	end
+
+	return found
+end
+
+local found = scan()
+if not found.F3X and not found.Fork then
+	error("[Customized F3X GUI] No F3X / ForkF3X tool (with SyncAPI) found in Backpack or Character.", 0)
+end
+
+-- ===================== F3X remote helpers =====================
+local function invoke(entry, ...)
+	local endpoint = entry.Endpoint
+	if endpoint:IsA("RemoteFunction") then
+		return pcall(endpoint.InvokeServer, endpoint, ...)
+	else
+		return pcall(endpoint.FireServer, endpoint, ...)
+	end
+end
+
+local skyboxes = { F3X = nil, Fork = nil } -- created parts per kind
+
+local function normalizeTextureId(text)
+	text = (text or ""):gsub("%s+", "")
+	if text == "" then return "" end
+	if text:match("^%d+$") then
+		return "rbxassetid://" .. text
+	end
+	return text
+end
+
+local function deleteSkybox(kind, entry)
+	local part = skyboxes[kind]
+	if not part then return false, "No skybox to delete." end
+	skyboxes[kind] = nil
+
+	if part.Parent then
+		local ok = invoke(entry, "Remove", { part })
+		if not ok then
+			pcall(function() part:Destroy() end)
+		end
+	end
+	return true, "Skybox deleted."
+end
+
+local function createSkybox(kind, entry, textureText)
+	if normalizeTextureId(textureText):lower():find("^rbxthumb://") and kind ~= "Fork" then
+		return false, "rbxthumb:// only works with ForkF3X."
+	end
+
+	local char = player.Character
+	local head = char and (char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart"))
+	if not head then return false, "Character not found." end
+
+	if skyboxes[kind] then
+		deleteSkybox(kind, entry)
+	end
+
+	local cf = CFrame.new(head.Position + Vector3.new(0, HEIGHT_OFFSET, 0))
+
+	local ok, part = invoke(entry, "CreatePart", "Normal", cf, workspace)
+	if not ok or typeof(part) ~= "Instance" then
+		return false, "CreatePart failed."
+	end
+	skyboxes[kind] = part
+
+	invoke(entry, "SetName", { part }, SKYBOX_NAME)
+	invoke(entry, "SyncResize", { { Part = part, CFrame = cf, Size = SKYBOX_PART_SIZE } })
+	invoke(entry, "SyncAnchor", { { Part = part, Anchored = true } })
+	invoke(entry, "SyncCollision", { { Part = part, CanCollide = false } })
+
+	invoke(entry, "CreateMeshes", { { Part = part } })
+	local okMesh = invoke(entry, "SyncMesh", { {
+		Part = part,
+		MeshType = Enum.MeshType.FileMesh,
+		MeshId = SKYBOX_MESH_ID,
+		TextureId = normalizeTextureId(textureText),
+		Scale = SKYBOX_SCALE,
+	} })
+
+	if not okMesh then
+		return false, "Part created, but SyncMesh failed."
+	end
+	return true, "Skybox created."
+end
+
+-- ===================== Decal Spam =====================
+local DECAL_BATCH   = 40 -- parts per remote call (each part appears ONCE per call)
+local DECAL_WORKERS = 6  -- batches in flight (each one fires all 6 faces in parallel)
+local SCAN_CHUNK    = 1500 -- parts examined per frame while collecting (avoids the startup freeze)
+
+local ALL_FACES = {
+	Enum.NormalId.Front,
+	Enum.NormalId.Back,
+	Enum.NormalId.Top,
+	Enum.NormalId.Bottom,
+	Enum.NormalId.Left,
+	Enum.NormalId.Right
+}
+
+-- which faces of a part already carry this decal (single GetChildren pass)
+local function facesWithDecal(part, id)
+	local have = {}
+	for _, c in ipairs(part:GetChildren()) do
+		if c:IsA("Decal") and c.Texture == id then have[c.Face] = true end
+	end
+	return have
+end
+
+local function RunDecalSpam(kind, entry, textureText, onProgress)
+	local id = normalizeTextureId(textureText)
+	if id == "" then return false, "Enter a decal id first." end
+	if id:lower():find("^rbxthumb://") and kind ~= "Fork" then
+		return false, "rbxthumb:// only works with ForkF3X."
+	end
+
+	local function SendF3X(args)
+		return invoke(entry, table.unpack(args))
+	end
+
+	-- collect parts in chunks so the game never freezes (skip Terrain and the skybox)
+	local descendants = workspace:GetDescendants()
+	local targets = {}
+	for i = 1, #descendants do
+		local v = descendants[i]
+		if v:IsA("BasePart") and not v:IsA("Terrain")
+			and v.Name ~= "CustomSkybox" and v.Name ~= "Skybox"
+			and v ~= skyboxes.F3X and v ~= skyboxes.Fork then
+			targets[#targets + 1] = v
+		end
+		if i % SCAN_CHUNK == 0 then task.wait() end
+	end
+	descendants = nil
+
+	local total = #targets
+	if total == 0 then return false, "No parts found in Workspace." end
+
+	local nextStart, processed, alive = 1, 0, DECAL_WORKERS
+
+	for _ = 1, DECAL_WORKERS do
+		task.spawn(function()
+			while true do
+				-- take the next slice of parts (batches are built lazily)
+				local first = nextStart
+				if first > total then break end
+				nextStart = first + DECAL_BATCH
+				local batch = table.move(targets, first, math.min(first + DECAL_BATCH - 1, total), 1, {})
+
+				-- unlock every locked part of the batch in ONE call
+				local locked = {}
+				for _, v in ipairs(batch) do
+					if v.Locked then locked[#locked + 1] = v end
+				end
+				if #locked > 0 then
+					SendF3X({ "SetLocked", locked, false })
+				end
+
+				-- all 6 faces in parallel; inside each call a part is listed only once
+				local left = #ALL_FACES
+				for f = 1, #ALL_FACES do
+					task.spawn(function()
+						local face = ALL_FACES[f]
+						local create, sync = {}, {}
+						for k, v in ipairs(batch) do
+							create[k] = { Part = v, Face = face, TextureType = "Decal" }
+							sync[k] = { Part = v, Face = face, TextureType = "Decal", Texture = id }
+						end
+						SendF3X({ "CreateTextures", create })
+						SendF3X({ "SyncTexture", sync })
+						left -= 1
+					end)
+				end
+				while left > 0 do task.wait() end
+
+				-- fix anything the server skipped (single face, single part)
+				task.wait(0.1)
+				for _, v in ipairs(batch) do
+					if v.Parent then
+						local have = facesWithDecal(v, id)
+						for f = 1, #ALL_FACES do
+							local face = ALL_FACES[f]
+							if not have[face] then
+								SendF3X({ "CreateTextures", { { Part = v, Face = face, TextureType = "Decal" } } })
+								SendF3X({ "SyncTexture", { { Part = v, Face = face, TextureType = "Decal", Texture = id } } })
+							end
+						end
+					end
+				end
+
+				processed += #batch
+				if onProgress then onProgress(processed, total) end
+			end
+			alive -= 1
+		end)
+	end
+
+	while alive > 0 do task.wait(0.1) end
+
+	return true, string.format("Decal Spam done: %d parts.", total)
+end
+
+-- ===================== Particle (ForkF3X only) =====================
+local function RunParticle(kind, entry, textureText)
+	if kind ~= "Fork" then return false, "Particle only works with ForkF3X." end
+
+	local id = normalizeTextureId(textureText)
+	if id == "" then return false, "Enter a particle id first." end
+
+	local heads = {}
+	for _, plr in ipairs(Players:GetPlayers()) do
+		local head = plr.Character and plr.Character:FindFirstChild("Head")
+		if head and head:IsA("BasePart") then
+			heads[#heads + 1] = head
+		end
+	end
+	if #heads == 0 then return false, "No player heads found." end
+
+	local function createAndSync(list)
+		local create, sync = {}, {}
+		for i, head in ipairs(list) do
+			create[i] = { Part = head, DecorationType = "ParticleEmitter" }
+			sync[i] = { Part = head, DecorationType = "ParticleEmitter", Texture = id }
+		end
+		invoke(entry, "CreateDecorations", create)  -- Decorate tool: make the emitter
+		invoke(entry, "SyncDecorate", sync)         -- Decorate tool: set its Texture
+	end
+
+	createAndSync(heads)
+	task.wait(0.2)
+
+	-- verify; retry whatever the server skipped
+	local applied = 0
+	for _, head in ipairs(heads) do
+		if head.Parent then
+			local emitter = head:FindFirstChildOfClass("ParticleEmitter")
+			if not emitter then
+				createAndSync({ head })
+				task.wait(0.1)
+			elseif emitter.Texture ~= id then
+				invoke(entry, "SyncDecorate", { { Part = head, DecorationType = "ParticleEmitter", Texture = id } })
+				task.wait(0.1)
+			end
+			local e = head:FindFirstChildOfClass("ParticleEmitter")
+			if e and e.Texture == id then applied += 1 end
+		end
+	end
+
+	return applied > 0, string.format("Particle applied to %d/%d heads.", applied, #heads)
+end
+
+-- ===================== GUI helpers =====================
+local COLORS = {
+	bg      = Color3.fromRGB(28, 28, 34),
+	panel   = Color3.fromRGB(38, 38, 46),
+	accent  = Color3.fromRGB(70, 130, 255),
+	danger  = Color3.fromRGB(220, 70, 70),
+	text    = Color3.fromRGB(235, 235, 240),
+	subtext = Color3.fromRGB(150, 150, 160),
+}
+
+local function corner(obj, r)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, r or 8)
+	c.Parent = obj
+	return c
+end
+
+local function make(class, props, parent)
+	local inst = Instance.new(class)
+	for k, v in pairs(props) do inst[k] = v end
+	if parent then inst.Parent = parent end
+	return inst
+end
+
+local function makeButton(text, color, parent, size, pos)
+	local b = make("TextButton", {
+		Text = text,
+		Size = size,
+		Position = pos,
+		BackgroundColor3 = color,
+		TextColor3 = COLORS.text,
+		Font = Enum.Font.GothamBold,
+		TextSize = 14,
+		AutoButtonColor = true,
+	}, parent)
+	corner(b, 6)
+	return b
+end
+
+local function makeDraggable(handle, target)
+	local dragging, dragStart, startPos
+	handle.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = target.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then dragging = false end
+			end)
+		end
+	end)
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local delta = input.Position - dragStart
+			target.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
+	end)
+end
+
+-- ===================== Build GUI =====================
+local guiParent = (typeof(gethui) == "function" and gethui()) or player:WaitForChild("PlayerGui")
+
+local old = guiParent:FindFirstChild("Customized F3X GUI")
+if old then old:Destroy() end
+
+local screen = make("ScreenGui", {
+	Name = "Customized F3X GUI",
+	ResetOnSpawn = false,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+}, guiParent)
+
+-- Main window
+local main = make("Frame", {
+	Name = "Main",
+	Size = UDim2.new(0, 520, 0, 530),
+	Position = UDim2.new(0.5, -260, 0.5, -265),
+	BackgroundColor3 = COLORS.bg,
+	Visible = false,
+}, screen)
+corner(main, 10)
+
+local titleBar = make("Frame", {
+	Size = UDim2.new(1, 0, 0, 36),
+	BackgroundColor3 = COLORS.panel,
+}, main)
+corner(titleBar, 10)
+
+make("TextLabel", {
+	Text = "Customized F3X GUI",
+	Size = UDim2.new(1, -80, 1, 0),
+	Position = UDim2.new(0, 12, 0, 0),
+	BackgroundTransparency = 1,
+	TextColor3 = COLORS.text,
+	Font = Enum.Font.GothamBold,
+	TextSize = 16,
+	TextXAlignment = Enum.TextXAlignment.Left,
+}, titleBar)
+
+local closeBtn = makeButton("X", COLORS.danger, titleBar, UDim2.new(0, 28, 0, 24), UDim2.new(1, -34, 0, 6))
+closeBtn.MouseButton1Click:Connect(function() screen:Destroy() end)
+makeDraggable(titleBar, main)
+
+local status = make("TextLabel", {
+	Text = "Ready.",
+	Size = UDim2.new(1, -20, 0, 22),
+	Position = UDim2.new(0, 10, 1, -28),
+	BackgroundTransparency = 1,
+	TextColor3 = COLORS.subtext,
+	Font = Enum.Font.Gotham,
+	TextSize = 13,
+	TextXAlignment = Enum.TextXAlignment.Left,
+}, main)
+
+local function setStatus(msg, good)
+	status.Text = msg
+	status.TextColor3 = good and Color3.fromRGB(90, 210, 120) or Color3.fromRGB(240, 130, 130)
+end
+
+-- Sections
+local sections = {}
+
+local function buildSection(kind, title, xScale, xOffset)
+	local frame = make("Frame", {
+		Name = kind .. "Section",
+		Size = UDim2.new(0.5, -15, 1, -86),
+		Position = UDim2.new(xScale, xOffset, 0, 46),
+		BackgroundColor3 = COLORS.panel,
+	}, main)
+	corner(frame, 8)
+
+	make("TextLabel", {
+		Text = title,
+		Size = UDim2.new(1, -16, 0, 26),
+		Position = UDim2.new(0, 8, 0, 6),
+		BackgroundTransparency = 1,
+		TextColor3 = COLORS.text,
+		Font = Enum.Font.GothamBold,
+		TextSize = 16,
+		TextXAlignment = Enum.TextXAlignment.Left,
+	}, frame)
+
+	local function makeBigBox(placeholder, y)
+		local b = make("TextBox", {
+			PlaceholderText = placeholder,
+			Text = "",
+			ClearTextOnFocus = false,
+			MultiLine = true,
+			TextWrapped = true,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			ClipsDescendants = true,
+			Size = UDim2.new(1, -16, 0, 56),
+			Position = UDim2.new(0, 8, 0, y),
+			BackgroundColor3 = COLORS.bg,
+			TextColor3 = COLORS.text,
+			PlaceholderColor3 = COLORS.subtext,
+			Font = Enum.Font.Gotham,
+			TextSize = 13,
+		}, frame)
+		corner(b, 6)
+		make("UIPadding", {
+			PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6),
+			PaddingTop = UDim.new(0, 4), PaddingBottom = UDim.new(0, 4),
+		}, b)
+		return b
+	end
+
+	local box = makeBigBox("Decal ID", 40)
+
+	local createBtn = makeButton("Create Skybox", COLORS.accent, frame, UDim2.new(1, -16, 0, 30), UDim2.new(0, 8, 0, 104))
+	local deleteBtn = makeButton("Delete Skybox", COLORS.danger, frame, UDim2.new(1, -16, 0, 30), UDim2.new(0, 8, 0, 142))
+
+	make("TextLabel", {
+		Text = "Decal Spam",
+		Size = UDim2.new(1, -16, 0, 22),
+		Position = UDim2.new(0, 8, 0, 184),
+		BackgroundTransparency = 1,
+		TextColor3 = COLORS.text,
+		Font = Enum.Font.GothamBold,
+		TextSize = 15,
+		TextXAlignment = Enum.TextXAlignment.Left,
+	}, frame)
+
+	local decalBox = makeBigBox("Decal ID", 208)
+	local decalBtn = makeButton("Decal Spam", COLORS.accent, frame, UDim2.new(1, -16, 0, 30), UDim2.new(0, 8, 0, 272))
+
+	-- Particle (ForkF3X only)
+	local particleBox, particleBtn
+	if kind == "Fork" then
+		make("TextLabel", {
+			Text = "Particle",
+			Size = UDim2.new(1, -16, 0, 22),
+			Position = UDim2.new(0, 8, 0, 312),
+			BackgroundTransparency = 1,
+			TextColor3 = COLORS.text,
+			Font = Enum.Font.GothamBold,
+			TextSize = 15,
+			TextXAlignment = Enum.TextXAlignment.Left,
+		}, frame)
+		particleBox = makeBigBox("Decal ID", 336)
+		particleBtn = makeButton("Particle", COLORS.accent, frame, UDim2.new(1, -16, 0, 30), UDim2.new(0, 8, 0, 400))
+	end
+
+	-- Lock overlay (Active = true sinks clicks)
+	local lock = make("TextButton", {
+		Name = "Lock",
+		Text = "",
+		AutoButtonColor = false,
+		Active = true,
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundColor3 = Color3.fromRGB(10, 10, 12),
+		BackgroundTransparency = 0.25,
+		ZIndex = 10,
+		Visible = false,
+	}, frame)
+	corner(lock, 8)
+	local lockLabel = make("TextLabel", {
+		Text = "🔒 Locked",
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		TextColor3 = COLORS.text,
+		Font = Enum.Font.GothamBold,
+		TextSize = 16,
+		ZIndex = 11,
+	}, lock)
+
+	local section = { Kind = kind, Lock = lock, LockLabel = lockLabel }
+	sections[kind] = section
+
+	createBtn.MouseButton1Click:Connect(function()
+		local entry = section.Entry
+		if not entry then return end
+		local ok, msg = createSkybox(kind, entry, box.Text)
+		setStatus(msg, ok)
+	end)
+
+	deleteBtn.MouseButton1Click:Connect(function()
+		local entry = section.Entry
+		if not entry then return end
+		local ok, msg = deleteSkybox(kind, entry)
+		setStatus(msg, ok)
+	end)
+
+	local busy = false
+	decalBtn.MouseButton1Click:Connect(function()
+		local entry = section.Entry
+		if not entry or busy then return end
+		busy = true
+		task.spawn(function()
+			local ok, msg = RunDecalSpam(kind, entry, decalBox.Text, function(done, total)
+				setStatus(string.format("Decal Spam: %d/%d", done, total), true)
+			end)
+			busy = false
+			setStatus(msg, ok)
+		end)
+	end)
+
+	if particleBtn then
+		local particleBusy = false
+		particleBtn.MouseButton1Click:Connect(function()
+			local entry = section.Entry
+			if not entry or particleBusy then return end
+			particleBusy = true
+			task.spawn(function()
+				local ok, msg = RunParticle(kind, entry, particleBox.Text)
+				particleBusy = false
+				setStatus(msg, ok)
+			end)
+		end)
+	end
+
+	return section
+end
+
+buildSection("F3X", "F3X", 0, 10)
+buildSection("Fork", "ForkF3X", 0.5, 5)
+
+local switchBtn = makeButton("Switch Tool", COLORS.panel, main, UDim2.new(0, 100, 0, 24), UDim2.new(1, -110, 1, -30))
+switchBtn.Visible = false
+
+local chooser -- forward declaration
+
+local function setActive(kind)
+	for k, section in pairs(sections) do
+		local entry = found[k]
+		if k == kind and entry then
+			section.Entry = entry
+			section.Lock.Visible = false
+		else
+			section.Entry = nil
+			section.Lock.Visible = true
+			section.LockLabel.Text = entry and "🔒 Not selected" or "🔒 Not found"
+		end
+	end
+	main.Visible = true
+	if chooser then chooser.Visible = false end
+	setStatus("Using " .. (kind == "Fork" and "ForkF3X" or "F3X") .. ".", true)
+end
+
+-- Chooser panel (only when both tools exist)
+chooser = make("Frame", {
+	Name = "Chooser",
+	Size = UDim2.new(0, 320, 0, 150),
+	Position = UDim2.new(0.5, -160, 0.5, -75),
+	BackgroundColor3 = COLORS.bg,
+	Visible = false,
+}, screen)
+corner(chooser, 10)
+
+make("TextLabel", {
+	Text = "Select your tool",
+	Size = UDim2.new(1, 0, 0, 40),
+	BackgroundTransparency = 1,
+	TextColor3 = COLORS.text,
+	Font = Enum.Font.GothamBold,
+	TextSize = 18,
+}, chooser)
+
+local pickF3X  = makeButton("F3X", COLORS.accent, chooser, UDim2.new(0.5, -20, 0, 50), UDim2.new(0, 14, 0, 60))
+local pickFork = makeButton("ForkF3X", COLORS.accent, chooser, UDim2.new(0.5, -20, 0, 50), UDim2.new(0.5, 6, 0, 60))
+pickF3X.MouseButton1Click:Connect(function() setActive("F3X") end)
+pickFork.MouseButton1Click:Connect(function() setActive("Fork") end)
+
+makeDraggable(chooser, chooser)
+
+switchBtn.MouseButton1Click:Connect(function()
+	main.Visible = false
+	chooser.Visible = true
+end)
+
+-- ===================== Startup logic =====================
+local function applyStartup()
+	main.Visible = false
+	chooser.Visible = false
+	switchBtn.Visible = false
+
+	if found.F3X and found.Fork then
+		switchBtn.Visible = true
+		chooser.Visible = true
+	elseif found.Fork then
+		setActive("Fork")
+	elseif found.F3X then
+		setActive("F3X")
+	else
+		-- nothing found (only possible after a respawn): lock everything
+		for _, section in pairs(sections) do
+			section.Entry = nil
+			section.Lock.Visible = true
+			section.LockLabel.Text = "🔒 Not found"
+		end
+		main.Visible = true
+		setStatus("No F3X / ForkF3X tool found.", false)
+	end
+end
+
+applyStartup()
+
+-- ===================== Refresh after death / respawn =====================
+local refreshToken = 0
+
+local function refresh()
+	refreshToken += 1
+	local token = refreshToken
+
+	-- hide the panel while we look again from scratch
+	main.Visible = false
+	chooser.Visible = false
+
+	-- tools are given back a moment after the respawn: poll for up to 10s
+	local deadline = os.clock() + 10
+	local result = scan()
+	while not (result.F3X or result.Fork) and os.clock() < deadline do
+		task.wait(0.5)
+		if token ~= refreshToken then return end
+		result = scan()
+	end
+
+	-- let a second tool (F3X + ForkF3X) finish loading before deciding
+	if result.F3X or result.Fork then
+		task.wait(1)
+		if token ~= refreshToken then return end
+		result = scan()
+	end
+
+	if token ~= refreshToken then return end
+
+	found.F3X, found.Fork = result.F3X, result.Fork
+	applyStartup()
+end
+
+local respawnConn = player.CharacterAdded:Connect(function()
+	task.spawn(refresh)
+end)
+
+screen.Destroying:Connect(function()
+	respawnConn:Disconnect()
+	refreshToken += 1
+end)
