@@ -1,5 +1,5 @@
 local SPAWN_DISTANCE = 40        -- فاصله مدل از شما (هرچه عدد بزرگتر باشد، دورتر اسپاون می‌شود)
-local SPAWN_HEIGHT_OFFSET = 2.5  -- تنظیم ارتفاع (2.5 معمولاً هم‌سطح پای پلیر است)
+local SPAWN_HEIGHT_OFFSET = 12  -- تنظیم ارتفاع (2.5 معمولاً هم‌سطح پای پلیر است)
 
 local LIGHT_ALL_PARTS = false
 local GLOBAL_LIGHT_RANGE = 20      -- شعاع نور
