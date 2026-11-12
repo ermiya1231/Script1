@@ -1,3 +1,43 @@
+	local TextChatService = game:GetService("TextChatService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+
+local TextChatService = game:GetService("TextChatService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- تابع ارسال دستورات
+local function sendCommand(message)
+    -- اول تلاش برای استفاده از سیستم جدید چت (TextChatService)
+    local success = pcall(function()
+        local textChannels = TextChatService:FindFirstChild("TextChannels")
+        if textChannels then
+            local general = textChannels:FindFirstChild("RBXGeneral")
+            if general then
+                general:SendAsync(message)
+                return
+            end
+        end
+        -- اگر کانال جدید پیدا نشد، استفاده از متد چت بازیکن
+        player:Chat(message)
+    end)
+    
+    -- اگر سیستم جدید خطا داد، از متد کلاسیک استفاده کن
+    if not success then
+        player:Chat(message)
+    end
+end
+
+task.spawn(function()
+    sendCommand(";music 6717030010")
+	task.wait(0.8)
+    sendCommand(";volume 10")
+		task.wait(0.8)
+    sendCommand(";pitch 1")
+		task.wait(0.8)
+end)
 local AnimatedSkyFrames = {
 "http://www.roblox.com/asset/?id=79367953749443",
 "http://www.roblox.com/asset/?id=138002049996398",
@@ -140,47 +180,8 @@ local skyLoop
 local frameTime = 1 / 10
 local lastUpdate = 0
 
+
 function CreateSky()
-	local TextChatService = game:GetService("TextChatService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-
-local TextChatService = game:GetService("TextChatService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
--- تابع ارسال دستورات
-local function sendCommand(message)
-    -- اول تلاش برای استفاده از سیستم جدید چت (TextChatService)
-    local success = pcall(function()
-        local textChannels = TextChatService:FindFirstChild("TextChannels")
-        if textChannels then
-            local general = textChannels:FindFirstChild("RBXGeneral")
-            if general then
-                general:SendAsync(message)
-                return
-            end
-        end
-        -- اگر کانال جدید پیدا نشد، استفاده از متد چت بازیکن
-        player:Chat(message)
-    end)
-    
-    -- اگر سیستم جدید خطا داد، از متد کلاسیک استفاده کن
-    if not success then
-        player:Chat(message)
-    end
-end
-
-task.spawn(function()
-    sendCommand(";music 6717030010")
-	task.wait(0.8)
-    sendCommand(";volume 10")
-		task.wait(0.8)
-    sendCommand(";pitch 1")
-		task.wait(0.8)
-end)
 	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
 
