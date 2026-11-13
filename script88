@@ -2,9 +2,13 @@
 -- F3X Advanced Map Exporter & Importer (Async Faces Version) - Optimized
 -- Fixed & Compatible with all Exporters (Seat / VehicleSeat / Spawn Support)
 -- Unanchored Delay Fix & Cylinder Mesh/Size Fix Applied
+-- + PointLight color list (LIGHT_ALL_PARTS) & Lock Map after build
+-- + Exact PointLight / Fire / Sparkles / Smoke import (new exporter format)
 -- =========================================================
 
 local LIGHT_ALL_PARTS = false
+local POINTLIGHT_ALL_MAP_COLOR = "Red_Green_Yellow_White_Blue" -- فقط وقتی LIGHT_ALL_PARTS = true باشد کار می‌کند (روی پارت‌هایی که رنگ لایت خودشان را ندارند)
+local SET_LOCK_MAP = true -- بعد از اتمام ساخت، همه پارت‌ها Lock می‌شوند
 local GLOBAL_LIGHT_RANGE = 20
 local GLOBAL_LIGHT_BRIGHTNESS = 0.011
 local DISCO_POINTLIGHTS = false
@@ -53,6 +57,50 @@ end
 
 local function safeNum(val, default) return tonumber(val) or default or 0 end
 
+-- =========================================================
+-- [ توابع کمکی خواندن مقادیر از متن اکسپورت ] --
+-- %f[%a] باعث می‌شود مثلاً "Color:" داخل "LightColor:" یا "FireColor:" پیدا نشود
+-- =========================================================
+local function getNumber(block, key)
+    local s = block:match("%f[%a]" .. key .. ":%s*(%-?[%d%.]+)")
+    return tonumber(s)
+end
+
+local function getBoolean(block, key)
+    local s = block:match("%f[%a]" .. key .. ":%s*(%a+)")
+    if not s then return nil end
+    return s:lower() == "true"
+end
+
+-- رنگ‌های جدید اکسپورتر به صورت 0 تا 1 ذخیره شده‌اند
+local function getColor3(block, key)
+    local r, g, b = block:match("%f[%a]" .. key .. ":%s*(%-?[%d%.]+)%s*,%s*(%-?[%d%.]+)%s*,%s*(%-?[%d%.]+)")
+    local rn, gn, bn = tonumber(r), tonumber(g), tonumber(b)
+    if rn and gn and bn then
+        return Color3.new(math.clamp(rn, 0, 1), math.clamp(gn, 0, 1), math.clamp(bn, 0, 1))
+    end
+    return nil
+end
+
+-- لیست رنگ‌های قابل استفاده برای POINTLIGHT_ALL_MAP_COLOR
+local COLOR_MAP = {
+    Red = Color3.fromRGB(255, 0, 0),
+    Green = Color3.fromRGB(0, 255, 0),
+    Yellow = Color3.fromRGB(255, 255, 0),
+    White = Color3.fromRGB(255, 255, 255),
+    Blue = Color3.fromRGB(0, 0, 255),
+    Orange = Color3.fromRGB(255, 128, 0),
+    Purple = Color3.fromRGB(150, 0, 255),
+    Pink = Color3.fromRGB(255, 105, 180),
+    Cyan = Color3.fromRGB(0, 255, 255),
+}
+
+local LIGHT_COLORS = {}
+for name in string.gmatch(tostring(POINTLIGHT_ALL_MAP_COLOR), "[^_]+") do
+    if COLOR_MAP[name] then table.insert(LIGHT_COLORS, COLOR_MAP[name]) end
+end
+if #LIGHT_COLORS == 0 then LIGHT_COLORS = {Color3.new(1, 1, 1)} end
+
 local function SetFreeze(state)
     local char = Player.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
@@ -65,6 +113,20 @@ end
 ---------------------------------------------------------
 local RawData = [[
 Part 1:
+Position: (175.018, 134.607, 24.295)
+Rotation: (0.000, 122.636, 0.000)
+Size: (5.313, 5.840, 0.313)
+Shape: Normal
+ClassName: Part
+Color: 0.416, 0.318, 0.224
+Material: SmoothPlastic
+Transparency: 0.000
+MeshType: FileMesh
+MeshId: 3058347049
+MeshScale: 2.666, 2.666, 2.666
+MeshOffset: 0.000, 0.000, 0.000
+
+Part 2:
 Position: (105.112, 132.094, 135.320)
 Rotation: (3.148, -32.048, -87.150)
 Size: (1.177, 1.514, 0.948)
@@ -79,13 +141,13 @@ MeshId: 1010214608
 MeshScale: 1.249, 1.249, 1.249
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 2:
+Part 3:
 Position: (75.298, 136.819, 56.730)
 Rotation: (0.000, 64.691, 0.000)
 Size: (1.200, 0.800, 1.400)
 Shape: Normal
 ClassName: Part
-Color: 0.627, 0.624, 0.635
+Color: 0.624, 0.624, 0.631
 Material: Plastic
 Transparency: 0.000
 CanCollide: False
@@ -95,7 +157,7 @@ MeshTextureId: 607698990
 MeshScale: 0.660, 0.660, 0.660
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 3:
+Part 4:
 Position: (75.693, 132.744, 56.364)
 Rotation: (0.000, 64.691, 0.000)
 Size: (1.000, 2.000, 1.000)
@@ -106,7 +168,7 @@ Material: Plastic
 Transparency: 0.000
 Stud.Top: True
 
-Part 4:
+Part 5:
 Position: (76.120, 134.744, 55.460)
 Rotation: (0.000, 64.691, 0.000)
 Size: (1.000, 2.000, 1.000)
@@ -117,29 +179,29 @@ Material: Plastic
 Transparency: 0.000
 Stud.Top: True
 
-Part 5:
+Part 6:
 Position: (75.265, 132.744, 57.268)
 Rotation: (0.000, 64.691, 0.000)
 Size: (1.000, 2.000, 1.000)
 Shape: Normal
 ClassName: Part
-Color: 0.333, 0.157, 0.400
+Color: 0.329, 0.157, 0.400
 Material: Plastic
 Transparency: 0.000
 Stud.Top: True
 
-Part 6:
+Part 7:
 Position: (75.016, 136.309, 61.116)
 Rotation: (0.000, 60.003, 0.000)
 Size: (14.000, 10.000, 0.200)
 Shape: Normal
 ClassName: Part
-Color: 0.627, 0.624, 0.635
+Color: 0.624, 0.624, 0.631
 Material: Plastic
 Transparency: 0.000
 Decal.Front = 122714132204276
 
-Part 7:
+Part 8:
 Position: (75.479, 134.744, 56.816)
 Rotation: (0.000, 64.691, 0.000)
 Size: (2.000, 2.000, 1.000)
@@ -150,7 +212,7 @@ Material: Plastic
 Transparency: 0.000
 Stud.Top: True
 
-Part 8:
+Part 9:
 Position: (74.838, 134.744, 58.172)
 Rotation: (60.832, 28.690, -57.923)
 Size: (1.000, 2.000, 1.000)
@@ -161,7 +223,7 @@ Material: Plastic
 Transparency: 0.000
 Stud.Top: True
 
-Part 9:
+Part 10:
 Position: (75.479, 136.244, 56.816)
 Rotation: (0.000, 64.691, 0.000)
 Size: (2.000, 1.000, 1.000)
@@ -174,7 +236,7 @@ MeshType: Head
 MeshScale: 1.250, 1.250, 1.250
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 10:
+Part 11:
 Position: (3.703, 130.078, 4.189)
 Rotation: (0.000, 155.849, 0.000)
 Size: (8.087, 6.868, 12.772)
@@ -188,7 +250,7 @@ MeshId: 3064676350
 MeshScale: 3.508, 3.508, 3.508
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 11:
+Part 12:
 Position: (83.215, 148.373, 140.282)
 Rotation: (0.000, -3.799, 0.000)
 Size: (23.400, 13.464, 17.805)
@@ -203,7 +265,7 @@ MeshId: 2316782855
 MeshScale: 4.674, 4.674, 4.674
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 12:
+Part 13:
 Position: (62.803, 155.284, -54.179)
 Rotation: (0.000, 149.009, 0.000)
 Size: (26.877, 11.090, 2.491)
@@ -213,7 +275,7 @@ Color: 0.773, 0.773, 0.820
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 13:
+Part 14:
 Position: (16.719, 137.520, -64.184)
 Rotation: (3.026, 164.781, -0.923)
 Size: (12.550, 5.060, 0.200)
@@ -223,7 +285,7 @@ Color: 0.675, 0.573, 0.514
 Material: Plastic
 Transparency: 1.000
 
-Part 14:
+Part 15:
 Position: (122.784, 156.720, -8.242)
 Rotation: (-0.001, 145.829, -0.005)
 Size: (19.136, 10.720, 0.193)
@@ -233,7 +295,7 @@ Color: 0.522, 0.224, 0.224
 Material: Plastic
 Transparency: 1.000
 
-Part 15:
+Part 16:
 Position: (-71.215, 134.860, 52.499)
 Rotation: (6.842, -61.718, -2.516)
 Size: (13.229, 2.472, 1.454)
@@ -243,7 +305,7 @@ Color: 0.769, 0.157, 0.110
 Material: Plastic
 Transparency: 1.000
 
-Part 16:
+Part 17:
 Position: (165.903, 137.520, 79.367)
 Rotation: (3.021, 57.866, -0.925)
 Size: (12.550, 5.060, 0.200)
@@ -253,17 +315,17 @@ Color: 0.675, 0.573, 0.514
 Material: Plastic
 Transparency: 1.000
 
-Part 17:
+Part 18:
 Position: (-26.230, 145.488, 132.344)
 Rotation: (0.000, -31.058, 0.000)
 Size: (12.210, 5.530, 0.570)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 18:
+Part 19:
 Position: (106.293, 143.391, 137.346)
 Rotation: (0.000, 17.192, 0.000)
 Size: (6.390, 5.000, 1.000)
@@ -274,7 +336,7 @@ Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 19:
+Part 20:
 Position: (43.731, 133.914, 22.180)
 Rotation: (0.000, 11.514, 0.000)
 Size: (4.000, 1.000, 3.000)
@@ -284,7 +346,7 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 1.000
 
-Part 20:
+Part 21:
 Position: (77.832, 180.162, 58.397)
 Rotation: (2.230, -2.213, -0.083)
 Size: (1.000, 2.000, 1.000)
@@ -294,7 +356,7 @@ Color: 0.804, 0.804, 0.804
 Material: Plastic
 Transparency: 1.000
 
-Part 21:
+Part 22:
 Position: (78.941, 180.177, 58.520)
 Rotation: (-3.693, 6.057, 4.037)
 Size: (1.000, 2.000, 1.000)
@@ -304,7 +366,7 @@ Color: 0.804, 0.804, 0.804
 Material: Plastic
 Transparency: 1.000
 
-Part 22:
+Part 23:
 Position: (78.332, 182.162, 58.397)
 Rotation: (0.000, -4.492, 0.000)
 Size: (2.000, 2.000, 1.000)
@@ -314,7 +376,7 @@ Color: 0.804, 0.804, 0.804
 Material: Plastic
 Transparency: 1.000
 
-Part 23:
+Part 24:
 Position: (79.832, 182.162, 58.397)
 Rotation: (-0.129, -5.867, 2.032)
 Size: (1.000, 2.000, 1.000)
@@ -324,7 +386,7 @@ Color: 0.804, 0.804, 0.804
 Material: Plastic
 Transparency: 1.000
 
-Part 24:
+Part 25:
 Position: (78.332, 183.661, 58.397)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.000, 1.000, 1.000)
@@ -338,7 +400,7 @@ MeshType: FileMesh
 MeshScale: 1.250, 1.250, 1.250
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 25:
+Part 26:
 Position: (76.881, 182.181, 58.195)
 Rotation: (6.533, -3.583, -5.917)
 Size: (1.000, 2.000, 1.000)
@@ -348,7 +410,7 @@ Color: 0.804, 0.804, 0.804
 Material: Plastic
 Transparency: 1.000
 
-Part 26:
+Part 27:
 Position: (43.968, 133.875, 22.797)
 Rotation: (0.000, 11.514, 0.000)
 Size: (4.102, 0.793, 4.059)
@@ -359,7 +421,7 @@ Material: Plastic
 Transparency: 1.000
 CanCollide: False
 
-Part 27:
+Part 28:
 Position: (75.647, 136.716, -78.353)
 Rotation: (-2.508, 150.004, -21.405)
 Size: (1.000, 1.200, 1.000)
@@ -374,7 +436,7 @@ MeshId: 532219991
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 28:
+Part 29:
 Position: (72.738, 137.011, -80.060)
 Rotation: (-3.174, 150.305, 10.019)
 Size: (1.000, 1.400, 1.000)
@@ -389,7 +451,7 @@ MeshId: 532220004
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 29:
+Part 30:
 Position: (74.354, 135.251, -78.613)
 Rotation: (23.761, 132.596, -9.432)
 Size: (1.000, 1.500, 1.000)
@@ -404,7 +466,7 @@ MeshId: 532220018
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 30:
+Part 31:
 Position: (74.085, 135.878, -79.168)
 Rotation: (0.001, 134.934, -2.812)
 Size: (2.000, 0.400, 1.000)
@@ -419,7 +481,7 @@ MeshId: 532220036
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 31:
+Part 32:
 Position: (75.883, 136.065, -78.250)
 Rotation: (-2.508, 150.004, -21.405)
 Size: (1.000, 0.300, 1.000)
@@ -434,7 +496,7 @@ MeshId: 532219986
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 32:
+Part 33:
 Position: (72.639, 136.579, -80.048)
 Rotation: (16.421, 152.085, 10.982)
 Size: (1.000, 1.200, 1.000)
@@ -449,7 +511,7 @@ MeshId: 532219999
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 33:
+Part 34:
 Position: (74.369, 134.741, -78.517)
 Rotation: (-14.451, 138.664, -8.911)
 Size: (1.000, 1.500, 1.000)
@@ -464,7 +526,7 @@ MeshId: 532220017
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 34:
+Part 35:
 Position: (73.484, 135.251, -79.366)
 Rotation: (34.855, 138.697, 10.727)
 Size: (1.000, 1.500, 1.000)
@@ -479,7 +541,7 @@ MeshId: 532220031
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 35:
+Part 36:
 Position: (74.032, 136.174, -79.126)
 Rotation: (0.000, 134.933, 0.000)
 Size: (2.000, 2.000, 1.000)
@@ -490,7 +552,7 @@ Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 36:
+Part 37:
 Position: (72.430, 135.920, -79.938)
 Rotation: (16.421, 152.085, 10.982)
 Size: (1.000, 0.300, 1.000)
@@ -505,7 +567,7 @@ MeshId: 532219997
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 37:
+Part 38:
 Position: (74.578, 133.974, -78.579)
 Rotation: (0.000, 134.933, 0.000)
 Size: (1.000, 0.300, 1.000)
@@ -520,7 +582,7 @@ MeshId: 532220012
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 38:
+Part 39:
 Position: (73.321, 134.762, -79.318)
 Rotation: (-4.710, 131.789, 8.814)
 Size: (1.000, 1.500, 1.000)
@@ -535,7 +597,7 @@ MeshId: 532220027
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 39:
+Part 40:
 Position: (74.029, 138.176, -79.213)
 Rotation: (3.966, -161.149, 0.002)
 Size: (2.000, 1.000, 1.000)
@@ -549,7 +611,7 @@ MeshScale: 1.250, 1.250, 1.250
 MeshOffset: 0.000, 0.000, 0.000
 Decal.Front = 1031430901
 
-Part 40:
+Part 41:
 Position: (75.477, 137.129, -78.383)
 Rotation: (-13.321, 155.144, -21.980)
 Size: (1.000, 1.400, 1.000)
@@ -564,7 +626,7 @@ MeshId: 532219996
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 41:
+Part 42:
 Position: (74.057, 136.877, -79.185)
 Rotation: (-0.942, 146.041, -0.783)
 Size: (2.000, 1.600, 1.000)
@@ -579,7 +641,7 @@ MeshId: 532220007
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 42:
+Part 43:
 Position: (73.289, 133.974, -79.444)
 Rotation: (0.000, 134.933, 0.000)
 Size: (1.000, 0.300, 1.000)
@@ -594,7 +656,7 @@ MeshId: 532220020
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 43:
+Part 44:
 Position: (74.022, 138.475, -79.233)
 Rotation: (3.966, -161.149, 0.002)
 Size: (1.000, 1.000, 1.000)
@@ -610,7 +672,7 @@ MeshTextureId: 38053293
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 44:
+Part 45:
 Position: (-849.435, 169.589, 14.393)
 Rotation: (0.000, 0.000, 0.000)
 Size: (1.000, 1.000, 1.000)
@@ -622,7 +684,7 @@ Transparency: 1.000
 CanCollide: False
 Stud.Top: True
 
-Part 45:
+Part 46:
 Position: (1153.612, 170.483, 17.432)
 Rotation: (0.049, 24.492, -89.895)
 Size: (1.000, 0.800, 4.000)
@@ -637,7 +699,7 @@ MeshTextureId: 12224218
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 46:
+Part 47:
 Position: (1153.065, 173.489, 16.893)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.000, 7.000, 6.000)
@@ -648,7 +710,7 @@ Material: Neon
 Transparency: 0.500
 CanCollide: False
 
-Part 47:
+Part 48:
 Position: (1153.065, 169.589, 16.893)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.000, 0.800, 6.000)
@@ -658,7 +720,7 @@ Color: 0.067, 0.067, 0.067
 Material: Neon
 Transparency: 0.000
 
-Part 48:
+Part 49:
 Position: (1153.065, 177.189, 16.893)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.000, 0.400, 6.000)
@@ -668,7 +730,7 @@ Color: 0.067, 0.067, 0.067
 Material: Neon
 Transparency: 0.000
 
-Part 49:
+Part 50:
 Position: (1151.895, 170.074, 14.480)
 Rotation: (3.769, 173.955, 7.984)
 Size: (0.200, 0.210, 0.210)
@@ -678,7 +740,7 @@ Color: 1.000, 0.000, 0.000
 Material: Neon
 Transparency: 1.000
 
-Part 50:
+Part 51:
 Position: (1153.065, 173.289, 16.893)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.000, 7.000, 6.000)
@@ -689,7 +751,7 @@ Material: Ice
 Transparency: 0.500
 CanCollide: False
 
-Part 51:
+Part 52:
 Position: (44.397, 128.069, 69.874)
 Rotation: (0.000, -67.102, 0.000)
 Size: (17.566, 7.231, 19.891)
@@ -699,7 +761,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 52:
+Part 53:
 Position: (9.274, 127.805, 24.136)
 Rotation: (64.137, 86.220, -0.003)
 Size: (3.650, 6.613, 0.990)
@@ -714,117 +776,117 @@ MeshId: 3033498603
 MeshScale: 2.270, 2.270, 2.270
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 53:
+Part 54:
 Position: (12.110, 129.347, 43.058)
 Rotation: (0.000, 5.180, 0.000)
 Size: (10.670, 4.795, 8.800)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 54:
+Part 55:
 Position: (17.928, 129.347, 39.752)
 Rotation: (0.000, 53.337, 0.000)
 Size: (10.710, 4.795, 8.800)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 55:
+Part 56:
 Position: (25.899, 129.347, 33.448)
 Rotation: (0.000, 32.580, 0.000)
 Size: (10.710, 4.795, 9.860)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 56:
+Part 57:
 Position: (13.596, 129.347, 8.824)
 Rotation: (0.000, 161.241, 0.000)
 Size: (12.800, 4.795, 8.800)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 57:
+Part 58:
 Position: (23.834, 129.347, 16.267)
 Rotation: (0.000, 131.977, 0.000)
 Size: (14.870, 4.795, 8.800)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 58:
+Part 59:
 Position: (28.438, 129.347, 25.770)
 Rotation: (0.000, 99.397, 0.000)
 Size: (14.870, 4.795, 9.620)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 59:
+Part 60:
 Position: (-3.234, 129.347, 35.161)
 Rotation: (0.000, -43.295, 0.000)
 Size: (30.530, 4.795, 8.800)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 60:
+Part 61:
 Position: (3.393, 129.347, 5.938)
 Rotation: (0.000, 173.953, 0.000)
 Size: (12.800, 4.795, 8.800)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 61:
+Part 62:
 Position: (-8.699, 129.347, 2.923)
 Rotation: (0.000, 153.685, 0.000)
 Size: (14.890, 4.795, 8.800)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 62:
+Part 63:
 Position: (-27.939, 129.347, -8.701)
 Rotation: (0.000, 144.393, 0.000)
 Size: (30.490, 4.795, 8.800)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 63:
+Part 64:
 Position: (-35.304, 129.347, 12.998)
 Rotation: (0.000, -29.613, 0.000)
 Size: (49.860, 4.795, 8.800)
 Shape: Wedge
 ClassName: WedgePart
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
-Part 64:
+Part 65:
 Position: (26.418, 121.604, 45.213)
 Rotation: (0.000, -118.777, 0.000)
 Size: (22.780, 20.000, 3.350)
@@ -834,7 +896,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 65:
+Part 66:
 Position: (103.309, 124.121, 70.533)
 Rotation: (0.000, 62.000, 0.000)
 Size: (85.000, 14.967, 85.000)
@@ -849,7 +911,7 @@ MeshId: 2410993346
 MeshScale: 7.410, 1.305, 7.410
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 66:
+Part 67:
 Position: (22.733, 121.604, 47.406)
 Rotation: (0.000, -118.777, 0.000)
 Size: (15.390, 20.000, 7.700)
@@ -859,7 +921,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 67:
+Part 68:
 Position: (18.661, 121.604, 51.900)
 Rotation: (0.000, -118.777, 0.000)
 Size: (3.590, 20.000, 10.510)
@@ -869,7 +931,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 68:
+Part 69:
 Position: (38.684, 121.604, 20.279)
 Rotation: (0.000, -157.394, 0.000)
 Size: (12.790, 20.000, 18.520)
@@ -879,7 +941,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 69:
+Part 70:
 Position: (22.772, 121.604, -63.037)
 Rotation: (0.000, -118.777, 0.000)
 Size: (126.990, 20.000, 115.190)
@@ -889,7 +951,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 70:
+Part 71:
 Position: (-53.756, 121.604, 78.584)
 Rotation: (0.000, -118.777, 0.000)
 Size: (113.390, 20.000, 117.400)
@@ -899,7 +961,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 71:
+Part 72:
 Position: (79.219, 129.347, 43.627)
 Rotation: (0.000, -134.155, 0.000)
 Size: (93.985, 4.795, 28.850)
@@ -909,7 +971,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 72:
+Part 73:
 Position: (46.817, 121.604, 49.482)
 Rotation: (0.000, -118.777, 0.000)
 Size: (260.720, 20.000, 36.998)
@@ -919,7 +981,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 73:
+Part 74:
 Position: (-19.785, 121.604, -15.497)
 Rotation: (0.000, -120.402, 0.000)
 Size: (12.790, 20.000, 47.840)
@@ -929,7 +991,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 74:
+Part 75:
 Position: (149.477, 121.604, 6.484)
 Rotation: (0.000, -118.777, 0.000)
 Size: (86.500, 20.000, 175.160)
@@ -939,7 +1001,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 75:
+Part 76:
 Position: (9.082, 121.604, -0.219)
 Rotation: (0.000, -98.179, 0.000)
 Size: (8.290, 20.000, 21.590)
@@ -949,7 +1011,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 76:
+Part 77:
 Position: (-47.244, 121.604, 14.760)
 Rotation: (0.000, -118.777, 0.000)
 Size: (5.240, 20.000, 67.360)
@@ -959,7 +1021,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 77:
+Part 78:
 Position: (67.084, 110.604, 47.368)
 Rotation: (0.000, -118.777, 0.000)
 Size: (285.500, 2.000, 304.090)
@@ -970,7 +1032,7 @@ Material: SmoothPlastic
 Transparency: 0.000
 CanCollide: False
 
-Part 78:
+Part 79:
 Position: (135.586, 129.347, 33.937)
 Rotation: (0.000, -124.152, 0.000)
 Size: (29.985, 4.795, 81.850)
@@ -980,7 +1042,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 79:
+Part 80:
 Position: (-13.822, 121.604, 34.059)
 Rotation: (0.000, -118.777, 0.000)
 Size: (3.590, 20.000, 11.870)
@@ -990,7 +1052,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 80:
+Part 81:
 Position: (172.721, 121.604, 88.630)
 Rotation: (0.000, -118.777, 0.000)
 Size: (138.120, 20.000, 83.320)
@@ -1000,7 +1062,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 81:
+Part 82:
 Position: (136.983, 129.347, 98.312)
 Rotation: (0.000, -124.152, 0.000)
 Size: (107.985, 4.795, 31.850)
@@ -1010,7 +1072,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 82:
+Part 83:
 Position: (73.850, 121.604, 154.882)
 Rotation: (0.000, -118.777, 0.000)
 Size: (101.985, 20.000, 112.850)
@@ -1020,7 +1082,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 83:
+Part 84:
 Position: (72.485, 129.347, 111.711)
 Rotation: (0.000, -124.152, 0.000)
 Size: (33.985, 4.795, 78.850)
@@ -1030,7 +1092,7 @@ Color: 0.373, 0.573, 0.267
 Material: SmoothPlastic
 Transparency: 1.000
 
-Part 84:
+Part 85:
 Position: (32.998, 128.069, 68.280)
 Rotation: (0.000, -33.778, 0.000)
 Size: (12.056, 7.231, 10.711)
@@ -1040,7 +1102,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 85:
+Part 86:
 Position: (20.784, 127.009, 31.372)
 Rotation: (17.431, 37.645, -0.001)
 Size: (2.530, 1.570, 2.949)
@@ -1055,7 +1117,7 @@ MeshId: 3064943485
 MeshScale: 0.470, 0.470, 0.835
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 86:
+Part 87:
 Position: (63.907, 128.069, 26.369)
 Rotation: (0.000, -18.243, 0.000)
 Size: (17.566, 7.231, 47.891)
@@ -1065,7 +1127,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 87:
+Part 88:
 Position: (94.086, 129.347, 63.234)
 Rotation: (0.000, -134.155, 0.000)
 Size: (73.440, 4.795, 19.800)
@@ -1075,7 +1137,7 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 1.000
 
-Part 88:
+Part 89:
 Position: (95.084, 129.207, 63.300)
 Rotation: (0.000, -134.155, 0.000)
 Size: (73.440, 4.795, 19.800)
@@ -1085,7 +1147,7 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 1.000
 
-Part 89:
+Part 90:
 Position: (119.709, 129.347, 46.600)
 Rotation: (0.000, 145.850, 0.000)
 Size: (54.210, 4.795, 8.800)
@@ -1095,7 +1157,7 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 1.000
 
-Part 90:
+Part 91:
 Position: (118.629, 129.207, 80.904)
 Rotation: (0.000, 55.848, 0.000)
 Size: (67.210, 4.795, 19.800)
@@ -1105,7 +1167,7 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 1.000
 
-Part 91:
+Part 92:
 Position: (120.707, 129.207, 46.667)
 Rotation: (0.000, 145.850, 0.000)
 Size: (54.210, 4.795, 8.800)
@@ -1115,7 +1177,7 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 1.000
 
-Part 92:
+Part 93:
 Position: (118.545, 129.347, 81.459)
 Rotation: (0.000, 55.848, 0.000)
 Size: (67.210, 4.795, 17.590)
@@ -1125,7 +1187,7 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 1.000
 
-Part 93:
+Part 94:
 Position: (87.586, 129.207, 95.493)
 Rotation: (0.000, -34.150, 0.000)
 Size: (54.210, 4.795, 8.800)
@@ -1135,7 +1197,7 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 1.000
 
-Part 94:
+Part 95:
 Position: (86.588, 129.347, 95.427)
 Rotation: (0.000, -34.150, 0.000)
 Size: (54.210, 4.795, 8.800)
@@ -1145,7 +1207,7 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 1.000
 
-Part 95:
+Part 96:
 Position: (11.575, 126.005, 14.833)
 Rotation: (-40.505, 158.713, -0.004)
 Size: (5.861, 3.277, 3.512)
@@ -1160,7 +1222,7 @@ MeshId: 2316782855
 MeshScale: 1.171, 1.138, 0.922
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 96:
+Part 97:
 Position: (6.479, 126.469, 33.435)
 Rotation: (-40.508, 61.999, 0.001)
 Size: (8.044, 4.497, 4.820)
@@ -1175,7 +1237,7 @@ MeshId: 2316782855
 MeshScale: 1.607, 1.561, 1.265
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 97:
+Part 98:
 Position: (12.377, 127.487, 13.678)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1190,7 +1252,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 98:
+Part 99:
 Position: (9.246, 127.487, 33.548)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1205,7 +1267,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 99:
+Part 100:
 Position: (9.155, 127.887, 34.942)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.615, 2.516, 0.733)
@@ -1220,7 +1282,7 @@ MeshId: 2411772486
 MeshScale: 0.878, 0.878, 0.878
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 100:
+Part 101:
 Position: (-32.838, 127.887, -7.948)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.615, 2.516, 0.733)
@@ -1235,7 +1297,7 @@ MeshId: 2411772486
 MeshScale: 0.878, 0.878, 0.878
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 101:
+Part 102:
 Position: (-6.966, 128.502, 12.551)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.915, 3.746, 1.092)
@@ -1250,7 +1312,7 @@ MeshId: 2411772486
 MeshScale: 1.307, 1.307, 1.307
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 102:
+Part 103:
 Position: (-21.783, 126.325, 8.680)
 Rotation: (-40.510, -68.479, 0.000)
 Size: (5.861, 3.277, 3.512)
@@ -1265,7 +1327,7 @@ MeshId: 2316782855
 MeshScale: 1.171, 1.138, 0.922
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 103:
+Part 104:
 Position: (-24.074, 127.487, 7.937)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1280,7 +1342,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 104:
+Part 105:
 Position: (-7.138, 128.062, 15.146)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.700, 2.866, 0.835)
@@ -1295,7 +1357,7 @@ MeshId: 2411772486
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 105:
+Part 106:
 Position: (-37.986, 128.062, 6.643)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.700, 2.866, 0.835)
@@ -1310,7 +1372,7 @@ MeshId: 2411772486
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 106:
+Part 107:
 Position: (-5.902, 127.487, 13.433)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1325,7 +1387,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 107:
+Part 108:
 Position: (-20.093, 127.487, 9.343)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1340,7 +1402,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 108:
+Part 109:
 Position: (-35.504, 127.487, 5.125)
 Rotation: (0.000, -93.778, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1355,7 +1417,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 109:
+Part 110:
 Position: (24.256, 130.078, 13.121)
 Rotation: (0.000, 125.847, 0.000)
 Size: (8.087, 6.868, 12.772)
@@ -1369,7 +1431,7 @@ MeshId: 3064676350
 MeshScale: 3.508, 3.508, 3.508
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 110:
+Part 111:
 Position: (102.739, 128.215, 70.163)
 Rotation: (0.000, 62.000, 0.000)
 Size: (71.613, 7.187, 58.631)
@@ -1384,7 +1446,7 @@ MeshId: 2410993003
 MeshScale: 7.341, 7.510, 7.313
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 111:
+Part 112:
 Position: (109.108, 127.487, 57.572)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1399,7 +1461,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 112:
+Part 113:
 Position: (110.514, 127.487, 53.591)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1414,7 +1476,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 113:
+Part 114:
 Position: (125.203, 127.487, 59.923)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1429,7 +1491,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 114:
+Part 115:
 Position: (109.772, 126.325, 55.883)
 Rotation: (-40.509, -158.479, -0.003)
 Size: (5.861, 3.277, 3.512)
@@ -1444,7 +1506,7 @@ MeshId: 2316782855
 MeshScale: 1.171, 1.138, 0.922
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 115:
+Part 116:
 Position: (123.684, 128.062, 57.440)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.700, 2.866, 0.835)
@@ -1459,7 +1521,7 @@ MeshId: 2411772486
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 116:
+Part 117:
 Position: (105.901, 128.502, 70.700)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.915, 3.746, 1.092)
@@ -1474,7 +1536,7 @@ MeshId: 2411772486
 MeshScale: 1.307, 1.307, 1.307
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 117:
+Part 118:
 Position: (105.018, 127.487, 71.764)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1489,7 +1551,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 118:
+Part 119:
 Position: (94.323, 127.887, 67.104)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.615, 2.516, 0.733)
@@ -1504,7 +1566,7 @@ MeshId: 2411772486
 MeshScale: 0.878, 0.878, 0.878
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 119:
+Part 120:
 Position: (83.510, 127.887, 86.821)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.615, 2.516, 0.733)
@@ -1519,7 +1581,7 @@ MeshId: 2411772486
 MeshScale: 0.878, 0.878, 0.878
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 120:
+Part 121:
 Position: (102.930, 127.887, 100.965)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.615, 2.516, 0.733)
@@ -1534,7 +1596,7 @@ MeshId: 2411772486
 MeshScale: 0.878, 0.878, 0.878
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 121:
+Part 122:
 Position: (84.903, 127.487, 86.913)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1549,7 +1611,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 122:
+Part 123:
 Position: (104.774, 127.487, 90.044)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.419, 1.716, 0.500)
@@ -1564,7 +1626,7 @@ MeshId: 2411772486
 MeshScale: 0.599, 0.599, 0.599
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 123:
+Part 124:
 Position: (85.018, 126.469, 84.144)
 Rotation: (-40.506, -27.995, -0.006)
 Size: (8.044, 4.497, 4.820)
@@ -1579,7 +1641,7 @@ MeshId: 2316782855
 MeshScale: 1.607, 1.561, 1.265
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 124:
+Part 125:
 Position: (103.307, 128.062, 70.528)
 Rotation: (0.000, 176.221, 0.000)
 Size: (0.700, 2.866, 0.835)
@@ -1594,7 +1656,7 @@ MeshId: 2411772486
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 125:
+Part 126:
 Position: (103.619, 126.005, 89.240)
 Rotation: (-40.509, 68.709, -0.002)
 Size: (5.861, 3.277, 3.512)
@@ -1609,7 +1671,7 @@ MeshId: 2316782855
 MeshScale: 1.171, 1.138, 0.922
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 126:
+Part 127:
 Position: (62.358, 131.850, 57.314)
 Rotation: (0.000, 97.008, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1624,7 +1686,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 127:
+Part 128:
 Position: (38.407, 131.850, 47.435)
 Rotation: (0.000, 129.889, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1639,7 +1701,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 128:
+Part 129:
 Position: (-5.650, 131.850, -44.348)
 Rotation: (0.000, -168.780, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1654,7 +1716,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 129:
+Part 130:
 Position: (32.748, 131.850, -52.035)
 Rotation: (0.000, 11.220, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1669,7 +1731,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 130:
+Part 131:
 Position: (82.657, 131.850, -18.323)
 Rotation: (0.000, -168.780, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1684,7 +1746,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 131:
+Part 132:
 Position: (-49.232, 131.850, 70.019)
 Rotation: (0.000, 119.047, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1699,7 +1761,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 132:
+Part 133:
 Position: (130.262, 131.850, 20.649)
 Rotation: (0.000, 11.220, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1714,7 +1776,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 133:
+Part 134:
 Position: (3.170, 131.850, 118.898)
 Rotation: (0.000, -150.954, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1729,7 +1791,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 134:
+Part 135:
 Position: (30.108, 131.850, 75.820)
 Rotation: (0.000, 29.046, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1744,7 +1806,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 135:
+Part 136:
 Position: (96.567, 131.850, 125.066)
 Rotation: (0.000, 29.046, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1759,7 +1821,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 136:
+Part 137:
 Position: (155.641, 131.850, 81.585)
 Rotation: (0.000, -60.953, 0.000)
 Size: (14.544, 0.330, 14.661)
@@ -1774,7 +1836,7 @@ MeshId: 2726971115
 MeshScale: 1.921, 1.921, 1.921
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 137:
+Part 138:
 Position: (50.744, 131.586, 52.108)
 Rotation: (0.000, 137.634, 0.000)
 Size: (46.820, 0.197, 62.520)
@@ -1784,7 +1846,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 138:
+Part 139:
 Position: (22.248, 137.100, 57.936)
 Rotation: (0.000, -75.653, 0.000)
 Size: (11.080, 10.830, 6.188)
@@ -1798,7 +1860,7 @@ MeshId: 2646897098
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 139:
+Part 140:
 Position: (25.545, 132.267, 63.252)
 Rotation: (0.375, -119.942, 0.645)
 Size: (0.600, 0.600, 2.200)
@@ -1808,7 +1870,7 @@ Color: 0.769, 0.157, 0.110
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 140:
+Part 141:
 Position: (26.930, 132.278, 64.050)
 Rotation: (-89.258, -179.934, 59.988)
 Size: (1.400, 1.000, 1.400)
@@ -1823,7 +1885,7 @@ MeshId: 542202179
 MeshScale: 0.011, 0.020, 0.011
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 141:
+Part 142:
 Position: (24.159, 132.257, 62.453)
 Rotation: (-89.258, -179.934, -120.012)
 Size: (1.400, 1.000, 1.400)
@@ -1838,7 +1900,7 @@ MeshId: 542202179
 MeshScale: 0.011, 0.020, 0.011
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 142:
+Part 143:
 Position: (27.787, 132.777, 60.152)
 Rotation: (-89.258, -179.934, 59.988)
 Size: (0.200, 0.200, 0.200)
@@ -1851,7 +1913,7 @@ MeshType: FileMesh
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 143:
+Part 144:
 Position: (26.692, 133.830, 61.238)
 Rotation: (0.371, -119.939, -59.361)
 Size: (0.930, 0.400, 0.800)
@@ -1861,7 +1923,7 @@ Color: 0.769, 0.157, 0.110
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 144:
+Part 145:
 Position: (28.297, 132.774, 59.868)
 Rotation: (-0.375, 60.058, -0.645)
 Size: (0.400, 0.200, 0.400)
@@ -1871,7 +1933,7 @@ Color: 0.024, 0.522, 0.812
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 145:
+Part 146:
 Position: (27.416, 132.925, 59.993)
 Rotation: (-89.258, -179.934, 59.988)
 Size: (2.000, 0.400, 2.000)
@@ -1881,7 +1943,7 @@ Color: 0.106, 0.165, 0.208
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 146:
+Part 147:
 Position: (26.547, 132.370, 61.510)
 Rotation: (0.372, -119.940, -19.355)
 Size: (0.800, 0.400, 1.400)
@@ -1891,7 +1953,7 @@ Color: 0.769, 0.157, 0.110
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 147:
+Part 148:
 Position: (26.584, 132.776, 60.036)
 Rotation: (0.375, -119.942, 0.645)
 Size: (0.400, 0.200, 0.400)
@@ -1901,7 +1963,7 @@ Color: 0.024, 0.522, 0.812
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 148:
+Part 149:
 Position: (26.571, 133.092, 61.459)
 Rotation: (0.367, -119.946, -84.355)
 Size: (0.842, 0.400, 0.800)
@@ -1911,7 +1973,7 @@ Color: 0.769, 0.157, 0.110
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 149:
+Part 150:
 Position: (28.254, 132.773, 59.843)
 Rotation: (-89.258, -179.934, 59.988)
 Size: (0.200, 0.600, 0.200)
@@ -1921,7 +1983,7 @@ Color: 0.773, 0.773, 0.820
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 150:
+Part 151:
 Position: (27.094, 132.772, 59.753)
 Rotation: (-89.258, -179.934, 59.988)
 Size: (0.200, 0.200, 0.200)
@@ -1934,7 +1996,7 @@ MeshType: FileMesh
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 151:
+Part 152:
 Position: (26.969, 132.775, 59.968)
 Rotation: (-0.370, 60.060, 89.361)
 Size: (0.200, 0.500, 0.200)
@@ -1944,7 +2006,7 @@ Color: 0.773, 0.773, 0.820
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 152:
+Part 153:
 Position: (27.912, 132.775, 59.935)
 Rotation: (0.370, -119.940, 90.639)
 Size: (0.200, 0.500, 0.200)
@@ -1954,7 +2016,7 @@ Color: 0.773, 0.773, 0.820
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 153:
+Part 154:
 Position: (26.629, 132.776, 60.061)
 Rotation: (-89.258, -179.934, -120.012)
 Size: (0.200, 0.600, 0.200)
@@ -1964,7 +2026,7 @@ Color: 0.773, 0.773, 0.820
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 154:
+Part 155:
 Position: (27.067, 134.145, 60.584)
 Rotation: (0.374, -119.940, -29.360)
 Size: (0.400, 0.200, 1.000)
@@ -1974,7 +2036,7 @@ Color: 0.922, 0.722, 0.220
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 155:
+Part 156:
 Position: (27.032, 133.451, 60.114)
 Rotation: (4.728, -122.404, -29.464)
 Size: (0.400, 1.600, 0.200)
@@ -1984,7 +2046,7 @@ Color: 0.922, 0.722, 0.220
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 156:
+Part 157:
 Position: (27.416, 132.925, 59.993)
 Rotation: (0.375, -119.942, 0.645)
 Size: (2.600, 2.600, 0.400)
@@ -1999,7 +2061,7 @@ MeshId: 431119824
 MeshScale: 0.186, 0.186, 0.100
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 157:
+Part 158:
 Position: (26.600, 132.466, 61.417)
 Rotation: (0.368, -119.943, -109.358)
 Size: (0.621, 0.400, 0.800)
@@ -2009,7 +2071,7 @@ Color: 0.769, 0.157, 0.110
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 158:
+Part 159:
 Position: (25.994, 132.257, 62.471)
 Rotation: (0.375, -119.942, 0.645)
 Size: (1.600, 0.400, 1.400)
@@ -2019,7 +2081,7 @@ Color: 0.769, 0.157, 0.110
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 159:
+Part 160:
 Position: (25.821, 132.972, 62.763)
 Rotation: (0.373, -119.947, -14.357)
 Size: (0.400, 1.200, 1.400)
@@ -2030,7 +2092,7 @@ Material: SmoothPlastic
 Transparency: 0.000
 CanCollide: False
 
-Part 160:
+Part 161:
 Position: (25.653, 134.738, 60.492)
 Rotation: (15.170, -106.805, -47.558)
 Size: (0.200, 0.200, 0.800)
@@ -2040,7 +2102,7 @@ Color: 0.922, 0.722, 0.220
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 161:
+Part 162:
 Position: (27.498, 134.743, 61.348)
 Rotation: (-19.351, 36.350, 53.532)
 Size: (0.400, 0.400, 0.600)
@@ -2050,7 +2112,7 @@ Color: 0.922, 0.722, 0.220
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 162:
+Part 163:
 Position: (26.182, 134.733, 60.589)
 Rotation: (-18.663, -96.334, -53.214)
 Size: (0.400, 0.400, 0.600)
@@ -2060,7 +2122,7 @@ Color: 0.922, 0.722, 0.220
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 163:
+Part 164:
 Position: (26.924, 134.331, 60.828)
 Rotation: (0.374, -119.940, -29.360)
 Size: (0.709, 0.400, 0.800)
@@ -2070,7 +2132,7 @@ Color: 0.769, 0.157, 0.110
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 164:
+Part 165:
 Position: (27.850, 134.754, 61.756)
 Rotation: (14.448, 46.961, 47.731)
 Size: (0.200, 0.200, 0.800)
@@ -2080,7 +2142,7 @@ Color: 0.922, 0.722, 0.220
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 165:
+Part 166:
 Position: (26.887, 134.658, 60.888)
 Rotation: (0.369, -119.946, -49.356)
 Size: (0.400, 0.400, 1.200)
@@ -2090,7 +2152,7 @@ Color: 0.922, 0.722, 0.220
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 166:
+Part 167:
 Position: (27.498, 133.455, 60.383)
 Rotation: (-3.988, -117.482, -29.435)
 Size: (0.400, 1.600, 0.200)
@@ -2100,7 +2162,7 @@ Color: 0.922, 0.722, 0.220
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 167:
+Part 168:
 Position: (27.442, 132.775, 59.952)
 Rotation: (-89.258, -179.934, 59.988)
 Size: (0.200, 0.800, 0.200)
@@ -2110,7 +2172,7 @@ Color: 0.773, 0.773, 0.820
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 168:
+Part 169:
 Position: (22.967, 131.963, 52.820)
 Rotation: (-76.438, -15.883, -179.089)
 Size: (0.200, 0.400, 0.200)
@@ -2120,7 +2182,7 @@ Color: 0.624, 0.624, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 169:
+Part 170:
 Position: (22.217, 134.211, 53.181)
 Rotation: (-13.561, 165.055, -15.222)
 Size: (0.200, 2.460, 0.200)
@@ -2130,7 +2192,7 @@ Color: 0.624, 0.624, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 170:
+Part 171:
 Position: (21.153, 132.110, 52.053)
 Rotation: (76.438, 164.117, -0.911)
 Size: (3.000, 0.200, 0.200)
@@ -2140,7 +2202,7 @@ Color: 0.624, 0.624, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 171:
+Part 172:
 Position: (19.709, 131.950, 51.948)
 Rotation: (-76.438, -15.883, -179.089)
 Size: (0.200, 0.800, 0.200)
@@ -2150,7 +2212,7 @@ Color: 0.624, 0.624, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 172:
+Part 173:
 Position: (21.834, 135.365, 53.367)
 Rotation: (-69.722, -64.191, -132.578)
 Size: (0.200, 1.200, 0.200)
@@ -2160,7 +2222,7 @@ Color: 0.624, 0.624, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 173:
+Part 174:
 Position: (21.584, 135.130, 54.306)
 Rotation: (-69.722, -64.191, -132.578)
 Size: (0.300, 0.800, 0.300)
@@ -2170,7 +2232,7 @@ Color: 0.000, 0.063, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 174:
+Part 175:
 Position: (21.002, 131.969, 52.617)
 Rotation: (76.438, 164.117, -0.911)
 Size: (3.000, 0.200, 0.200)
@@ -2180,7 +2242,7 @@ Color: 0.624, 0.624, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 175:
+Part 176:
 Position: (22.967, 131.963, 52.820)
 Rotation: (-76.438, -15.883, -179.089)
 Size: (0.800, 0.200, 0.800)
@@ -2190,23 +2252,8 @@ Color: 0.000, 0.063, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 176:
-Position: (22.967, 131.963, 52.820)
-Rotation: (-13.559, 165.052, -0.222)
-Size: (1.000, 1.000, 0.200)
-Shape: Normal
-ClassName: Part
-Color: 0.000, 0.063, 0.675
-Material: Plastic
-Transparency: 0.000
-CanCollide: False
-MeshType: FileMesh
-MeshId: 431119824
-MeshScale: 0.071, 0.071, 0.050
-MeshOffset: 0.000, 0.000, 0.000
-
 Part 177:
-Position: (19.709, 131.950, 51.948)
+Position: (22.967, 131.963, 52.820)
 Rotation: (-13.559, 165.052, -0.222)
 Size: (1.000, 1.000, 0.200)
 Shape: Normal
@@ -2222,6 +2269,21 @@ MeshOffset: 0.000, 0.000, 0.000
 
 Part 178:
 Position: (19.709, 131.950, 51.948)
+Rotation: (-13.559, 165.052, -0.222)
+Size: (1.000, 1.000, 0.200)
+Shape: Normal
+ClassName: Part
+Color: 0.000, 0.063, 0.675
+Material: Plastic
+Transparency: 0.000
+CanCollide: False
+MeshType: FileMesh
+MeshId: 431119824
+MeshScale: 0.071, 0.071, 0.050
+MeshOffset: 0.000, 0.000, 0.000
+
+Part 179:
+Position: (19.709, 131.950, 51.948)
 Rotation: (-76.438, -15.883, -179.089)
 Size: (0.800, 0.200, 0.800)
 Shape: Normal
@@ -2230,7 +2292,7 @@ Color: 0.000, 0.063, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 179:
+Part 180:
 Position: (21.272, 132.040, 52.387)
 Rotation: (76.438, 164.117, -0.911)
 Size: (2.200, 0.400, 0.200)
@@ -2240,7 +2302,7 @@ Color: 0.016, 0.675, 0.922
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 180:
+Part 181:
 Position: (22.444, 132.431, 52.797)
 Rotation: (-13.560, 165.059, 34.777)
 Size: (0.300, 0.936, 0.300)
@@ -2250,7 +2312,7 @@ Color: 0.016, 0.675, 0.922
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 181:
+Part 182:
 Position: (22.780, 132.523, 52.910)
 Rotation: (-13.561, 165.055, -15.222)
 Size: (0.300, 1.260, 0.300)
@@ -2260,7 +2322,7 @@ Color: 0.016, 0.675, 0.922
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 182:
+Part 183:
 Position: (22.084, 135.599, 52.428)
 Rotation: (-69.722, -64.191, -132.578)
 Size: (0.300, 0.800, 0.300)
@@ -2270,7 +2332,7 @@ Color: 0.000, 0.063, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 183:
+Part 184:
 Position: (24.110, 133.641, 48.869)
 Rotation: (0.000, -105.978, 0.000)
 Size: (6.239, 4.234, 4.401)
@@ -2284,7 +2346,7 @@ MeshId: 3346184741
 MeshScale: 1.226, 1.226, 1.226
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 184:
+Part 185:
 Position: (24.229, 133.642, 54.961)
 Rotation: (-16.911, 104.732, -5.560)
 Size: (0.860, 2.330, 0.736)
@@ -2299,7 +2361,7 @@ MeshId: 2645334575
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 185:
+Part 186:
 Position: (24.559, 132.640, 55.018)
 Rotation: (-16.911, 104.732, 174.440)
 Size: (2.323, 2.323, 0.178)
@@ -2314,7 +2376,7 @@ MeshId: 2645334776
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 186:
+Part 187:
 Position: (24.227, 132.534, 55.392)
 Rotation: (-16.911, 104.732, -5.560)
 Size: (0.477, 0.102, 0.442)
@@ -2329,7 +2391,7 @@ MeshId: 2645334971
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 187:
+Part 188:
 Position: (24.893, 132.731, 54.644)
 Rotation: (16.911, -75.268, 5.560)
 Size: (0.477, 0.102, 0.442)
@@ -2344,7 +2406,7 @@ MeshId: 2645334971
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 188:
+Part 189:
 Position: (24.237, 132.541, 55.582)
 Rotation: (-16.911, 104.732, -5.560)
 Size: (0.307, 0.121, 0.248)
@@ -2359,7 +2421,7 @@ MeshId: 2645335112
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 189:
+Part 190:
 Position: (24.883, 132.725, 54.455)
 Rotation: (16.911, -75.268, 5.560)
 Size: (0.307, 0.121, 0.248)
@@ -2374,7 +2436,7 @@ MeshId: 2645335112
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 190:
+Part 191:
 Position: (24.287, 136.454, 57.424)
 Rotation: (0.000, 14.007, 0.000)
 Size: (1.850, 9.720, 10.910)
@@ -2384,7 +2446,7 @@ Color: 1.000, 0.773, 0.773
 Material: Plastic
 Transparency: 1.000
 
-Part 191:
+Part 192:
 Position: (22.145, 134.879, 55.132)
 Rotation: (-90.000, 30.600, 0.000)
 Size: (1.124, 0.408, 0.670)
@@ -2399,7 +2461,7 @@ MeshId: 1605838445
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 192:
+Part 193:
 Position: (21.924, 134.879, 54.759)
 Rotation: (0.014, -59.407, 89.982)
 Size: (0.805, 0.479, 1.215)
@@ -2414,7 +2476,7 @@ MeshId: 645273190
 MeshScale: 1.000, 1.050, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 193:
+Part 194:
 Position: (22.989, 136.381, 61.045)
 Rotation: (-13.518, 104.958, 11.945)
 Size: (0.400, 1.600, 0.400)
@@ -2424,7 +2486,7 @@ Color: 0.275, 0.573, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 194:
+Part 195:
 Position: (23.139, 135.525, 60.811)
 Rotation: (-11.612, -162.215, -13.804)
 Size: (0.400, 0.200, 0.400)
@@ -2434,7 +2496,7 @@ Color: 0.773, 0.773, 0.820
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 195:
+Part 196:
 Position: (23.307, 134.573, 60.552)
 Rotation: (-11.612, -162.215, -13.804)
 Size: (0.300, 0.200, 0.300)
@@ -2444,7 +2506,7 @@ Color: 0.106, 0.165, 0.208
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 196:
+Part 197:
 Position: (23.139, 135.525, 60.811)
 Rotation: (-11.612, -162.215, -13.804)
 Size: (0.300, 0.200, 1.200)
@@ -2454,7 +2516,7 @@ Color: 0.773, 0.773, 0.820
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 197:
+Part 198:
 Position: (22.813, 137.379, 61.316)
 Rotation: (-11.612, -162.215, -13.804)
 Size: (0.500, 0.600, 0.500)
@@ -2464,7 +2526,7 @@ Color: 0.106, 0.165, 0.208
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 198:
+Part 199:
 Position: (23.223, 135.049, 60.681)
 Rotation: (-11.612, -162.215, -13.804)
 Size: (0.200, 0.840, 0.200)
@@ -2474,7 +2536,7 @@ Color: 0.624, 0.624, 0.675
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 199:
+Part 200:
 Position: (22.780, 137.570, 61.368)
 Rotation: (72.035, 147.105, -49.273)
 Size: (0.200, 2.310, 0.200)
@@ -2484,7 +2546,7 @@ Color: 0.275, 0.573, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 200:
+Part 201:
 Position: (22.098, 135.021, 55.862)
 Rotation: (0.000, -95.295, 35.395)
 Size: (0.805, 0.479, 1.215)
@@ -2499,7 +2561,7 @@ MeshId: 645273190
 MeshScale: 1.000, 1.050, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 201:
+Part 202:
 Position: (22.075, 134.668, 56.113)
 Rotation: (-35.397, -5.287, -0.001)
 Size: (1.528, 0.408, 0.460)
@@ -2514,7 +2576,7 @@ MeshId: 1605837165
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 202:
+Part 203:
 Position: (23.735, 135.823, 58.977)
 Rotation: (0.000, -3.779, 0.000)
 Size: (0.695, 0.658, 0.695)
@@ -2529,7 +2591,7 @@ MeshId: 1399856124
 MeshScale: 0.303, 0.303, 0.303
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 203:
+Part 204:
 Position: (23.735, 134.987, 58.977)
 Rotation: (0.000, -3.779, 0.000)
 Size: (0.605, 1.142, 0.605)
@@ -2544,7 +2606,7 @@ MeshId: 1399855916
 MeshScale: 0.303, 0.303, 0.303
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 204:
+Part 205:
 Position: (23.369, 134.609, 58.394)
 Rotation: (78.362, -99.257, 0.011)
 Size: (0.705, 1.714, 0.705)
@@ -2559,7 +2621,7 @@ MeshId: 1399868493
 MeshScale: 0.632, 0.632, 0.632
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 205:
+Part 206:
 Position: (51.189, 131.784, 51.384)
 Rotation: (0.000, -17.292, 0.000)
 Size: (44.300, 0.100, 44.800)
@@ -2571,7 +2633,7 @@ Transparency: 1.000
 CanCollide: False
 Decal.Top = 57029310
 
-Part 206:
+Part 207:
 Position: (35.465, 133.784, 32.618)
 Rotation: (0.000, -132.366, 0.000)
 Size: (6.660, 4.199, 4.898)
@@ -2587,7 +2649,7 @@ MeshScale: 0.800, 0.700, 0.816
 MeshOffset: 0.000, 0.000, 0.000
 Stud.Top: True
 
-Part 207:
+Part 208:
 Position: (36.095, 138.956, 30.554)
 Rotation: (0.000, -132.366, 0.000)
 Size: (2.000, 2.000, 1.000)
@@ -2598,7 +2660,7 @@ Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 208:
+Part 209:
 Position: (37.196, 140.160, 30.267)
 Rotation: (-8.706, -146.115, 37.020)
 Size: (1.030, 1.000, 1.670)
@@ -2614,7 +2676,7 @@ MeshTextureId: 311311058
 MeshScale: 0.450, 0.450, 0.450
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 209:
+Part 210:
 Position: (37.511, 140.522, 30.128)
 Rotation: (-1.750, -140.899, 36.544)
 Size: (3.000, 1.600, 3.000)
@@ -2630,7 +2692,7 @@ MeshTextureId: 12811694
 MeshScale: 1.000, 1.000, 1.100
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 210:
+Part 211:
 Position: (36.860, 137.184, 30.676)
 Rotation: (-0.942, -142.221, 0.310)
 Size: (1.000, 1.500, 1.000)
@@ -2645,7 +2707,7 @@ MeshId: 532220017
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 211:
+Part 212:
 Position: (36.695, 137.575, 30.474)
 Rotation: (61.589, -151.154, -9.225)
 Size: (1.000, 1.500, 1.000)
@@ -2660,7 +2722,7 @@ MeshId: 532220018
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 212:
+Part 213:
 Position: (36.137, 138.028, 30.538)
 Rotation: (-11.779, -129.845, 2.683)
 Size: (2.000, 0.400, 1.000)
@@ -2675,7 +2737,7 @@ MeshId: 532220036
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 213:
+Part 214:
 Position: (36.833, 136.393, 30.644)
 Rotation: (-35.151, -135.318, -6.806)
 Size: (1.000, 0.300, 1.000)
@@ -2690,7 +2752,7 @@ MeshId: 532220012
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 214:
+Part 215:
 Position: (35.187, 140.243, 31.177)
 Rotation: (-0.510, -148.338, 93.043)
 Size: (1.000, 1.400, 1.000)
@@ -2705,7 +2767,7 @@ MeshId: 532220004
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 215:
+Part 216:
 Position: (35.100, 140.289, 31.515)
 Rotation: (-4.464, -71.042, 98.188)
 Size: (1.000, 1.200, 1.000)
@@ -2720,7 +2782,7 @@ MeshId: 532219999
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 216:
+Part 217:
 Position: (36.417, 138.979, 30.566)
 Rotation: (-4.775, -161.157, 22.955)
 Size: (2.000, 1.600, 1.000)
@@ -2735,7 +2797,7 @@ MeshId: 532220007
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 217:
+Part 218:
 Position: (36.967, 140.146, 30.438)
 Rotation: (-7.421, -147.054, 29.129)
 Size: (2.000, 1.000, 1.000)
@@ -2749,7 +2811,7 @@ MeshScale: 1.250, 1.250, 1.250
 MeshOffset: 0.000, 0.000, 0.000
 Decal.Front = 3016289446
 
-Part 218:
+Part 219:
 Position: (35.720, 136.099, 30.757)
 Rotation: (-0.003, -124.488, -0.069)
 Size: (1.000, 0.300, 1.000)
@@ -2764,7 +2826,7 @@ MeshId: 532220020
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 219:
+Part 220:
 Position: (35.881, 137.373, 30.990)
 Rotation: (15.015, -133.227, -0.633)
 Size: (1.000, 1.500, 1.000)
@@ -2779,7 +2841,7 @@ MeshId: 532220031
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 220:
+Part 221:
 Position: (35.885, 136.849, 30.970)
 Rotation: (-20.799, -133.283, -3.158)
 Size: (1.000, 1.500, 1.000)
@@ -2794,7 +2856,7 @@ MeshId: 532220027
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 221:
+Part 222:
 Position: (37.939, 138.538, 30.100)
 Rotation: (13.656, -144.424, 6.000)
 Size: (1.000, 1.400, 1.000)
@@ -2809,7 +2871,7 @@ MeshId: 532219996
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 222:
+Part 223:
 Position: (38.111, 138.282, 30.330)
 Rotation: (75.499, -130.988, 6.757)
 Size: (1.000, 1.200, 1.000)
@@ -2824,7 +2886,7 @@ MeshId: 532219991
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 223:
+Part 224:
 Position: (38.587, 138.142, 30.816)
 Rotation: (77.750, -42.816, 84.151)
 Size: (1.000, 0.300, 1.000)
@@ -2839,7 +2901,7 @@ MeshId: 532219986
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 224:
+Part 225:
 Position: (35.540, 140.360, 32.089)
 Rotation: (4.998, -39.786, 122.344)
 Size: (1.000, 0.300, 1.000)
@@ -2854,7 +2916,7 @@ MeshId: 532219997
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 225:
+Part 226:
 Position: (33.495, 138.997, 33.395)
 Rotation: (0.000, -132.366, 0.000)
 Size: (2.000, 2.000, 1.000)
@@ -2865,7 +2927,7 @@ Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 226:
+Part 227:
 Position: (34.743, 140.906, 33.174)
 Rotation: (-6.756, -145.700, 25.451)
 Size: (1.200, 0.600, 1.600)
@@ -2881,7 +2943,7 @@ MeshTextureId: 160701378
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 227:
+Part 228:
 Position: (34.538, 139.979, 33.626)
 Rotation: (-6.756, -145.700, 25.451)
 Size: (1.600, 1.000, 1.000)
@@ -2898,7 +2960,7 @@ MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 Decal.Front = 7421267454
 
-Part 228:
+Part 229:
 Position: (33.303, 137.517, 33.806)
 Rotation: (11.383, -133.366, -0.138)
 Size: (1.000, 1.217, 1.000)
@@ -2913,7 +2975,7 @@ MeshId: 1699715641
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 229:
+Part 230:
 Position: (33.608, 138.099, 33.393)
 Rotation: (-12.029, -131.633, 3.009)
 Size: (2.000, 0.400, 1.000)
@@ -2928,7 +2990,7 @@ MeshId: 1699715652
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 230:
+Part 231:
 Position: (34.136, 140.404, 33.355)
 Rotation: (-1.107, -139.874, 12.047)
 Size: (2.000, 1.000, 1.000)
@@ -2942,7 +3004,7 @@ MeshScale: 1.250, 1.250, 1.250
 MeshOffset: 0.000, 0.000, 0.000
 Decal.Front = 110287880
 
-Part 231:
+Part 232:
 Position: (33.871, 139.137, 33.371)
 Rotation: (-5.503, -170.009, 12.124)
 Size: (2.000, 1.600, 1.000)
@@ -2957,7 +3019,7 @@ MeshId: 1699715593
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 232:
+Part 233:
 Position: (35.478, 139.231, 33.483)
 Rotation: (24.139, 163.340, -13.326)
 Size: (1.000, 1.169, 1.000)
@@ -2972,7 +3034,7 @@ MeshId: 1699715550
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 233:
+Part 234:
 Position: (33.195, 136.165, 33.614)
 Rotation: (0.023, -133.354, -0.066)
 Size: (1.000, 0.300, 1.000)
@@ -2987,7 +3049,7 @@ MeshId: 1699715627
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 234:
+Part 235:
 Position: (33.236, 136.811, 33.657)
 Rotation: (-6.113, -144.623, 0.929)
 Size: (1.000, 1.193, 1.000)
@@ -3002,7 +3064,7 @@ MeshId: 1699715632
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 235:
+Part 236:
 Position: (34.197, 137.634, 33.147)
 Rotation: (36.518, -175.069, -28.000)
 Size: (1.000, 1.217, 1.000)
@@ -3017,7 +3079,7 @@ MeshId: 1699715616
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 236:
+Part 237:
 Position: (35.493, 138.942, 33.890)
 Rotation: (75.162, 78.448, -97.083)
 Size: (1.000, 1.052, 1.000)
@@ -3032,7 +3094,7 @@ MeshId: 1699715541
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 237:
+Part 238:
 Position: (34.427, 137.025, 33.147)
 Rotation: (-24.328, -145.953, -19.867)
 Size: (1.000, 1.193, 1.000)
@@ -3047,7 +3109,7 @@ MeshId: 1699715610
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 238:
+Part 239:
 Position: (34.442, 136.479, 32.804)
 Rotation: (-40.867, -154.907, -4.483)
 Size: (1.000, 0.300, 1.000)
@@ -3062,7 +3124,7 @@ MeshId: 1699715602
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 239:
+Part 240:
 Position: (35.460, 138.952, 34.514)
 Rotation: (69.855, 101.596, -81.659)
 Size: (1.000, 0.300, 1.000)
@@ -3077,7 +3139,7 @@ MeshId: 1699715537
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 240:
+Part 241:
 Position: (33.165, 140.362, 34.301)
 Rotation: (-7.836, -1.252, 75.539)
 Size: (1.000, 1.052, 1.000)
@@ -3092,7 +3154,7 @@ MeshId: 1699715562
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 241:
+Part 242:
 Position: (32.998, 140.409, 33.963)
 Rotation: (-6.235, -104.782, 92.791)
 Size: (1.000, 1.169, 1.000)
@@ -3107,7 +3169,7 @@ MeshId: 1699715576
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 242:
+Part 243:
 Position: (33.762, 140.260, 34.279)
 Rotation: (-0.209, 23.535, 100.409)
 Size: (1.000, 0.300, 1.000)
@@ -3122,7 +3184,7 @@ MeshId: 1699715557
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 243:
+Part 244:
 Position: (43.899, 138.684, 22.390)
 Rotation: (0.000, -168.138, 0.000)
 Size: (4.600, 9.800, 4.600)
@@ -3133,7 +3195,7 @@ Material: SmoothPlastic
 Transparency: 0.400
 CanCollide: False
 
-Part 244:
+Part 245:
 Position: (39.861, 133.159, 29.597)
 Rotation: (0.000, -106.929, 0.000)
 Size: (3.069, 2.400, 3.000)
@@ -3149,7 +3211,7 @@ MeshScale: 3.052, 3.000, 3.000
 MeshOffset: 0.000, 0.000, 0.000
 Stud.Top: True
 
-Part 245:
+Part 246:
 Position: (4.805, 130.762, 27.899)
 Rotation: (0.000, -3.779, 0.000)
 Size: (3.000, 0.300, 3.000)
@@ -3161,7 +3223,7 @@ Transparency: 0.000
 CanCollide: False
 Stud.Top: True
 
-Part 246:
+Part 247:
 Position: (38.061, 133.612, 27.130)
 Rotation: (0.000, -164.597, 0.000)
 Size: (3.000, 4.000, 3.000)
@@ -3177,7 +3239,7 @@ MeshScale: 3.000, 3.000, 3.000
 MeshOffset: 0.000, 0.000, 0.000
 Stud.Top: True
 
-Part 247:
+Part 248:
 Position: (49.619, 133.385, 25.699)
 Rotation: (0.000, -168.158, 0.000)
 Size: (0.600, 4.000, 0.400)
@@ -3187,7 +3249,7 @@ Color: 0.624, 0.624, 0.624
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 248:
+Part 249:
 Position: (51.213, 131.592, 5.480)
 Rotation: (0.000, -76.999, 180.000)
 Size: (4.000, 0.200, 4.000)
@@ -3197,7 +3259,7 @@ Color: 0.000, 1.000, 0.000
 Material: Plastic
 Transparency: 1.000
 
-Part 249:
+Part 250:
 Position: (52.182, 139.556, 6.922)
 Rotation: (0.000, 13.006, 0.000)
 Size: (12.730, 16.098, 7.444)
@@ -3212,7 +3274,7 @@ MeshId: 2316781156
 MeshScale: 4.674, 4.674, 4.674
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 250:
+Part 251:
 Position: (51.901, 148.373, 5.709)
 Rotation: (0.000, 13.006, 0.000)
 Size: (23.400, 13.464, 17.805)
@@ -3227,7 +3289,7 @@ MeshId: 2316782855
 MeshScale: 4.674, 4.674, 4.674
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 251:
+Part 252:
 Position: (44.721, 131.884, 26.305)
 Rotation: (0.000, 101.858, 0.000)
 Size: (4.000, 1.000, 4.000)
@@ -3237,7 +3299,7 @@ Color: 0.624, 0.624, 0.624
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 252:
+Part 253:
 Position: (44.618, 132.884, 25.816)
 Rotation: (0.000, -78.142, 0.000)
 Size: (3.000, 1.000, 4.000)
@@ -3247,7 +3309,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 253:
+Part 254:
 Position: (20.705, 130.651, 28.808)
 Rotation: (-66.522, 114.325, -59.599)
 Size: (1.233, 1.482, 0.059)
@@ -3262,7 +3324,7 @@ MeshId: 4211129309
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 254:
+Part 255:
 Position: (10.993, 130.628, 12.410)
 Rotation: (71.138, -30.507, -77.357)
 Size: (0.457, 1.189, 0.055)
@@ -3277,7 +3339,7 @@ MeshId: 4211129010
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 255:
+Part 256:
 Position: (-3.160, 130.600, 18.821)
 Rotation: (75.789, 62.263, 117.762)
 Size: (0.457, 1.189, 0.055)
@@ -3292,7 +3354,7 @@ MeshId: 4211129010
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 256:
+Part 257:
 Position: (-25.050, 130.650, 7.454)
 Rotation: (78.765, 20.751, -135.510)
 Size: (0.457, 1.189, 0.055)
@@ -3307,7 +3369,7 @@ MeshId: 4211129010
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 257:
+Part 258:
 Position: (-6.279, 130.600, 5.102)
 Rotation: (-78.842, -170.603, 44.438)
 Size: (1.233, 1.482, 0.059)
@@ -3322,7 +3384,7 @@ MeshId: 4211129309
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 258:
+Part 259:
 Position: (-11.974, 130.596, 24.835)
 Rotation: (-81.172, -44.917, 0.030)
 Size: (1.233, 1.482, 0.059)
@@ -3337,7 +3399,7 @@ MeshId: 4211129309
 MeshScale: 1.000, 1.000, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 259:
+Part 260:
 Position: (33.530, 135.363, 54.128)
 Rotation: (0.000, 103.600, 0.000)
 Size: (2.400, 3.460, 2.450)
@@ -3348,7 +3410,7 @@ Material: Plastic
 Transparency: 1.000
 CanCollide: False
 
-Part 260:
+Part 261:
 Position: (47.813, 131.884, 21.568)
 Rotation: (0.005, 11.867, -0.004)
 Size: (4.000, 1.000, 4.000)
@@ -3358,7 +3420,7 @@ Color: 0.624, 0.624, 0.624
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 261:
+Part 262:
 Position: (57.942, 136.413, 5.921)
 Rotation: (90.000, 157.715, 0.000)
 Size: (4.200, 0.200, 2.400)
@@ -3368,7 +3430,7 @@ Color: 0.800, 0.557, 0.412
 Material: Slate
 Transparency: 0.000
 
-Part 262:
+Part 263:
 Position: (60.996, 135.213, 7.173)
 Rotation: (-90.000, -112.289, 0.000)
 Size: (0.200, 2.800, 2.400)
@@ -3378,7 +3440,7 @@ Color: 0.800, 0.557, 0.412
 Material: Slate
 Transparency: 0.000
 
-Part 263:
+Part 264:
 Position: (60.996, 137.613, 7.173)
 Rotation: (90.000, 67.711, 0.000)
 Size: (0.200, 2.800, 2.400)
@@ -3388,7 +3450,7 @@ Color: 0.800, 0.557, 0.412
 Material: Slate
 Transparency: 0.000
 
-Part 264:
+Part 265:
 Position: (58.127, 133.813, 5.997)
 Rotation: (90.000, 157.715, 0.000)
 Size: (0.600, 0.600, 4.400)
@@ -3398,7 +3460,7 @@ Color: 0.800, 0.557, 0.412
 Material: Slate
 Transparency: 0.000
 
-Part 265:
+Part 266:
 Position: (58.035, 136.413, 5.959)
 Rotation: (90.000, 157.715, 0.000)
 Size: (4.000, 1.000, 2.000)
@@ -3408,7 +3470,7 @@ Color: 0.624, 0.373, 0.208
 Material: WoodPlanks
 Transparency: 0.000
 
-Part 266:
+Part 267:
 Position: (60.996, 137.413, 7.173)
 Rotation: (90.000, 67.711, 0.000)
 Size: (1.000, 2.400, 2.000)
@@ -3418,7 +3480,7 @@ Color: 0.624, 0.373, 0.208
 Material: WoodPlanks
 Transparency: 0.000
 
-Part 267:
+Part 268:
 Position: (60.996, 135.413, 7.173)
 Rotation: (-90.000, -112.289, 0.000)
 Size: (1.000, 2.400, 2.000)
@@ -3428,7 +3490,7 @@ Color: 0.624, 0.373, 0.208
 Material: WoodPlanks
 Transparency: 0.000
 
-Part 268:
+Part 269:
 Position: (57.947, 136.476, 6.490)
 Rotation: (0.000, 157.717, 0.000)
 Size: (4.028, 1.810, 0.050)
@@ -3439,7 +3501,7 @@ Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 269:
+Part 270:
 Position: (40.473, 132.884, 23.109)
 Rotation: (0.005, -168.153, 0.001)
 Size: (3.000, 1.000, 4.000)
@@ -3449,7 +3511,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 270:
+Part 271:
 Position: (39.983, 131.884, 23.212)
 Rotation: (0.000, 11.847, 0.000)
 Size: (4.000, 1.000, 4.000)
@@ -3459,7 +3521,7 @@ Color: 0.624, 0.624, 0.624
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 271:
+Part 272:
 Position: (46.219, 145.085, 18.837)
 Rotation: (0.000, 11.863, -89.998)
 Size: (1.000, 2.000, 2.000)
@@ -3469,7 +3531,7 @@ Color: 0.973, 0.851, 0.424
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 272:
+Part 273:
 Position: (40.805, 131.884, 27.127)
 Rotation: (0.006, 101.848, 90.007)
 Size: (1.000, 4.000, 4.000)
@@ -3479,7 +3541,7 @@ Color: 0.624, 0.624, 0.624
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 273:
+Part 274:
 Position: (46.604, 132.884, 18.246)
 Rotation: (0.003, 11.838, -89.995)
 Size: (1.000, 3.000, 3.000)
@@ -3489,7 +3551,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 274:
+Part 275:
 Position: (43.180, 132.884, 18.964)
 Rotation: (0.004, 101.858, -0.003)
 Size: (3.000, 1.000, 4.000)
@@ -3499,7 +3561,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 275:
+Part 276:
 Position: (41.192, 132.884, 26.535)
 Rotation: (0.005, 101.857, 90.006)
 Size: (1.000, 3.000, 3.000)
@@ -3509,7 +3571,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 276:
+Part 277:
 Position: (48.635, 131.884, 25.483)
 Rotation: (-0.003, -168.134, 89.998)
 Size: (1.000, 4.000, 4.000)
@@ -3519,7 +3581,7 @@ Color: 0.624, 0.624, 0.624
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 277:
+Part 278:
 Position: (43.282, 145.084, 19.454)
 Rotation: (0.004, -78.135, -0.003)
 Size: (2.000, 1.000, 4.000)
@@ -3529,7 +3591,7 @@ Color: 0.973, 0.851, 0.424
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 278:
+Part 279:
 Position: (46.991, 131.884, 17.653)
 Rotation: (-0.004, 11.859, -89.998)
 Size: (1.000, 4.000, 4.000)
@@ -3539,7 +3601,7 @@ Color: 0.624, 0.624, 0.624
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 279:
+Part 280:
 Position: (44.000, 138.454, 22.418)
 Rotation: (0.000, -78.486, 0.000)
 Size: (4.910, 10.920, 4.850)
@@ -3550,7 +3612,7 @@ Material: SmoothPlastic
 Transparency: 1.000
 CanCollide: False
 
-Part 280:
+Part 281:
 Position: (39.754, 132.884, 19.683)
 Rotation: (0.000, 11.856, 90.003)
 Size: (1.000, 3.000, 3.000)
@@ -3560,7 +3622,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 281:
+Part 282:
 Position: (43.899, 144.584, 22.390)
 Rotation: (0.000, 101.858, 0.000)
 Size: (4.000, 2.000, 4.000)
@@ -3570,7 +3632,7 @@ Color: 0.973, 0.851, 0.424
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 282:
+Part 283:
 Position: (47.452, 145.084, 24.711)
 Rotation: (-0.005, -78.143, -89.995)
 Size: (1.000, 2.000, 2.000)
@@ -3580,7 +3642,7 @@ Color: 0.973, 0.851, 0.424
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 283:
+Part 284:
 Position: (39.161, 131.884, 19.296)
 Rotation: (0.003, 11.859, 90.003)
 Size: (1.000, 4.000, 4.000)
@@ -3590,7 +3652,7 @@ Color: 0.624, 0.624, 0.624
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 284:
+Part 285:
 Position: (43.385, 144.084, 19.944)
 Rotation: (0.004, 101.839, -0.003)
 Size: (1.000, 1.000, 4.000)
@@ -3600,7 +3662,7 @@ Color: 0.875, 0.608, 0.251
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 285:
+Part 286:
 Position: (41.452, 144.084, 22.905)
 Rotation: (0.000, 11.862, 0.000)
 Size: (1.000, 1.000, 4.000)
@@ -3610,7 +3672,7 @@ Color: 0.875, 0.608, 0.251
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 286:
+Part 287:
 Position: (40.346, 145.084, 20.071)
 Rotation: (-0.005, 101.862, -90.001)
 Size: (1.000, 2.000, 2.000)
@@ -3620,7 +3682,7 @@ Color: 0.973, 0.851, 0.424
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 287:
+Part 288:
 Position: (47.323, 132.884, 21.670)
 Rotation: (0.000, -168.133, 0.000)
 Size: (3.000, 1.000, 4.000)
@@ -3630,43 +3692,43 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 288:
+Part 289:
 Position: (53.924, 132.662, 21.140)
 Rotation: (0.000, -108.375, 0.000)
 Size: (2.000, 0.200, 2.000)
 Shape: Seat
 ClassName: Seat
 Seat: True
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 289:
+Part 290:
 Position: (55.329, 132.662, 16.913)
 Rotation: (0.000, -108.375, 0.000)
 Size: (2.000, 0.200, 2.000)
 Shape: Seat
 ClassName: Seat
 Seat: True
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 290:
+Part 291:
 Position: (54.629, 132.662, 19.016)
 Rotation: (0.000, -108.375, 0.000)
 Size: (2.000, 0.200, 2.000)
 Shape: Seat
 ClassName: Seat
 Seat: True
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 291:
+Part 292:
 Position: (54.239, 133.304, 18.905)
 Rotation: (0.000, -108.351, 0.000)
 Size: (6.941, 3.458, 3.012)
@@ -3681,7 +3743,7 @@ MeshId: 2792587020
 MeshScale: 1.640, 1.640, 1.571
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 292:
+Part 293:
 Position: (67.847, 133.304, -13.133)
 Rotation: (0.000, -123.743, 0.000)
 Size: (6.941, 3.458, 3.012)
@@ -3696,31 +3758,31 @@ MeshId: 2792587020
 MeshScale: 1.640, 1.640, 1.571
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 293:
+Part 294:
 Position: (-18.480, 132.780, 88.142)
 Rotation: (0.000, -144.580, 0.000)
 Size: (2.000, 0.200, 2.000)
 Shape: Seat
 ClassName: Seat
 Seat: True
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 294:
+Part 295:
 Position: (-22.109, 132.780, 90.725)
 Rotation: (0.000, -144.580, 0.000)
 Size: (2.000, 0.200, 2.000)
 Shape: Seat
 ClassName: Seat
 Seat: True
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 295:
+Part 296:
 Position: (-20.095, 133.304, 89.716)
 Rotation: (0.000, -142.424, 0.000)
 Size: (6.941, 3.458, 3.012)
@@ -3735,19 +3797,19 @@ MeshId: 2792587020
 MeshScale: 1.640, 1.640, 1.571
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 296:
+Part 297:
 Position: (-20.287, 132.780, 89.427)
 Rotation: (0.000, -144.580, 0.000)
 Size: (2.000, 0.200, 2.000)
 Shape: Seat
 ClassName: Seat
 Seat: True
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 297:
+Part 298:
 Position: (9.389, 133.304, 73.536)
 Rotation: (0.000, -152.678, 0.000)
 Size: (6.941, 3.458, 3.012)
@@ -3762,43 +3824,43 @@ MeshId: 2792587020
 MeshScale: 1.640, 1.640, 1.571
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 298:
+Part 299:
 Position: (11.248, 132.780, 72.256)
 Rotation: (0.000, -154.836, 0.000)
 Size: (2.000, 0.200, 2.000)
 Shape: Seat
 ClassName: Seat
 Seat: True
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 299:
+Part 300:
 Position: (7.215, 132.780, 74.150)
 Rotation: (0.000, -154.836, 0.000)
 Size: (2.000, 0.200, 2.000)
 Shape: Seat
 ClassName: Seat
 Seat: True
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 300:
+Part 301:
 Position: (9.242, 132.780, 73.199)
 Rotation: (0.000, -154.836, 0.000)
 Size: (2.000, 0.200, 2.000)
 Shape: Seat
 ClassName: Seat
 Seat: True
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 Stud.Top: True
 
-Part 301:
+Part 302:
 Position: (45.832, 144.085, 19.429)
 Rotation: (0.000, 11.863, -90.002)
 Size: (1.000, 1.000, 1.000)
@@ -3808,7 +3870,7 @@ Color: 0.875, 0.608, 0.251
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 302:
+Part 303:
 Position: (40.963, 145.084, 23.007)
 Rotation: (0.005, 11.857, 0.001)
 Size: (2.000, 1.000, 4.000)
@@ -3818,7 +3880,7 @@ Color: 0.973, 0.851, 0.424
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 303:
+Part 304:
 Position: (40.938, 144.084, 20.458)
 Rotation: (-0.006, 101.853, -90.002)
 Size: (1.000, 1.000, 1.000)
@@ -3828,7 +3890,7 @@ Color: 0.875, 0.608, 0.251
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 304:
+Part 305:
 Position: (46.834, 145.084, 21.774)
 Rotation: (0.000, -168.138, 0.000)
 Size: (2.000, 1.000, 4.000)
@@ -3838,7 +3900,7 @@ Color: 0.973, 0.851, 0.424
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 305:
+Part 306:
 Position: (46.346, 144.084, 21.877)
 Rotation: (0.000, -168.138, 0.000)
 Size: (1.000, 1.000, 4.000)
@@ -3848,7 +3910,7 @@ Color: 0.875, 0.608, 0.251
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 306:
+Part 307:
 Position: (43.077, 131.884, 18.475)
 Rotation: (0.000, -78.154, 0.000)
 Size: (4.000, 1.000, 4.000)
@@ -3858,7 +3920,7 @@ Color: 0.624, 0.624, 0.624
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 307:
+Part 308:
 Position: (43.899, 132.584, 22.390)
 Rotation: (90.000, 101.857, 0.000)
 Size: (4.000, 4.000, 2.400)
@@ -3868,7 +3930,7 @@ Color: 0.961, 0.804, 0.173
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 308:
+Part 309:
 Position: (43.899, 138.685, 22.390)
 Rotation: (0.000, 101.858, 0.000)
 Size: (4.000, 9.800, 4.000)
@@ -3879,7 +3941,7 @@ Material: SmoothPlastic
 Transparency: 0.500
 CanCollide: False
 
-Part 309:
+Part 310:
 Position: (46.860, 144.084, 24.324)
 Rotation: (-0.005, -78.143, -89.995)
 Size: (1.000, 1.000, 1.000)
@@ -3889,7 +3951,7 @@ Color: 0.875, 0.608, 0.251
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 310:
+Part 311:
 Position: (44.412, 144.084, 24.837)
 Rotation: (0.000, 101.858, 0.000)
 Size: (1.000, 1.000, 4.000)
@@ -3899,7 +3961,7 @@ Color: 0.875, 0.608, 0.251
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 311:
+Part 312:
 Position: (43.899, 138.684, 22.390)
 Rotation: (-0.001, -168.143, 0.005)
 Size: (3.200, 9.800, 3.200)
@@ -3910,7 +3972,7 @@ Material: SmoothPlastic
 Transparency: 0.600
 CanCollide: False
 
-Part 312:
+Part 313:
 Position: (41.965, 144.085, 25.351)
 Rotation: (-0.003, -168.148, -90.003)
 Size: (1.000, 1.000, 1.000)
@@ -3920,7 +3982,7 @@ Color: 0.875, 0.608, 0.251
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 313:
+Part 314:
 Position: (51.624, 131.745, 50.455)
 Rotation: (0.000, -17.292, 0.000)
 Size: (18.437, 1.000, 19.383)
@@ -3932,7 +3994,7 @@ Material: Plastic
 Transparency: 99.000
 CanCollide: False
 
-Part 314:
+Part 315:
 Position: (41.578, 145.085, 25.943)
 Rotation: (-0.007, -168.144, -90.003)
 Size: (1.000, 2.000, 2.000)
@@ -3942,7 +4004,7 @@ Color: 0.973, 0.851, 0.424
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 315:
+Part 316:
 Position: (49.682, 135.021, 26.094)
 Rotation: (0.000, -168.158, 0.000)
 Size: (4.382, 2.600, 0.400)
@@ -3953,7 +4015,7 @@ Material: SmoothPlastic
 Transparency: 0.000
 Decal.Front = 4895077852
 
-Part 316:
+Part 317:
 Position: (44.516, 145.085, 25.327)
 Rotation: (0.004, 101.852, -0.003)
 Size: (2.000, 1.000, 4.000)
@@ -3963,7 +4025,7 @@ Color: 0.973, 0.851, 0.424
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 317:
+Part 318:
 Position: (48.043, 132.884, 25.096)
 Rotation: (-0.003, -168.134, 89.998)
 Size: (1.000, 3.000, 3.000)
@@ -3973,7 +4035,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 318:
+Part 319:
 Position: (-94.644, 104.339, -120.228)
 Rotation: (0.000, -140.002, 0.000)
 Size: (280.020, 89.834, 209.894)
@@ -3988,7 +4050,7 @@ MeshId: 4331932629
 MeshScale: 55.933, 31.186, 55.100
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 319:
+Part 320:
 Position: (234.557, 116.864, -55.377)
 Rotation: (0.000, 129.998, 0.000)
 Size: (294.020, 64.784, 206.894)
@@ -4003,7 +4065,7 @@ MeshId: 4331932629
 MeshScale: 58.729, 22.490, 54.312
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 320:
+Part 321:
 Position: (-91.021, 116.639, 181.811)
 Rotation: (0.000, -50.002, 0.000)
 Size: (230.940, 55.234, 128.894)
@@ -4018,7 +4080,7 @@ MeshId: 4331932629
 MeshScale: 46.129, 19.174, 33.836
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 321:
+Part 322:
 Position: (681.858, 65.015, -95.338)
 Rotation: (0.000, -90.000, 0.000)
 Size: (589.835, 134.234, 1183.565)
@@ -4033,7 +4095,7 @@ MeshId: 4331932629
 MeshScale: 117.817, 46.599, 310.700
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 322:
+Part 323:
 Position: (92.325, 118.454, -150.248)
 Rotation: (0.000, 160.001, 0.000)
 Size: (236.980, 67.604, 128.894)
@@ -4048,7 +4110,7 @@ MeshId: 4331932629
 MeshScale: 47.336, 23.468, 33.836
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 323:
+Part 324:
 Position: (95.086, 111.414, 243.194)
 Rotation: (0.000, 9.998, 0.000)
 Size: (280.020, 75.684, 187.594)
@@ -4063,7 +4125,7 @@ MeshId: 4331932629
 MeshScale: 55.933, 26.273, 49.246
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 324:
+Part 325:
 Position: (-186.427, 110.424, 57.085)
 Rotation: (0.000, -90.000, 0.000)
 Size: (210.020, 83.664, 173.894)
@@ -4078,7 +4140,7 @@ MeshId: 4331932629
 MeshScale: 41.951, 29.044, 45.649
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 325:
+Part 326:
 Position: (237.498, 120.189, 126.074)
 Rotation: (0.000, 69.999, 0.000)
 Size: (210.020, 58.134, 128.894)
@@ -4093,7 +4155,7 @@ MeshId: 4331932629
 MeshScale: 41.951, 20.181, 33.836
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 326:
+Part 327:
 Position: (-6.498, 131.350, 16.335)
 Rotation: (0.000, -119.597, 0.000)
 Size: (67.589, 0.524, 107.670)
@@ -4108,7 +4170,7 @@ MeshId: 2647005971
 MeshScale: 3.046, 2.847, 3.480
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 327:
+Part 328:
 Position: (-13.927, 130.762, 11.677)
 Rotation: (0.000, -28.780, 0.000)
 Size: (29.000, 1.000, 19.070)
@@ -4119,7 +4181,7 @@ Material: Plastic
 Transparency: 1.000
 CanCollide: False
 
-Part 328:
+Part 329:
 Position: (2.739, 139.556, 66.344)
 Rotation: (0.000, 174.869, 0.000)
 Size: (12.730, 16.098, 7.444)
@@ -4134,7 +4196,7 @@ MeshId: 2316781156
 MeshScale: 4.674, 4.674, 4.674
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 329:
+Part 330:
 Position: (2.627, 148.373, 67.586)
 Rotation: (0.000, 174.869, 0.000)
 Size: (23.400, 13.464, 17.805)
@@ -4149,7 +4211,7 @@ MeshId: 2316782855
 MeshScale: 4.674, 4.674, 4.674
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 330:
+Part 331:
 Position: (11.256, 130.762, 25.558)
 Rotation: (0.000, -28.780, 0.000)
 Size: (28.500, 1.000, 19.070)
@@ -4160,7 +4222,7 @@ Material: Plastic
 Transparency: 1.000
 CanCollide: False
 
-Part 331:
+Part 332:
 Position: (2.221, 130.078, 42.011)
 Rotation: (0.000, -29.148, 0.000)
 Size: (8.087, 6.868, 12.772)
@@ -4174,18 +4236,18 @@ MeshId: 3064676350
 MeshScale: 3.508, 3.508, 3.508
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 332:
+Part 333:
 Position: (69.000, 136.200, 15.000)
 Rotation: (30.160, -118.357, 10.840)
 Size: (1.000, 2.000, 1.000)
 Shape: Normal
 ClassName: Part
-Color: 0.624, 0.624, 0.627
+Color: 0.624, 0.624, 0.624
 Material: Neon
 Transparency: 0.000
 CanCollide: False
 
-Part 333:
+Part 334:
 Position: (50.399, 125.809, 34.654)
 Rotation: (0.000, -118.777, 0.000)
 Size: (93.800, 9.610, 255.730)
@@ -4196,7 +4258,7 @@ Material: SmoothPlastic
 Transparency: 0.500
 CanCollide: False
 
-Part 334:
+Part 335:
 Position: (-9.285, 128.726, 15.322)
 Rotation: (0.000, -119.597, 0.000)
 Size: (44.409, 6.438, 94.020)
@@ -4211,7 +4273,7 @@ MeshId: 2646994382
 MeshScale: 3.054, 2.651, 3.321
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 335:
+Part 336:
 Position: (54.838, 125.399, 44.713)
 Rotation: (0.000, -118.777, 0.000)
 Size: (79.460, 8.790, 273.200)
@@ -4222,7 +4284,7 @@ Material: Plastic
 Transparency: 0.500
 CanCollide: False
 
-Part 336:
+Part 337:
 Position: (78.535, 128.069, -7.336)
 Rotation: (0.000, 148.248, 0.000)
 Size: (17.566, 7.231, 30.161)
@@ -4232,7 +4294,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 337:
+Part 338:
 Position: (109.505, 134.037, 134.502)
 Rotation: (0.000, 22.091, 0.000)
 Size: (4.500, 6.400, 1.000)
@@ -4248,7 +4310,7 @@ MeshTextureId: 4315250791
 MeshScale: 0.750, 1.067, 1.000
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 338:
+Part 339:
 Position: (663.961, 192.059, 92.298)
 Rotation: (0.000, 0.000, 39.999)
 Size: (1.000, 5.000, 5.000)
@@ -4258,7 +4320,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 339:
+Part 340:
 Position: (651.010, 192.967, 92.713)
 Rotation: (0.000, 0.000, -19.999)
 Size: (1.000, 4.500, 4.000)
@@ -4268,7 +4330,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 340:
+Part 341:
 Position: (657.687, 189.967, 88.798)
 Rotation: (0.000, 0.000, 19.999)
 Size: (1.000, 4.500, 4.000)
@@ -4278,7 +4340,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 341:
+Part 342:
 Position: (660.961, 191.059, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (4.400, 5.000, 4.000)
@@ -4288,7 +4350,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 342:
+Part 343:
 Position: (660.961, 192.559, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (1.400, 8.000, 4.000)
@@ -4298,7 +4360,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 343:
+Part 344:
 Position: (656.961, 192.059, 90.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.400, 1.000, 2.000)
@@ -4308,7 +4370,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 344:
+Part 345:
 Position: (660.961, 190.559, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.400, 4.000, 4.000)
@@ -4318,7 +4380,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 345:
+Part 346:
 Position: (656.235, 189.967, 89.298)
 Rotation: (0.000, 0.000, -19.999)
 Size: (1.000, 4.500, 5.000)
@@ -4328,7 +4390,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 346:
+Part 347:
 Position: (652.463, 192.967, 92.713)
 Rotation: (0.000, 0.000, 19.999)
 Size: (1.000, 4.500, 4.000)
@@ -4338,7 +4400,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 347:
+Part 348:
 Position: (660.961, 191.559, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 6.000, 4.000)
@@ -4348,7 +4410,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 348:
+Part 349:
 Position: (651.736, 189.559, 93.213)
 Rotation: (0.000, 0.000, 0.000)
 Size: (1.400, 8.000, 3.000)
@@ -4358,7 +4420,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 349:
+Part 350:
 Position: (656.961, 191.559, 91.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (4.400, 2.000, 1.000)
@@ -4368,7 +4430,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 350:
+Part 351:
 Position: (657.961, 192.059, 91.798)
 Rotation: (0.000, 0.000, -39.999)
 Size: (1.000, 5.000, 4.000)
@@ -4378,7 +4440,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 351:
+Part 352:
 Position: (656.961, 181.559, 93.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 28.000, 3.000)
@@ -4388,7 +4450,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 352:
+Part 353:
 Position: (656.961, 175.059, 91.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 15.000, 7.000)
@@ -4398,7 +4460,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 353:
+Part 354:
 Position: (652.236, 181.559, 93.213)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 8.000, 3.000)
@@ -4408,7 +4470,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 354:
+Part 355:
 Position: (662.661, 179.559, 92.798)
 Rotation: (-90.000, -90.000, 0.000)
 Size: (4.000, 1.000, 2.000)
@@ -4418,7 +4480,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 355:
+Part 356:
 Position: (656.961, 185.059, 89.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (4.400, 5.000, 3.000)
@@ -4428,7 +4490,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 356:
+Part 357:
 Position: (650.261, 166.059, 92.548)
 Rotation: (0.000, 90.000, 0.000)
 Size: (1.000, 0.600, 0.100)
@@ -4438,7 +4500,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 357:
+Part 358:
 Position: (664.711, 166.859, 89.948)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 0.800, 1.500)
@@ -4448,7 +4510,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 358:
+Part 359:
 Position: (660.961, 173.059, 86.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (4.400, 5.000, 8.000)
@@ -4458,7 +4520,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 359:
+Part 360:
 Position: (653.761, 164.459, 86.198)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.800, 0.200)
@@ -4468,7 +4530,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 360:
+Part 361:
 Position: (656.961, 184.559, 89.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.400, 4.000, 3.000)
@@ -4478,7 +4540,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 361:
+Part 362:
 Position: (660.961, 189.059, 90.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 0.200, 0.200)
@@ -4488,7 +4550,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 362:
+Part 363:
 Position: (660.961, 169.059, 86.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 3.000, 8.000)
@@ -4498,7 +4560,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 363:
+Part 364:
 Position: (654.961, 164.059, 86.248)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 1.000, 0.100)
@@ -4508,7 +4570,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 364:
+Part 365:
 Position: (650.461, 182.059, 86.098)
 Rotation: (0.000, 30.002, 0.000)
 Size: (1.400, 7.000, 1.400)
@@ -4518,7 +4580,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 365:
+Part 366:
 Position: (650.461, 185.059, 86.098)
 Rotation: (0.000, 30.002, 0.000)
 Size: (1.800, 1.000, 1.800)
@@ -4528,7 +4590,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 366:
+Part 367:
 Position: (650.461, 185.584, 86.098)
 Rotation: (0.000, 30.002, 0.000)
 Size: (1.400, 0.050, 1.400)
@@ -4538,7 +4600,7 @@ Color: 0.067, 0.067, 0.067
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 367:
+Part 368:
 Position: (650.461, 184.759, 86.098)
 Rotation: (0.000, 30.002, 0.000)
 Size: (1.600, 1.600, 1.600)
@@ -4548,7 +4610,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 368:
+Part 369:
 Position: (656.961, 183.809, 89.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 2.500, 3.000)
@@ -4558,7 +4620,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 369:
+Part 370:
 Position: (656.961, 180.759, 87.648)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.800, 0.400, 0.300)
@@ -4568,7 +4630,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 370:
+Part 371:
 Position: (660.961, 191.309, 90.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 0.500, 0.200)
@@ -4578,7 +4640,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 371:
+Part 372:
 Position: (660.961, 187.059, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 3.000, 4.000)
@@ -4588,7 +4650,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 372:
+Part 373:
 Position: (664.661, 185.059, 92.798)
 Rotation: (-90.000, -90.000, 0.000)
 Size: (4.000, 1.000, 1.000)
@@ -4598,7 +4660,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 373:
+Part 374:
 Position: (660.961, 186.759, 90.648)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.800, 0.400, 0.300)
@@ -4608,7 +4670,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 374:
+Part 375:
 Position: (660.961, 170.559, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 6.000, 4.000)
@@ -4618,7 +4680,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 375:
+Part 376:
 Position: (664.211, 164.559, 89.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.900, 6.000, 10.000)
@@ -4628,7 +4690,7 @@ Color: 0.424, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 376:
+Part 377:
 Position: (659.161, 165.159, 83.248)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.000, 0.800, 0.100)
@@ -4638,7 +4700,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 377:
+Part 378:
 Position: (656.961, 183.059, 87.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -4648,7 +4710,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 378:
+Part 379:
 Position: (650.711, 164.559, 90.548)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.900, 6.000, 8.500)
@@ -4658,7 +4720,7 @@ Color: 0.424, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 379:
+Part 380:
 Position: (651.736, 186.059, 91.613)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -4668,7 +4730,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 380:
+Part 381:
 Position: (656.961, 183.059, 87.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 0.200, 0.200)
@@ -4678,7 +4740,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 381:
+Part 382:
 Position: (660.961, 168.759, 82.648)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.800, 0.400, 0.300)
@@ -4688,7 +4750,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 382:
+Part 383:
 Position: (660.461, 184.059, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 3.000, 4.000)
@@ -4698,7 +4760,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 383:
+Part 384:
 Position: (663.961, 174.059, 86.298)
 Rotation: (0.000, 0.000, 39.999)
 Size: (1.000, 5.000, 9.000)
@@ -4708,7 +4770,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 384:
+Part 385:
 Position: (662.161, 171.059, 82.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -4718,7 +4780,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 385:
+Part 386:
 Position: (656.961, 185.309, 87.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 0.500, 0.200)
@@ -4728,7 +4790,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 386:
+Part 387:
 Position: (660.961, 174.559, 86.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (1.400, 8.000, 8.000)
@@ -4738,7 +4800,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 387:
+Part 388:
 Position: (661.261, 163.209, 83.248)
 Rotation: (0.000, 0.000, 0.000)
 Size: (1.800, 0.700, 0.100)
@@ -4748,7 +4810,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 388:
+Part 389:
 Position: (651.736, 188.309, 91.613)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 0.500, 0.200)
@@ -4758,7 +4820,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 389:
+Part 390:
 Position: (651.736, 183.559, 93.213)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 4.000, 3.000)
@@ -4768,7 +4830,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 390:
+Part 391:
 Position: (660.961, 171.059, 82.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 0.200, 0.200)
@@ -4778,7 +4840,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 391:
+Part 392:
 Position: (651.736, 188.559, 93.213)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 6.000, 3.000)
@@ -4788,7 +4850,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 392:
+Part 393:
 Position: (660.961, 172.559, 86.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.400, 4.000, 8.000)
@@ -4798,7 +4860,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 393:
+Part 394:
 Position: (663.661, 164.009, 83.248)
 Rotation: (0.000, 0.000, 0.000)
 Size: (1.200, 0.700, 0.100)
@@ -4808,7 +4870,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 394:
+Part 395:
 Position: (658.161, 183.059, 87.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -4818,7 +4880,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 395:
+Part 396:
 Position: (662.661, 179.059, 92.798)
 Rotation: (0.000, -90.000, 0.000)
 Size: (4.000, 1.000, 1.000)
@@ -4828,7 +4890,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 396:
+Part 397:
 Position: (651.736, 188.059, 93.213)
 Rotation: (0.000, 0.000, 0.000)
 Size: (4.400, 5.000, 3.000)
@@ -4838,7 +4900,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 397:
+Part 398:
 Position: (651.736, 186.009, 91.663)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 4.100, 0.100)
@@ -4848,7 +4910,7 @@ Color: 0.067, 0.067, 0.067
 Material: Neon
 Transparency: 0.000
 
-Part 398:
+Part 399:
 Position: (651.761, 176.059, 84.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -4858,7 +4920,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 399:
+Part 400:
 Position: (665.376, 178.598, 84.098)
 Rotation: (-6.719, -18.881, -18.881)
 Size: (1.600, 1.600, 1.600)
@@ -4868,7 +4930,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 400:
+Part 401:
 Position: (665.479, 178.880, 84.098)
 Rotation: (-6.719, -18.881, -18.881)
 Size: (1.800, 1.000, 1.800)
@@ -4878,7 +4940,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 401:
+Part 402:
 Position: (665.658, 179.373, 84.098)
 Rotation: (-6.719, -18.881, -18.881)
 Size: (1.400, 0.050, 1.400)
@@ -4888,7 +4950,7 @@ Color: 0.067, 0.067, 0.067
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 402:
+Part 403:
 Position: (664.453, 176.061, 84.098)
 Rotation: (-6.719, -18.881, -18.881)
 Size: (1.400, 7.000, 1.400)
@@ -4898,7 +4960,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 403:
+Part 404:
 Position: (659.461, 174.059, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (5.400, 13.000, 4.000)
@@ -4908,7 +4970,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 404:
+Part 405:
 Position: (652.961, 178.309, 84.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 0.500, 0.200)
@@ -4918,7 +4980,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 405:
+Part 406:
 Position: (660.235, 177.967, 84.798)
 Rotation: (0.000, 0.000, -19.999)
 Size: (1.000, 4.500, 6.000)
@@ -4928,7 +4990,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 406:
+Part 407:
 Position: (664.711, 163.559, 90.548)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 0.800, 1.500)
@@ -4938,7 +5000,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 407:
+Part 408:
 Position: (651.736, 186.809, 93.213)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 2.500, 3.000)
@@ -4948,7 +5010,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 408:
+Part 409:
 Position: (652.261, 164.359, 86.248)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.800, 5.600, 0.100)
@@ -4958,7 +5020,7 @@ Color: 0.322, 0.259, 0.212
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 409:
+Part 410:
 Position: (657.961, 174.059, 84.798)
 Rotation: (0.000, 0.000, -39.999)
 Size: (1.000, 5.000, 6.000)
@@ -4968,7 +5030,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 410:
+Part 411:
 Position: (654.736, 189.059, 92.713)
 Rotation: (0.000, 0.000, 39.999)
 Size: (1.000, 5.000, 4.000)
@@ -4978,7 +5040,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 411:
+Part 412:
 Position: (651.986, 182.809, 93.213)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.900, 5.500, 3.000)
@@ -4988,7 +5050,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 412:
+Part 413:
 Position: (659.961, 173.059, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.400, 11.000, 4.000)
@@ -4998,7 +5060,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 413:
+Part 414:
 Position: (660.961, 164.559, 84.048)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 6.000, 1.500)
@@ -5008,7 +5070,7 @@ Color: 0.424, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 414:
+Part 415:
 Position: (649.961, 179.059, 89.298)
 Rotation: (0.000, 0.000, -39.999)
 Size: (1.000, 5.000, 11.000)
@@ -5018,7 +5080,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 415:
+Part 416:
 Position: (653.687, 182.967, 85.798)
 Rotation: (0.000, 0.000, 19.999)
 Size: (1.000, 4.500, 4.000)
@@ -5028,7 +5090,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 416:
+Part 417:
 Position: (664.661, 174.059, 92.798)
 Rotation: (0.000, -90.000, 0.000)
 Size: (4.000, 1.000, 1.000)
@@ -5038,7 +5100,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 417:
+Part 418:
 Position: (660.961, 173.309, 82.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 0.500, 0.200)
@@ -5048,7 +5110,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 418:
+Part 419:
 Position: (652.961, 176.809, 89.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 2.500, 10.000)
@@ -5058,7 +5120,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 419:
+Part 420:
 Position: (656.961, 183.009, 87.748)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 4.100, 0.100)
@@ -5068,7 +5130,7 @@ Color: 0.067, 0.067, 0.067
 Material: Neon
 Transparency: 0.000
 
-Part 420:
+Part 421:
 Position: (654.161, 176.059, 84.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5078,7 +5140,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 421:
+Part 422:
 Position: (660.961, 171.809, 86.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 2.500, 8.000)
@@ -5088,7 +5150,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 422:
+Part 423:
 Position: (664.711, 162.559, 93.448)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 0.800, 1.900)
@@ -5098,7 +5160,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 423:
+Part 424:
 Position: (652.235, 182.967, 89.298)
 Rotation: (0.000, 0.000, -19.999)
 Size: (1.000, 4.500, 11.000)
@@ -5108,7 +5170,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 424:
+Part 425:
 Position: (659.961, 186.059, 88.798)
 Rotation: (0.000, 0.000, 39.999)
 Size: (1.000, 5.000, 4.000)
@@ -5118,7 +5180,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 425:
+Part 426:
 Position: (659.761, 171.059, 82.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5128,7 +5190,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 426:
+Part 427:
 Position: (663.661, 177.059, 92.798)
 Rotation: (0.000, -90.000, 0.000)
 Size: (4.000, 1.000, 1.000)
@@ -5138,7 +5200,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 427:
+Part 428:
 Position: (651.736, 186.559, 93.213)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 2.000, 3.000)
@@ -5148,7 +5210,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 428:
+Part 429:
 Position: (652.961, 174.059, 89.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 3.000, 10.000)
@@ -5158,7 +5220,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 429:
+Part 430:
 Position: (656.961, 186.559, 89.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (1.400, 8.000, 3.000)
@@ -5168,7 +5230,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 430:
+Part 431:
 Position: (651.736, 187.559, 93.213)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.400, 4.000, 3.000)
@@ -5178,7 +5240,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 431:
+Part 432:
 Position: (660.461, 172.059, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 9.000, 4.000)
@@ -5188,7 +5250,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 432:
+Part 433:
 Position: (654.282, 186.442, 89.298)
 Rotation: (0.000, 0.000, -39.999)
 Size: (1.000, 4.000, 5.000)
@@ -5198,7 +5260,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 433:
+Part 434:
 Position: (652.961, 178.559, 89.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 6.000, 10.000)
@@ -5208,7 +5270,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 434:
+Part 435:
 Position: (664.711, 166.159, 92.848)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 0.600, 2.500)
@@ -5218,7 +5280,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 435:
+Part 436:
 Position: (652.936, 186.059, 91.613)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5228,7 +5290,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 436:
+Part 437:
 Position: (652.961, 177.559, 89.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.400, 4.000, 10.000)
@@ -5238,7 +5300,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 437:
+Part 438:
 Position: (664.711, 165.209, 91.498)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 1.100, 2.400)
@@ -5248,7 +5310,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 438:
+Part 439:
 Position: (656.961, 185.559, 89.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 6.000, 3.000)
@@ -5258,7 +5320,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 439:
+Part 440:
 Position: (660.961, 171.009, 82.748)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 4.100, 0.100)
@@ -5268,7 +5330,7 @@ Color: 0.824, 0.451, 0.224
 Material: Neon
 Transparency: 0.000
 
-Part 440:
+Part 441:
 Position: (652.961, 176.009, 84.748)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 4.100, 0.100)
@@ -5278,7 +5340,7 @@ Color: 0.824, 0.451, 0.224
 Material: Neon
 Transparency: 0.000
 
-Part 441:
+Part 442:
 Position: (657.711, 164.559, 85.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.900, 6.000, 2.000)
@@ -5288,7 +5350,7 @@ Color: 0.424, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 442:
+Part 443:
 Position: (663.661, 182.059, 92.798)
 Rotation: (-90.000, -90.000, 0.000)
 Size: (4.000, 1.000, 1.000)
@@ -5298,7 +5360,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 443:
+Part 444:
 Position: (659.961, 181.559, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.400, 2.000, 4.000)
@@ -5308,18 +5370,8 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 444:
-Position: (652.961, 176.059, 84.698)
-Rotation: (0.000, 0.000, 0.000)
-Size: (0.200, 5.000, 0.200)
-Shape: Normal
-ClassName: Part
-Color: 0.424, 0.322, 0.275
-Material: SmoothPlastic
-Transparency: 0.000
-
 Part 445:
-Position: (662.161, 189.059, 90.698)
+Position: (652.961, 176.059, 84.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
 Shape: Normal
@@ -5329,6 +5381,16 @@ Material: SmoothPlastic
 Transparency: 0.000
 
 Part 446:
+Position: (662.161, 189.059, 90.698)
+Rotation: (0.000, 0.000, 0.000)
+Size: (0.200, 5.000, 0.200)
+Shape: Normal
+ClassName: Part
+Color: 0.424, 0.322, 0.275
+Material: SmoothPlastic
+Transparency: 0.000
+
+Part 447:
 Position: (651.736, 183.759, 91.563)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.800, 0.400, 0.300)
@@ -5338,7 +5400,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 447:
+Part 448:
 Position: (650.261, 162.659, 88.848)
 Rotation: (0.000, 90.000, 0.000)
 Size: (2.200, 0.600, 0.100)
@@ -5348,7 +5410,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 448:
+Part 449:
 Position: (664.711, 165.709, 85.598)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 0.700, 2.600)
@@ -5358,7 +5420,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 449:
+Part 450:
 Position: (651.261, 164.259, 86.198)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.400, 0.400, 0.200)
@@ -5368,7 +5430,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 450:
+Part 451:
 Position: (660.961, 173.559, 86.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 6.000, 8.000)
@@ -5378,7 +5440,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 451:
+Part 452:
 Position: (660.961, 189.559, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 2.000, 4.000)
@@ -5388,7 +5450,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 452:
+Part 453:
 Position: (657.461, 164.559, 94.048)
 Rotation: (0.000, 0.000, 0.000)
 Size: (14.400, 6.000, 1.500)
@@ -5398,7 +5460,7 @@ Color: 0.424, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 453:
+Part 454:
 Position: (664.711, 166.709, 93.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 0.300, 2.000)
@@ -5408,7 +5470,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 454:
+Part 455:
 Position: (650.261, 164.059, 87.648)
 Rotation: (0.000, 90.000, 0.000)
 Size: (2.400, 1.000, 0.100)
@@ -5418,7 +5480,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 455:
+Part 456:
 Position: (660.461, 169.059, 92.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 3.000, 3.000)
@@ -5428,7 +5490,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 456:
+Part 457:
 Position: (652.961, 179.559, 89.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (1.400, 8.000, 10.000)
@@ -5438,7 +5500,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 457:
+Part 458:
 Position: (650.261, 163.559, 93.448)
 Rotation: (0.000, 90.000, 0.000)
 Size: (1.000, 0.600, 0.100)
@@ -5448,7 +5510,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 458:
+Part 459:
 Position: (660.961, 171.559, 86.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 2.000, 8.000)
@@ -5458,7 +5520,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 459:
+Part 460:
 Position: (656.961, 183.559, 89.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 2.000, 3.000)
@@ -5468,7 +5530,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 460:
+Part 461:
 Position: (650.761, 164.459, 86.198)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.800, 0.200)
@@ -5478,7 +5540,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 461:
+Part 462:
 Position: (650.261, 166.059, 89.548)
 Rotation: (0.000, 90.000, 0.000)
 Size: (2.400, 1.000, 0.100)
@@ -5488,7 +5550,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 462:
+Part 463:
 Position: (660.961, 189.009, 90.748)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 4.100, 0.100)
@@ -5498,7 +5560,7 @@ Color: 0.067, 0.067, 0.067
 Material: Neon
 Transparency: 0.000
 
-Part 463:
+Part 464:
 Position: (653.961, 170.059, 90.298)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 5.000, 9.000)
@@ -5508,7 +5570,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 464:
+Part 465:
 Position: (660.961, 189.059, 90.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5518,7 +5580,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 465:
+Part 466:
 Position: (655.811, 166.059, 86.248)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.100, 1.000, 0.100)
@@ -5528,7 +5590,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 466:
+Part 467:
 Position: (655.961, 179.059, 85.798)
 Rotation: (0.000, 0.000, 39.999)
 Size: (1.000, 5.000, 4.000)
@@ -5538,7 +5600,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 467:
+Part 468:
 Position: (652.961, 176.059, 84.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 0.200, 0.200)
@@ -5548,7 +5610,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 468:
+Part 469:
 Position: (655.711, 162.659, 86.248)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.100, 0.600, 0.100)
@@ -5558,7 +5620,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 469:
+Part 470:
 Position: (660.961, 189.809, 92.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 2.500, 4.000)
@@ -5568,7 +5630,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 470:
+Part 471:
 Position: (650.261, 164.959, 93.748)
 Rotation: (0.000, 90.000, 0.000)
 Size: (1.000, 0.600, 0.100)
@@ -5578,7 +5640,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 471:
+Part 472:
 Position: (652.961, 176.559, 89.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 2.000, 10.000)
@@ -5588,7 +5650,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 472:
+Part 473:
 Position: (650.536, 186.059, 91.613)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5598,7 +5660,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 473:
+Part 474:
 Position: (652.961, 173.759, 84.648)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.800, 0.400, 0.300)
@@ -5608,7 +5670,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 474:
+Part 475:
 Position: (664.711, 163.809, 87.398)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 1.100, 1.800)
@@ -5618,7 +5680,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 475:
+Part 476:
 Position: (651.736, 186.059, 91.613)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 0.200, 0.200)
@@ -5628,7 +5690,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 476:
+Part 477:
 Position: (662.461, 166.059, 83.248)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 1.000, 0.100)
@@ -5638,7 +5700,7 @@ Color: 0.510, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 477:
+Part 478:
 Position: (653.211, 172.059, 90.048)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.900, 1.000, 9.500)
@@ -5648,7 +5710,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 478:
+Part 479:
 Position: (652.961, 178.059, 89.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (4.400, 5.000, 10.000)
@@ -5658,7 +5720,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 479:
+Part 480:
 Position: (661.687, 177.967, 86.298)
 Rotation: (0.000, 0.000, 19.999)
 Size: (1.000, 4.500, 9.000)
@@ -5668,7 +5730,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 480:
+Part 481:
 Position: (659.761, 189.059, 90.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5678,7 +5740,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 481:
+Part 482:
 Position: (660.961, 171.059, 82.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5688,7 +5750,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 482:
+Part 483:
 Position: (648.736, 189.059, 92.713)
 Rotation: (0.000, 0.000, -39.999)
 Size: (1.000, 5.000, 4.000)
@@ -5698,7 +5760,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 483:
+Part 484:
 Position: (652.261, 167.259, 86.198)
 Rotation: (0.000, 0.000, 0.000)
 Size: (3.200, 0.200, 0.200)
@@ -5708,7 +5770,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 484:
+Part 485:
 Position: (655.761, 183.059, 87.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5718,7 +5780,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 485:
+Part 486:
 Position: (653.961, 164.559, 87.048)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 6.000, 1.500)
@@ -5728,7 +5790,7 @@ Color: 0.424, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 486:
+Part 487:
 Position: (656.961, 198.559, 91.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 6.000, 6.000)
@@ -5738,7 +5800,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 487:
+Part 488:
 Position: (654.461, 205.059, 91.098)
 Rotation: (0.000, -30.002, 0.000)
 Size: (1.800, 1.000, 1.800)
@@ -5748,7 +5810,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 488:
+Part 489:
 Position: (654.461, 202.059, 91.098)
 Rotation: (0.000, -30.002, 0.000)
 Size: (1.400, 7.000, 1.400)
@@ -5758,7 +5820,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 489:
+Part 490:
 Position: (654.461, 204.759, 91.098)
 Rotation: (0.000, -30.002, 0.000)
 Size: (1.600, 1.600, 1.600)
@@ -5768,7 +5830,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 490:
+Part 491:
 Position: (654.461, 205.584, 91.098)
 Rotation: (0.000, -30.002, 0.000)
 Size: (1.400, 0.050, 1.400)
@@ -5778,7 +5840,7 @@ Color: 0.067, 0.067, 0.067
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 491:
+Part 492:
 Position: (656.961, 197.559, 91.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (6.400, 4.000, 6.000)
@@ -5788,7 +5850,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 492:
+Part 493:
 Position: (656.961, 199.559, 91.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (1.400, 8.000, 6.000)
@@ -5798,7 +5860,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 493:
+Part 494:
 Position: (656.961, 196.809, 91.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (7.400, 2.500, 6.000)
@@ -5808,7 +5870,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 494:
+Part 495:
 Position: (652.711, 193.859, 92.848)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 0.600, 3.900)
@@ -5818,7 +5880,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 495:
+Part 496:
 Position: (657.687, 202.967, 91.298)
 Rotation: (0.000, 0.000, 19.999)
 Size: (1.000, 4.500, 7.000)
@@ -5828,7 +5890,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 496:
+Part 497:
 Position: (658.161, 196.059, 88.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5838,7 +5900,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 497:
+Part 498:
 Position: (656.961, 196.059, 88.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5848,7 +5910,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 498:
+Part 499:
 Position: (652.711, 195.309, 91.348)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 3.500, 0.900)
@@ -5858,7 +5920,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 499:
+Part 500:
 Position: (656.961, 194.059, 91.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 3.000, 6.000)
@@ -5868,7 +5930,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 500:
+Part 501:
 Position: (656.961, 196.059, 88.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 0.200, 0.200)
@@ -5878,7 +5940,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 501:
+Part 502:
 Position: (656.961, 196.559, 91.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (8.400, 2.000, 6.000)
@@ -5888,7 +5950,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 502:
+Part 503:
 Position: (656.961, 198.309, 88.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.400, 0.500, 0.200)
@@ -5898,7 +5960,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 503:
+Part 504:
 Position: (655.761, 196.059, 88.698)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.200, 5.000, 0.200)
@@ -5908,7 +5970,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 504:
+Part 505:
 Position: (653.961, 199.059, 91.298)
 Rotation: (0.000, 0.000, -39.999)
 Size: (1.000, 5.000, 7.000)
@@ -5918,7 +5980,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 505:
+Part 506:
 Position: (656.961, 196.009, 88.768)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.200, 4.100, 0.060)
@@ -5928,7 +5990,7 @@ Color: 0.373, 0.122, 0.820
 Material: Neon
 Transparency: 0.000
 
-Part 506:
+Part 507:
 Position: (661.687, 195.967, 92.298)
 Rotation: (0.000, 0.000, 19.999)
 Size: (1.000, 4.500, 5.000)
@@ -5938,7 +6000,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 507:
+Part 508:
 Position: (659.961, 199.059, 91.298)
 Rotation: (0.000, 0.000, 39.999)
 Size: (1.000, 5.000, 7.000)
@@ -5948,7 +6010,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 508:
+Part 509:
 Position: (660.235, 195.967, 91.798)
 Rotation: (0.000, 0.000, -19.999)
 Size: (1.000, 4.500, 4.000)
@@ -5958,7 +6020,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 509:
+Part 510:
 Position: (652.711, 195.659, 92.848)
 Rotation: (0.000, 0.000, 0.000)
 Size: (0.100, 0.600, 3.900)
@@ -5968,7 +6030,7 @@ Color: 0.373, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 510:
+Part 511:
 Position: (656.961, 193.759, 88.648)
 Rotation: (0.000, 0.000, 0.000)
 Size: (2.800, 0.400, 0.300)
@@ -5978,7 +6040,7 @@ Color: 0.424, 0.322, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 511:
+Part 512:
 Position: (656.961, 198.059, 91.798)
 Rotation: (0.000, 0.000, 0.000)
 Size: (4.400, 5.000, 6.000)
@@ -5988,7 +6050,7 @@ Color: 0.573, 0.373, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 512:
+Part 513:
 Position: (656.235, 202.967, 91.298)
 Rotation: (0.000, 0.000, -19.999)
 Size: (1.000, 4.500, 7.000)
@@ -5998,7 +6060,7 @@ Color: 0.373, 0.424, 0.373
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 513:
+Part 514:
 Position: (-60.662, 136.054, -55.714)
 Rotation: (0.000, 153.481, 0.000)
 Size: (79.473, 37.273, 79.473)
@@ -6013,7 +6075,7 @@ MeshId: 2416704285
 MeshScale: 10.831, 11.631, 9.794
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 514:
+Part 515:
 Position: (-80.165, 129.189, -20.205)
 Rotation: (0.000, 31.053, 0.000)
 Size: (79.473, 47.923, 79.473)
@@ -6028,7 +6090,7 @@ MeshId: 2416704285
 MeshScale: 10.831, 14.954, 9.794
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 515:
+Part 516:
 Position: (11.194, 128.069, -50.493)
 Rotation: (0.000, 101.073, 0.000)
 Size: (17.566, 7.231, 22.861)
@@ -6038,7 +6100,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 516:
+Part 517:
 Position: (-2.888, 128.069, -46.313)
 Rotation: (0.000, 146.217, 0.000)
 Size: (17.566, 7.231, 33.211)
@@ -6048,7 +6110,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 517:
+Part 518:
 Position: (-2.052, 128.069, -54.991)
 Rotation: (0.000, -168.780, 0.000)
 Size: (29.006, 7.231, 23.821)
@@ -6058,7 +6120,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 518:
+Part 519:
 Position: (-48.533, 131.158, -7.663)
 Rotation: (0.000, -119.643, 0.000)
 Size: (15.670, 9.720, 10.272)
@@ -6073,7 +6135,7 @@ MeshId: 3064943485
 MeshScale: 2.910, 2.910, 2.910
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 519:
+Part 520:
 Position: (-8.859, 130.078, -2.416)
 Rotation: (0.000, 150.852, 0.000)
 Size: (8.087, 6.868, 12.772)
@@ -6087,7 +6149,7 @@ MeshId: 3064676350
 MeshScale: 3.508, 3.508, 3.508
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 520:
+Part 521:
 Position: (27.463, 119.184, 62.617)
 Rotation: (0.000, -118.777, 0.000)
 Size: (176.020, 15.160, 244.400)
@@ -6097,7 +6159,7 @@ Color: 0.675, 0.875, 0.651
 Material: Plastic
 Transparency: 0.000
 
-Part 521:
+Part 522:
 Position: (47.149, 128.069, -48.470)
 Rotation: (0.000, 71.077, 0.000)
 Size: (17.566, 7.231, 19.891)
@@ -6107,7 +6169,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 522:
+Part 523:
 Position: (57.036, 128.069, -59.026)
 Rotation: (0.000, -160.845, 0.000)
 Size: (10.936, 7.231, 19.571)
@@ -6117,7 +6179,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 523:
+Part 524:
 Position: (75.641, 128.069, -29.270)
 Rotation: (0.000, 41.074, 0.000)
 Size: (17.566, 7.231, 19.891)
@@ -6127,7 +6189,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 524:
+Part 525:
 Position: (62.573, 128.069, -40.763)
 Rotation: (0.000, 56.077, 0.000)
 Size: (17.566, 7.231, 19.891)
@@ -6137,7 +6199,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 525:
+Part 526:
 Position: (70.887, 128.069, -50.595)
 Rotation: (0.000, -78.921, 0.000)
 Size: (10.656, 7.231, 18.611)
@@ -6147,7 +6209,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 526:
+Part 527:
 Position: (86.627, 130.154, -91.764)
 Rotation: (0.000, -160.789, 0.000)
 Size: (79.473, 29.473, 79.473)
@@ -6162,7 +6224,7 @@ MeshId: 2416704285
 MeshScale: 10.831, 9.197, 9.794
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 527:
+Part 528:
 Position: (30.088, 128.069, -51.889)
 Rotation: (0.000, 86.073, 0.000)
 Size: (17.566, 7.231, 19.891)
@@ -6172,7 +6234,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 528:
+Part 529:
 Position: (122.795, 140.754, -70.832)
 Rotation: (0.000, 153.481, 0.000)
 Size: (79.473, 29.473, 79.473)
@@ -6186,7 +6248,7 @@ MeshId: 2416704285
 MeshScale: 10.831, 9.197, 9.794
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 529:
+Part 530:
 Position: (166.194, 140.754, -45.117)
 Rotation: (0.000, 153.481, 0.000)
 Size: (79.473, 29.473, 79.473)
@@ -6201,7 +6263,7 @@ MeshId: 2416704285
 MeshScale: 10.831, 9.197, 9.794
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 530:
+Part 531:
 Position: (99.174, 128.069, -0.654)
 Rotation: (0.000, -138.244, 0.000)
 Size: (26.506, 7.231, 23.361)
@@ -6211,7 +6273,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 531:
+Part 532:
 Position: (86.303, 128.069, -12.644)
 Rotation: (0.000, 26.077, 0.000)
 Size: (17.566, 7.231, 24.561)
@@ -6221,7 +6283,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 532:
+Part 533:
 Position: (112.147, 128.069, 11.979)
 Rotation: (0.000, -123.244, 0.000)
 Size: (24.676, 7.231, 19.891)
@@ -6231,7 +6293,7 @@ Color: 0.475, 0.361, 0.275
 Material: SmoothPlastic
 Transparency: 0.000
 
-Part 533:
+Part 534:
 Position: (-24.037, 134.524, -53.804)
 Rotation: (0.000, -86.602, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6245,7 +6307,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 534:
+Part 535:
 Position: (-26.326, 134.524, -22.410)
 Rotation: (0.000, -33.783, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6259,7 +6321,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 535:
+Part 536:
 Position: (-25.265, 134.524, -43.453)
 Rotation: (0.000, -106.603, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6273,7 +6335,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 536:
+Part 537:
 Position: (-24.209, 134.524, -48.566)
 Rotation: (0.000, -96.605, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6287,7 +6349,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 537:
+Part 538:
 Position: (-26.982, 134.524, -38.451)
 Rotation: (0.000, -111.606, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6301,7 +6363,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 538:
+Part 539:
 Position: (-30.672, 134.524, -25.318)
 Rotation: (0.000, -33.783, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6315,7 +6377,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 539:
+Part 540:
 Position: (-31.670, 134.524, -29.123)
 Rotation: (0.000, -123.777, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6329,7 +6391,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 540:
+Part 541:
 Position: (-29.131, 134.524, -33.612)
 Rotation: (0.000, -116.604, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6343,7 +6405,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 541:
+Part 542:
 Position: (102.303, 134.524, -35.619)
 Rotation: (0.000, 146.217, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6357,7 +6419,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 542:
+Part 543:
 Position: (97.895, 134.524, -38.567)
 Rotation: (0.000, 146.217, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6371,7 +6433,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 543:
+Part 544:
 Position: (93.493, 134.524, -41.511)
 Rotation: (0.000, 146.217, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6386,7 +6448,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 544:
+Part 545:
 Position: (106.746, 134.524, -32.646)
 Rotation: (0.000, 146.217, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6400,7 +6462,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 545:
+Part 546:
 Position: (-21.877, 127.305, 6.469)
 Rotation: (-6.424, -83.209, -59.566)
 Size: (1.088, 1.941, 2.328)
@@ -6415,7 +6477,7 @@ MeshId: 2686540899
 MeshScale: 2.131, 2.131, 2.131
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 546:
+Part 547:
 Position: (-63.714, 134.524, 15.147)
 Rotation: (0.000, -138.778, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6429,7 +6491,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 547:
+Part 548:
 Position: (-50.175, 134.524, 14.625)
 Rotation: (0.000, 151.220, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6443,7 +6505,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 548:
+Part 549:
 Position: (-54.808, 134.524, 12.080)
 Rotation: (0.000, 151.220, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6457,7 +6519,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 549:
+Part 550:
 Position: (-59.461, 134.524, 12.081)
 Rotation: (0.000, -148.778, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6471,7 +6533,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 550:
+Part 551:
 Position: (100.043, 132.780, 39.160)
 Rotation: (0.000, -118.000, 0.000)
 Size: (1.088, 1.941, 2.328)
@@ -6486,7 +6548,7 @@ MeshId: 2686540899
 MeshScale: 2.131, 2.131, 2.131
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 551:
+Part 552:
 Position: (-63.875, 134.524, 94.933)
 Rotation: (0.000, -28.780, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6500,7 +6562,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 552:
+Part 553:
 Position: (-54.019, 134.524, 106.814)
 Rotation: (0.000, -68.777, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6514,7 +6576,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 553:
+Part 554:
 Position: (-52.543, 134.524, 111.827)
 Rotation: (0.000, -78.774, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6528,7 +6590,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 554:
+Part 555:
 Position: (-56.334, 134.524, 102.087)
 Rotation: (0.000, -58.779, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6542,7 +6604,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 555:
+Part 556:
 Position: (-59.640, 134.524, 97.992)
 Rotation: (0.000, -43.775, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6556,7 +6618,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 556:
+Part 557:
 Position: (24.907, 134.524, -75.093)
 Rotation: (0.000, -178.778, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6571,7 +6633,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 557:
+Part 558:
 Position: (30.188, 134.524, -75.206)
 Rotation: (0.000, -178.778, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6586,7 +6648,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 558:
+Part 559:
 Position: (147.537, 134.607, 0.110)
 Rotation: (0.000, 147.636, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6600,7 +6662,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 559:
+Part 560:
 Position: (-73.197, 134.524, 27.691)
 Rotation: (0.000, -118.777, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6614,7 +6676,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 560:
+Part 561:
 Position: (-77.435, 134.524, 37.353)
 Rotation: (0.000, -108.783, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6628,7 +6690,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 561:
+Part 562:
 Position: (-67.351, 134.524, 18.948)
 Rotation: (0.000, -128.778, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6642,7 +6704,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 562:
+Part 563:
 Position: (-78.902, 134.524, 42.425)
 Rotation: (0.000, -103.776, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6656,7 +6718,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 563:
+Part 564:
 Position: (-70.482, 134.524, 23.197)
 Rotation: (0.000, -123.777, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6670,7 +6732,7 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 564:
+Part 565:
 Position: (-75.521, 134.524, 32.434)
 Rotation: (0.000, -113.780, 0.000)
 Size: (5.313, 5.840, 0.313)
@@ -6684,23 +6746,9 @@ MeshId: 3058347049
 MeshScale: 2.666, 2.666, 2.666
 MeshOffset: 0.000, 0.000, 0.000
 
-Part 565:
+Part 566:
 Position: (156.469, 134.607, 5.770)
 Rotation: (0.000, 147.636, 0.000)
-Size: (5.313, 5.840, 0.313)
-Shape: Normal
-ClassName: Part
-Color: 0.416, 0.318, 0.224
-Material: SmoothPlastic
-Transparency: 0.000
-MeshType: FileMesh
-MeshId: 3058347049
-MeshScale: 2.666, 2.666, 2.666
-MeshOffset: 0.000, 0.000, 0.000
-
-Part 566:
-Position: (175.018, 134.607, 24.295)
-Rotation: (0.000, 122.636, 0.000)
 Size: (5.313, 5.840, 0.313)
 Shape: Normal
 ClassName: Part
@@ -7333,7 +7381,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7358,7 +7406,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7439,7 +7487,7 @@ Rotation: (0.000, 37.571, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7490,7 +7538,7 @@ Rotation: (0.000, 37.571, 0.000)
 Size: (2.991, 23.929, 2.991)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7522,7 +7570,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7603,7 +7651,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (3.497, 27.976, 3.497)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7643,7 +7691,7 @@ Rotation: (0.000, -142.429, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7679,7 +7727,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7756,7 +7804,7 @@ Rotation: (0.000, -142.429, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7807,7 +7855,7 @@ Rotation: (0.000, 37.571, 0.000)
 Size: (3.017, 24.135, 3.017)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7858,7 +7906,7 @@ Rotation: (0.000, -142.429, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7883,7 +7931,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (3.241, 25.925, 3.241)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -7960,7 +8008,7 @@ Rotation: (0.000, -142.434, 0.000)
 Size: (3.251, 26.007, 3.251)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8011,7 +8059,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8036,7 +8084,7 @@ Rotation: (0.000, -142.429, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8072,7 +8120,7 @@ Rotation: (0.000, 37.571, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8123,7 +8171,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8204,7 +8252,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (3.232, 25.856, 3.232)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8225,7 +8273,7 @@ Rotation: (0.000, -142.429, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8291,7 +8339,7 @@ Rotation: (0.000, -142.429, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8342,7 +8390,7 @@ Rotation: (0.000, 37.571, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8378,7 +8426,7 @@ Rotation: (0.000, -142.429, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8470,7 +8518,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (2.881, 23.048, 2.881)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8495,7 +8543,7 @@ Rotation: (0.000, -52.432, 0.000)
 Size: (2.380, 19.042, 2.380)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8542,7 +8590,7 @@ Rotation: (0.000, -5.269, 0.000)
 Size: (2.000, 2.990, 6.460)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8557,8 +8605,11 @@ Material: Neon
 Transparency: 0.700
 CanCollide: False
 Light: True
-LightRange: 15.00
-LightBrightness: 1.00
+LightRange: 15.000
+LightBrightness: 1.0000
+LightColor: 1.00000, 1.00000, 1.00000
+LightShadows: False
+LightEnabled: True
 MeshType: FileMesh
 MeshId: 2395656720
 MeshScale: 4.078, 4.078, 4.078
@@ -8585,7 +8636,7 @@ Rotation: (0.000, -5.269, 0.000)
 Size: (2.000, 13.960, 2.000)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -8595,7 +8646,7 @@ Rotation: (0.000, 15.219, 0.000)
 Size: (9.790, 4.610, 8.660)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -8605,7 +8656,7 @@ Rotation: (0.000, 15.219, 0.000)
 Size: (13.720, 28.380, 30.300)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -8615,7 +8666,7 @@ Rotation: (0.000, 15.219, 0.000)
 Size: (33.260, 10.970, 30.300)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -8625,7 +8676,7 @@ Rotation: (0.000, 15.219, 0.000)
 Size: (46.520, 28.380, 8.740)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -8635,7 +8686,7 @@ Rotation: (0.000, 15.219, 0.000)
 Size: (0.720, 28.380, 14.989)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -8645,7 +8696,7 @@ Rotation: (0.000, 15.219, 0.000)
 Size: (13.720, 28.380, 9.300)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -8655,7 +8706,7 @@ Rotation: (0.000, 15.219, 0.000)
 Size: (9.790, 4.610, 8.660)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -8665,7 +8716,7 @@ Rotation: (0.000, 15.219, 0.000)
 Size: (13.720, 28.380, 9.300)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -10947,7 +10998,7 @@ Rotation: (0.000, 70.246, 0.000)
 Size: (0.208, 0.451, 0.451)
 Shape: Normal
 ClassName: Part
-Color: 0.773, 0.725, 0.624
+Color: 0.773, 0.722, 0.624
 Material: Plastic
 Transparency: 0.300
 CanCollide: False
@@ -11030,8 +11081,11 @@ Color: 0.961, 0.804, 0.173
 Material: Ice
 Transparency: 1.000
 Light: True
-LightRange: 10.00
-LightBrightness: 5.00
+LightRange: 10.000
+LightBrightness: 5.0000
+LightColor: 1.00000, 1.00000, 1.00000
+LightShadows: False
+LightEnabled: True
 
 Part 928:
 Position: (45.478, 134.545, -61.754)
@@ -11146,7 +11200,7 @@ Rotation: (0.000, 59.006, 0.000)
 Size: (1.930, 9.600, 17.460)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -11186,7 +11240,7 @@ Rotation: (0.000, 59.006, 0.000)
 Size: (22.910, 18.280, 67.000)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -11282,7 +11336,7 @@ Rotation: (0.000, 59.006, 0.000)
 Size: (25.810, 23.210, 25.140)
 Shape: Cylinder
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -11292,7 +11346,7 @@ Rotation: (0.000, 59.006, 0.000)
 Size: (25.810, 21.180, 25.140)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -11409,7 +11463,7 @@ Rotation: (-11.764, 59.006, 0.004)
 Size: (25.230, 5.660, 19.800)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -11445,7 +11499,7 @@ Rotation: (0.000, -152.439, 0.000)
 Size: (2.000, 13.960, 2.000)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -11455,7 +11509,7 @@ Rotation: (0.000, -152.439, 0.000)
 Size: (2.000, 2.990, 6.460)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -11470,8 +11524,11 @@ Material: Neon
 Transparency: 0.700
 CanCollide: False
 Light: True
-LightRange: 15.00
-LightBrightness: 1.00
+LightRange: 15.000
+LightBrightness: 1.0000
+LightColor: 1.00000, 1.00000, 1.00000
+LightShadows: False
+LightEnabled: True
 MeshType: FileMesh
 MeshId: 2395656720
 MeshScale: 4.078, 4.078, 4.078
@@ -11498,7 +11555,7 @@ Rotation: (0.000, 55.831, 0.000)
 Size: (6.690, 26.100, 9.900)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -11613,7 +11670,7 @@ Rotation: (0.000, 145.829, 0.000)
 Size: (48.119, 25.170, 9.425)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.325, 0.325
+Color: 1.000, 0.322, 0.322
 Material: SmoothPlastic
 Transparency: 0.000
 MeshType: FileMesh
@@ -11671,7 +11728,7 @@ Rotation: (0.000, 55.831, 0.000)
 Size: (26.790, 28.960, 46.620)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 CanCollide: False
@@ -12925,8 +12982,11 @@ Material: Neon
 Transparency: 0.700
 CanCollide: False
 Light: True
-LightRange: 15.00
-LightBrightness: 1.00
+LightRange: 15.000
+LightBrightness: 1.0000
+LightColor: 1.00000, 1.00000, 1.00000
+LightShadows: False
+LightEnabled: True
 MeshType: FileMesh
 MeshId: 2395656720
 MeshScale: 4.078, 4.078, 4.078
@@ -12938,7 +12998,7 @@ Rotation: (0.000, 91.273, 0.000)
 Size: (2.000, 2.990, 6.460)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -12963,7 +13023,7 @@ Rotation: (0.000, 91.273, 0.000)
 Size: (2.000, 13.960, 2.000)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -13150,7 +13210,7 @@ Rotation: (0.000, 111.773, 0.000)
 Size: (4.000, 1.200, 4.000)
 Shape: Normal
 ClassName: Part
-Color: 0.925, 0.953, 0.953
+Color: 0.922, 0.953, 0.953
 Material: Plastic
 Transparency: 1.000
 CanCollide: False
@@ -13551,7 +13611,7 @@ Rotation: (-7.641, -94.380, -1.047)
 Size: (1.000, 2.000, 1.000)
 Shape: Normal
 ClassName: Part
-Color: 0.624, 0.624, 0.627
+Color: 0.624, 0.624, 0.624
 Material: Neon
 Transparency: 0.000
 CanCollide: False
@@ -13573,7 +13633,7 @@ Rotation: (8.884, -150.652, -161.269)
 Size: (1.000, 2.000, 1.000)
 Shape: Normal
 ClassName: Part
-Color: 0.624, 0.624, 0.627
+Color: 0.624, 0.624, 0.624
 Material: Neon
 Transparency: 0.000
 CanCollide: False
@@ -13584,7 +13644,7 @@ Rotation: (-2.287, 135.695, 152.289)
 Size: (2.000, 2.000, 1.000)
 Shape: Normal
 ClassName: Part
-Color: 0.624, 0.624, 0.627
+Color: 0.624, 0.624, 0.624
 Material: Neon
 Transparency: 0.000
 
@@ -13594,7 +13654,7 @@ Rotation: (-41.174, 161.792, 139.896)
 Size: (1.000, 2.000, 1.000)
 Shape: Normal
 ClassName: Part
-Color: 0.624, 0.624, 0.627
+Color: 0.624, 0.624, 0.624
 Material: Neon
 Transparency: 0.000
 CanCollide: False
@@ -13647,7 +13707,7 @@ Rotation: (0.000, -95.938, 90.000)
 Size: (18.120, 33.910, 21.950)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -13742,7 +13802,7 @@ Rotation: (0.000, -163.778, 0.000)
 Size: (1.950, 1.950, 1.950)
 Shape: Normal
 ClassName: Part
-Color: 0.925, 0.953, 0.953
+Color: 0.922, 0.953, 0.953
 Material: SmoothPlastic
 Transparency: 1.000
 CanCollide: False
@@ -13863,7 +13923,7 @@ Rotation: (0.000, -163.778, 0.000)
 Size: (1.950, 1.950, 1.950)
 Shape: Normal
 ClassName: Part
-Color: 0.925, 0.953, 0.953
+Color: 0.922, 0.953, 0.953
 Material: SmoothPlastic
 Transparency: 1.000
 CanCollide: False
@@ -13874,7 +13934,7 @@ Rotation: (0.000, 16.222, 0.000)
 Size: (1.950, 1.950, 1.950)
 Shape: Normal
 ClassName: Part
-Color: 0.925, 0.953, 0.953
+Color: 0.922, 0.953, 0.953
 Material: SmoothPlastic
 Transparency: 1.000
 CanCollide: False
@@ -13944,8 +14004,11 @@ Color: 0.624, 0.624, 0.624
 Material: Plastic
 Transparency: 0.000
 Light: True
-LightRange: 6.00
-LightBrightness: 1.00
+LightRange: 6.000
+LightBrightness: 1.0000
+LightColor: 1.00000, 1.00000, 1.00000
+LightShadows: False
+LightEnabled: True
 MeshType: FileMesh
 MeshId: 130099641
 MeshTextureId: 130093033
@@ -14011,7 +14074,7 @@ Rotation: (0.000, 16.222, 0.000)
 Size: (1.950, 1.950, 1.950)
 Shape: Normal
 ClassName: Part
-Color: 0.925, 0.953, 0.953
+Color: 0.922, 0.953, 0.953
 Material: SmoothPlastic
 Transparency: 1.000
 CanCollide: False
@@ -14216,7 +14279,7 @@ Rotation: (0.000, 149.050, 0.000)
 Size: (37.470, 0.720, 18.720)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -14413,8 +14476,11 @@ Material: Neon
 Transparency: 0.700
 CanCollide: False
 Light: True
-LightRange: 15.00
-LightBrightness: 1.00
+LightRange: 15.000
+LightBrightness: 1.0000
+LightColor: 1.00000, 1.00000, 1.00000
+LightShadows: False
+LightEnabled: True
 MeshType: FileMesh
 MeshId: 2395656720
 MeshScale: 4.078, 4.078, 4.078
@@ -14426,7 +14492,7 @@ Rotation: (0.000, -173.725, 0.000)
 Size: (2.000, 2.990, 6.460)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -14436,7 +14502,7 @@ Rotation: (0.000, -173.725, 0.000)
 Size: (2.000, 13.960, 2.000)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -14446,7 +14512,7 @@ Rotation: (0.000, 149.050, 0.000)
 Size: (13.550, 1.000, 13.020)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -14461,8 +14527,11 @@ Material: Neon
 Transparency: 0.700
 CanCollide: False
 Light: True
-LightRange: 15.00
-LightBrightness: 1.00
+LightRange: 15.000
+LightBrightness: 1.0000
+LightColor: 1.00000, 1.00000, 1.00000
+LightShadows: False
+LightEnabled: True
 MeshType: FileMesh
 MeshId: 2395656720
 MeshScale: 4.078, 4.078, 4.078
@@ -14485,7 +14554,7 @@ Rotation: (0.000, 21.271, 0.000)
 Size: (2.000, 13.960, 2.000)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -14495,7 +14564,7 @@ Rotation: (0.000, 21.271, 0.000)
 Size: (2.000, 2.990, 6.460)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -14560,7 +14629,7 @@ Rotation: (0.000, 149.050, 0.000)
 Size: (1.090, 36.730, 1.240)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -14570,7 +14639,7 @@ Rotation: (0.000, 149.050, 0.000)
 Size: (17.940, 30.020, 3.770)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -14666,7 +14735,7 @@ Rotation: (0.000, 149.050, 0.000)
 Size: (63.290, 30.020, 15.080)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -14801,7 +14870,7 @@ Rotation: (0.000, -88.782, 0.000)
 Size: (2.000, 13.960, 2.000)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -14822,7 +14891,7 @@ Rotation: (0.000, -88.782, 0.000)
 Size: (2.000, 2.990, 6.460)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -14837,8 +14906,11 @@ Material: Neon
 Transparency: 0.700
 CanCollide: False
 Light: True
-LightRange: 15.00
-LightBrightness: 1.00
+LightRange: 15.000
+LightBrightness: 1.0000
+LightColor: 1.00000, 1.00000, 1.00000
+LightShadows: False
+LightEnabled: True
 MeshType: FileMesh
 MeshId: 2395656720
 MeshScale: 4.078, 4.078, 4.078
@@ -15026,7 +15098,7 @@ Rotation: (0.001, -164.742, 89.993)
 Size: (18.120, 33.910, 21.950)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -15139,7 +15211,7 @@ Rotation: (0.000, 55.831, 0.000)
 Size: (6.690, 26.100, 9.900)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -15676,7 +15748,7 @@ Rotation: (0.000, -91.701, 0.000)
 Size: (30.790, 10.970, 30.300)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -15686,7 +15758,7 @@ Rotation: (0.000, -91.701, 0.000)
 Size: (13.720, 28.380, 30.300)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -15696,7 +15768,7 @@ Rotation: (0.000, -91.701, 0.000)
 Size: (9.790, 4.610, 8.660)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -15706,7 +15778,7 @@ Rotation: (0.000, -91.701, 0.000)
 Size: (0.076, 28.380, 16.358)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -15716,7 +15788,7 @@ Rotation: (0.000, -91.701, 0.000)
 Size: (9.790, 4.610, 8.660)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -15726,7 +15798,7 @@ Rotation: (0.000, -91.701, 0.000)
 Size: (13.720, 28.380, 9.300)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -15736,7 +15808,7 @@ Rotation: (0.000, -91.701, 0.000)
 Size: (46.520, 28.380, 8.740)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -15746,7 +15818,7 @@ Rotation: (0.000, -91.701, 0.000)
 Size: (13.720, 28.380, 9.300)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -16194,7 +16266,7 @@ Rotation: (0.000, -148.726, 0.000)
 Size: (2.000, 2.990, 6.460)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -16224,8 +16296,11 @@ Material: Neon
 Transparency: 0.700
 CanCollide: False
 Light: True
-LightRange: 15.00
-LightBrightness: 1.00
+LightRange: 15.000
+LightBrightness: 1.0000
+LightColor: 1.00000, 1.00000, 1.00000
+LightShadows: False
+LightEnabled: True
 MeshType: FileMesh
 MeshId: 2395656720
 MeshScale: 4.078, 4.078, 4.078
@@ -16237,7 +16312,7 @@ Rotation: (0.000, -148.726, 0.000)
 Size: (2.000, 13.960, 2.000)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: SmoothPlastic
 Transparency: 1.000
 
@@ -16452,7 +16527,7 @@ Rotation: (0.000, -87.338, 0.000)
 Size: (4.000, 7.400, 1.000)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.325, 0.325
+Color: 1.000, 0.322, 0.322
 Material: SmoothPlastic
 Transparency: 1.000
 CanCollide: False
@@ -17446,7 +17521,7 @@ Rotation: (0.000, 66.758, 0.000)
 Size: (1.000, 0.600, 1.000)
 Shape: Normal
 ClassName: Part
-Color: 0.925, 0.953, 0.953
+Color: 0.922, 0.953, 0.953
 Material: Plastic
 Transparency: 0.000
 MeshType: FileMesh
@@ -17818,7 +17893,7 @@ Rotation: (0.000, 149.050, 0.000)
 Size: (41.910, 26.380, 13.490)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -17843,7 +17918,7 @@ Rotation: (0.000, 149.050, 0.000)
 Size: (17.940, 30.020, 3.770)
 Shape: Normal
 ClassName: Part
-Color: 1.000, 0.000, 0.725
+Color: 1.000, 0.000, 0.722
 Material: Plastic
 Transparency: 1.000
 
@@ -18106,7 +18181,8 @@ local function BuildAndVerifyMap(data)
             local shape = partBlock:match("Shape:%s*([%a%d]+)")
             local className = partBlock:match("Class:%s*([%a%d]+)") or partBlock:match("ClassName:%s*([%a%d]+)") or partBlock:match("Type:%s*([%a%d]+)")
             
-            local r, g, b = partBlock:match("Color:%s*([^,]+),%s*([^,]+),%s*([^%s\r\n]+)")
+            -- رنگ خود پارت (بدون قاطی شدن با LightColor / FireColor / ...)
+            local r, g, b = partBlock:match("%f[%a]Color:%s*([^,]+),%s*([^,]+),%s*([^%s\r\n]+)")
             local mat = partBlock:match("Material:%s*([%a%d]+)")
             local trans = partBlock:match("Transparency:%s*([%d%.]+)")
             
@@ -18142,16 +18218,39 @@ local function BuildAndVerifyMap(data)
                 if ex and ey and ez then msX, msY, msZ = ex, ey, ez end
             end
             
-            -- بررسی و دریافت LightRange و LightBrightness (جاهای حاوی Light: True نادیده گرفته می‌شوند)
-            local lRangeStr = partBlock:match("LightRange:%s*(%-?[%d%.]+)")
-            local lBrightStr = partBlock:match("LightBrightness:%s*(%-?[%d%.]+)")
-            local lightRange = tonumber(lRangeStr)
-            local lightBrightness = tonumber(lBrightStr)
-            local hasLight = (lightRange ~= nil or lightBrightness ~= nil)
+            -- [ PointLight ] مشخصات دقیق (سازگار با اکسپورتر قدیمی و جدید)
+            local lightRange = getNumber(partBlock, "LightRange")
+            local lightBrightness = getNumber(partBlock, "LightBrightness")
+            local lightColor = getColor3(partBlock, "LightColor")
+            local lightShadows = getBoolean(partBlock, "LightShadows")
+            local lightEnabled = getBoolean(partBlock, "LightEnabled")
+            local hasLight = (getBoolean(partBlock, "Light") == true) or lightRange ~= nil or lightBrightness ~= nil or lightColor ~= nil
 
+            -- [ Fire / Sparkles / Smoke ] مشخصات دقیق (فقط مقادیری که در دیتا وجود دارند)
             local hasFire = partBlock:match("Fire:%s*[Tt]rue") and true or false
             local hasSparkles = partBlock:match("Sparkles:%s*[Tt]rue") and true or false
             local hasSmoke = partBlock:match("Smoke:%s*[Tt]rue") and true or false
+
+            local fireProps, sparklesProps, smokeProps = {}, {}, {}
+            if hasFire then
+                fireProps.Color = getColor3(partBlock, "FireColor")
+                fireProps.SecondaryColor = getColor3(partBlock, "FireSecondaryColor")
+                fireProps.Heat = getNumber(partBlock, "FireHeat")
+                fireProps.Size = getNumber(partBlock, "FireSize")
+                if getBoolean(partBlock, "FireEnabled") == false then fireProps.Enabled = false end
+            end
+            if hasSparkles then
+                sparklesProps.SparkleColor = getColor3(partBlock, "SparklesColor")
+                if getBoolean(partBlock, "SparklesEnabled") == false then sparklesProps.Enabled = false end
+            end
+            if hasSmoke then
+                smokeProps.Color = getColor3(partBlock, "SmokeColor")
+                smokeProps.Size = getNumber(partBlock, "SmokeSize")
+                smokeProps.Opacity = getNumber(partBlock, "SmokeOpacity")
+                smokeProps.RiseVelocity = getNumber(partBlock, "SmokeRiseVelocity")
+                if getBoolean(partBlock, "SmokeEnabled") == false then smokeProps.Enabled = false end
+            end
+
             local isUnanchored = partBlock:match("Unanchored:%s*[Tt]rue") and true or false
             
             local f3xShape = "Normal"
@@ -18189,7 +18288,9 @@ local function BuildAndVerifyMap(data)
                 meshType = meshType, meshId = meshId, meshTextureId = meshTextureId, 
                 meshScale = Vector3.new(safeNum(msX, 1), safeNum(msY, 1), safeNum(msZ, 1)),
                 hasLight = hasLight, lightRange = lightRange, lightBrightness = lightBrightness,
+                lightColor = lightColor, lightShadows = lightShadows, lightEnabled = lightEnabled,
                 hasFire = hasFire, hasSparkles = hasSparkles, hasSmoke = hasSmoke,
+                fireProps = fireProps, sparklesProps = sparklesProps, smokeProps = smokeProps,
                 collision = not (partBlock:match("CanCollide:%s*[Ff]alse")),
                 isUnanchored = isUnanchored
             })
@@ -18201,8 +18302,9 @@ local function BuildAndVerifyMap(data)
 
     local batches = {
         resize = {}, color = {}, material = {}, anchor = {}, unanchor = {}, collision = {},
+        lockParts = {},
         meshCreate = {}, meshSync = {}, 
-        lightCreate = {}, lightSync = {}, decorationCreate = {}, surface = {},
+        lightCreate = {}, lightSync = {}, decorationCreate = {}, decorationSync = {}, surface = {},
         decalCreate = {Top={}, Bottom={}, Left={}, Right={}, Front={}, Back={}},
         decalSync = {Top={}, Bottom={}, Left={}, Right={}, Front={}, Back={}}
     }
@@ -18224,6 +18326,7 @@ local function BuildAndVerifyMap(data)
             if success and p and typeof(p) == "Instance" then
                 table.insert(batches.resize, {Part = p, CFrame = baseCFrame, Size = pData.size})
                 table.insert(batches.color, {Part = p, Color = pData.color})
+                table.insert(batches.lockParts, p)
                 
                 table.insert(batches.anchor, {Part = p, Anchored = true})
                 if pData.isUnanchored then
@@ -18243,20 +18346,51 @@ local function BuildAndVerifyMap(data)
                     table.insert(batches.surface, {Part = p, Surfaces = appliedSurfaces})
                 end
                 
+                -- PointLight: اگر دیتا مشخصات خودش را دارد دقیقاً همان اعمال می‌شود،
+                -- در غیر این صورت مقادیر Global و (در حالت LIGHT_ALL_PARTS) رنگ تصادفی از لیست
                 if pData.hasLight or LIGHT_ALL_PARTS then
                     local targetRange = pData.lightRange or tonumber(GLOBAL_LIGHT_RANGE) or 20
                     local targetBright = pData.lightBrightness or tonumber(GLOBAL_LIGHT_BRIGHTNESS) or 0.011
-                    
+
+                    local targetColor = pData.lightColor
+                    if not targetColor then
+                        if LIGHT_ALL_PARTS then
+                            targetColor = LIGHT_COLORS[math.random(#LIGHT_COLORS)]
+                        else
+                            targetColor = Color3.new(1, 1, 1)
+                        end
+                    end
+
+                    local lightChange = {
+                        Part = p, LightType = "PointLight", Range = targetRange,
+                        Brightness = targetBright, Color = targetColor,
+                        Shadows = (pData.lightShadows == true)
+                    }
+                    if pData.lightEnabled == false then lightChange.Enabled = false end
+
                     table.insert(batches.lightCreate, {Part = p, LightType = "PointLight"})
-                    table.insert(batches.lightSync, {
-                        Part = p, LightType = "PointLight", Range = targetRange, 
-                        Brightness = targetBright, Color = Color3.new(1, 1, 1), Shadows = false
-                    })
+                    table.insert(batches.lightSync, lightChange)
                 end
                 
-                if pData.hasFire then table.insert(batches.decorationCreate, {Part = p, DecorationType = "Fire"}) end
-                if pData.hasSparkles then table.insert(batches.decorationCreate, {Part = p, DecorationType = "Sparkles"}) end
-                if pData.hasSmoke then table.insert(batches.decorationCreate, {Part = p, DecorationType = "Smoke"}) end
+                -- Fire / Sparkles / Smoke با مشخصات دقیق
+                if pData.hasFire then
+                    table.insert(batches.decorationCreate, {Part = p, DecorationType = "Fire"})
+                    local change = {Part = p, DecorationType = "Fire"}
+                    for k, v in pairs(pData.fireProps) do change[k] = v end
+                    table.insert(batches.decorationSync, change)
+                end
+                if pData.hasSparkles then
+                    table.insert(batches.decorationCreate, {Part = p, DecorationType = "Sparkles"})
+                    local change = {Part = p, DecorationType = "Sparkles"}
+                    for k, v in pairs(pData.sparklesProps) do change[k] = v end
+                    table.insert(batches.decorationSync, change)
+                end
+                if pData.hasSmoke then
+                    table.insert(batches.decorationCreate, {Part = p, DecorationType = "Smoke"})
+                    local change = {Part = p, DecorationType = "Smoke"}
+                    for k, v in pairs(pData.smokeProps) do change[k] = v end
+                    table.insert(batches.decorationSync, change)
+                end
                 
                 if pData.meshId or pData.meshType then
                     table.insert(batches.meshCreate, {Part = p})
@@ -18322,6 +18456,11 @@ local function BuildAndVerifyMap(data)
     
     if #batches.decorationCreate > 0 then
         FireMassiveSync("CreateDecorations", batches.decorationCreate)
+        -- صبر می‌کنیم تا همه افکت‌ها ساخته شوند، بعد مشخصاتشان (رنگ، اندازه و ...) اعمال شود
+        while ActiveSyncs > 0 do
+            RunService.Heartbeat:Wait()
+        end
+        FireMassiveSync("SyncDecorate", batches.decorationSync)
     end
     
     if #batches.meshCreate > 0 then 
@@ -18353,8 +18492,16 @@ local function BuildAndVerifyMap(data)
             RunService.Heartbeat:Wait() 
         end
     end
-    
+
+    -- Lock کردن همه پارت‌های ساخته‌شده با Btools
+    if SET_LOCK_MAP and #batches.lockParts > 0 then
+        FireMassiveSync("SetLocked", batches.lockParts, true)
+        while ActiveSyncs > 0 do
+            RunService.Heartbeat:Wait()
+        end
+    end
 end
+
 local function StartDisco()
     if not DISCO_POINTLIGHTS then return end
 
@@ -18398,12 +18545,12 @@ task.spawn(function()
     for _, v in pairs(workspace:GetDescendants()) do 
         if v:IsA("SpawnLocation") then table.insert(p2, v) end 
     end
-    p:PivotTo(#p2 > 0 and p2[math.random(#p2)].CFrame + Vector3.new(0, 3, 0) or CFrame.new(0, 5, 0))   
-        StartDisco()           
-end)
-local request = game:GetService("ReplicatedStorage").HDAdminHDClient.Signals.RequestCommandSilent
+    p:PivotTo(#p2 > 0 and p2[math.random(#p2)].CFrame + Vector3.new(0, 3, 0) or CFrame.new(0, 5, 0)) 
+    local request = game:GetService("ReplicatedStorage").HDAdminHDClient.Signals.RequestCommandSilent
 request:InvokeServer(";fogcolor black ;fog 120 ;time 0")
 wait(1)
 request:InvokeServer(";music 6129291390 ;volume inf")
 wait(8)
-request:InvokeServer(";unmusic")
+request:InvokeServer(";unmusic")  
+    StartDisco()           
+end)
