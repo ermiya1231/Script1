@@ -1,20 +1,7 @@
 -- آیدی فریم‌های انیمیشن را اینجا قرار دهید
 local AnimatedSkyFrames = {
-	"http://www.roblox.com/asset/?id=14125250298",
 	"http://www.roblox.com/asset/?id=14125446743",
-	"http://www.roblox.com/asset/?id=14125496259",
-	"http://www.roblox.com/asset/?id=14125653423",
-	"http://www.roblox.com/asset/?id=14125736348",
-	"http://www.roblox.com/asset/?id=14129198385",
-	"http://www.roblox.com/asset/?id=14129600975",
-	"http://www.roblox.com/asset/?id=14129562742",
-	"http://www.roblox.com/asset/?id=14132452102",
-	"http://www.roblox.com/asset/?id=14134180884",
-	"http://www.roblox.com/asset/?id=14134221467",
-	"http://www.roblox.com/asset/?id=14134281973",
-	"http://www.roblox.com/asset/?id=14134466542",
-	"http://www.roblox.com/asset/?id=14135372802",
-	"http://www.roblox.com/asset/?id=14135657314"
+	"http://www.roblox.com/asset/?id=14125496259"
 }
 
 local player = game.Players.LocalPlayer
