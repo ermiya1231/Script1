@@ -26,8 +26,8 @@ screenGui.Parent = guiParent
 
 -- پنجره اصلی
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 520, 0, 450)
-mainFrame.Position = UDim2.new(0.5, -260, 0.5, -225)
+mainFrame.Size = UDim2.new(0, 520, 0, 480)
+mainFrame.Position = UDim2.new(0.5, -260, 0.5, -240)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -67,7 +67,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Text = "   F3X Map Exporter By C00LHACK (Paged & Anchored Fix)"
+title.Text = "   F3X Map Exporter By C00LHACK"
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
@@ -88,20 +88,63 @@ closeBtn.MouseButton1Click:Connect(function() screenGui:Destroy() end)
 
 -- کادر متنی
 local textBox = Instance.new("TextBox")
-textBox.Size = UDim2.new(1, -20, 1, -130) 
+textBox.Size = UDim2.new(1, -20, 1, -160)
 textBox.Position = UDim2.new(0, 10, 0, 40)
 textBox.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
 textBox.TextColor3 = Color3.fromRGB(0, 255, 128)
 textBox.Text = "Ready to export..."
 textBox.TextXAlignment = Enum.TextXAlignment.Left
 textBox.TextYAlignment = Enum.TextYAlignment.Top
-textBox.ClearTextOnFocus = false 
-textBox.TextEditable = false 
+textBox.ClearTextOnFocus = false
+textBox.TextEditable = false
 textBox.MultiLine = true
 textBox.TextWrapped = true
 textBox.Font = Enum.Font.Code
 textBox.TextSize = 13
-textBox.Parent = mainFrame 
+textBox.Parent = mainFrame
+
+-- [ چک‌باکس Collide MeshParts ] --
+local collideMeshParts = true -- پیش‌فرض: روشن
+
+local collideRow = Instance.new("Frame")
+collideRow.Size = UDim2.new(1, -20, 0, 24)
+collideRow.Position = UDim2.new(0, 10, 1, -115)
+collideRow.BackgroundTransparency = 1
+collideRow.Parent = mainFrame
+
+local collideBox = Instance.new("TextButton")
+collideBox.Size = UDim2.new(0, 24, 0, 24)
+collideBox.Position = UDim2.new(0, 0, 0, 0)
+collideBox.BackgroundColor3 = Color3.fromRGB(40, 200, 80)
+collideBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+collideBox.Text = "✓"
+collideBox.Font = Enum.Font.GothamBold
+collideBox.TextSize = 16
+collideBox.BorderSizePixel = 0
+collideBox.AutoButtonColor = false
+collideBox.Parent = collideRow
+
+local collideLabel = Instance.new("TextLabel")
+collideLabel.Size = UDim2.new(1, -34, 1, 0)
+collideLabel.Position = UDim2.new(0, 34, 0, 0)
+collideLabel.BackgroundTransparency = 1
+collideLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+collideLabel.Text = "Collide MeshParts"
+collideLabel.TextXAlignment = Enum.TextXAlignment.Left
+collideLabel.Font = Enum.Font.GothamBold
+collideLabel.TextSize = 14
+collideLabel.Parent = collideRow
+
+collideBox.MouseButton1Click:Connect(function()
+    collideMeshParts = not collideMeshParts
+    if collideMeshParts then
+        collideBox.Text = "✓"
+        collideBox.BackgroundColor3 = Color3.fromRGB(40, 200, 80)
+    else
+        collideBox.Text = ""
+        collideBox.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+    end
+end)
 
 -- [ پنل صفحه‌بندی ] --
 local pageFrame = Instance.new("Frame")
@@ -202,6 +245,98 @@ copyPageBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- =========================================================
+-- [ توابع کمکی Mesh ] --
+-- =========================================================
+local function cleanId(s)
+    if not s or s == "" then return nil end
+    return s:match("%d+") or s
+end
+
+local function fmtVec(v)
+    return string.format("%.3f, %.3f, %.3f", v.X, v.Y, v.Z)
+end
+
+-- رنگ دقیق به صورت 0 تا 1 با ۵ رقم اعشار (برای ثبت دقیق رنگ افکت‌ها)
+local function fmtColor(c)
+    return string.format("%.5f, %.5f, %.5f", c.R, c.G, c.B)
+end
+
+local function fmtBool(b)
+    return b and "True" or "False"
+end
+
+-- هر نوع Mesh (SpecialMesh / BlockMesh / CylinderMesh / FileMesh) را به خطوط متنی تبدیل می‌کند
+local function exportDataModelMesh(mesh, partData)
+    local meshType = "FileMesh"
+
+    if mesh:IsA("SpecialMesh") then
+        meshType = mesh.MeshType.Name          -- Head, Torso, Wedge, Sphere, Cylinder, Brick, FileMesh, Prism, Pyramid, ParallelRamp, RightAngleRamp, CornerWedge
+    elseif mesh:IsA("BlockMesh") then
+        meshType = "Brick"
+    elseif mesh:IsA("CylinderMesh") then
+        meshType = "Cylinder"
+    else
+        meshType = "FileMesh"                  -- FileMesh ساده
+    end
+
+    table.insert(partData, "MeshType: " .. meshType)
+
+    -- MeshId / TextureId فقط اگر وجود داشته باشند (برای FileMesh ها و هر نوع دیگری که Texture دارد)
+    local okId, meshIdVal = pcall(function() return mesh.MeshId end)
+    if okId then
+        local id = cleanId(meshIdVal)
+        if id then table.insert(partData, "MeshId: " .. id) end
+    end
+
+    local okTex, texVal = pcall(function() return mesh.TextureId end)
+    if okTex then
+        local tid = cleanId(texVal)
+        if tid then table.insert(partData, "MeshTextureId: " .. tid) end
+    end
+
+    table.insert(partData, "MeshScale: " .. fmtVec(mesh.Scale))
+    table.insert(partData, "MeshOffset: " .. fmtVec(mesh.Offset))
+end
+
+-- =========================================================
+-- [ توابع ثبت دقیق PointLight / Fire / Sparkles / Smoke ] --
+-- فرمت خطوط قدیمی (Light: True / LightRange / LightBrightness / Fire: True / ...) حفظ شده
+-- و خطوط جدید برای مشخصات کامل اضافه شده‌اند.
+-- =========================================================
+local function exportPointLight(light, partData)
+    table.insert(partData, "Light: True")
+    table.insert(partData, string.format("LightRange: %.3f", light.Range))
+    table.insert(partData, string.format("LightBrightness: %.4f", light.Brightness))
+    table.insert(partData, "LightColor: " .. fmtColor(light.Color))
+    table.insert(partData, "LightShadows: " .. fmtBool(light.Shadows))
+    table.insert(partData, "LightEnabled: " .. fmtBool(light.Enabled))
+end
+
+local function exportFire(fire, partData)
+    table.insert(partData, "Fire: True")
+    table.insert(partData, "FireColor: " .. fmtColor(fire.Color))
+    table.insert(partData, "FireSecondaryColor: " .. fmtColor(fire.SecondaryColor))
+    table.insert(partData, string.format("FireHeat: %.3f", fire.Heat))
+    table.insert(partData, string.format("FireSize: %.3f", fire.Size))
+    table.insert(partData, "FireEnabled: " .. fmtBool(fire.Enabled))
+end
+
+local function exportSparkles(sparkles, partData)
+    table.insert(partData, "Sparkles: True")
+    table.insert(partData, "SparklesColor: " .. fmtColor(sparkles.SparkleColor))
+    table.insert(partData, "SparklesEnabled: " .. fmtBool(sparkles.Enabled))
+end
+
+local function exportSmoke(smoke, partData)
+    table.insert(partData, "Smoke: True")
+    table.insert(partData, "SmokeColor: " .. fmtColor(smoke.Color))
+    table.insert(partData, string.format("SmokeSize: %.3f", smoke.Size))
+    table.insert(partData, string.format("SmokeOpacity: %.3f", smoke.Opacity))
+    table.insert(partData, string.format("SmokeRiseVelocity: %.3f", smoke.RiseVelocity))
+    table.insert(partData, "SmokeEnabled: " .. fmtBool(smoke.Enabled))
+end
+
 -- [ کدهای اصلی استخراج مپ ] --
 local function runExport()
     exportBtn.Text = "Exporting... Please Wait!"
@@ -224,8 +359,8 @@ local function runExport()
     local function shouldIgnore(instance)
         local current = instance
         while current and current ~= workspace do
-            if ignoredModels[current] then 
-                return true 
+            if ignoredModels[current] then
+                return true
             end
             current = current.Parent
         end
@@ -272,7 +407,7 @@ local function runExport()
                     local isConvertedMesh = false
 
                     if v:IsA("MeshPart") or v:IsA("UnionOperation") then
-                        exportClassName = "Part" 
+                        exportClassName = "Part"
                         isConvertedMesh = true
                     end
                     table.insert(partData, string.format("ClassName: %s", exportClassName))
@@ -288,10 +423,9 @@ local function runExport()
                     table.insert(partData, string.format("Material: %s", matName))
                     table.insert(partData, string.format("Transparency: %.3f", v.Transparency))
 
-                    -- === [ بخش مهم: حل مشکل افتادن NPC و SpecialMesh ها ] ===
+                    -- === [ تشخیص NPC و وجود هر نوع Mesh ] ===
                     local isNPC = false
                     local checkParent = v.Parent
-                    -- پیدا کردن Humanoid برای تشخیص NPC
                     while checkParent and checkParent ~= workspace do
                         if checkParent:FindFirstChildOfClass("Humanoid") then
                             isNPC = true
@@ -300,40 +434,51 @@ local function runExport()
                         checkParent = checkParent.Parent
                     end
 
-                    -- بررسی وجود SpecialMesh در پارت
-                    local hasSpecialMesh = v:FindFirstChildOfClass("SpecialMesh") ~= nil
-
-                    if not v.CanCollide or isConvertedMesh then table.insert(partData, "CanCollide: False") end
-                    
-                    -- اگر پارت صندلی نبود و NPC هم نبود و SpecialMesh هم نداشت، حق داره Unanchored بشه
-                    if not v.Anchored and not v:IsA("Seat") and not isNPC and not hasSpecialMesh then 
-                        table.insert(partData, "Unanchored: True") 
+                    -- هر DataModelMesh (SpecialMesh, BlockMesh, CylinderMesh, FileMesh)
+                    local hasAnyMesh = false
+                    for _, c in ipairs(v:GetChildren()) do
+                        if c:IsA("DataModelMesh") then hasAnyMesh = true break end
                     end
-                    -- ========================================================
 
                     if v:IsA("MeshPart") then
+                        -- MeshPart تبدیل‌شده: بسته به چک‌باکس Collide MeshParts
+                        if not collideMeshParts then table.insert(partData, "CanCollide: False") end
+                    elseif isConvertedMesh or not v.CanCollide then
+                        -- UnionOperation یا پارت‌هایی که اصلاً Collision نداشتند
+                        table.insert(partData, "CanCollide: False")
+                    end
+
+                    if not v.Anchored and not v:IsA("Seat") and not isNPC and not hasAnyMesh then
+                        table.insert(partData, "Unanchored: True")
+                    end
+                    -- ========================================
+
+                    local meshExported = false
+
+                    -- MeshPart
+                    if v:IsA("MeshPart") then
                         table.insert(partData, "MeshType: FileMesh")
-                        if v.MeshId ~= "" then 
-                            local meshIdNum = v.MeshId:match("%d+") or v.MeshId
-                            table.insert(partData, string.format("MeshId: %s", meshIdNum)) 
-                        end
-                        if v.TextureID ~= "" then 
-                            local texIdNum = v.TextureID:match("%d+") or v.TextureID
-                            table.insert(partData, string.format("MeshTextureId: %s", texIdNum)) 
-                        end
+                        local mid = cleanId(v.MeshId)
+                        if mid then table.insert(partData, "MeshId: " .. mid) end
+                        local tid = cleanId(v.TextureID)
+                        if tid then table.insert(partData, "MeshTextureId: " .. tid) end
 
                         local mSize = v.MeshSize
                         local sX = mSize.X > 0.001 and (v.Size.X / mSize.X) or 1
                         local sY = mSize.Y > 0.001 and (v.Size.Y / mSize.Y) or 1
                         local sZ = mSize.Z > 0.001 and (v.Size.Z / mSize.Z) or 1
                         table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", sX, sY, sZ))
+                        meshExported = true
                     end
+
+                    -- F3X از هر نوع افکت فقط یکی روی هر پارت می‌پذیرد، پس فقط اولین مورد ثبت می‌شود
+                    local lightExported, fireExported, sparklesExported, smokeExported = false, false, false, false
 
                     local usedDecals, usedTextures = {}, {}
                     for _, child in ipairs(v:GetChildren()) do
                         if child:IsA("Decal") then
                             local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
-                            
+
                             local idNum
                             if child.Texture == "rbxasset://textures/SpawnLocation.png" then
                                 idNum = "6045248793"
@@ -344,11 +489,11 @@ local function runExport()
                                 end
                             end
 
-                            if idNum and not usedDecals[faceStr] then 
-                                table.insert(partData, string.format("Decal.%s = %s", faceStr, idNum)) 
+                            if idNum and not usedDecals[faceStr] then
+                                table.insert(partData, string.format("Decal.%s = %s", faceStr, idNum))
                                 usedDecals[faceStr] = true
                             end
-                            
+
                         elseif child:IsA("Texture") then
                             local faceStr = tostring(child.Face):gsub("Enum.NormalId.", "")
                             local idNum
@@ -356,33 +501,41 @@ local function runExport()
                                 idNum = child.Texture:match("%d+")
                                 if not idNum then idNum = child.Texture end
                             end
-                            if idNum and not usedTextures[faceStr] then 
-                                table.insert(partData, string.format("Texture.%s = %s", faceStr, idNum)) 
+                            if idNum and not usedTextures[faceStr] then
+                                table.insert(partData, string.format("Texture.%s = %s", faceStr, idNum))
                                 usedTextures[faceStr] = true
                             end
-                            
-                        elseif child:IsA("SpecialMesh") then
-                            table.insert(partData, "MeshType: FileMesh")
-                            
-                            if child.MeshId and child.MeshId ~= "" then 
-                                local meshIdNum = child.MeshId:match("%d+") or child.MeshId
-                                table.insert(partData, string.format("MeshId: %s", meshIdNum)) 
+
+                        elseif child:IsA("DataModelMesh") then
+                            -- فقط اولین Mesh هر پارت ذخیره می‌شود (F3X فقط یک Mesh می‌پذیرد)
+                            if not meshExported then
+                                exportDataModelMesh(child, partData)
+                                meshExported = true
                             end
-                            if child.TextureId and child.TextureId ~= "" then 
-                                local texIdNum = child.TextureId:match("%d+") or child.TextureId
-                                table.insert(partData, string.format("MeshTextureId: %s", texIdNum)) 
+
+                        elseif child:IsA("PointLight") then
+                            if not lightExported then
+                                exportPointLight(child, partData)
+                                lightExported = true
                             end
-                            
-                            local ms = child.Scale
-                            table.insert(partData, string.format("MeshScale: %.3f, %.3f, %.3f", ms.X, ms.Y, ms.Z))
-                            
-                        elseif child:IsA("PointLight") then 
-                            table.insert(partData, "Light: True")
-                            table.insert(partData, string.format("LightRange: %.2f", child.Range))
-                            table.insert(partData, string.format("LightBrightness: %.2f", child.Brightness))
-                        elseif child:IsA("Fire") then table.insert(partData, "Fire: True")
-                        elseif child:IsA("Sparkles") then table.insert(partData, "Sparkles: True")
-                        elseif child:IsA("Smoke") then table.insert(partData, "Smoke: True")
+
+                        elseif child:IsA("Fire") then
+                            if not fireExported then
+                                exportFire(child, partData)
+                                fireExported = true
+                            end
+
+                        elseif child:IsA("Sparkles") then
+                            if not sparklesExported then
+                                exportSparkles(child, partData)
+                                sparklesExported = true
+                            end
+
+                        elseif child:IsA("Smoke") then
+                            if not smokeExported then
+                                exportSmoke(child, partData)
+                                smokeExported = true
+                            end
                         end
                     end
 
