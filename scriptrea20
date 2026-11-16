@@ -63,13 +63,11 @@ end
 _G.Connections = {}
 
 local ScriptSettings = {
-    Player = { AudioId = 77478671906831, Pitch = 1, Mode = "Auto" },
+    Player = { AudioId = 1839272148, Pitch = 1, Mode = "Auto" },
     Duper = { Ammount = 1, PanicStop = false, Vip = false },
     Visualizer = { AutoRecover = true, ToolMode = "All Tools", SetVisualizer = "halo (visualizer)", Target = "me", Radius = 6, Speed = 1 },
     Visualizer2 = { SetVisualizer = "boombox man" },
-    Misc = { Stealing = false, AntiFling = false, DisableUi = false },
     Songs = { Selected = 0 },
-    Settings = { AntiLoggerType = "syndicate!" }
 }
 
 ----------------------------------------------------------------
@@ -212,280 +210,6 @@ local function PrepareTools()
     end
     return tools
 end
-
-----------------------------------------------------------------
--- Anti logger
-----------------------------------------------------------------
-local antilog = function(id)
-    local asciiFace = [[
-    _
-   {_}
-   /*\
-  /_*_\
- {('o')}
-C{{([^*^])}}D
-  [ * ]
- /  Y  \
-_\__|__/_
-(___/ \___)
-]]
-
-    if ScriptSettings.Settings.AntiLoggerType == "syndicate!" then
-        local encodedString = string.format("0x%X", id)
-        local randomHex = ""
-        local noisePatterns = {
-            "% 0 a", "%  0b", " % 0c", "% 0  d", "%0  A", "%  0 B", "% 0  C", "%0  D"
-        }
-        local randomSeed = math.random(111, 222)
-        local formattedNoise = ""
-        local hexPatterns = {
-            "%37%34%35%34%0A%200%0a%34%36%35%38%36%36%39%35%38%35%37",
-            "%32%33%39%34%0A%36%33%38%31%38%34%32%31%33%36",
-            "%31%32%37%38%35%0A%38%39%32%28%38%32%36%38%30%39",
-            "%37%34%35%36%33%36%37%38%31%11%11%36%30%35%37",
-            "%38%33%36%38%37%31%34%31%39%39%37%32%36%33",
-            "%33%36%34%38%36%37%30%33%39%32%36%36%36%39",
-            "%36%35%39%34%0A%36%36%39%39%39%31%39%37%38%33",
-            "%32%33%39%31%0A%38%33%37%31%35%30%32%34%36%33%30%33",
-            "%36%31%38%39%36%34%38%31%35%35%36%30%37%36",
-            "%34%38%39%37%0A%33%31%37%34%30%36%35%38%37%35",
-            "%39%32%38%30%0A%32%30%30%32%36%36%35%35%31%34%38%37%34",
-            "%33%30%37%34%31%38%34%37%35%35%39%39%30%36",
-            "%36%39%38%31%0A%36%39%36%39%30%30%36%34%32%36",
-            "%34%30%35%39%0A%38%39%32%33%30%36%36%33%31%31",
-            "%35%39%32%36%0A%31%38%33%36%37%37%38%32%39%39"
-        }
-
-        local function encodeRandomHex(inputString)
-            local encoded = ""
-            local index = 1
-            while index <= #inputString do
-                local char = inputString:sub(index, index)
-                if char == " " then
-                    encoded = encoded .. " "
-                else
-                    if inputString:sub(index, index + 1) == "0x" then
-                        encoded = encoded .. (string.format("%%%X", string.byte("0")) .. string.format("%%%X", string.byte("x")))
-                        index = index + 1
-                    else
-                        if math.random(0, 1) == 1 then
-                            encoded = encoded .. string.format("%%%X", string.byte(char))
-                        else
-                            encoded = encoded .. char
-                        end
-                    end
-                end
-                index = index + 1
-            end
-            return encoded
-        end
-
-        local function generateNoise()
-            local noise = ""
-            local randomLength = math.random(20, 30)
-            for i = 1, randomLength, 1 do
-                if math.random(1, 10) <= 3 then
-                    if math.random(0, 1) == 1 then
-                        noise = noise .. hexPatterns[math.random(#hexPatterns)]
-                    else
-                        local noiseType = math.random(1, 5)
-                        if noiseType == 1 then
-                            noise = noise .. ("&%61%73%73%65%74%49%64=" .. math.random(1000000, 9999999))
-                        elseif noiseType == 2 then
-                            noise = noise .. ("&50%72%6F%64%75%63%74%49%64=" .. math.random(1000000, 9999999))
-                        elseif noiseType == 3 then
-                            noise = noise .. ("&%69d=" .. math.random(1000000, 9999999))
-                        elseif noiseType == 4 then
-                            noise = noise .. ("&%69%64=" .. math.random(1000000, 9999999))
-                            noise = noise .. asciiFace
-                        else
-                            noise = noise .. "%00"
-                        end
-                    end
-                else
-                    noise = noise .. noisePatterns[math.random(#noisePatterns)]
-                end
-            end
-            return noise
-        end
-
-        local function generateRandomIDSequence()
-            local idSequence = ""
-            local randomLength = math.random(22, 25)
-            for i = 1, randomLength, 1 do
-                if math.random(0, 1) == 1 then
-                    idSequence = idSequence .. hexPatterns[math.random(#hexPatterns)]
-                else
-                    idSequence = idSequence .. ("&id=" .. hexPatterns[math.random(#hexPatterns)] .. " | ")
-                end
-                idSequence = idSequence .. generateNoise()
-            end
-            if idSequence:sub(-3) == " | " then
-                idSequence = idSequence:sub(1, -4)
-            end
-            return idSequence
-        end
-
-        local function insertRandomSpaces(inputString)
-            local spacedString = ""
-            local charCounter = 0
-            local spaceThreshold = math.random(2, 3)
-            local index = 1
-            while index <= #inputString do
-                if inputString:sub(index, index) == "|" then
-                    spacedString = spacedString .. inputString:sub(index, index + 2)
-                    index = index + 3
-                else
-                    spacedString = spacedString .. inputString:sub(index, index)
-                    index = index + 1
-                end
-                charCounter = charCounter + 1
-                if charCounter >= spaceThreshold then
-                    spacedString = spacedString .. string.rep(" ", math.random(6, 8))
-                    charCounter = 0
-                    spaceThreshold = math.random(6, 8)
-                end
-            end
-            return spacedString
-        end
-
-        local prefixNoise = ""
-        local randomPrefixLength = math.random(4, 5)
-        for i = 1, randomPrefixLength, 1 do
-            prefixNoise = prefixNoise .. noisePatterns[math.random(#noisePatterns)]
-        end
-
-        randomHex = encodeRandomHex(encodedString)
-        for i = 1, randomSeed, 1 do
-            formattedNoise = formattedNoise .. noisePatterns[math.random(#noisePatterns)]
-        end
-
-        local encodedPayload = prefixNoise .. prefixNoise .. prefixNoise .. "%20" .. randomHex .. prefixNoise .. prefixNoise .. prefixNoise .. "&%20" .. generateRandomIDSequence()
-
-        return insertRandomSpaces(encodedPayload)
-
-    elseif ScriptSettings.Settings.AntiLoggerType == "fanta" then
-        local q = tostring(ScriptSettings.Player.AudioId)
-        local D = ""
-        local n = {
-            "%  0b", "% 0  d", " % 0c", "%0  A", "%0  D", "%  2 0", "% 0  C", "%  0 B", "% 2  0", "% 0 a",
-            "%0  D", "%  2 0", "% 0  C", "% 2  0", "%0  D", "% 0  d", "%  0b", "% 0  C", "% 0 a", "%0  D",
-            "%  2 0", "%0  D", "% 0 a", "% 0  d", "%  2 0",
-        }
-        local A = math.random(99, 444)
-        local X = ""
-        local g = {
-            "3884427347", "7384639091", "1616996690", "1621409317", "4615534852", "1617122776",
-            "6485546017", "7545632444", "7023668509", "6449895658", "1339562034", "8068992983",
-            "15645088699", "15645208882", "15645493148", "15645594471", "15663161715", "15664083310",
-            "15673753435", "15667648740", "15695044812", "15695512238", "15695784417", "15714903860",
-            "15715987966", "15718826441", "15716567283", "15718814968", "15719151859", "15725860209",
-            "15726132970", "15741448809", "15741731518", "15742373154", "1574989897", "15742666074",
-            "15753341751", "15754322372", "15754531592", "15752643448", "15757649766"
-        }
-        local function randomHexEncode(s)
-            local out = ""
-            for i = 1, #s, 1 do
-                local c = s:sub(i, i)
-                if c == " " then
-                    out = out .. " "
-                else
-                    if math.random(0, 1) == 1 then
-                        out = out .. string.format("%%%X", string.byte(c))
-                    else
-                        out = out .. c
-                    end
-                end
-            end
-            return out
-        end
-        local function generateRandomString(len)
-            local chars = "FANTAXSYNDICATE"
-            local out = ""
-            for i = 1, len, 1 do
-                out = out .. chars:sub(math.random(#chars), math.random(#chars))
-            end
-            return out
-        end
-        local function generatePostNoise()
-            local out = ""
-            local count = math.random(30, 50)
-            for i = 1, count, 1 do
-                if math.random(1, 12) <= 3 then
-                    if math.random(0, 1) == 1 then
-                        out = out .. g[math.random(#g)]
-                    else
-                        local t = math.random(1, 6)
-                        if t == 1 then
-                            out = out .. ("&assetid=" .. math.random(1000000, 9999950))
-                        elseif t == 2 then
-                            out = out .. ("&assetname=" .. generateRandomString(math.random(5, 10)))
-                        elseif t == 3 then
-                            out = out .. ("&ProductId=" .. math.random(1000000, 9999949))
-                        elseif t == 4 then
-                            out = out .. ("&instanceId=" .. math.random(1000000, 9999988))
-                        elseif t == 5 then
-                            out = out .. ("&id=" .. math.random(1000000, 9999944))
-                        else
-                            out = out .. "%00"
-                        end
-                    end
-                else
-                    out = out .. n[math.random(#n)]
-                end
-            end
-            return out
-        end
-        local function generateRandomIDBlocks()
-            local out = ""
-            local count = math.random(21, 23)
-            for i = 1, count, 1 do
-                if math.random(0, 1) == 1 then
-                    out = out .. g[math.random(#g)]
-                else
-                    out = out .. ("&id=" .. g[math.random(#g)])
-                end
-                out = out .. generatePostNoise()
-            end
-            return out
-        end
-        local function insertSpaces(s)
-            local out = ""
-            local counter = 0
-            local threshold = math.random(2, 3)
-            local i = 1
-            while i <= #s do
-                if s:sub(i, i) == "|" then
-                    out = out .. s:sub(i, i + 2)
-                    i = i + 3
-                else
-                    out = out .. s:sub(i, i)
-                    i = i + 1
-                end
-                counter = counter + 1
-                if counter >= threshold then
-                    out = out .. string.rep(" ", math.random(6, 8))
-                    counter = 0
-                    threshold = math.random(6, 8)
-                end
-            end
-            return out
-        end
-        local j = ""
-        local U = math.random(4, 5)
-        for i = 1, U, 1 do
-            j = j .. n[math.random(#n)]
-        end
-        D = randomHexEncode(q)
-        for i = 1, A, 1 do
-            X = X .. n[math.random(#n)]
-        end
-        local x = "%2b+\n        \n        \n        \n        \n        ++\n        \n        \n        \n        \n        +%2b\n        \n        \n        \n        \n        %2b\n        \n        \n        \n        \n        \n        \n        %2b+" ..
-            (j .. j .. j .. "%200%30" .. D .. j .. j .. j .. "&%20" .. generateRandomIDBlocks())
-        return insertSpaces(x)
-    end
-end
-
 ----------------------------------------------------------------
 -- Audio
 ----------------------------------------------------------------
@@ -526,20 +250,10 @@ local function EquipAudioTools()
     end
 end
 
-local function sendTo(tool, kind, id, pitch)
-    local isSpecial = game.PlaceId == 138900085453390
-    local payload
-    if kind == "obfuscated" then
-        if isSpecial then
-            payload = "+" .. string.rep("0", math.random(1500, 2500)) .. tostring(id)
-        else
-            payload = antilog(id)
-        end
-    else
-        payload = tostring(id)
-    end
+local function sendTo(tool, id, pitch)
+    local payload = tostring(id)
 
-    if isSpecial then
+    if game.PlaceId == 138900085453390 then
         local pa = tool:FindFirstChild("PlayAudio")
         if pa and pa:IsA("RemoteFunction") then
             task.spawn(function()
@@ -560,7 +274,7 @@ end
 
 local function confirmed(tool, id)
     for _, snd in ipairs(getSounds(tool)) do
-        if tostring(snd.SoundId):find(tostring(id), 1, true) then
+        if tostring(snd.SoundId):find(tostring(id), 1, true) and snd.IsPlaying then
             return true
         end
     end
@@ -592,23 +306,17 @@ local PlayAudio = function()
     end
     local total = #pending
 
-    local mode = ScriptSettings.Player.Mode or "Auto"
-    local kinds = (mode == "Auto") and { "obfuscated", "plain" } or { string.lower(mode) }
-
-    for _, kind in ipairs(kinds) do
-        for _, tool in ipairs(pending) do
-            sendTo(tool, kind, id, pitch)
-        end
-        task.wait(0.8)
-        local failed = {}
-        for _, tool in ipairs(pending) do
-            if not confirmed(tool, id) then
-                table.insert(failed, tool)
-            end
-        end
-        pending = failed
-        if #pending == 0 then break end
+    for _, tool in ipairs(pending) do
+        sendTo(tool, id, pitch)
     end
+    task.wait(1.5)
+    local failed = {}
+    for _, tool in ipairs(pending) do
+        if not confirmed(tool, id) then
+            table.insert(failed, tool)
+        end
+    end
+    pending = failed
 
     if #pending > 0 then
         Notif:Notify((total - #pending) .. "/" .. total .. " boomboxes confirmed the song", 4, "error")
@@ -618,31 +326,53 @@ local PlayAudio = function()
     return true
 end
 
--- Restarts every equipped audio tool at the same instant
 local SyncAudio = function()
     local character = GetLPlrImportant()
     if not character then return end
-    local sounds = {}
+
+    local id = ScriptSettings.Player.AudioId
+    if not id then
+        return Notif:Notify("invalid audio id", 3, "error")
+    end
+    local pitch = ScriptSettings.Player.Pitch or 1
+
+    local pending = {}
     for _, t in ipairs(character:GetChildren()) do
-        if t:IsA("Tool") and isAudioTool(t) then
-            for _, snd in ipairs(getSounds(t)) do
-                table.insert(sounds, snd)
+        if isAudioTool(t) then table.insert(pending, t) end
+    end
+    if #pending == 0 then
+        return Notif:Notify("no boombox equipped", 3, "error")
+    end
+    local total = #pending
+
+    -- یعنی آهنگ درست آیدی داره، در حال پخشه و از اول شروع شده
+    local function restarted(tool)
+        for _, snd in ipairs(getSounds(tool)) do
+            if tostring(snd.SoundId):find(tostring(id), 1, true)
+                and snd.IsPlaying and snd.TimePosition < 3 then
+                return true
             end
         end
+        return false
     end
-    if #sounds == 0 then
-        return Notif:Notify("no sounds to sync", 3, "error")
-    end
+
     RunService.Heartbeat:Wait()
-    for _, snd in ipairs(sounds) do
-        snd.TimePosition = 0
+    for _, tool in ipairs(pending) do
+        sendTo(tool, id, pitch)
     end
-    for _, snd in ipairs(sounds) do
-        if not snd.IsPlaying and snd.SoundId ~= "" then
-            snd:Play()
-        end
+    task.wait(1.5)
+
+    local failed = {}
+    for _, tool in ipairs(pending) do
+        if not restarted(tool) then table.insert(failed, tool) end
     end
-    Notif:Notify("synced " .. #sounds .. " sound(s)", 3, "success")
+    pending = failed
+
+    if #pending > 0 then
+        Notif:Notify((total - #pending) .. "/" .. total .. " synced (server may ignore same-id restart)", 4, "error")
+    else
+        Notif:Notify("synced " .. total .. " boombox(es)", 3, "success")
+    end
 end
 
 ----------------------------------------------------------------
@@ -1479,22 +1209,10 @@ local PlayerTab = Init:NewTab("Audio player")
 local VisualizerTab = Init:NewTab("Visualizer")
 local Visualizer2Tab = Init:NewTab("Visualizer 2")
 local DupeTab = Init:NewTab("Tool dupe")
-local SongsTab = Init:NewTab("Songs")
-local MiscTab = Init:NewTab("Misc")
-local FunTab = Init:NewTab("Fun")
-local SettingsTab = Init:NewTab("Settings")
-
-SettingsTab:NewSelector("Antilogger type", "syndicate!", { "syndicate!", "fanta" }, function(val)
-    ScriptSettings.Settings.AntiLoggerType = val
-end)
-SettingsTab:NewLabel("credits to syndicate and to fanta for their anti logger", "center")
 
 PlayerTab:NewTextbox("Audio Id", "", "00000000", "all", "small", true, false, function(val)
     local num = tostring(val or ""):match("%d+")
     ScriptSettings.Player.AudioId = num and tonumber(num) or nil
-end)
-PlayerTab:NewSelector("Send mode", "Auto", { "Auto", "Obfuscated", "Plain" }, function(val)
-    ScriptSettings.Player.Mode = val
 end)
 PlayerTab:NewButton("Play", function()
     task.spawn(function()
@@ -1564,59 +1282,6 @@ Visualizer2Tab:NewButton("Visualize", function()
     Visualize2()
 end)
 
-local removedMeshes = {}
-
-MiscTab:NewToggle("Remove Mesh", false, function(value)
-    for _, tool in ipairs(LocalPlayer.Character:GetChildren()) do
-        if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
-            local handle = tool.Handle
-            local mesh = handle:FindFirstChild("Mesh")
-            if value then
-                if mesh then
-                    removedMeshes[handle] = mesh:Clone()
-                    mesh:Destroy()
-                end
-            else
-                if removedMeshes[handle] then
-                    removedMeshes[handle].Parent = handle
-                    removedMeshes[handle] = nil
-                end
-            end
-        end
-    end
-end)
-
-MiscTab:NewToggle("disable boombox ui", false, function(value)
-    ScriptSettings.Misc.DisableUi = value
-end)
-
-MiscTab:NewToggle("Boombox ripper", false, function(value)
-    ScriptSettings.Misc.Stealing = value
-end)
-
-MiscTab:NewToggle("Anti fling", false, function(value)
-    if value then
-        _G.Connections["AntiFling"] = RunService.Stepped:Connect(function()
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer and player.Character then
-                    for _, v in pairs(player.Character:GetDescendants()) do
-                        if v:IsA("BasePart") then
-                            v.CanCollide = false
-                        end
-                    end
-                end
-            end
-        end)
-        Notif:Notify("Enabled anti fling", 3, "success")
-    else
-        if _G.Connections["AntiFling"] then
-            _G.Connections["AntiFling"]:Disconnect()
-            _G.Connections["AntiFling"] = nil
-            Notif:Notify("Disabled anti fling", 3, "success")
-        end
-    end
-end)
-
 VisualizerTab:NewButton("disable roll off", function()
     for _, tool in next, LocalPlayer.Character:GetChildren() do
         if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
@@ -1626,72 +1291,6 @@ VisualizerTab:NewButton("disable roll off", function()
                 end
             end
         end
-    end
-end)
-
-_G.Connections["DisableUi"] = LocalPlayer.Character.ChildAdded:Connect(function(child)
-    if child:IsA("Tool") and child:FindFirstChild("Client") then
-        child.Client.Enabled = not ScriptSettings.Misc.DisableUi
-    end
-end)
-
-_G.Connections["BoomBoxStealer"] = game.Workspace.ChildAdded:Connect(function(child)
-    if child:IsA("BackpackItem") and child:FindFirstChild("Handle") and ScriptSettings.Misc.Stealing then
-        task.spawn(function()
-            LocalPlayer.Character.Humanoid:EquipTool(child)
-            task.wait(.15)
-            for _, v in next, LocalPlayer.Character:GetChildren() do
-                if v:IsA("Tool") and v:FindFirstChild("Handle") then
-                    v.Parent = LocalPlayer.Backpack
-                end
-            end
-            Notif:Notify("yoinked some skids boombox", 3, "success")
-        end)
-    end
-end)
-
-local GoodSongs = {
-    ["lil tecca instrumental"] = 89961049646600,
-    ["serial killed"] = 77478671906831,
-    ["hoes oh noes"] = 90085527885884,
-    ["drain - lieu"] = 135529718709277,
-    ["met her on the internet full"] = 72334211564889,
-    ["iru emoticon"] = 97807710689966,
-}
-
-local songNames = {}
-for songName, _ in pairs(GoodSongs) do
-    table.insert(songNames, songName)
-end
-
-SongsTab:NewSelector("Selector", "none", songNames, function(val)
-    ScriptSettings.Songs.Selected = val
-end)
-
-SongsTab:NewButton("Set song", function()
-    local songID = GoodSongs[ScriptSettings.Songs.Selected]
-    if songID then
-        ScriptSettings.Player.AudioId = songID
-    end
-end)
-
-if not game.Workspace:FindFirstChild("colli") then
-    local colli = game:GetObjects("rbxassetid://91309023015769")[1]
-    colli.Parent = game.Workspace
-    colli:MoveTo(Vector3.new(10000, 5000, 10000))
-    colli.Name = "colli"
-end
-
-local arewethereyet = false
-local ogposfromarewethereyet = LocalPlayer.Character.HumanoidRootPart.CFrame
-FunTab:NewButton("syndicate hangout", function()
-    if arewethereyet == false then
-        ogposfromarewethereyet = LocalPlayer.Character.HumanoidRootPart.CFrame
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(10000, 5200, 10000)
-        arewethereyet = true
-    else
-        LocalPlayer.Character.HumanoidRootPart.CFrame = ogposfromarewethereyet
-        arewethereyet = false
     end
 end)
 
