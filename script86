@@ -1,4 +1,5 @@
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ermiya1231/Script1/refs/heads/main/script815"))()
+task.wait(0)
 local Players = game:GetService("Players")
 local gui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
