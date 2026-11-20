@@ -1,644 +1,709 @@
--- Luxury Weapon Dex - Exact Original Restore Logic with Panel Blur & State Persistence
+--[[
+	LUXURY DEX  (نسخه ساده و تمیز)
+	- دو لوکیشن: Backpack / LocalPlayer
+	- جستجو + آیکن برای هر آیتم
+	- ادیت زنده مقدارها + SPAM
+	- View Source اسکریپت‌ها (decompile) با Copy
+	- SAVE و بازگردانی خودکار بعد از مرگ
+]]
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
+local UIS = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
+------------------------------------------------------------------
+-- Helpers
+------------------------------------------------------------------
 local function getGuiParent()
-	local success, _ = pcall(function()
-		local test = Instance.new("Folder")
-		test.Parent = CoreGui
-		test:Destroy()
+	if gethui then
+		local ok, h = pcall(gethui)
+		if ok and h then return h end
+	end
+	local ok = pcall(function()
+		local t = Instance.new("Folder")
+		t.Parent = CoreGui
+		t:Destroy()
 	end)
-	if success then return CoreGui else return LocalPlayer:WaitForChild("PlayerGui") end
+	if ok then return CoreGui end
+	return LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- ۱. ساخت منوی اصلی
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DexWeaponExplorerUltra"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = getGuiParent()
+local function make(class, props, parent)
+	local o = Instance.new(class)
+	for k, v in pairs(props or {}) do o[k] = v end
+	if parent then o.Parent = parent end
+	return o
+end
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 500, 0, 420)
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -210)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
+local function round(o, r)
+	make("UICorner", {CornerRadius = UDim.new(0, r or 8)}, o)
+end
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
-MainCorner.Parent = MainFrame
+local T = {
+	bg = Color3.fromRGB(16, 16, 20),
+	panel = Color3.fromRGB(24, 24, 30),
+	row = Color3.fromRGB(30, 30, 37),
+	rowSel = Color3.fromRGB(36, 58, 52),
+	btn = Color3.fromRGB(40, 40, 50),
+	text = Color3.fromRGB(235, 235, 240),
+	sub = Color3.fromRGB(140, 140, 155),
+	gold = Color3.fromRGB(240, 200, 100),
+	green = Color3.fromRGB(0, 255, 150),
+	red = Color3.fromRGB(255, 90, 90),
+	blue = Color3.fromRGB(100, 200, 255),
+}
 
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Thickness = 2.5
-UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke.Parent = MainFrame
+local ICONS = {
+	Tool = "🔫", Folder = "📁", Model = "🧊", Part = "🧱", MeshPart = "🧱",
+	Script = "📜", LocalScript = "📃", ModuleScript = "📦",
+	RemoteEvent = "📡", RemoteFunction = "📞", Sound = "🔊", Animation = "🎬",
+	Humanoid = "🧍", Attachment = "📎", Configuration = "⚙️",
+	IntValue = "🔢", NumberValue = "🔢", StringValue = "🔤", BoolValue = "✅",
+	Color3Value = "🎨", Vector3Value = "📍", ObjectValue = "🔗",
+	ScreenGui = "🖼️", Player = "👤", Backpack = "🎒", PlayerGui = "🖥️",
+}
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 45)
-Title.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
-Title.Text = "SELECT WEAPON"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 16
-Title.Font = Enum.Font.GothamBold
-Title.Parent = MainFrame
+local function iconFor(obj)
+	if ICONS[obj.ClassName] then return ICONS[obj.ClassName] end
+	if obj:IsA("ValueBase") then return "🔢" end
+	if obj:IsA("BasePart") then return "🧱" end
+	if obj:IsA("GuiObject") then return "▭" end
+	return "🔹"
+end
 
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 12)
-TitleCorner.Parent = Title
+local function isScript(o)
+	return o:IsA("LocalScript") or o:IsA("ModuleScript") or o:IsA("Script")
+end
 
-local ScrollList = Instance.new("ScrollingFrame")
-ScrollList.Size = UDim2.new(1, -24, 1, -125)
-ScrollList.Position = UDim2.new(0, 12, 0, 55)
-ScrollList.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
-ScrollList.BackgroundTransparency = 0.95
-ScrollList.BorderSizePixel = 0
-ScrollList.ScrollBarThickness = 4
-ScrollList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-ScrollList.Parent = MainFrame
+local function parseNums(t)
+	local n = {}
+	for s in string.gmatch(t, "[%-%d%.]+") do
+		local v = tonumber(s)
+		if v then table.insert(n, v) end
+	end
+	return n
+end
 
-local ScrollCorner = Instance.new("UICorner")
-ScrollCorner.CornerRadius = UDim.new(0, 8)
-ScrollCorner.Parent = ScrollList
+local function valueToText(obj)
+	local v = obj.Value
+	if obj:IsA("Color3Value") then
+		return string.format("%d, %d, %d", math.floor(v.R * 255 + 0.5), math.floor(v.G * 255 + 0.5), math.floor(v.B * 255 + 0.5))
+	elseif obj:IsA("Vector3Value") then
+		return string.format("%g, %g, %g", v.X, v.Y, v.Z)
+	elseif obj:IsA("ObjectValue") then
+		return v and v:GetFullName() or "nil"
+	end
+	return tostring(v)
+end
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = ScrollList
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 4)
+local function applyValue(obj, text)
+	pcall(function()
+		if obj:IsA("BoolValue") then
+			obj.Value = (text:lower() == "true" or text == "1")
+		elseif obj:IsA("StringValue") then
+			obj.Value = text
+		elseif obj:IsA("IntValue") or obj:IsA("NumberValue") then
+			local n = tonumber(text)
+			if n then obj.Value = n end
+		elseif obj:IsA("Color3Value") then
+			local n = parseNums(text)
+			if #n >= 3 then obj.Value = Color3.fromRGB(n[1], n[2], n[3]) end
+		elseif obj:IsA("Vector3Value") then
+			local n = parseNums(text)
+			if #n >= 3 then obj.Value = Vector3.new(n[1], n[2], n[3]) end
+		elseif obj:IsA("ObjectValue") or obj:IsA("CFrameValue") then
+			-- فقط خواندنی
+		else
+			if tonumber(text) then obj.Value = tonumber(text) else obj.Value = text end
+		end
+	end)
+end
 
--- دکمه تایید اول منو
-local ConfirmBtn = Instance.new("TextButton")
-ConfirmBtn.Size = UDim2.new(0, 180, 0, 40)
-ConfirmBtn.Position = UDim2.new(0.5, -90, 1, -55)
-ConfirmBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-ConfirmBtn.Text = "CONFIRM"
-ConfirmBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ConfirmBtn.TextSize = 14
-ConfirmBtn.Font = Enum.Font.GothamBold
-ConfirmBtn.Parent = MainFrame
-
-local ConfirmCorner = Instance.new("UICorner")
-ConfirmCorner.CornerRadius = UDim.new(0, 8)
-ConfirmCorner.Parent = ConfirmBtn
-
--- دکمه Save مخصوص بخش اکسپلورر اسلحه
-local SaveBtn = Instance.new("TextButton")
-SaveBtn.Size = UDim2.new(0, 180, 0, 40)
-SaveBtn.Position = UDim2.new(0.5, -90, 1, -55)
-SaveBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 60)
-SaveBtn.Text = "💾 SAVE VALUES"
-SaveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SaveBtn.TextSize = 14
-SaveBtn.Font = Enum.Font.GothamBold
-SaveBtn.Visible = false
-SaveBtn.Parent = MainFrame
-
-local SaveCorner = Instance.new("UICorner")
-SaveCorner.CornerRadius = UDim.new(0, 8)
-SaveCorner.Parent = SaveBtn
-
--- کادر لوکس بلور اختصاصی روی خودِ GUI (تار کردن پنل بدون اثرگذاری روی کل صفحه بازی)
-local LoadingOverlay = Instance.new("Frame")
-LoadingOverlay.Size = UDim2.new(1, 0, 1, 0)
-LoadingOverlay.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
-LoadingOverlay.BackgroundTransparency = 0.15 -- افکت شیشه‌ای تیره و مات دکس
-LoadingOverlay.BorderSizePixel = 0
-LoadingOverlay.ZIndex = 100 -- پوشش کامل روی تمام اجزای داخلی منو
-LoadingOverlay.Visible = false
-LoadingOverlay.Parent = MainFrame
-
-local OverlayCorner = Instance.new("UICorner")
-OverlayCorner.CornerRadius = UDim.new(0, 12)
-OverlayCorner.Parent = LoadingOverlay
-
-local LoadingText = Instance.new("TextLabel")
-LoadingText.Size = UDim2.new(1, 0, 0, 50)
-LoadingText.Position = UDim2.new(0, 0, 0.5, -25)
-LoadingText.BackgroundTransparency = 1
-LoadingText.Text = "Loading Backup Values..."
-LoadingText.TextColor3 = Color3.fromRGB(255, 200, 50)
-LoadingText.TextSize = 20
-LoadingText.Font = Enum.Font.GothamBold
-LoadingText.ZIndex = 101 -- متن بدون تاری کاملاً بالا قرار دارد
-LoadingText.Parent = LoadingOverlay
-
--- دکمه بازگشت به صفحه انتخاب لوکیشن اصلی (اضافه شده به بدنه اصلی GUI بدون تداخل با بقیه دکمه‌ها)
-local LocationSwitchBtn = Instance.new("TextButton")
-LocationSwitchBtn.Size = UDim2.new(0, 130, 0, 30)
-LocationSwitchBtn.Position = UDim2.new(1, -142, 1, -45)
-LocationSwitchBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-LocationSwitchBtn.Text = "🔄 SWITCH LOCATION"
-LocationSwitchBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-LocationSwitchBtn.TextSize = 10
-LocationSwitchBtn.Font = Enum.Font.GothamBold
-LocationSwitchBtn.Visible = false
-LocationSwitchBtn.Parent = MainFrame
-
-local SwitchCorner = Instance.new("UICorner")
-SwitchCorner.CornerRadius = UDim.new(0, 6)
-SwitchCorner.Parent = LocationSwitchBtn
-
--- افکت روان RGB دور قاب منو
-RunService.RenderStepped:Connect(function()
-	local hue = (tick() % 5) / 5
-	local rgbColor = Color3.fromHSV(hue, 0.8, 1)
-	UIStroke.Color = rgbColor
-	Title.TextColor3 = rgbColor
-end)
-
--- دیتابیس‌های محلی برای حفظ اطلاعات مستقل از ساختار فیزیکی بازی
-local spammingThreads = {}
-local expandedStates = {}
-local savedValuesBackup = {} -- [WeaponName] = { [RelativePath] = Value }
-local savedSpamBackup = {}   -- [WeaponName] = { [RelativePath] = InputText }
-local lastInspectedWeaponName = nil -- ثبت وضعیت منو برای عدم ریست شدن بعد مرگ
-local selectedWeapon = nil
-
--- متغیر جدید انتخابی مکان جستجو (پیش‌فرض روی هر دو حالت سازگار است)
-local currentSearchLocation = "BOTH" 
-
--- پیدا کردن مسیر متنی نسبی یک شیء درون اسلحه
 local function getRelativePath(obj, root)
 	local path = {}
-	local current = obj
-	while current and current ~= root do
-		table.insert(path, 1, current.Name)
-		current = current.Parent
+	local cur = obj
+	while cur and cur ~= root do
+		table.insert(path, 1, cur.Name)
+		cur = cur.Parent
 	end
 	return table.concat(path, "/")
 end
 
--- پیدا کردن شیء بر اساس مسیر نسبی
 local function findObjByPath(root, pathStr)
-	local parts = string.split(pathStr, "/")
-	local current = root
-	for _, part in ipairs(parts) do
-		if current then
-			current = current:FindFirstChild(part)
-		else
-			return nil
-		end
+	local cur = root
+	for _, part in ipairs(string.split(pathStr, "/")) do
+		if not cur then return nil end
+		cur = cur:FindFirstChild(part)
 	end
-	return current
+	return cur
 end
 
-local function clearList()
-	for _, child in pairs(ScrollList:GetChildren()) do
-		if child:IsA("GuiObject") then child:Destroy() end
-	end
+local function rootKey(root)
+	if root:IsA("Tool") then return "T:" .. root.Name end
+	return "P:" -- LocalPlayer
 end
 
-local function getDepth(obj, root)
-	local depth = 0
-	local current = obj.Parent
-	while current and current ~= root do
-		depth = depth + 1
-		current = current.Parent
-	end
-	return depth
+local function resolveRoot(key)
+	if key == "P:" then return LocalPlayer end
+	local name = key:sub(3)
+	local bp = LocalPlayer:FindFirstChild("Backpack")
+	return (bp and bp:WaitForChild(name, 4)) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(name))
 end
 
-local function isVisible(obj, root)
-	local current = obj.Parent
-	while current and current ~= root do
-		if expandedStates[current] == false then return false end
-		current = current.Parent
-	end
-	return true
+------------------------------------------------------------------
+-- GUI
+------------------------------------------------------------------
+local parent = getGuiParent()
+local old = parent:FindFirstChild("DexWeaponExplorerUltra")
+if old then old:Destroy() end
+
+local ScreenGui = make("ScreenGui", {Name = "DexWeaponExplorerUltra", ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling}, parent)
+
+local Main = make("Frame", {
+	Size = UDim2.new(0, 580, 0, 440), Position = UDim2.new(0.5, -290, 0.5, -220),
+	BackgroundColor3 = T.bg, BorderSizePixel = 0, ClipsDescendants = true,
+}, ScreenGui)
+round(Main, 14)
+local Stroke = make("UIStroke", {Thickness = 2.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Border}, Main)
+
+-- Top bar
+local TopBar = make("Frame", {Size = UDim2.new(1, 0, 0, 40), BackgroundColor3 = Color3.fromRGB(12, 12, 15), BorderSizePixel = 0}, Main)
+local Title = make("TextLabel", {
+	Size = UDim2.new(1, -60, 1, 0), Position = UDim2.new(0, 14, 0, 0), BackgroundTransparency = 1,
+	Text = "💎 LUXURY DEX", TextColor3 = T.text, TextSize = 16, Font = Enum.Font.GothamBold,
+	TextXAlignment = Enum.TextXAlignment.Left,
+}, TopBar)
+local CloseBtn = make("TextButton", {Size = UDim2.new(0, 30, 0, 26), Position = UDim2.new(1, -38, 0, 7), BackgroundColor3 = Color3.fromRGB(110, 35, 35), Text = "✕", TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 13, BorderSizePixel = 0}, TopBar)
+round(CloseBtn, 6)
+
+-- Tabs
+local Tabs = make("Frame", {Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 48), BackgroundTransparency = 1}, Main)
+make("UIListLayout", {FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6)}, Tabs)
+local function tabBtn(text)
+	local b = make("TextButton", {Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = T.btn, Text = text, TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 12, BorderSizePixel = 0}, Tabs)
+	round(b, 8)
+	return b
+end
+local BackpackTab = tabBtn("🎒  BACKPACK")
+local PlayerTab = tabBtn("👤  LOCALPLAYER")
+
+-- Search row
+local SearchBox = make("TextBox", {
+	Size = UDim2.new(1, -140, 0, 30), Position = UDim2.new(0, 10, 0, 86), BackgroundColor3 = T.panel, Text = "",
+	PlaceholderText = "🔍  Search...", PlaceholderColor3 = T.sub, TextColor3 = T.text, Font = Enum.Font.Gotham,
+	TextSize = 12, ClearTextOnFocus = false, TextXAlignment = Enum.TextXAlignment.Left, BorderSizePixel = 0,
+}, Main)
+round(SearchBox, 8)
+make("UIPadding", {PaddingLeft = UDim.new(0, 10)}, SearchBox)
+
+local ExpandBtn = make("TextButton", {Size = UDim2.new(0, 56, 0, 30), Position = UDim2.new(1, -124, 0, 86), BackgroundColor3 = T.btn, Text = "[+] ALL", TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 10, BorderSizePixel = 0}, Main)
+local CollapseBtn = make("TextButton", {Size = UDim2.new(0, 56, 0, 30), Position = UDim2.new(1, -62, 0, 86), BackgroundColor3 = T.btn, Text = "[-] ALL", TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 10, BorderSizePixel = 0}, Main)
+round(ExpandBtn, 8) round(CollapseBtn, 8)
+
+-- List
+local List = make("ScrollingFrame", {
+	Size = UDim2.new(1, -20, 1, -206), Position = UDim2.new(0, 10, 0, 124), BackgroundColor3 = T.panel,
+	BorderSizePixel = 0, ScrollBarThickness = 5, ScrollBarImageColor3 = Color3.fromRGB(110, 110, 120),
+	CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
+}, Main)
+round(List, 10)
+make("UIListLayout", {Padding = UDim.new(0, 3), SortOrder = Enum.SortOrder.LayoutOrder}, List)
+make("UIPadding", {PaddingTop = UDim.new(0, 5), PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 3), PaddingBottom = UDim.new(0, 5)}, List)
+
+-- Bottom bar
+local SaveBtn = make("TextButton", {Size = UDim2.new(0, 160, 0, 36), Position = UDim2.new(0, 10, 1, -46), BackgroundColor3 = Color3.fromRGB(0, 100, 60), Text = "💾 SAVE VALUES", TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 13, BorderSizePixel = 0}, Main)
+round(SaveBtn, 8)
+local Status = make("TextLabel", {
+	Size = UDim2.new(1, -190, 0, 36), Position = UDim2.new(0, 180, 1, -46), BackgroundTransparency = 1,
+	Text = "Ready.", TextColor3 = T.sub, Font = Enum.Font.Gotham, TextSize = 11,
+	TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
+}, Main)
+
+local function setStatus(text, color)
+	Status.Text = text
+	Status.TextColor3 = color or T.sub
 end
 
--- تابع ایجاد کننده منوی انتخاب لوکیشن اولیه (تعریف زودهنگام برای استفاده در ساختار بازگشت درختی)
-local createLocationSelector
+-- Loading overlay
+local Overlay = make("Frame", {Size = UDim2.new(1, 0, 1, 0), BackgroundColor3 = Color3.fromRGB(12, 12, 14), BackgroundTransparency = 0.15, BorderSizePixel = 0, ZIndex = 100, Visible = false}, Main)
+local LoadingText = make("TextLabel", {Size = UDim2.new(1, 0, 0, 50), Position = UDim2.new(0, 0, 0.5, -25), BackgroundTransparency = 1, Text = "Loading Backup Values...", TextColor3 = Color3.fromRGB(255, 200, 50), TextSize = 20, Font = Enum.Font.GothamBold, ZIndex = 101}, Overlay)
 
--- تابع رندر اکسپلورر درختی اسلحه
-local function renderTree(weapon)
-	clearList()
-	ConfirmBtn.Visible = false
-	SaveBtn.Visible = true -- نمایش دکمه Save اختصاصی تفنگ جاری
-	LocationSwitchBtn.Visible = false
-	Title.Text = "EXPLORING: " .. weapon.Name:upper()
-	
-	local BackBtn = Instance.new("TextButton")
-	BackBtn.Size = UDim2.new(1, 0, 0, 32)
-	BackBtn.BackgroundColor3 = Color3.fromRGB(50, 20, 20)
-	
-	-- بررسی شرط نوع لوکیشن انتخابی برای تغییر متن و رفتار دکمه بازگشت
-	if currentSearchLocation == "PLAYER" then
-		BackBtn.Text = "<- BACK TO MAIN MENU"
-		BackBtn.TextColor3 = Color3.fromRGB(200, 150, 255)
-	else
-		BackBtn.Text = "<- BACK TO WEAPONS"
-		BackBtn.TextColor3 = Color3.fromRGB(255, 120, 120)
-	end
-	
-	BackBtn.Font = Enum.Font.GothamBold
-	BackBtn.TextSize = 11
-	BackBtn.Parent = ScrollList
-	
-	local BackCorner = Instance.new("UICorner") BackCorner.CornerRadius = UDim.new(0, 6) BackCorner.Parent = BackBtn
-	
-	BackBtn.MouseButton1Click:Connect(function()
-		SaveBtn.Visible = false
-		lastInspectedWeaponName = nil
-		if currentSearchLocation == "PLAYER" then
-			createLocationSelector() -- هدایت مستقیم به منوی اول انتخاب لوکیشن‌ها
-		else
-			loadWeapons() -- بازگشت به لیست اسلحه‌های کوله‌پشتی
+-- Script viewer
+local Viewer = make("Frame", {Size = UDim2.new(1, -20, 1, -56), Position = UDim2.new(0, 10, 0, 48), BackgroundColor3 = Color3.fromRGB(14, 14, 18), BorderSizePixel = 0, ZIndex = 50, Visible = false}, Main)
+round(Viewer, 10)
+make("UIStroke", {Color = T.blue, Thickness = 1.5, Transparency = 0.4}, Viewer)
+local ViewerTitle = make("TextLabel", {Size = UDim2.new(1, -190, 0, 30), Position = UDim2.new(0, 10, 0, 4), BackgroundTransparency = 1, Text = "", TextColor3 = T.blue, Font = Enum.Font.GothamBold, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, ZIndex = 51}, Viewer)
+local ViewerCopy = make("TextButton", {Size = UDim2.new(0, 80, 0, 24), Position = UDim2.new(1, -176, 0, 7), BackgroundColor3 = Color3.fromRGB(30, 70, 50), Text = "📋 COPY", TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 10, BorderSizePixel = 0, ZIndex = 51}, Viewer)
+local ViewerClose = make("TextButton", {Size = UDim2.new(0, 80, 0, 24), Position = UDim2.new(1, -90, 0, 7), BackgroundColor3 = Color3.fromRGB(90, 35, 35), Text = "✕ CLOSE", TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 10, BorderSizePixel = 0, ZIndex = 51}, Viewer)
+round(ViewerCopy, 6) round(ViewerClose, 6)
+local ViewerScroll = make("ScrollingFrame", {
+	Size = UDim2.new(1, -16, 1, -72), Position = UDim2.new(0, 8, 0, 38), BackgroundColor3 = Color3.fromRGB(10, 10, 13),
+	BorderSizePixel = 0, ScrollBarThickness = 6, CanvasSize = UDim2.new(0, 0, 0, 0),
+	AutomaticCanvasSize = Enum.AutomaticSize.XY, ScrollingDirection = Enum.ScrollingDirection.XY, ZIndex = 51,
+}, Viewer)
+round(ViewerScroll, 8)
+local ViewerHolder = make("Frame", {Size = UDim2.new(0, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.XY, BackgroundTransparency = 1, ZIndex = 51}, ViewerScroll)
+make("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder}, ViewerHolder)
+make("UIPadding", {PaddingLeft = UDim.new(0, 8), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6)}, ViewerHolder)
+local ViewerInfo = make("TextLabel", {Size = UDim2.new(1, -16, 0, 22), Position = UDim2.new(0, 8, 1, -28), BackgroundTransparency = 1, Text = "", TextColor3 = T.sub, Font = Enum.Font.Gotham, TextSize = 10, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 51}, Viewer)
+
+-- RGB stroke
+RunService.RenderStepped:Connect(function()
+	local c = Color3.fromHSV((tick() % 5) / 5, 0.8, 1)
+	Stroke.Color = c
+	Title.TextColor3 = c
+end)
+
+-- Dragging
+do
+	local dragging, dragStart, startPos
+	TopBar.InputBegan:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+			dragging, dragStart, startPos = true, i.Position, Main.Position
+			i.Changed:Connect(function()
+				if i.UserInputState == Enum.UserInputState.End then dragging = false end
+			end)
 		end
 	end)
-
-	for _, obj in pairs(weapon:GetDescendants()) do
-		if isVisible(obj, weapon) then
-			local depth = getDepth(obj, weapon)
-			local hasChildren = #obj:GetChildren() > 0
-			
-			if expandedStates[obj] == nil and hasChildren then
-				expandedStates[obj] = false
-			end
-
-			local Row = Instance.new("Frame")
-			Row.Size = UDim2.new(1, 0, 0, 36)
-			Row.BackgroundColor3 = Color3.fromRGB(30, 30, 33)
-			Row.BorderSizePixel = 0
-			Row.Parent = ScrollList
-			
-			local RowCorner = Instance.new("UICorner") RowCorner.CornerRadius = UDim.new(0, 6) RowCorner.Parent = Row
-
-			local indentOffset = depth * 18
-			
-			if hasChildren then
-				local ExpandBtn = Instance.new("TextButton")
-				ExpandBtn.Size = UDim2.new(0, 20, 0, 20)
-				ExpandBtn.Position = UDim2.new(0, 5 + indentOffset, 0.5, -10)
-				ExpandBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-				ExpandBtn.Text = expandedStates[obj] and "[-]" or "[+]"
-				ExpandBtn.TextColor3 = expandedStates[obj] and Color3.fromRGB(255, 100, 100) or Color3.fromRGB(100, 255, 100)
-				ExpandBtn.Font = Enum.Font.Code
-				ExpandBtn.TextSize = 12
-				ExpandBtn.Parent = Row
-				
-				local ExpCorner = Instance.new("UICorner") ExpCorner.CornerRadius = UDim.new(0, 4) ExpCorner.Parent = ExpandBtn
-				
-				ExpandBtn.MouseButton1Click:Connect(function()
-					expandedStates[obj] = not expandedStates[obj]
-					renderTree(weapon)
-				end)
-			end
-
-			local ObjName = Instance.new("TextLabel")
-			local textPos = 8 + indentOffset + (hasChildren and 24 or 0)
-			ObjName.Size = UDim2.new(0.4, -textPos, 1, 0)
-			ObjName.Position = UDim2.new(0, textPos, 0, 0)
-			ObjName.Text = obj.Name
-			ObjName.TextColor3 = hasChildren and Color3.fromRGB(240, 200, 100) or Color3.fromRGB(200, 200, 200)
-			ObjName.TextXAlignment = Enum.TextXAlignment.Left
-			ObjName.BackgroundTransparency = 1
-			ObjName.Font = Enum.Font.Gotham
-			ObjName.TextSize = 11
-			ObjName.Parent = Row
-
-			if obj:IsA("ValueBase") then
-				local ValueInput = Instance.new("TextBox")
-				ValueInput.Size = UDim2.new(0.26, -5, 0.7, 0)
-				ValueInput.Position = UDim2.new(0.44, 5, 0.15, 0)
-				ValueInput.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
-				ValueInput.Text = tostring(obj.Value)
-				ValueInput.TextColor3 = Color3.fromRGB(0, 255, 150)
-				ValueInput.Font = Enum.Font.Code
-				ValueInput.TextSize = 11
-				ValueInput.Name = "InputContainer"
-				ValueInput.Parent = Row
-				
-				local InpCorner = Instance.new("UICorner") InpCorner.CornerRadius = UDim.new(0, 4) InpCorner.Parent = ValueInput
-				
-				local function applyLiveValue(text)
-					if obj:IsA("BoolValue") then
-						obj.Value = (text:lower() == "true")
-					elseif tonumber(text) then
-						obj.Value = tonumber(text)
-					else
-						obj.Value = text
-					end
-				end
-
-				-- تغییر کلیدی: به محض تایپ شدن متن و بدون نیاز به زدن Enter مقدار اعمال می‌شود
-				ValueInput:GetPropertyChangedSignal("Text"):Connect(function()
-					applyLiveValue(ValueInput.Text)
-				end)
-				
-				local SpamBtn = Instance.new("TextButton")
-				SpamBtn.Size = UDim2.new(0.26, -5, 0.7, 0)
-				SpamBtn.Position = UDim2.new(0.72, 5, 0.15, 0)
-				SpamBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 30)
-				SpamBtn.Text = "SPAM"
-				SpamBtn.TextColor3 = Color3.fromRGB(200, 200, 150)
-				SpamBtn.Font = Enum.Font.GothamBold
-				SpamBtn.TextSize = 10
-				SpamBtn.Name = "SpamToggle"
-				SpamBtn.Parent = Row
-				
-				local SpmCorner = Instance.new("UICorner") SpmCorner.CornerRadius = UDim.new(0, 4) SpmCorner.Parent = SpamBtn
-				
-				if spammingThreads[obj] then
-					SpamBtn.Text = "RUNNING"
-					SpamBtn.BackgroundColor3 = Color3.fromRGB(20, 80, 20)
-					SpamBtn.TextColor3 = Color3.fromRGB(150, 255, 150)
-				end
-
-				SpamBtn.MouseButton1Click:Connect(function()
-					if spammingThreads[obj] then
-						task.cancel(spammingThreads[obj])
-						spammingThreads[obj] = nil
-						SpamBtn.Text = "SPAM"
-						SpamBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 30)
-						SpamBtn.TextColor3 = Color3.fromRGB(200, 200, 150)
-					else
-						SpamBtn.Text = "RUNNING"
-						SpamBtn.BackgroundColor3 = Color3.fromRGB(20, 80, 20)
-						SpamBtn.TextColor3 = Color3.fromRGB(150, 255, 150)
-						
-						spammingThreads[obj] = task.spawn(function()
-							while true do
-								applyLiveValue(ValueInput.Text)
-								task.wait(0.01)
-							end
-						end)
-					end
-				end)
-				
-			elseif obj:IsA("LocalScript") or obj:IsA("ModuleScript") then
-				local EditBtn = Instance.new("TextButton")
-				EditBtn.Size = UDim2.new(0.52, -5, 0.7, 0)
-				EditBtn.Position = UDim2.new(0.44, 5, 0.15, 0)
-				EditBtn.BackgroundColor3 = Color3.fromRGB(20, 45, 55)
-				EditBtn.Text = "VIEW SCRIPT PATH (F12)"
-				EditBtn.TextColor3 = Color3.fromRGB(100, 200, 255)
-				EditBtn.Font = Enum.Font.GothamBold
-				EditBtn.TextSize = 9
-				EditBtn.Parent = Row
-				
-				local EdCorner = Instance.new("UICorner") EdCorner.CornerRadius = UDim.new(0, 4) EdCorner.Parent = EditBtn
-				EditBtn.MouseButton1Click:Connect(function()
-					print("[DEX] Script Path: " .. obj:GetFullName())
-				end)
-			end
+	UIS.InputChanged:Connect(function(i)
+		if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+			local d = i.Position - dragStart
+			Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
 		end
-	end
-	ScrollList.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
+	end)
 end
 
--- دقیقا همان منطق کلیک دکمه SAVE ارسالی شما (بدون تغییر کلمه‌ای)
-SaveBtn.MouseButton1Click:Connect(function()
-	if not selectedWeapon then return end
-	
-	local wName = selectedWeapon.Name
-	savedValuesBackup[wName] = {}
-	savedSpamBackup[wName] = {}
-	lastInspectedWeaponName = wName -- ذخیره نام جهت جلوگیری از خروج منو بعد مرگ
-	
-	for _, obj in pairs(selectedWeapon:GetDescendants()) do
-		if obj:IsA("ValueBase") then
-			local path = getRelativePath(obj, selectedWeapon)
-			
-			-- پیدا کردن فیلد متنی UI متناظر برای خواندن اطلاعات نوشته شده
-			local currentText = tostring(obj.Value)
-			for _, row in pairs(ScrollList:GetChildren()) do
-				local txtBox = row:FindFirstChild("InputContainer")
-				if txtBox and row:FindFirstChildOfClass("TextLabel") and row:FindFirstChildOfClass("TextLabel").Text == obj.Name then
-					currentText = txtBox.Text
-					break
-				end
+------------------------------------------------------------------
+-- State
+------------------------------------------------------------------
+local state = {mode = "Backpack", root = nil, view = "tools"}
+local expanded = setmetatable({}, {__mode = "k"})
+local rowOf = setmetatable({}, {__mode = "k"})
+local valueInputs = setmetatable({}, {__mode = "k"})
+local edited = setmetatable({}, {__mode = "k"})
+local spamThreads = {}
+local spamText = {}
+local savedValues, savedSpam = {}, {}
+local selectedObj = nil
+local searchText = ""
+local currentRootKey = nil
+local MAX_ROWS = 700
+
+local showMode, enterRoot, render, loadTools
+
+local function clearList()
+	for _, c in ipairs(List:GetChildren()) do
+		if c:IsA("GuiObject") then c:Destroy() end
+	end
+	table.clear(rowOf)
+	table.clear(valueInputs)
+end
+
+------------------------------------------------------------------
+-- Spam
+------------------------------------------------------------------
+local function stopSpam(obj)
+	if spamThreads[obj] then
+		pcall(task.cancel, spamThreads[obj])
+		spamThreads[obj] = nil
+	end
+end
+
+local function startSpam(obj, text)
+	stopSpam(obj)
+	spamText[obj] = text
+	spamThreads[obj] = task.spawn(function()
+		while obj.Parent do
+			local inp = valueInputs[obj]
+			local txt = (inp and inp.Parent) and inp.Text or spamText[obj]
+			spamText[obj] = txt
+			applyValue(obj, txt)
+			task.wait(0.01)
+		end
+		spamThreads[obj] = nil
+	end)
+end
+
+local function stopAllSpam()
+	for obj in pairs(spamThreads) do stopSpam(obj) end
+end
+
+local function setSpamVisual(b, on)
+	b.Text = on and "RUNNING" or "SPAM"
+	b.BackgroundColor3 = on and Color3.fromRGB(20, 80, 20) or Color3.fromRGB(55, 55, 30)
+	b.TextColor3 = on and Color3.fromRGB(150, 255, 150) or Color3.fromRGB(210, 210, 150)
+end
+
+local function selectObj(obj)
+	if selectedObj and rowOf[selectedObj] then rowOf[selectedObj].BackgroundColor3 = T.row end
+	selectedObj = obj
+	if obj and rowOf[obj] then rowOf[obj].BackgroundColor3 = T.rowSel end
+end
+
+------------------------------------------------------------------
+-- Script viewer
+------------------------------------------------------------------
+local currentSource = ""
+
+local function getSource(obj)
+	local lastErr
+	local attempts = {
+		function() return decompile(obj) end,
+		function() return obj.Source end,
+	}
+	for _, f in ipairs(attempts) do
+		local ok, res = pcall(f)
+		if ok and type(res) == "string" and #res > 0 then return res end
+		if not ok then lastErr = tostring(res) end
+	end
+	return nil, lastErr or "empty result"
+end
+
+local function openViewer(obj)
+	Viewer.Visible = true
+	ViewerTitle.Text = "📄 " .. obj:GetFullName()
+	for _, c in ipairs(ViewerHolder:GetChildren()) do
+		if c:IsA("GuiObject") then c:Destroy() end
+	end
+	currentSource = ""
+	ViewerInfo.Text = "Decompiling..."
+	ViewerInfo.TextColor3 = T.gold
+
+	task.spawn(function()
+		local src, err = getSource(obj)
+		if not src then
+			make("TextLabel", {Size = UDim2.new(0, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.XY, BackgroundTransparency = 1, Text = "-- Could not read this script.\n-- Reason: " .. tostring(err) .. "\n-- Your executor may not support decompile(), or this is a server Script\n-- (server scripts are never sent to the client).", TextColor3 = T.red, Font = Enum.Font.Code, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 52}, ViewerHolder)
+			ViewerInfo.Text = "Failed"
+			ViewerInfo.TextColor3 = T.red
+			return
+		end
+		currentSource = src
+		local lines = string.split(src, "\n")
+		local total = #lines
+		local cap = math.min(total, 6000)
+		local idx, order = 1, 1
+		while idx <= cap do
+			local buf = {}
+			for i = idx, math.min(idx + 79, cap) do
+				buf[#buf + 1] = string.format("%4d │ %s", i, (lines[i]:gsub("\t", "    "):gsub("\r", "")))
 			end
-			
-			-- سیو کردن ارزش فیلد متنی
-			savedValuesBackup[wName][path] = currentText
-			
-			-- سیو کردن وضعیت رگبار (Spam)
-			if spammingThreads[obj] then
-				savedSpamBackup[wName][path] = currentText
+			make("TextLabel", {Size = UDim2.new(0, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.XY, BackgroundTransparency = 1, Text = table.concat(buf, "\n"), TextColor3 = Color3.fromRGB(215, 225, 235), Font = Enum.Font.Code, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, RichText = false, LayoutOrder = order, ZIndex = 52}, ViewerHolder)
+			idx += 80
+			order += 1
+			if order % 10 == 0 then task.wait() end
+		end
+		ViewerInfo.Text = string.format("%d lines  ·  %d chars", total, #src)
+		ViewerInfo.TextColor3 = T.green
+	end)
+end
+
+ViewerClose.MouseButton1Click:Connect(function() Viewer.Visible = false end)
+ViewerCopy.MouseButton1Click:Connect(function()
+	if currentSource == "" then return end
+	local fn = setclipboard or toclipboard
+	if fn and pcall(fn, currentSource) then
+		ViewerInfo.Text = "✔ Copied to clipboard"
+		ViewerInfo.TextColor3 = T.green
+	else
+		print(currentSource)
+		ViewerInfo.Text = "Clipboard not supported – printed to console"
+		ViewerInfo.TextColor3 = T.gold
+	end
+end)
+
+------------------------------------------------------------------
+-- Tree
+------------------------------------------------------------------
+function render()
+	local root = state.root
+	local savedPos = List.CanvasPosition
+	clearList()
+	if not root then return end
+	local count = 0
+
+	if state.mode == "Backpack" then
+		local Back = make("TextButton", {Size = UDim2.new(1, -6, 0, 30), BackgroundColor3 = Color3.fromRGB(50, 22, 22), Text = "←  BACK TO WEAPONS", TextColor3 = Color3.fromRGB(255, 130, 130), Font = Enum.Font.GothamBold, TextSize = 11, BorderSizePixel = 0, LayoutOrder = -1}, List)
+		round(Back, 6)
+		Back.MouseButton1Click:Connect(function()
+			state.root, currentRootKey = nil, nil
+			state.view = "tools"
+			SearchBox.Text = ""
+			loadTools()
+		end)
+	end
+
+	local function addRow(obj, depth)
+		count += 1
+		local hasChildren = #obj:GetChildren() > 0
+		local showExpander = hasChildren and searchText == ""
+		local Row = make("TextButton", {Size = UDim2.new(1, -6, 0, 32), BackgroundColor3 = (selectedObj == obj) and T.rowSel or T.row, Text = "", AutoButtonColor = false, BorderSizePixel = 0, LayoutOrder = count}, List)
+		round(Row, 6)
+		rowOf[obj] = Row
+		Row.MouseButton1Click:Connect(function() selectObj(obj) end)
+
+		local indent = depth * 16
+		if showExpander then
+			local ex = make("TextButton", {Size = UDim2.new(0, 20, 0, 20), Position = UDim2.new(0, 4 + indent, 0.5, -10), BackgroundColor3 = Color3.fromRGB(45, 45, 52), Text = expanded[obj] and "−" or "+", TextColor3 = expanded[obj] and T.red or Color3.fromRGB(100, 255, 120), Font = Enum.Font.GothamBold, TextSize = 13, BorderSizePixel = 0}, Row)
+			round(ex, 4)
+			ex.MouseButton1Click:Connect(function()
+				expanded[obj] = not expanded[obj]
+				render()
+			end)
+		end
+
+		local iconX = 6 + indent + (showExpander and 24 or 0)
+		make("TextLabel", {Size = UDim2.new(0, 20, 1, 0), Position = UDim2.new(0, iconX, 0, 0), BackgroundTransparency = 1, Text = iconFor(obj), TextSize = 14, Font = Enum.Font.Gotham, TextColor3 = T.text}, Row)
+
+		local nameX = iconX + 22
+		make("TextLabel", {
+			Size = UDim2.new(0, math.max(50, 200 - nameX), 1, 0), Position = UDim2.new(0, nameX, 0, 0), BackgroundTransparency = 1,
+			Text = obj.Name, TextColor3 = hasChildren and T.gold or Color3.fromRGB(205, 205, 210), TextXAlignment = Enum.TextXAlignment.Left,
+			Font = Enum.Font.Gotham, TextSize = 11, TextTruncate = Enum.TextTruncate.AtEnd,
+		}, Row)
+
+		if obj:IsA("ValueBase") then
+			local input = make("TextBox", {Size = UDim2.new(0.28, -4, 0.72, 0), Position = UDim2.new(0.46, 0, 0.14, 0), BackgroundColor3 = T.bg, Text = valueToText(obj), TextColor3 = T.green, Font = Enum.Font.Code, TextSize = 11, ClearTextOnFocus = false, BorderSizePixel = 0}, Row)
+			round(input, 4)
+			valueInputs[obj] = input
+			input:GetPropertyChangedSignal("Text"):Connect(function()
+				edited[obj] = true
+				if not obj:IsA("ObjectValue") then applyValue(obj, input.Text) end
+			end)
+
+			local SpamBtn = make("TextButton", {Size = UDim2.new(0.26, -8, 0.72, 0), Position = UDim2.new(0.74, 0, 0.14, 0), Text = "SPAM", Font = Enum.Font.GothamBold, TextSize = 10, BorderSizePixel = 0}, Row)
+			round(SpamBtn, 4)
+			setSpamVisual(SpamBtn, spamThreads[obj] ~= nil)
+			SpamBtn.MouseButton1Click:Connect(function()
+				if spamThreads[obj] then
+					stopSpam(obj)
+					setSpamVisual(SpamBtn, false)
+				else
+					edited[obj] = true
+					startSpam(obj, input.Text)
+					setSpamVisual(SpamBtn, true)
+				end
+			end)
+		elseif isScript(obj) then
+			local V = make("TextButton", {Size = UDim2.new(0.54, -8, 0.72, 0), Position = UDim2.new(0.46, 0, 0.14, 0), BackgroundColor3 = Color3.fromRGB(20, 50, 65), Text = "📄 VIEW SCRIPT", TextColor3 = T.blue, Font = Enum.Font.GothamBold, TextSize = 10, BorderSizePixel = 0}, Row)
+			round(V, 4)
+			V.MouseButton1Click:Connect(function()
+				selectObj(obj)
+				openViewer(obj)
+			end)
+		else
+			make("TextLabel", {Size = UDim2.new(0.5, -8, 1, 0), Position = UDim2.new(0.46, 0, 0, 0), BackgroundTransparency = 1, Text = obj.ClassName, TextColor3 = T.sub, Font = Enum.Font.Gotham, TextSize = 10, TextXAlignment = Enum.TextXAlignment.Left}, Row)
+		end
+	end
+
+	local function walk(p, depth)
+		for _, child in ipairs(p:GetChildren()) do
+			if count >= MAX_ROWS then return end
+			addRow(child, depth)
+			if expanded[child] then walk(child, depth + 1) end
+		end
+	end
+
+	if searchText ~= "" then
+		local q = searchText:lower()
+		for _, d in ipairs(root:GetDescendants()) do
+			if count >= MAX_ROWS then break end
+			if d.Name:lower():find(q, 1, true) or d.ClassName:lower():find(q, 1, true) then
+				addRow(d, 0)
+			end
+		end
+	else
+		walk(root, 0)
+	end
+	List.CanvasPosition = savedPos
+end
+
+function loadTools()
+	clearList()
+	local bp = LocalPlayer:FindFirstChild("Backpack")
+	local found = 0
+	if bp then
+		for _, tool in ipairs(bp:GetChildren()) do
+			if tool:IsA("Tool") then
+				found += 1
+				local b = make("TextButton", {Size = UDim2.new(1, -6, 0, 40), BackgroundColor3 = Color3.fromRGB(35, 35, 40), Text = "   🔫   " .. tool.Name, TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, BorderSizePixel = 0, LayoutOrder = found}, List)
+				round(b, 8)
+				b.MouseButton1Click:Connect(function() enterRoot(tool) end)
 			end
 		end
 	end
-	
-	SaveBtn.Text = "✔ SAVED SUCCESSFULLY"
+	if found == 0 then
+		make("TextLabel", {Size = UDim2.new(1, -6, 0, 50), BackgroundTransparency = 1, Text = "No weapons in backpack.", TextColor3 = T.sub, Font = Enum.Font.Gotham, TextSize = 13}, List)
+	end
+	setStatus("Pick a weapon (" .. found .. ")", T.sub)
+end
+
+function enterRoot(root)
+	state.root = root
+	state.view = "tree"
+	currentRootKey = rootKey(root)
+	selectedObj = nil
+	searchText = ""
+	SearchBox.Text = ""
+	render()
+	setStatus("Exploring: " .. root.Name, T.gold)
+end
+
+function showMode(mode)
+	state.mode = mode
+	selectedObj = nil
+	BackpackTab.BackgroundColor3 = (mode == "Backpack") and Color3.fromRGB(45, 65, 90) or T.btn
+	PlayerTab.BackgroundColor3 = (mode == "Player") and Color3.fromRGB(70, 50, 95) or T.btn
+	if mode == "Backpack" then
+		state.root, currentRootKey = nil, nil
+		state.view = "tools"
+		loadTools()
+	else
+		enterRoot(LocalPlayer)
+	end
+end
+
+BackpackTab.MouseButton1Click:Connect(function() showMode("Backpack") end)
+PlayerTab.MouseButton1Click:Connect(function() showMode("Player") end)
+
+------------------------------------------------------------------
+-- Toolbar / Save
+------------------------------------------------------------------
+local searchToken = 0
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+	searchToken += 1
+	local my = searchToken
+	task.delay(0.2, function()
+		if my == searchToken then
+			searchText = SearchBox.Text
+			if state.view == "tree" then render() end
+		end
+	end)
+end)
+
+ExpandBtn.MouseButton1Click:Connect(function()
+	if not state.root then return end
+	local n = 0
+	for _, d in ipairs(state.root:GetDescendants()) do
+		if #d:GetChildren() > 0 and n < 600 then expanded[d] = true n += 1 end
+	end
+	render()
+end)
+CollapseBtn.MouseButton1Click:Connect(function()
+	table.clear(expanded)
+	if state.root then render() end
+end)
+
+SaveBtn.MouseButton1Click:Connect(function()
+	local root = state.root
+	if not root then return setStatus("Open a weapon first.", T.red) end
+	local key = rootKey(root)
+	savedValues[key] = savedValues[key] or {}
+	savedSpam[key] = {}
+	local n = 0
+	for _, obj in ipairs(root:GetDescendants()) do
+		if obj:IsA("ValueBase") and not obj:IsA("ObjectValue") then
+			local isSpam = spamThreads[obj] ~= nil
+			if edited[obj] or isSpam then
+				local path = getRelativePath(obj, root)
+				local inp = valueInputs[obj]
+				local txt = (inp and inp.Parent) and inp.Text or (spamText[obj] or valueToText(obj))
+				savedValues[key][path] = txt
+				if isSpam then savedSpam[key][path] = txt end
+				n += 1
+			end
+		end
+	end
+	SaveBtn.Text = "✔ SAVED (" .. n .. ")"
 	SaveBtn.BackgroundColor3 = Color3.fromRGB(20, 150, 20)
+	setStatus("Saved " .. n .. " value(s)", T.green)
 	task.wait(1)
 	SaveBtn.Text = "💾 SAVE VALUES"
 	SaveBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 60)
 end)
 
-function loadWeapons()
-	Title.Text = "SELECT WEAPON"
-	ConfirmBtn.Visible = true
-	SaveBtn.Visible = false
-	LocationSwitchBtn.Visible = true -- دکمه سوییچ لوکیشن فعال می‌شود
-	ConfirmBtn.Position = UDim2.new(0.5, -170, 1, -55) -- جابجایی تراز دکمه برای قرارگیری دکمه سوییچ
-	clearList()
-	selectedWeapon = nil
-	
-	-- حالت بررسی مستقیم کل ساختار LocalPlayer بدون نیاز به سلکتور اسلحه جداگانه
-	if currentSearchLocation == "PLAYER" then
-		selectedWeapon = LocalPlayer
-		renderTree(LocalPlayer)
-		return
-	end
-	
-	local weapons = {}
-	
-	-- منطق فیلتر بر اساس دکمه انتخابی کاربر در شروع اجرا (دست نخورده برای Backpack)
-	if currentSearchLocation == "BACKPACK" or currentSearchLocation == "BOTH" then
-		local backpack = LocalPlayer:WaitForChild("Backpack")
-		for _, v in pairs(backpack:GetChildren()) do
-			table.insert(weapons, v)
-		end
-	end
-
-	for _, tool in pairs(weapons) do
-		if tool:IsA("Tool") then
-			local ToolBtn = Instance.new("TextButton")
-			ToolBtn.Size = UDim2.new(1, 0, 0, 40)
-			ToolBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 38)
-			ToolBtn.Text = "  🔩  " .. tool.Name
-			ToolBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-			ToolBtn.Font = Enum.Font.Gotham
-			ToolBtn.TextSize = 13
-			ToolBtn.TextXAlignment = Enum.TextXAlignment.Left
-			ToolBtn.Parent = ScrollList
-			
-			local ToolCorner = Instance.new("UICorner") ToolCorner.CornerRadius = UDim.new(0, 6) ToolCorner.Parent = ToolBtn
-			
-			ToolBtn.MouseButton1Click:Connect(function()
-				for _, child in pairs(ScrollList:GetChildren()) do
-					if child:IsA("TextButton") then child.BackgroundColor3 = Color3.fromRGB(35, 35, 38) end
-				end
-				ToolBtn.BackgroundColor3 = Color3.fromRGB(30, 50, 40)
-				selectedWeapon = tool
-			end)
-		end
-	end
-	ScrollList.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
-end
-
-ConfirmBtn.MouseButton1Click:Connect(function()
-	if selectedWeapon then
-		lastInspectedWeaponName = selectedWeapon.Name
-		renderTree(selectedWeapon)
-	else
-		Title.Text = "CHOOSE A WEAPON FIRST!"
-		task.wait(1)
-		Title.Text = "SELECT WEAPON"
-	end
+CloseBtn.MouseButton1Click:Connect(function()
+	stopAllSpam()
+	ScreenGui:Destroy()
 end)
 
--- ۳. مغز متفکر سیستم لودینگ - منطق دقیقاً منطق نسخه کپی ارسالی شماست
+------------------------------------------------------------------
+-- Live refresh of weapon list
+------------------------------------------------------------------
+local refreshToken = 0
+local function liveRefresh(child)
+	if child:IsA("Tool") and state.view == "tools" then
+		refreshToken += 1
+		local my = refreshToken
+		task.delay(0.15, function()
+			if my == refreshToken and state.view == "tools" then loadTools() end
+		end)
+	end
+end
+
+local function hookBackpack()
+	local bp = LocalPlayer:WaitForChild("Backpack")
+	bp.ChildAdded:Connect(liveRefresh)
+	bp.ChildRemoved:Connect(liveRefresh)
+end
+local function hookCharacter(char)
+	char.ChildAdded:Connect(liveRefresh)
+	char.ChildRemoved:Connect(liveRefresh)
+end
+
+task.spawn(hookBackpack)
+if LocalPlayer.Character then hookCharacter(LocalPlayer.Character) end
+
+------------------------------------------------------------------
+-- Respawn: restore saved values
+------------------------------------------------------------------
 LocalPlayer.CharacterAdded:Connect(function(character)
-	-- پنل بلور اختصاصی GUI روشن می‌شود (کل صفحه بازی دیگر تار نمیشود)
-	LoadingOverlay.Visible = true
+	Overlay.Visible = true
 	LoadingText.Text = "Loading Backup Values..."
 	LoadingText.TextColor3 = Color3.fromRGB(255, 200, 50)
-	
-	-- کیل کردن تردهای اسپم قدیمی تفنگ‌های دیستروی شده
-	for obj, thread in pairs(spammingThreads) do
-		task.cancel(thread)
-	end
-	spammingThreads = {}
 
-	local backpack = LocalPlayer:WaitForChild("Backpack")
-	task.wait(1.8) -- صبر برای لود و کپی شدن کامل تفنگ‌های نو درون کوله‌پشتی جدید
+	stopAllSpam()
+	table.clear(spamText)
+	hookCharacter(character)
 
-	-- شروع دقیق منطق ریستور نسخه ارسالی شما به صورت ۱۰۰٪ عینی
-	for weaponName, pathsTable in pairs(savedValuesBackup) do
-		local freshWeapon = backpack:WaitForChild(weaponName, 4)
-		if freshWeapon then
-			-- بازگردانی مقادیر عادی فیلدها
-			for relPath, textVal in pairs(pathsTable) do
-				local targetValueObj = findObjByPath(freshWeapon, relPath)
-				if targetValueObj and targetValueObj:IsA("ValueBase") then
-					if targetValueObj:IsA("BoolValue") then
-						targetValueObj.Value = (textVal:lower() == "true")
-					elseif tonumber(textVal) then
-						targetValueObj.Value = tonumber(textVal)
-					else
-						targetValueObj.Value = textVal
-					end
+	pcall(function()
+		LocalPlayer:WaitForChild("Backpack")
+		hookBackpack()
+		task.wait(1.8)
+
+		for key, pathsTable in pairs(savedValues) do
+			local freshRoot = resolveRoot(key)
+			if freshRoot then
+				for relPath, textVal in pairs(pathsTable) do
+					local obj = findObjByPath(freshRoot, relPath)
+					if obj and obj:IsA("ValueBase") then applyValue(obj, textVal) end
 				end
-			end
-			
-			-- بازگردانی تردها به‌طوری که بعد از لود کامل صفحه فعال بمانند
-			local spamPaths = savedSpamBackup[weaponName]
-			if spamPaths then
-				for relPath, textVal in pairs(spamPaths) do
-					local targetValueObj = findObjByPath(freshWeapon, relPath)
-					if targetValueObj and targetValueObj:IsA("ValueBase") then
-						local newThread
-						newThread = task.spawn(function()
-							while true do
-								if targetValueObj:IsA("BoolValue") then
-									targetValueObj.Value = (textVal:lower() == "true")
-								elseif tonumber(textVal) then
-									targetValueObj.Value = tonumber(textVal)
-								else
-									targetValueObj.Value = textVal
-								end
-								task.wait(0.01)
-							end
-						end)
-						spammingThreads[targetValueObj] = newThread
+				local spamPaths = savedSpam[key]
+				if spamPaths then
+					for relPath, textVal in pairs(spamPaths) do
+						local obj = findObjByPath(freshRoot, relPath)
+						if obj and obj:IsA("ValueBase") then startSpam(obj, textVal) end
 					end
 				end
 			end
 		end
-	end
+	end)
 
 	LoadingText.Text = "Successfully Loaded ✔"
 	LoadingText.TextColor3 = Color3.fromRGB(100, 255, 100)
 	task.wait(0.8)
-	
-	LoadingOverlay.Visible = false
-	
-	-- حفظ موقعیت و جلوگیری از برگشت به منوی اول: 
-	-- اگر قبل از مرگ در حال بررسی یک اسلحه بودید، منو از همانجا رندر مجدد می‌شود.
-	if lastInspectedWeaponName then
-		local restoredWeapon = backpack:FindFirstChild(lastInspectedWeaponName) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(lastInspectedWeaponName))
-		if restoredWeapon then
-			selectedWeapon = restoredWeapon
-			renderTree(restoredWeapon)
+	Overlay.Visible = false
+
+	-- برگشت به همان جایی که بودی
+	if currentRootKey then
+		local newRoot = resolveRoot(currentRootKey)
+		if newRoot then
+			enterRoot(newRoot)
 			return
 		end
 	end
-
-	loadWeapons() -- فقط اگر در منوی انتخاب اسلحه مرده بودید منوی اول باز می‌شود
+	showMode(state.mode)
 end)
 
--- رفرش کاملا لحظه‌ای و بلادرنگ صفحه اول بدون تغییر در توابع و کدهای اصلی بالا
-local function handleLiveRefresh(child)
-	if child:IsA("Tool") and Title.Text == "SELECT WEAPON" then
-		loadWeapons()
-	end
-end
-
-LocalPlayer:WaitForChild("Backpack").ChildAdded:Connect(handleLiveRefresh)
-LocalPlayer:WaitForChild("Backpack").ChildRemoved:Connect(handleLiveRefresh)
-
-if LocalPlayer.Character then
-	LocalPlayer.Character.ChildAdded:Connect(handleLiveRefresh)
-	LocalPlayer.Character.ChildRemoved:Connect(handleLiveRefresh)
-end
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-	char.ChildAdded:Connect(handleLiveRefresh)
-	char.ChildRemoved:Connect(handleLiveRefresh)
-end)
-
--- ۴. لایه پاپ‌آپِ انتخاب مکان (Location Selector) در ابتدای اجرای اسکریپت
-createLocationSelector = function()
-	Title.Text = "SELECT TARGET LOCATION"
-	ConfirmBtn.Visible = false
-	SaveBtn.Visible = false
-	LocationSwitchBtn.Visible = false
-	clearList()
-
-	local BackpackModeBtn = Instance.new("TextButton")
-	BackpackModeBtn.Size = UDim2.new(1, 0, 0, 45)
-	BackpackModeBtn.BackgroundColor3 = Color3.fromRGB(35, 45, 60)
-	BackpackModeBtn.Text = "🎒 EXPLORE BACKPACK"
-	BackpackModeBtn.TextColor3 = Color3.fromRGB(100, 200, 255)
-	BackpackModeBtn.Font = Enum.Font.GothamBold
-	BackpackModeBtn.TextSize = 13
-	BackpackModeBtn.Parent = ScrollList
-	
-	local BpCorner = Instance.new("UICorner") BpCorner.CornerRadius = UDim.new(0, 6) BpCorner.Parent = BackpackModeBtn
-
-	local PlayerModeBtn = Instance.new("TextButton")
-	PlayerModeBtn.Size = UDim2.new(1, 0, 0, 45)
-	PlayerModeBtn.Position = UDim2.new(0, 0, 0, 55)
-	PlayerModeBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 60)
-	PlayerModeBtn.Text = "👤 EXPLORE LOCALPLAYER"
-	PlayerModeBtn.TextColor3 = Color3.fromRGB(200, 150, 255)
-	PlayerModeBtn.Font = Enum.Font.GothamBold
-	PlayerModeBtn.TextSize = 13
-	PlayerModeBtn.Parent = ScrollList
-	
-	local PlCorner = Instance.new("UICorner") PlCorner.CornerRadius = UDim.new(0, 6) PlCorner.Parent = PlayerModeBtn
-
-	BackpackModeBtn.MouseButton1Click:Connect(function()
-		currentSearchLocation = "BACKPACK"
-		loadWeapons()
-	end)
-
-	PlayerModeBtn.MouseButton1Click:Connect(function()
-		currentSearchLocation = "PLAYER"
-		loadWeapons()
-	end)
-end
-
--- متصل کردن کلیک دکمه سوییچ به بازگشت صفحه اصلی لوکیشن‌ها
-LocationSwitchBtn.MouseButton1Click:Connect(function()
-	createLocationSelector()
-end)
-
--- شروع اجرای اولیه با منوی انتخاب مکان
-createLocationSelector()
+showMode("Backpack")
