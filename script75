@@ -1,11 +1,3 @@
---[[
-	LUXURY DEX  (نسخه ساده و تمیز)
-	- دو لوکیشن: Backpack / LocalPlayer
-	- جستجو + آیکن برای هر آیتم
-	- ادیت زنده مقدارها + SPAM
-	- View Source اسکریپت‌ها (decompile) با Copy
-	- SAVE و بازگردانی خودکار بعد از مرگ
-]]
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -175,7 +167,7 @@ local Title = make("TextLabel", {
 	Text = "💎 LUXURY DEX", TextColor3 = T.text, TextSize = 16, Font = Enum.Font.GothamBold,
 	TextXAlignment = Enum.TextXAlignment.Left,
 }, TopBar)
-local CloseBtn = make("TextButton", {Size = UDim2.new(0, 30, 0, 26), Position = UDim2.new(1, -38, 0, 7), BackgroundColor3 = Color3.fromRGB(110, 35, 35), Text = "✕", TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 13, BorderSizePixel = 0}, TopBar)
+local CloseBtn = make("TextButton", {Size = UDim2.new(0, 30, 0, 26), Position = UDim2.new(1, -38, 0, 7), BackgroundColor3 = Color3.fromRGB(110, 35, 35), Text = "X", TextColor3 = T.text, Font = Enum.Font.GothamBold, TextSize = 13, BorderSizePixel = 0}, TopBar)
 round(CloseBtn, 6)
 
 -- Tabs
