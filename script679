@@ -1,531 +1,457 @@
-local player = game.Players.LocalPlayer
+-- ===== F3X Character Sync (نسخه‌ی کامل - بدون Collision) =====
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hum = char:WaitForChild("Humanoid")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local runService = game:GetService("RunService")
+local backpack = player:WaitForChild("Backpack")
 
--- نامرئی کردن با F3X (Material Tool) + حذف Decal ها
-task.spawn(function()
-    local syncTool = player:FindFirstChild("SyncAPI", true) or ReplicatedStorage:FindFirstChild("SyncAPI", true)
-    if not syncTool then return end
-    local syncRemote = syncTool:IsA("RemoteFunction") and syncTool or syncTool:FindFirstChild("ServerEndpoint")
-    if not syncRemote then return end
+-- جلوگیری از اجرای دوباره روی همین کاراکتر
+if char:GetAttribute("F3X_Sync") then return end
+char:SetAttribute("F3X_Sync", true)
 
-    local materialPacket = {}
-    local decalPacket = {}
-
-    for _, v in ipairs(char:GetDescendants()) do
-        if v:IsA("BasePart") then
-            table.insert(materialPacket, {Part = v, Transparency = 1})
-        elseif v:IsA("Decal") then
-            table.insert(decalPacket, {
-                Part = v.Parent,
-                Face = v.Face,
-                TextureType = "Decal",
-                Texture = v.Texture,
-                Transparency = 1
-            })
-        end
-    end
-
-    if #materialPacket > 0 then
-        pcall(function()
-            syncRemote:InvokeServer("SyncMaterial", materialPacket)
-        end)
-    end
-
-    if #decalPacket > 0 then
-        pcall(function()
-            syncRemote:InvokeServer("SyncTexture", decalPacket)
-        end)
-    end
-end)
-
-local tool = player:FindFirstChild("SyncAPI", true) or ReplicatedStorage:FindFirstChild("SyncAPI", true)
-if not tool then return end
-local remote = tool:IsA("RemoteFunction") and tool or tool:FindFirstChild("ServerEndpoint")
-
-local partMap = {}
-local lastCF = {}
-_G.F3X_SyncActive = true
-
-local function GetVisualData(real)
-    local meshes, textures = {}, {}
-    for _, item in ipairs(real:GetDescendants()) do
-        if item:IsA("SpecialMesh") then
-            table.insert(meshes, {Part = nil, MeshType = item.MeshType, Scale = item.Scale, MeshId = item.MeshId, TextureId = item.TextureId})
-        elseif item:IsA("Decal") or item:IsA("Texture") then
-            table.insert(textures, {
-                Part = nil, Face = item.Face, Texture = item.Texture, Transparency = item.Transparency,
-                Color = item.Color3, TextureType = item.ClassName,
-                OffsetStudsU = item:IsA("Texture") and item.OffsetStudsU or 0,
-                OffsetStudsV = item:IsA("Texture") and item.OffsetStudsV or 0,
-                StudsPerTileU = item:IsA("Texture") and item.StudsPerTileU or 1,
-                StudsPerTileV = item:IsA("Texture") and item.StudsPerTileV or 1
-            })
-        end
-    end
-    if real:IsA("MeshPart") then
-        table.insert(meshes, {Part = nil, MeshType = Enum.MeshType.FileMesh, Scale = Vector3.new(1,1,1), MeshId = real.MeshId, TextureId = real.TextureID})
-    end
-    return meshes, textures
-end
-
-local function TrackChanges(real, fake)
-    local function update()
-        if real.Parent and fake.Parent then
-            
-            remote:InvokeServer("SyncColor", {{Part = fake, Color = real.Color, Transparency = real.Transparency}})
-
-            remote:InvokeServer("SyncResize", {{Part = fake, Size = real.Size, CFrame = real.CFrame}})
-        end
-    end
-    
-    real:GetPropertyChangedSignal("Color"):Connect(update)
-    real:GetPropertyChangedSignal("Transparency"):Connect(update)
-    real:GetPropertyChangedSignal("Size"):Connect(update)
-    real:GetPropertyChangedSignal("Material"):Connect(update)
-
-    for _, v in pairs(real:GetDescendants()) do
-
-	if v:IsA("SpecialMesh") then
-
-		local function syncMesh()
-			remote:InvokeServer("SyncMesh", {{
-				Part = fake,
-				MeshType = v.MeshType,
-				Scale = v.Scale,
-				MeshId = v.MeshId,
-				TextureId = v.TextureId
-			}})
-		end
-
-		v:GetPropertyChangedSignal("MeshId"):Connect(syncMesh)
-		v:GetPropertyChangedSignal("TextureId"):Connect(syncMesh)
-		v:GetPropertyChangedSignal("Scale"):Connect(syncMesh)
-
-	elseif v:IsA("Decal") or v:IsA("Texture") then
-
-		local function syncTexture()
-			remote:InvokeServer("SyncTexture", {{
-				Part = fake,
-				Face = v.Face,
-				Texture = v.Texture,
-				Transparency = v.Transparency,
-				Color = v:IsA("Texture") and v.Color3 or nil,
-				TextureType = v.ClassName,
-				OffsetStudsU = v:IsA("Texture") and v.OffsetStudsU or 0,
-				OffsetStudsV = v:IsA("Texture") and v.OffsetStudsV or 0,
-				StudsPerTileU = v:IsA("Texture") and v.StudsPerTileU or 1,
-				StudsPerTileV = v:IsA("Texture") and v.StudsPerTileV or 1
-			}})
-		end
-
-		v:GetPropertyChangedSignal("Texture"):Connect(syncTexture)
-		v:GetPropertyChangedSignal("Transparency"):Connect(syncTexture)
-
-		if v:IsA("Texture") then
-			v:GetPropertyChangedSignal("Color3"):Connect(syncTexture)
-			v:GetPropertyChangedSignal("OffsetStudsU"):Connect(syncTexture)
-			v:GetPropertyChangedSignal("OffsetStudsV"):Connect(syncTexture)
-			v:GetPropertyChangedSignal("StudsPerTileU"):Connect(syncTexture)
-			v:GetPropertyChangedSignal("StudsPerTileV"):Connect(syncTexture)
+-- پیدا کردن ریموت F3X (Backpack / Character / ReplicatedStorage)
+local function findRemote()
+	for _, place in ipairs({backpack, char, ReplicatedStorage}) do
+		local api = place:FindFirstChild("SyncAPI", true)
+		if api then
+			if api:IsA("RemoteFunction") then return api end
+			local ep = api:FindFirstChild("ServerEndpoint")
+			if ep then return ep end
 		end
 	end
 end
-    
 
-    if not _G.F3X_DeathCleanup then
-	_G.F3X_DeathCleanup = true
-
-	hum.Died:Connect(function()
-
-		if _G.F3X_MoveLoop then
-			_G.F3X_MoveLoop:Disconnect()
-			_G.F3X_MoveLoop = nil
-		end
-
-		local removePacket = {}
-
-		for real, fake in pairs(partMap) do
-			if fake and fake.Parent then
-				removePacket[#removePacket + 1] = fake
-			end
-		end
-
-		if #removePacket > 0 then
-			pcall(function()
-				remote:InvokeServer("RemoveObjects", removePacket)
-			end)
-		end
-
-		table.clear(partMap)
-
-		if lastCF then
-			table.clear(lastCF)
-		end
-	end)
+local remote
+for _ = 1, 20 do
+	remote = findRemote()
+	if remote then break end
+	task.wait(0.5)
 end
-end
-local function SyncBodyPart(real)
-    if not real:IsA("BasePart")
-	or real.Name == "HumanoidRootPart"
-	or real:FindFirstChild("F3X_Synced")
-then
+if not remote then
+	warn("[F3X] SyncAPI پیدا نشد")
 	return
 end
 
-local visible = false
-
-if real.Transparency < 1 then
-	visible = true
-end
-
-for _, v in pairs(real:GetDescendants()) do
-	if v:IsA("Decal") or v:IsA("Texture") then
-		if v.Transparency < 1 and v.Texture ~= "" then
-			visible = true
-			break
-		end
-	elseif v:IsA("SpecialMesh") then
-	if v.TextureId ~= "" or v.MeshId ~= "" then
-		visible = true
+local function call(action, ...)
+	local ok, res = pcall(remote.InvokeServer, remote, action, ...)
+	if not ok then
+		warn("[F3X] " .. tostring(action) .. " ناموفق: " .. tostring(res))
+		return nil
 	end
-end
-end
-
-if not visible then
-	return
-end
-    Instance.new("BoolValue", real).Name = "F3X_Synced"
-
-    task.spawn(function()
-        local success, fake = pcall(function()
-	return remote:InvokeServer("CreatePart", "Normal", real.CFrame, workspace)
-end)
-        if success and fake then
-            partMap[real] = fake
-           
-
-            remote:InvokeServer("SyncAnchor", {{Part = fake, Anchored = true}})
-remote:InvokeServer("SyncCollision", {{Part = fake, CanCollide = false}})
-
-remote:InvokeServer("SyncMaterial", {{
-	Part = fake,
-	Material = real.Material
-}})
-
-remote:InvokeServer("SyncColor", {{
-	Part = fake,
-	Color = real.Color,
-	Transparency = real.Transparency
-}})
-
-remote:InvokeServer("SyncResize", {{
-	Part = fake,
-	Size = real.Size,
-	CFrame = real.CFrame
-}})
-
-            local meshes, textures = GetVisualData(real)
-            if #meshes > 0 then
-                for i in pairs(meshes) do meshes[i].Part = fake end
-                remote:InvokeServer("CreateMeshes", {{Part = fake}})
-                remote:InvokeServer("SyncMesh", meshes)
-            end
-           
-
-            if #textures > 0 then
-                local createPack = {}
-                for i in pairs(textures) do 
-                    textures[i].Part = fake 
-                    table.insert(createPack, {Part = fake, Face = textures[i].Face, TextureType = textures[i].TextureType})
-                end
-                remote:InvokeServer("CreateTextures", createPack)
-                task.wait(0.1)
-                remote:InvokeServer("SyncTexture", textures)
-            end
-
-local spot = real:FindFirstChildOfClass("SpotLight")
-
-if spot then
-	
-	remote:InvokeServer("CreateLights", {{
-		Part = fake,
-		LightType = "SpotLight"
-	}})
-
-	remote:InvokeServer("SyncLighting", {{
-		Part = fake,
-		LightType = "SpotLight",
-		Color = spot.Color,
-		Range = spot.Range,
-		Face = spot.Face,
-		Angle = spot.Angle,
-		Brightness = spot.Brightness,
-		Shadows = spot.Shadows
-	}})
+	return res
 end
 
-local point = real:FindFirstChildOfClass("PointLight")
-
-if point then
-	
-	remote:InvokeServer("CreateLights", {{
-		Part = fake,
-		LightType = "PointLight"
-	}})
-
-	remote:InvokeServer("SyncLighting", {{
-		Part = fake,
-		LightType = "PointLight",
-		Color = point.Color,
-		Range = point.Range,
-		Brightness = point.Brightness,
-		Shadows = point.Shadows
-	}})
-end
-
-local surface = real:FindFirstChildOfClass("SurfaceLight")
-
-if surface then
-	
-	remote:InvokeServer("CreateLights", {{
-		Part = fake,
-		LightType = "SurfaceLight"
-	}})
-
-	remote:InvokeServer("SyncLighting", {{
-		Part = fake,
-		LightType = "SurfaceLight",
-		Color = surface.Color,
-		Range = surface.Range,
-		Face = surface.Face,
-		Angle = surface.Angle,
-		Brightness = surface.Brightness,
-		Shadows = surface.Shadows
-	}})
-end
-
-for _, object in pairs(real:GetChildren()) do
-	
-	if object:IsA("Fire")
-	or object:IsA("Smoke")
-	or object:IsA("Sparkles") then
-
-		local properties = {
-			Part = fake,
-			DecorationType = object.ClassName
-		}
-
-		if object:IsA("Fire") then
-			
-			properties.Color = object.Color
-			properties.SecondaryColor = object.SecondaryColor
-			properties.Heat = object.Heat
-			properties.Size = object.Size
-
-		elseif object:IsA("Smoke") then
-			
-			properties.Color = object.Color
-			properties.Opacity = object.Opacity
-			properties.RiseVelocity = object.RiseVelocity
-			properties.Size = object.Size
-
-		elseif object:IsA("Sparkles") then
-			
-			properties.SparkleColor = object.SparkleColor
-		end
-
-		remote:InvokeServer("SyncDecorate", {properties})
-	end
-end
-
-            TrackChanges(real, fake)
-
-            real.LocalTransparencyModifier = 1
-            for _, v in pairs(real:GetDescendants()) do if v:IsA("BasePart") or v:IsA("Decal") then v.LocalTransparencyModifier = 1 end end
-            
-for _, light in pairs(real:GetChildren()) do
-	
-	if light:IsA("PointLight")
-	or light:IsA("SpotLight")
-	or light:IsA("SurfaceLight") then
-		
-		local function syncLight()
-			
-			if fake.Parent then
-				
-				remote:InvokeServer("SyncLighting", {{
-					Part = fake,
-					LightType = light.ClassName,
-					Color = light.Color,
-					Range = light.Range,
-					Brightness = light.Brightness,
-					Shadows = light.Shadows,
-					Face = light:IsA("SpotLight") or light:IsA("SurfaceLight") and light.Face or nil,
-Angle = light:IsA("SpotLight") or light:IsA("SurfaceLight") and light.Angle or nil
-				}})
-			end
-		end
-
-		light:GetPropertyChangedSignal("Color"):Connect(syncLight)
-		light:GetPropertyChangedSignal("Brightness"):Connect(syncLight)
-		light:GetPropertyChangedSignal("Range"):Connect(syncLight)
-
-		if light:IsA("SpotLight") or light:IsA("SurfaceLight") then
-			light:GetPropertyChangedSignal("Angle"):Connect(syncLight)
-			light:GetPropertyChangedSignal("Face"):Connect(syncLight)
-		end
-	end
-end
-
-real.ChildAdded:Connect(function(child)
-
-	if child:IsA("PointLight")
-	or child:IsA("SpotLight")
-	or child:IsA("SurfaceLight") then
-
-		remote:InvokeServer("CreateLights", {{
-			Part = fake,
-			LightType = child.ClassName
-		}})
-
-		task.wait()
-
-		local data = {
-			Part = fake,
-			LightType = child.ClassName,
-			Color = child.Color,
-			Range = child.Range,
-			Brightness = child.Brightness,
-			Shadows = child.Shadows
-		}
-
-		if child:IsA("SpotLight") or child:IsA("SurfaceLight") then
-			data.Face = child.Face
-			data.Angle = child.Angle
-		end
-
-		remote:InvokeServer("SyncLighting", {{data}})
-
-		
-		local function syncLight()
-			
-			if fake.Parent then
-				
-				local update = {
-					Part = fake,
-					LightType = child.ClassName,
-					Color = child.Color,
-					Range = child.Range,
-					Brightness = child.Brightness,
-					Shadows = child.Shadows
-				}
-
-				if child:IsA("SpotLight") or child:IsA("SurfaceLight") then
-					update.Face = child.Face
-					update.Angle = child.Angle
-				end
-
-				remote:InvokeServer("SyncLighting", {{update}})
-			end
-		end
-
-		child:GetPropertyChangedSignal("Enabled"):Connect(syncLight)
-		child:GetPropertyChangedSignal("Brightness"):Connect(syncLight)
-		child:GetPropertyChangedSignal("Range"):Connect(syncLight)
-		child:GetPropertyChangedSignal("Color"):Connect(syncLight)
-	end
-end)
-real.ChildAdded:Connect(function(object)
-
-	if object:IsA("Fire")
-	or object:IsA("Smoke")
-	or object:IsA("Sparkles") then
-
-		local properties = {
-			Part = fake,
-			DecorationType = object.ClassName
-		}
-
-		if object:IsA("Fire") then
-			
-			properties.Color = object.Color
-			properties.SecondaryColor = object.SecondaryColor
-			properties.Heat = object.Heat
-			properties.Size = object.Size
-
-		elseif object:IsA("Smoke") then
-			
-			properties.Color = object.Color
-			properties.Opacity = object.Opacity
-			properties.RiseVelocity = object.RiseVelocity
-			properties.Size = object.Size
-
-		elseif object:IsA("Sparkles") then
-			
-			properties.SparkleColor = object.SparkleColor
-		end
-
-		remote:InvokeServer("SyncDecorate", {properties})
-	end
-end)
-            real.AncestryChanged:Connect(function(_, p) if not p then remote:InvokeServer("RemoveObjects", {fake}) end end)
-        end
-    end)
-end
-
-for _, v in pairs(char:GetDescendants()) do SyncBodyPart(v) end
-char.DescendantAdded:Connect(SyncBodyPart)
+-- ===== وضعیت =====
+local alive = true
+local partMap = {}      -- real -> fake
 local lastCF = {}
-local sendRate = 1/30
-local nextSend = 0
+local synced = {}
+local bags = {}         -- real -> اتصال‌ها
+local origTransp = {}   -- شفافیت اصلی پارت‌ها
+local origDecal = {}    -- شفافیت اصلی Decal/Texture ها
+local hidden = {}       -- چیزهایی که خودمون مخفی کردیم
+local globalConns = {}
 
-local movingParts = {}
-local movingCount = 0
+local function track(c) globalConns[#globalConns + 1] = c return c end
 
-if _G.F3X_MoveLoop then
-	_G.F3X_MoveLoop:Disconnect()
+-- ===== جلوگیری از Collision کپی‌ها =====
+local ghosts = {}       -- کپی‌هایی که باید همیشه بدون Collision بمونن
+
+local function ghostify(p)
+	if not p or not p:IsA("BasePart") then return end
+	ghosts[p] = true
+	p.CanCollide = false
+	p.CanTouch = false
+	p.CanQuery = false
+	p.Massless = true
 end
 
-_G.F3X_MoveLoop = runService.RenderStepped:Connect(function()
-	local now = tick()
+local function bind(real, signal, fn)
+	local bag = bags[real]
+	if not bag then return end
+	bag[#bag + 1] = signal:Connect(fn)
+end
 
-	if now < nextSend then
+local function watch(real, obj, props, fn)
+	for _, p in ipairs(props) do
+		bind(real, obj:GetPropertyChangedSignal(p), fn)
+	end
+end
+
+-- ===== ساخت دیتا =====
+local function getMeshData(real)
+	if real:IsA("MeshPart") then
+		local ms, sz = real.MeshSize, real.Size
+		return {
+			MeshType = Enum.MeshType.FileMesh,
+			Scale = Vector3.new(
+				ms.X > 0 and sz.X / ms.X or 1,
+				ms.Y > 0 and sz.Y / ms.Y or 1,
+				ms.Z > 0 and sz.Z / ms.Z or 1
+			),
+			MeshId = real.MeshId,
+			TextureId = real.TextureID,
+		}
+	end
+	local sm = real:FindFirstChildOfClass("SpecialMesh")
+	if sm then
+		return {
+			MeshType = sm.MeshType,
+			Scale = sm.Scale,
+			Offset = sm.Offset,
+			VertexColor = sm.VertexColor,
+			MeshId = sm.MeshId,
+			TextureId = sm.TextureId,
+		}
+	end
+end
+
+local function texData(fake, d)
+	local isTex = d:IsA("Texture")
+	return {
+		Part = fake,
+		Face = d.Face,
+		TextureType = d.ClassName,
+		Texture = d.Texture,
+		Transparency = origDecal[d] or d.Transparency,
+		StudsPerTileU = isTex and d.StudsPerTileU or nil,
+		StudsPerTileV = isTex and d.StudsPerTileV or nil,
+	}
+end
+
+local function lightData(fake, l)
+	local d = {
+		Part = fake,
+		LightType = l.ClassName,
+		Color = l.Color,
+		Range = l.Range,
+		Brightness = l.Enabled and l.Brightness or 0,
+		Shadows = l.Shadows,
+	}
+	if l:IsA("SpotLight") or l:IsA("SurfaceLight") then
+		d.Face = l.Face
+		d.Angle = l.Angle
+	end
+	return d
+end
+
+local function decoData(fake, o)
+	local d = {Part = fake, DecorationType = o.ClassName}
+	if o:IsA("Fire") then
+		d.Color, d.SecondaryColor, d.Heat, d.Size = o.Color, o.SecondaryColor, o.Heat, o.Size
+	elseif o:IsA("Smoke") then
+		d.Color, d.Opacity, d.RiseVelocity, d.Size = o.Color, o.Opacity, o.RiseVelocity, o.Size
+	elseif o:IsA("Sparkles") then
+		d.SparkleColor = o.SparkleColor
+	end
+	return d
+end
+
+-- ===== مخفی کردن نسخه‌ی واقعی =====
+local function hidePart(real)
+	hidden[real] = true
+	call("SyncMaterial", {{Part = real, Transparency = 1}})
+end
+
+local function hideDecal(d)
+	hidden[d] = true
+	call("SyncTexture", {{Part = d.Parent, Face = d.Face, TextureType = d.ClassName, Transparency = 1}})
+end
+
+-- ===== حذف کپی =====
+local function removeFake(real)
+	local fake = partMap[real]
+	partMap[real] = nil
+	if fake then ghosts[fake] = nil end
+	lastCF[real] = nil
+	synced[real] = nil
+	local bag = bags[real]
+	bags[real] = nil
+	if bag then
+		for _, c in ipairs(bag) do c:Disconnect() end
+	end
+	if fake and fake.Parent then
+		call("RemoveObjects", {fake})
+	end
+end
+
+-- ===== مش =====
+local function ensureMesh(real, fake, state)
+	local m = getMeshData(real)
+	if not m then return end
+	m.Part = fake
+	if not state.hasMesh then
+		state.hasMesh = true
+		call("CreateMeshes", {{Part = fake}})
+	end
+	call("SyncMesh", {m})
+end
+
+-- ===== چیزهای داخل پارت (Decal / Light / Fire ...) =====
+local function attachExtra(real, fake, obj, state)
+	if obj:IsA("Decal") or obj:IsA("Texture") then
+		if obj.Texture == "" then return end
+		if origDecal[obj] == nil then origDecal[obj] = obj.Transparency end
+
+		call("CreateTextures", {{Part = fake, Face = obj.Face, TextureType = obj.ClassName}})
+		call("SyncTexture", {texData(fake, obj)})
+
+		local function onTex()
+			if not fake.Parent then return end
+			if not (obj.Transparency == 1 and hidden[obj]) then
+				origDecal[obj] = obj.Transparency
+			end
+			call("SyncTexture", {texData(fake, obj)})
+			if obj.Transparency < 1 then hideDecal(obj) end
+		end
+		local props = {"Texture", "Transparency"}
+		if obj:IsA("Texture") then
+			table.insert(props, "StudsPerTileU")
+			table.insert(props, "StudsPerTileV")
+		end
+		watch(real, obj, props, onTex)
+
+		if not hidden[obj] or obj.Transparency < 1 then hideDecal(obj) end
+
+	elseif obj:IsA("PointLight") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight") then
+		call("CreateLights", {{Part = fake, LightType = obj.ClassName}})
+		call("SyncLighting", {lightData(fake, obj)})
+		local function onLight()
+			if fake.Parent then call("SyncLighting", {lightData(fake, obj)}) end
+		end
+		local props = {"Color", "Brightness", "Range", "Enabled", "Shadows"}
+		if not obj:IsA("PointLight") then
+			table.insert(props, "Angle")
+			table.insert(props, "Face")
+		end
+		watch(real, obj, props, onLight)
+
+	elseif obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
+		call("CreateDecorations", {{Part = fake, DecorationType = obj.ClassName}})
+		call("SyncDecorate", {decoData(fake, obj)})
+		local function onDeco()
+			if fake.Parent then call("SyncDecorate", {decoData(fake, obj)}) end
+		end
+		local props
+		if obj:IsA("Fire") then props = {"Color", "SecondaryColor", "Heat", "Size"}
+		elseif obj:IsA("Smoke") then props = {"Color", "Opacity", "RiseVelocity", "Size"}
+		else props = {"SparkleColor"} end
+		watch(real, obj, props, onDeco)
+
+	elseif obj:IsA("SpecialMesh") then
+		ensureMesh(real, fake, state)
+		local function onMesh() ensureMesh(real, fake, state) end
+		watch(real, obj, {"MeshId", "TextureId", "Scale", "MeshType", "Offset", "VertexColor"}, onMesh)
+	end
+end
+
+-- ===== سینک یک پارت =====
+local function syncPart(real)
+	if not alive or synced[real] or not real:IsA("BasePart") or real.Name == "HumanoidRootPart" then return end
+	synced[real] = true
+	task.wait() -- بچه‌ها لود بشن
+
+	if not alive or not real:IsDescendantOf(char) then
+		synced[real] = nil
 		return
 	end
 
+	-- آیا چیزی برای نشون دادن داره؟
+	local baseT = origTransp[real] or real.Transparency
+	local visible = baseT < 1
+	if not visible then
+		for _, v in ipairs(real:GetChildren()) do
+			if (v:IsA("Decal") or v:IsA("Texture")) and v.Texture ~= ""
+				and (origDecal[v] or v.Transparency) < 1 then
+				visible = true
+				break
+			end
+		end
+	end
+	if not visible then
+		synced[real] = nil
+		return
+	end
+	origTransp[real] = baseT
+
+	local fake = call("CreatePart", "Normal", real.CFrame, workspace)
+	if typeof(fake) ~= "Instance" then
+		synced[real] = nil
+		return
+	end
+	ghostify(fake) -- کپی هیچ‌وقت Collision نداشته باشه
+
+	if not alive or not real:IsDescendantOf(char) then
+		ghosts[fake] = nil
+		call("RemoveObjects", {fake})
+		synced[real] = nil
+		return
+	end
+
+	partMap[real] = fake
+	lastCF[real] = real.CFrame
+	bags[real] = {}
+	local state = {hasMesh = false}
+
+	local function pushColor()
+		if fake.Parent then call("SyncColor", {{Part = fake, Color = real.Color}}) end
+	end
+	local function pushMaterial()
+		if fake.Parent then
+			call("SyncMaterial", {{
+				Part = fake,
+				Material = real.Material,
+				Transparency = origTransp[real],
+				Reflectance = real.Reflectance,
+			}})
+		end
+	end
+	local function pushSize()
+		if not fake.Parent then return end
+		call("SyncResize", {{Part = fake, Size = real.Size, CFrame = real.CFrame}})
+		if real:IsA("MeshPart") then ensureMesh(real, fake, state) end
+	end
+
+	call("SyncAnchor", {{Part = fake, Anchored = true}})
+	call("SyncCollision", {{Part = fake, CanCollide = false}})
+	pushMaterial()
+	pushColor()
+	pushSize()
+
+	if real:IsA("MeshPart") then
+		ensureMesh(real, fake, state)
+		watch(real, real, {"TextureID"}, function() ensureMesh(real, fake, state) end)
+	end
+
+	for _, obj in ipairs(real:GetChildren()) do
+		attachExtra(real, fake, obj, state)
+	end
+
+	-- تغییرات خود پارت
+	watch(real, real, {"Color"}, pushColor)
+	watch(real, real, {"Material", "Reflectance"}, pushMaterial)
+	watch(real, real, {"Size"}, pushSize)
+	bind(real, real:GetPropertyChangedSignal("Transparency"), function()
+		if real.Transparency == 1 and hidden[real] then return end
+		origTransp[real] = real.Transparency
+		pushMaterial()
+		if real.Transparency < 1 then hidePart(real) end
+	end)
+
+	-- چیزهایی که بعداً اضافه می‌شن
+	bind(real, real.ChildAdded, function(obj)
+		if partMap[real] == fake then
+			task.wait()
+			attachExtra(real, fake, obj, state)
+		end
+	end)
+
+	-- Unequip / حذف
+	bind(real, real.AncestryChanged, function()
+		if not real:IsDescendantOf(char) then removeFake(real) end
+	end)
+
+	-- در آخر نسخه‌ی واقعی رو مخفی کن
+	if not hidden[real] or real.Transparency < 1 then hidePart(real) end
+end
+
+-- ===== پاکسازی =====
+local function cleanup(restore)
+	if not alive then return end
+	alive = false
+
+	for _, c in ipairs(globalConns) do c:Disconnect() end
+
+	local removeList, matPacket, texPacket = {}, {}, {}
+	for real, fake in pairs(partMap) do
+		if fake.Parent then removeList[#removeList + 1] = fake end
+		if restore and real.Parent then
+			matPacket[#matPacket + 1] = {Part = real, Transparency = origTransp[real] or 0}
+			for _, d in ipairs(real:GetChildren()) do
+				if (d:IsA("Decal") or d:IsA("Texture")) and hidden[d] then
+					texPacket[#texPacket + 1] = {
+						Part = real, Face = d.Face, TextureType = d.ClassName,
+						Transparency = origDecal[d] or 0,
+					}
+				end
+			end
+		end
+	end
+	for _, bag in pairs(bags) do
+		for _, c in ipairs(bag) do c:Disconnect() end
+	end
+
+	table.clear(partMap)
+	table.clear(lastCF)
+	table.clear(bags)
+	table.clear(ghosts)
+
+	if #removeList > 0 then call("RemoveObjects", removeList) end
+	if #matPacket > 0 then call("SyncMaterial", matPacket) end
+	if #texPacket > 0 then call("SyncTexture", texPacket) end
+end
+
+track(hum.Died:Connect(function() cleanup(true) end))
+track(char.AncestryChanged:Connect(function()
+	if not char:IsDescendantOf(game) then cleanup(false) end
+end))
+
+-- ===== شروع =====
+track(char.DescendantAdded:Connect(function(d)
+	if d:IsA("BasePart") then task.spawn(syncPart, d) end
+end))
+for _, d in ipairs(char:GetDescendants()) do
+	if d:IsA("BasePart") then task.spawn(syncPart, d) end
+end
+
+-- ===== هر فریم: مطمئن شو کپی‌ها Collision ندارن (حتی اگه سرور true کرد) =====
+track(RunService.Stepped:Connect(function()
+	for p in pairs(ghosts) do
+		if p.Parent then
+			if p.CanCollide then p.CanCollide = false end
+			if p.CanQuery then p.CanQuery = false end
+			if p.CanTouch then p.CanTouch = false end
+		else
+			ghosts[p] = nil
+		end
+	end
+end))
+
+local sendRate = 0        -- بدون محدودیت، هر فریم
+local nextSend = 0
+local inFlight = 0
+local MAX_IN_FLIGHT = 4   -- تعداد درخواست همزمان؛ بالاتر = سریع‌تر ولی فشار بیشتر
+
+track(RunService.Heartbeat:Connect(function()
+	if inFlight >= MAX_IN_FLIGHT or not alive then return end
+	local now = os.clock()
+	if now < nextSend then return end
 	nextSend = now + sendRate
 
-	table.clear(movingParts)
-	movingCount = 0
-
-	for real, fake in next, partMap do
+	local pack, n = {}, 0
+	for real, fake in pairs(partMap) do
 		if real.Parent and fake.Parent then
-			
 			local cf = real.CFrame
 			local old = lastCF[real]
-
 			if not old
-			or (old.Position - cf.Position).Magnitude > 0.01
-			or (old.LookVector - cf.LookVector).Magnitude > 0.01 then
-
+				or (old.Position - cf.Position).Magnitude > 0.002
+				or (old.LookVector - cf.LookVector).Magnitude > 0.002
+				or (old.UpVector - cf.UpVector).Magnitude > 0.002 then
 				lastCF[real] = cf
-
-				movingCount += 1
-				movingParts[movingCount] = {
-					Part = fake,
-					CFrame = cf
-				}
+				n += 1
+				pack[n] = {Part = fake, CFrame = cf}
 			end
-		else
-			partMap[real] = nil
-			lastCF[real] = nil
 		end
 	end
 
-	if movingCount > 0 then
-		remote:InvokeServer("SyncMove", movingParts)
+	if n > 0 then
+		inFlight += 1
+		task.spawn(function()
+			call("SyncMove", pack)
+			inFlight -= 1
+		end)
 	end
-end)
+end))
