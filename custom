@@ -1,5 +1,3 @@
-
-
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
@@ -254,52 +252,154 @@ local function RunDecalSpam(kind, entry, textureText, onProgress)
 end
 
 -- ===================== Particle (ForkF3X only) =====================
+local PARTICLE_SPREAD = 100
+
+local workingSpreadVariant -- index of the format the server accepted
+
+-- different formats the server might accept
+local SPREAD_VARIANTS = {
+	function(v) return { SpreadAngle = Vector2.new(v, v) } end,
+	function(v) return { Spread = v } end,
+	function(v) return { SpreadAngle = v } end,
+	function(v) return { Spread = Vector2.new(v, v) } end,
+}
+
+local function spreadOK(part)
+	local e = part:FindFirstChildOfClass("ParticleEmitter")
+	if not e then return false end
+	local ok, val = pcall(function() return e.SpreadAngle end)
+	return ok and typeof(val) == "Vector2" and math.abs(val.X - PARTICLE_SPREAD) < 0.01
+end
+
+local function sendSpread(entry, part, variantIndex)
+	local props = SPREAD_VARIANTS[variantIndex](PARTICLE_SPREAD)
+	local data = { Part = part, DecorationType = "ParticleEmitter" }
+	for k, v in pairs(props) do data[k] = v end
+	invoke(entry, "SyncDecorate", { data })
+end
+
+-- ===== Speed =====
+local PARTICLE_SPEED = 10
+
+local workingSpeedVariant
+
+local SPEED_VARIANTS = {
+	function(v) return { Speed = NumberRange.new(v, v) } end,
+	function(v) return { Speed = v } end,
+}
+
+local function speedOK(part)
+	local e = part:FindFirstChildOfClass("ParticleEmitter")
+	if not e then return false end
+	local ok, val = pcall(function() return e.Speed end)
+	return ok and typeof(val) == "NumberRange"
+		and math.abs(val.Min - PARTICLE_SPEED) < 0.01
+		and math.abs(val.Max - PARTICLE_SPEED) < 0.01
+end
+
+local function sendSpeed(entry, part, variantIndex)
+	local props = SPEED_VARIANTS[variantIndex](PARTICLE_SPEED)
+	local data = { Part = part, DecorationType = "ParticleEmitter" }
+	for k, v in pairs(props) do data[k] = v end
+	invoke(entry, "SyncDecorate", { data })
+end
+
 local function RunParticle(kind, entry, textureText)
 	if kind ~= "Fork" then return false, "Particle only works with ForkF3X." end
 
 	local id = normalizeTextureId(textureText)
 	if id == "" then return false, "Enter a particle id first." end
 
-	local heads = {}
+	-- the emitter goes on each player's HumanoidRootPart
+	local targets = {}
 	for _, plr in ipairs(Players:GetPlayers()) do
-		local head = plr.Character and plr.Character:FindFirstChild("Head")
-		if head and head:IsA("BasePart") then
-			heads[#heads + 1] = head
+		local char = plr.Character
+		local root = char and char:FindFirstChild("HumanoidRootPart")
+		if root and root:IsA("BasePart") then
+			targets[#targets + 1] = root
 		end
 	end
-	if #heads == 0 then return false, "No player heads found." end
+	if #targets == 0 then return false, "No HumanoidRootPart found." end
 
-	local function createAndSync(list)
+	-- create emitters + set texture (batched)
+	local BATCH = 40
+	for i = 1, #targets, BATCH do
 		local create, sync = {}, {}
-		for i, head in ipairs(list) do
-			create[i] = { Part = head, DecorationType = "ParticleEmitter" }
-			sync[i] = { Part = head, DecorationType = "ParticleEmitter", Texture = id }
+		for k = i, math.min(i + BATCH - 1, #targets) do
+			local part = targets[k]
+			create[#create + 1] = { Part = part, DecorationType = "ParticleEmitter" }
+			sync[#sync + 1] = { Part = part, DecorationType = "ParticleEmitter", Texture = id }
 		end
-		invoke(entry, "CreateDecorations", create)  -- Decorate tool: make the emitter
-		invoke(entry, "SyncDecorate", sync)         -- Decorate tool: set its Texture
+		invoke(entry, "CreateDecorations", create)
+		invoke(entry, "SyncDecorate", sync)
 	end
+	task.wait(0.3)
 
-	createAndSync(heads)
-	task.wait(0.2)
-
-	-- verify; retry whatever the server skipped
+	-- verify, retry what the server skipped, and set Spread
 	local applied = 0
-	for _, head in ipairs(heads) do
-		if head.Parent then
-			local emitter = head:FindFirstChildOfClass("ParticleEmitter")
+	for _, part in ipairs(targets) do
+		if part.Parent then
+			local emitter = part:FindFirstChildOfClass("ParticleEmitter")
 			if not emitter then
-				createAndSync({ head })
+				invoke(entry, "CreateDecorations", { { Part = part, DecorationType = "ParticleEmitter" } })
+				invoke(entry, "SyncDecorate", { { Part = part, DecorationType = "ParticleEmitter", Texture = id } })
 				task.wait(0.1)
+				emitter = part:FindFirstChildOfClass("ParticleEmitter")
 			elseif emitter.Texture ~= id then
-				invoke(entry, "SyncDecorate", { { Part = head, DecorationType = "ParticleEmitter", Texture = id } })
+				invoke(entry, "SyncDecorate", { { Part = part, DecorationType = "ParticleEmitter", Texture = id } })
 				task.wait(0.1)
 			end
-			local e = head:FindFirstChildOfClass("ParticleEmitter")
+
+			-- Spread
+			if emitter and not spreadOK(part) then
+				if workingSpreadVariant then
+					sendSpread(entry, part, workingSpreadVariant)
+					task.wait(0.1)
+				end
+				if not spreadOK(part) then
+					for idx = 1, #SPREAD_VARIANTS do
+						sendSpread(entry, part, idx)
+						task.wait(0.15)
+						if spreadOK(part) then
+							workingSpreadVariant = idx
+							break
+						end
+					end
+				end
+			end
+
+			-- Speed
+			if emitter and not speedOK(part) then
+				if workingSpeedVariant then
+					sendSpeed(entry, part, workingSpeedVariant)
+					task.wait(0.1)
+				end
+				if not speedOK(part) then
+					for idx = 1, #SPEED_VARIANTS do
+						sendSpeed(entry, part, idx)
+						task.wait(0.15)
+						if speedOK(part) then
+							workingSpeedVariant = idx
+							break
+						end
+					end
+				end
+			end
+
+			local e = part:FindFirstChildOfClass("ParticleEmitter")
 			if e and e.Texture == id then applied += 1 end
 		end
 	end
 
-	return applied > 0, string.format("Particle applied to %d/%d heads.", applied, #heads)
+	local spreadInfo = workingSpreadVariant
+		and ("Spread " .. PARTICLE_SPREAD .. " (variant " .. workingSpreadVariant .. ")")
+		or "Spread NOT applied"
+
+	local speedInfo = workingSpeedVariant
+		and ("Speed " .. PARTICLE_SPEED .. " (variant " .. workingSpeedVariant .. ")")
+		or "Speed NOT applied"
+
+	return applied > 0, string.format("Particle applied to %d/%d HumanoidRootParts. %s | %s", applied, #targets, spreadInfo, speedInfo)
 end
 
 -- ===================== GUI helpers =====================
