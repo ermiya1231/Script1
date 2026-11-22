@@ -1,0 +1,623 @@
+-- Game Info Extractor Ultimate | Hacker Edition (Auto Load, Responsive, LIVE Update)
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+local Lighting = game:GetService("Lighting")
+local LocalPlayer = Players.LocalPlayer
+
+local GREEN = Color3.fromRGB(0, 255, 70)
+local DARK_GREEN = Color3.fromRGB(0, 120, 35)
+local BLACK = Color3.fromRGB(5, 8, 5)
+local PANEL = Color3.fromRGB(10, 16, 10)
+
+-- تنظیم سایز
+local BASE_W, BASE_H = 520, 580   -- سایز اصلی طراحی پنل
+local MAX_SCALE = 0.85            -- بیشترین مقیاس (روی کامپیوتر)
+local MIN_SCALE = 0.4             -- کمترین مقیاس (روی موبایل)
+local SCREEN_FILL_X = 0.9         -- حداکثر درصد عرض صفحه
+local SCREEN_FILL_Y = 0.8         -- حداکثر درصد ارتفاع صفحه
+
+-- تنظیم آپدیت زنده
+local LIVE_INTERVAL = 1           -- هر چند ثانیه اطلاعات سرور آپدیت بشه
+local API_INTERVAL = 30           -- هر چند ثانیه آمار سایت (بازدید، لایک و...) آپدیت بشه
+
+-- پارنت
+local function getGuiParent()
+    local ok, ui = pcall(function()
+        return (gethui and gethui()) or game:GetService("CoreGui")
+    end)
+    if ok and ui then return ui end
+    return LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local parent = getGuiParent()
+if parent:FindFirstChild("GameInfoPanel") then
+    parent.GameInfoPanel:Destroy()
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "GameInfoPanel"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = parent
+
+-- فریم اصلی
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, BASE_W, 0, BASE_H)
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+Frame.BackgroundColor3 = BLACK
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Parent = gui
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
+local frameStroke = Instance.new("UIStroke", Frame)
+frameStroke.Color = GREEN
+frameStroke.Thickness = 1.5
+
+-- سایز واکنش‌گرا (موبایل و کامپیوتر)
+local uiScale = Instance.new("UIScale", Frame)
+
+local function updateScale()
+    local cam = workspace.CurrentCamera
+    if not cam then return end
+    local vp = cam.ViewportSize
+    local s = math.min(vp.X * SCREEN_FILL_X / BASE_W, vp.Y * SCREEN_FILL_Y / BASE_H)
+    uiScale.Scale = math.clamp(s, MIN_SCALE, MAX_SCALE)
+end
+
+updateScale()
+do
+    local cam = workspace.CurrentCamera
+    if cam then
+        cam:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
+    end
+end
+
+-- تایتل
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 38)
+title.BackgroundColor3 = PANEL
+title.BorderSizePixel = 0
+title.Text = "  Game Info Extractor Ultimate"
+title.TextColor3 = GREEN
+title.Font = Enum.Font.Code
+title.TextSize = 19
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = Frame
+Instance.new("UICorner", title).CornerRadius = UDim.new(0, 6)
+
+-- نشانگر LIVE
+local liveDot = Instance.new("TextLabel")
+liveDot.Size = UDim2.new(0, 80, 1, 0)
+liveDot.Position = UDim2.new(1, -120, 0, 0)
+liveDot.BackgroundTransparency = 1
+liveDot.Text = "● LIVE"
+liveDot.TextColor3 = GREEN
+liveDot.Font = Enum.Font.Code
+liveDot.TextSize = 14
+liveDot.TextXAlignment = Enum.TextXAlignment.Right
+liveDot.Parent = title
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 28, 0, 26)
+closeBtn.Position = UDim2.new(1, -34, 0, 6)
+closeBtn.BackgroundColor3 = BLACK
+closeBtn.Text = "X"
+closeBtn.TextColor3 = GREEN
+closeBtn.Font = Enum.Font.Code
+closeBtn.TextSize = 16
+closeBtn.AutoButtonColor = false
+closeBtn.Parent = title
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 4)
+Instance.new("UIStroke", closeBtn).Color = GREEN
+closeBtn.MouseEnter:Connect(function()
+    closeBtn.BackgroundColor3 = GREEN
+    closeBtn.TextColor3 = BLACK
+end)
+closeBtn.MouseLeave:Connect(function()
+    closeBtn.BackgroundColor3 = BLACK
+    closeBtn.TextColor3 = GREEN
+end)
+closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+-- بخش بالا: GENERAL سمت چپ، آیکون سمت راست
+local topRow = Instance.new("Frame")
+topRow.Size = UDim2.new(1, -20, 0, 140)
+topRow.Position = UDim2.new(0, 10, 0, 48)
+topRow.BackgroundTransparency = 1
+topRow.Parent = Frame
+
+-- باکس GENERAL (چپ)
+local generalBox = Instance.new("Frame")
+generalBox.Size = UDim2.new(1, -150, 1, 0)
+generalBox.Position = UDim2.new(0, 0, 0, 0)
+generalBox.BackgroundColor3 = PANEL
+generalBox.BorderSizePixel = 0
+generalBox.ClipsDescendants = true
+generalBox.Parent = topRow
+Instance.new("UICorner", generalBox).CornerRadius = UDim.new(0, 6)
+local generalStroke = Instance.new("UIStroke", generalBox)
+generalStroke.Color = DARK_GREEN
+generalStroke.Thickness = 1
+
+local generalLabel = Instance.new("TextLabel")
+generalLabel.Size = UDim2.new(1, -16, 1, -12)
+generalLabel.Position = UDim2.new(0, 8, 0, 6)
+generalLabel.BackgroundTransparency = 1
+generalLabel.RichText = true
+generalLabel.Text = "> loading..."
+generalLabel.TextColor3 = GREEN
+generalLabel.Font = Enum.Font.Code
+generalLabel.TextSize = 16
+generalLabel.TextWrapped = true
+generalLabel.TextXAlignment = Enum.TextXAlignment.Left
+generalLabel.TextYAlignment = Enum.TextYAlignment.Top
+generalLabel.Parent = generalBox
+
+-- آیکون گیم (راست)
+local iconHolder = Instance.new("Frame")
+iconHolder.Size = UDim2.new(0, 140, 0, 140)
+iconHolder.AnchorPoint = Vector2.new(1, 0)
+iconHolder.Position = UDim2.new(1, 0, 0, 0)
+iconHolder.BackgroundColor3 = PANEL
+iconHolder.BorderSizePixel = 0
+iconHolder.Parent = topRow
+Instance.new("UICorner", iconHolder).CornerRadius = UDim.new(0, 6)
+local iconStroke = Instance.new("UIStroke", iconHolder)
+iconStroke.Color = GREEN
+iconStroke.Thickness = 1.5
+
+local iconCaption = Instance.new("TextLabel")
+iconCaption.Size = UDim2.new(1, 0, 1, 0)
+iconCaption.BackgroundTransparency = 1
+iconCaption.Text = "ICON"
+iconCaption.TextColor3 = DARK_GREEN
+iconCaption.Font = Enum.Font.Code
+iconCaption.TextSize = 14
+iconCaption.Parent = iconHolder
+
+local iconImg = Instance.new("ImageLabel")
+iconImg.Size = UDim2.new(1, 0, 1, 0)
+iconImg.BackgroundTransparency = 1
+iconImg.ScaleType = Enum.ScaleType.Crop
+iconImg.Image = ""
+iconImg.Parent = iconHolder
+Instance.new("UICorner", iconImg).CornerRadius = UDim.new(0, 6)
+
+-- ناحیه اطلاعات (هر خط یه لیبل جدا، تا آپدیت زنده سبک باشه)
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -20, 1, -208)
+scroll.Position = UDim2.new(0, 10, 0, 198)
+scroll.BackgroundColor3 = PANEL
+scroll.BorderSizePixel = 0
+scroll.ScrollBarThickness = 5
+scroll.ScrollBarImageColor3 = GREEN
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.Parent = Frame
+Instance.new("UIStroke", scroll).Color = DARK_GREEN
+
+local listLayout = Instance.new("UIListLayout", scroll)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding = UDim.new(0, 2)
+
+local listPadding = Instance.new("UIPadding", scroll)
+listPadding.PaddingTop = UDim.new(0, 8)
+listPadding.PaddingBottom = UDim.new(0, 8)
+listPadding.PaddingLeft = UDim.new(0, 8)
+listPadding.PaddingRight = UDim.new(0, 8)
+
+------------------------------------------------------------
+-- سیستم درگ
+------------------------------------------------------------
+local function makeDraggable(handle, targetFrame)
+    local uis = game:GetService("UserInputService")
+    local tweenService = game:GetService("TweenService")
+
+    local dragging, dragInput, dragStart, startPos
+
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = targetFrame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    uis.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local newPos = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+            tweenService:Create(targetFrame, TweenInfo.new(0.15), {Position = newPos}):Play()
+        end
+    end)
+end
+
+makeDraggable(title, Frame)
+
+------------------------------------------------------------
+-- توابع کمکی
+------------------------------------------------------------
+local function esc(s)
+    return (tostring(s):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"))
+end
+
+local function commas(n)
+    local r = tostring(n):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+    return r
+end
+
+-- تاریخ به شکل: 2024/5/1 (2 Years Ago)
+local function formatDate(iso)
+    if type(iso) ~= "string" then return "N/A" end
+    local y, m, d = iso:match("^(%d+)%-(%d+)%-(%d+)")
+    if not y then return iso end
+    y, m, d = tonumber(y), tonumber(m), tonumber(d)
+
+    local ago = ""
+    local ok, then_ = pcall(os.time, {year = y, month = m, day = d, hour = 12})
+    if ok and then_ then
+        local days = math.floor((os.time() - then_) / 86400)
+        if days < 1 then
+            ago = "Today"
+        elseif days < 30 then
+            ago = days .. (days == 1 and " Day Ago" or " Days Ago")
+        elseif days < 365 then
+            local months = math.floor(days / 30)
+            ago = months .. (months == 1 and " Month Ago" or " Months Ago")
+        else
+            local years = math.floor(days / 365.25)
+            if years < 1 then years = 1 end
+            ago = years .. (years == 1 and " Year Ago" or " Years Ago")
+        end
+    end
+
+    local base = string.format("%d/%d/%d", y, m, d)
+    if ago ~= "" then return base .. " (" .. ago .. ")" end
+    return base
+end
+
+local function formatDuration(sec)
+    sec = math.floor(sec)
+    return string.format("%02d:%02d:%02d", math.floor(sec / 3600), math.floor(sec / 60) % 60, sec % 60)
+end
+
+local httpRequest = request or http_request or (syn and syn.request)
+
+local function httpGet(url)
+    if not httpRequest then return nil end
+    local ok, res = pcall(httpRequest, {Url = url, Method = "GET"})
+    if ok and res and res.StatusCode == 200 then return res.Body end
+    return nil
+end
+
+local function getJSON(url)
+    local body = httpGet(url)
+    if not body then return nil end
+    local ok, data = pcall(function() return HttpService:JSONDecode(body) end)
+    if ok then return data end
+    return nil
+end
+
+local function loadImageFromUrl(url, fileName)
+    local getAsset = getcustomasset or getsynasset
+    if not (url and writefile and getAsset) then return false end
+    local body = httpGet(url)
+    if not body then return false end
+    local ok, asset = pcall(function()
+        writefile(fileName, body)
+        return getAsset(fileName)
+    end)
+    if ok and asset then return asset end
+    return false
+end
+
+local function trim(s, n)
+    s = tostring(s or "")
+    if #s > n then return s:sub(1, n) .. "..." end
+    return s
+end
+
+------------------------------------------------------------
+-- ساخت ردیف‌ها (ثابت و زنده)
+------------------------------------------------------------
+local order = 0
+local liveRows = {}   -- ردیف‌هایی که مدام آپدیت می‌شن
+
+local function fmt(k, v)
+    if v == nil or v == "" then v = "N/A" end
+    return string.format('<font color="#00b82e">%s</font> : %s', esc(k), esc(v))
+end
+
+local function newLabel(text)
+    order = order + 1
+    local l = Instance.new("TextLabel")
+    l.Size = UDim2.new(1, 0, 0, 0)
+    l.AutomaticSize = Enum.AutomaticSize.Y
+    l.BackgroundTransparency = 1
+    l.RichText = true
+    l.Text = text
+    l.TextColor3 = GREEN
+    l.Font = Enum.Font.Code
+    l.TextSize = 17
+    l.TextWrapped = true
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    l.TextYAlignment = Enum.TextYAlignment.Top
+    l.LayoutOrder = order
+    l.Parent = scroll
+    return l
+end
+
+local function section(name)
+    newLabel(string.format('<font color="#00ff46"><b>══ %s ══</b></font>', esc(name)))
+end
+
+-- ردیف ثابت
+local function add(k, v)
+    newLabel(fmt(k, v))
+end
+
+-- ردیف زنده: fn هر بار صدا زده می‌شه و فقط اگه مقدار عوض شده باشه متن تغییر می‌کنه
+local function updateRow(r)
+    local ok, val = pcall(r.fn)
+    if not ok then val = nil end
+    local text = fmt(r.key, val)
+    if text ~= r.last then
+        r.last = text
+        r.label.Text = text
+    end
+end
+
+local function addLive(k, fn)
+    local r = {key = k, fn = fn, last = "", label = newLabel("")}
+    table.insert(liveRows, r)
+    updateRow(r)
+end
+
+local function updateLive()
+    for _, r in ipairs(liveRows) do
+        updateRow(r)
+    end
+end
+
+------------------------------------------------------------
+-- داده‌های زنده
+------------------------------------------------------------
+local apiState = {g = nil, v = nil}
+
+local function fetchApi()
+    local universeId = game.GameId
+    local gameData = getJSON("https://games.roblox.com/v1/games?universeIds=" .. universeId)
+    local g = gameData and gameData.data and gameData.data[1] or nil
+    if g then apiState.g = g end
+
+    local votesData = getJSON("https://games.roblox.com/v1/games/votes?universeIds=" .. universeId)
+    local v = votesData and votesData.data and votesData.data[1] or nil
+    if v then apiState.v = v end
+end
+
+-- FPS کلاینت
+local frames, fps, lastT = 0, 0, os.clock()
+local hbConn = RunService.Heartbeat:Connect(function()
+    frames = frames + 1
+end)
+
+local function sampleFps()
+    local now = os.clock()
+    local dt = now - lastT
+    if dt > 0 then
+        fps = frames / dt
+    end
+    frames = 0
+    lastT = now
+end
+
+------------------------------------------------------------
+-- استخراج اطلاعات
+------------------------------------------------------------
+local function extract()
+    local universeId = game.GameId
+
+    -- 1) MarketplaceService
+    local okInfo, info = pcall(function()
+        return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
+    end)
+    info = (okInfo and type(info) == "table") and info or {}
+
+    -- 2) Games API + Votes
+    fetchApi()
+    local g = apiState.g
+
+    -- 3) Icon
+    local iconData = getJSON("https://thumbnails.roblox.com/v1/games/icons?universeIds=" .. universeId .. "&size=256x256&format=Png&isCircular=false")
+    local iconUrl = iconData and iconData.data and iconData.data[1] and iconData.data[1].imageUrl or nil
+
+    if info.IconImageAssetId and info.IconImageAssetId ~= 0 then
+        iconImg.Image = "rbxassetid://" .. info.IconImageAssetId
+    else
+        local a = loadImageFromUrl(iconUrl, "gi_icon.png")
+        if a then iconImg.Image = a end
+    end
+
+    local creator = info.Creator or {}
+
+    -- GENERAL (بالا، سمت چپ آیکون)
+    local generalLines = {
+        fmt("Name", (g and g.name) or info.Name or game.Name),
+        fmt("Genre", g and g.genre),
+        fmt("Created", formatDate((g and g.created) or info.Created)),
+        fmt("Updated", formatDate((g and g.updated) or info.Updated)),
+        fmt("Price", g and g.price or "Free"),
+    }
+    generalLabel.Text = table.concat(generalLines, "\n")
+
+    -- CREATOR
+    section("CREATOR")
+    local gc = g and g.creator or {}
+    add("Creator", gc.name or creator.Name)
+    add("Creator Type", gc.type or creator.CreatorType)
+    add("Creator ID", gc.id or creator.CreatorTargetId or creator.Id)
+    add("Verified Badge", gc.hasVerifiedBadge ~= nil and gc.hasVerifiedBadge or creator.HasVerifiedBadge)
+
+    -- IDS
+    section("IDS")
+    add("PlaceId", game.PlaceId)
+    add("Root PlaceId", g and g.rootPlaceId)
+    add("UniverseId (GameId)", universeId)
+    add("Place Version", game.PlaceVersion)
+    add("JobId", game.JobId ~= "" and game.JobId or "N/A (Studio)")
+    if info.IconImageAssetId then add("Icon AssetId", info.IconImageAssetId) end
+
+    -- STATS (زنده، از API هر ۳۰ ثانیه)
+    section("STATS")
+    addLive("Playing Now", function()
+        return apiState.g and commas(apiState.g.playing or 0) or "N/A"
+    end)
+    addLive("Total Visits", function()
+        return apiState.g and commas(apiState.g.visits or 0) or "N/A"
+    end)
+    addLive("Favorites", function()
+        return apiState.g and commas(apiState.g.favoritedCount or 0) or "N/A"
+    end)
+    addLive("Likes", function()
+        return apiState.v and commas(apiState.v.upVotes or 0) or "N/A"
+    end)
+    addLive("Dislikes", function()
+        return apiState.v and commas(apiState.v.downVotes or 0) or "N/A"
+    end)
+    addLive("Like Ratio", function()
+        local v = apiState.v
+        if not v then return "N/A" end
+        local up, down = v.upVotes or 0, v.downVotes or 0
+        local total = up + down
+        if total <= 0 then return "N/A" end
+        return string.format("%.1f%%", up / total * 100)
+    end)
+
+    -- SETTINGS
+    section("SETTINGS")
+    if g then
+        add("Copying Allowed", g.copyingAllowed)
+        add("VIP Servers", g.createVipServersAllowed)
+        add("Avatar Type", g.universeAvatarType)
+        add("Studio API Access", g.studioAccessToApisAllowed)
+        add("All Genre", g.isAllGenre)
+    end
+
+    -- SERVER (زنده، هر ثانیه)
+    section("SERVER")
+    addLive("Players", function()
+        return #Players:GetPlayers() .. "/" .. Players.MaxPlayers
+    end)
+    addLive("Server Uptime", function()
+        return formatDuration(workspace.DistributedGameTime)
+    end)
+    addLive("Ping", function()
+        return string.format("%.0f ms", Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+    end)
+    addLive("Client FPS", function()
+        return string.format("%.0f", fps)
+    end)
+    addLive("Physics FPS", function()
+        return string.format("%.0f", workspace:GetRealPhysicsFPS())
+    end)
+    addLive("Memory", function()
+        return string.format("%.0f MB", Stats:GetTotalMemoryUsageMb())
+    end)
+    addLive("Instances", function()
+        return commas(Stats.InstanceCount)
+    end)
+    addLive("Teams", function()
+        return #game:GetService("Teams"):GetTeams()
+    end)
+    addLive("Gravity", function()
+        return workspace.Gravity
+    end)
+    add("Private Server", game.PrivateServerId ~= "")
+    pcall(function() add("Roblox Version", version()) end)
+    add("Streaming Enabled", workspace.StreamingEnabled)
+    add("Lighting Tech", tostring(Lighting.Technology):gsub("Enum.Technology.", ""))
+    add("Locale", LocalPlayer.LocaleId)
+
+    -- DESCRIPTION
+    section("DESCRIPTION")
+    add("Description", trim((g and g.description) or info.Description, 700))
+    if g and g.sourceName then add("Source Name", g.sourceName) end
+
+    -- LINKS
+    section("LINKS")
+    add("Game URL", "https://www.roblox.com/games/" .. game.PlaceId)
+    add("Icon URL", iconUrl)
+end
+
+------------------------------------------------------------
+-- اجرا و حلقه‌های آپدیت
+------------------------------------------------------------
+local loadingLabel = newLabel("> extracting data...")
+
+local connections = {hbConn}
+
+gui.Destroying:Connect(function()
+    for _, c in ipairs(connections) do
+        pcall(function() c:Disconnect() end)
+    end
+end)
+
+task.spawn(function()
+    local ok, err = pcall(extract)
+    loadingLabel:Destroy()
+    if not ok then
+        newLabel("> error: " .. esc(err))
+        generalLabel.Text = "> error"
+        return
+    end
+
+    -- آپدیت فوری موقع ورود و خروج پلیرها
+    table.insert(connections, Players.PlayerAdded:Connect(function()
+        task.defer(updateLive)
+    end))
+    table.insert(connections, Players.PlayerRemoving:Connect(function()
+        task.defer(updateLive)
+    end))
+
+    -- حلقه آپدیت سرور (هر LIVE_INTERVAL ثانیه)
+    task.spawn(function()
+        local blink = false
+        while gui.Parent do
+            task.wait(LIVE_INTERVAL)
+            if not gui.Parent then break end
+            sampleFps()
+            updateLive()
+            blink = not blink
+            liveDot.TextTransparency = blink and 0.6 or 0
+        end
+    end)
+
+    -- حلقه آپدیت آمار سایت (هر API_INTERVAL ثانیه، توی ترد جدا تا لگ نیاد)
+    task.spawn(function()
+        while gui.Parent do
+            task.wait(API_INTERVAL)
+            if not gui.Parent then break end
+            task.spawn(fetchApi)
+        end
+    end)
+end)
