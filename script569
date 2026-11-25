@@ -1,0 +1,321 @@
+-- Creator Finder Panel
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local Market = game:GetService("MarketplaceService")
+local Http = game:GetService("HttpService")
+local LP = Players.LocalPlayer
+local GUI_NAME = "CreatorFinderPanel"
+
+local ASSET_TYPES = {
+    [1]="Image",[2]="T-Shirt",[3]="Audio",[4]="Mesh",[8]="Hat",[9]="Place",[10]="Model",
+    [11]="Shirt",[12]="Pants",[13]="Decal",[17]="Head",[18]="Face",[19]="Gear",[21]="Badge",
+    [24]="Animation",[32]="Package",[34]="GamePass",[38]="Plugin",[40]="MeshPart",
+    [41]="Hair Accessory",[42]="Face Accessory",[43]="Neck Accessory",[44]="Shoulder Accessory",
+    [45]="Front Accessory",[46]="Back Accessory",[47]="Waist Accessory",[48]="Climb Animation",
+    [49]="Death Animation",[50]="Fall Animation",[51]="Idle Animation",[52]="Jump Animation",
+    [53]="Run Animation",[54]="Swim Animation",[55]="Walk Animation",[56]="Pose Animation",
+    [61]="Emote Animation",[62]="Video",[64]="T-Shirt Accessory",[65]="Shirt Accessory",
+    [66]="Pants Accessory",[67]="Jacket Accessory",[68]="Sweater Accessory",[69]="Shorts Accessory",
+    [72]="Dress Skirt Accessory",[76]="Eyebrow Accessory",[77]="Eyelash Accessory",
+    [78]="Mood Animation",[79]="Dynamic Head",
+}
+
+------------------------------------------------------------ cleanup
+for _, root in ipairs({ game:GetService("CoreGui"), LP:FindFirstChild("PlayerGui") }) do
+    pcall(function()
+        local o = root:FindFirstChild(GUI_NAME)
+        if o then o:Destroy() end
+    end)
+end
+pcall(function()
+    if gethui then
+        local o = gethui():FindFirstChild(GUI_NAME)
+        if o then o:Destroy() end
+    end
+end)
+
+------------------------------------------------------------ API helpers
+local function httpGet(url)
+    local req = (syn and syn.request) or request or http_request or (http and http.request)
+    if not req then return nil end
+    local ok, res = pcall(req, { Url = url, Method = "GET" })
+    if ok and res and res.StatusCode == 200 and res.Body then
+        local ok2, data = pcall(function() return Http:JSONDecode(res.Body) end)
+        if ok2 then return data end
+    end
+    return nil
+end
+
+local function productInfo(id, infoType)
+    local ok, info = pcall(function() return Market:GetProductInfo(id, infoType) end)
+    if ok and type(info) == "table" and (info.Name or info.name) then return info end
+    return nil
+end
+
+local function normalize(info, kind)
+    local c = info.Creator or info.creator or {}
+    local typeId = info.AssetTypeId
+    return {
+        kind = kind,
+        name = info.Name or info.name or "?",
+        typeName = kind == "asset" and (ASSET_TYPES[typeId] or ("Type " .. tostring(typeId or "?")))
+            or (kind == "bundle" and ("Bundle" .. (info.bundleType and (" / " .. tostring(info.bundleType)) or "")))
+            or "GamePass",
+        creatorName = c.Name or c.name or "?",
+        creatorId = c.CreatorTargetId or c.Id or c.id,
+        creatorType = c.CreatorType or c.type or "?",
+        created = info.Created or info.created,
+        updated = info.Updated or info.updated,
+        description = info.Description or info.description,
+    }
+end
+
+local function lookup(id, hint)
+    local function asset()
+        local i = productInfo(id, Enum.InfoType.Asset)
+        if i then return normalize(i, "asset"), "MarketplaceService" end
+        local d = httpGet("https://economy.roblox.com/v2/assets/" .. id .. "/details")
+        if d then return normalize(d, "asset"), "economy API" end
+    end
+    local function bundle()
+        local i = productInfo(id, Enum.InfoType.Bundle)
+        if i then return normalize(i, "bundle"), "MarketplaceService" end
+        local d = httpGet("https://catalog.roblox.com/v1/bundles/" .. id .. "/details")
+        if d then return normalize(d, "bundle"), "catalog API" end
+    end
+    local function pass()
+        local i = productInfo(id, Enum.InfoType.GamePass)
+        if i then return normalize(i, "gamepass"), "MarketplaceService" end
+    end
+
+    local order = { asset, bundle, pass }
+    if hint == "bundle" then order = { bundle, asset, pass }
+    elseif hint == "gamepass" then order = { pass, asset, bundle } end
+
+    for _, fn in ipairs(order) do
+        local r, src = fn()
+        if r then r.source = src return r end
+    end
+    return nil
+end
+
+local function creatorExtra(r)
+    local rows = {}
+    if not r.creatorId then return rows end
+    local ctype = tostring(r.creatorType):lower()
+
+    if ctype == "group" then
+        local g = httpGet("https://groups.roblox.com/v1/groups/" .. r.creatorId)
+        if g then
+            if g.owner then
+                table.insert(rows, { "Group Owner", tostring(g.owner.username) })
+                table.insert(rows, { "Owner Display Name", tostring(g.owner.displayName) })
+                table.insert(rows, { "Owner ID", tostring(g.owner.userId) })
+                table.insert(rows, { "Owner Profile", "https://www.roblox.com/users/" .. g.owner.userId .. "/profile" })
+            else
+                table.insert(rows, { "Group Owner", "No owner (group is ownerless)" })
+            end
+            if g.memberCount then
+                table.insert(rows, { "Members", tostring(g.memberCount) })
+            end
+        else
+            table.insert(rows, { "Group Owner", "Could not fetch (request/API failed)" })
+        end
+        table.insert(rows, { "Group Link", "https://www.roblox.com/groups/" .. r.creatorId })
+    else
+        local u = httpGet("https://users.roblox.com/v1/users/" .. r.creatorId)
+        if u then
+            table.insert(rows, { "Display Name", tostring(u.displayName) })
+            if u.created then
+                table.insert(rows, { "Account Created", tostring(u.created):sub(1, 10) })
+            end
+        end
+        table.insert(rows, { "Profile Link", "https://www.roblox.com/users/" .. r.creatorId .. "/profile" })
+    end
+    return rows
+end
+
+------------------------------------------------------------ input parsing
+local function parseInput(text)
+    text = tostring(text or "")
+    local id = text:match("%d+")
+    if not id then return nil end
+    local low = text:lower()
+    local hint = "asset"
+    if low:find("bundles") then hint = "bundle"
+    elseif low:find("game%-pass") or low:find("gamepass") then hint = "gamepass" end
+    return tonumber(id), hint
+end
+
+------------------------------------------------------------ UI
+local function make(class, props, parent)
+    local o = Instance.new(class)
+    for k, v in pairs(props) do o[k] = v end
+    if parent then o.Parent = parent end
+    return o
+end
+
+local gui = make("ScreenGui", { Name = GUI_NAME, ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling })
+do
+    local ok = pcall(function()
+        if not gethui then error("no gethui") end
+        gui.Parent = gethui()
+    end)
+    if not ok or not gui.Parent then
+        ok = pcall(function() gui.Parent = game:GetService("CoreGui") end)
+    end
+    if not ok or not gui.Parent then gui.Parent = LP:WaitForChild("PlayerGui") end
+end
+
+local main = make("Frame", {
+    Size = UDim2.new(0, 340, 0, 420), Position = UDim2.new(0.5, -170, 0.5, -210),
+    BackgroundColor3 = Color3.fromRGB(24, 24, 30), BorderSizePixel = 0,
+}, gui)
+make("UICorner", { CornerRadius = UDim.new(0, 10) }, main)
+make("UIStroke", { Color = Color3.fromRGB(70, 70, 90), Thickness = 1 }, main)
+
+local title = make("TextLabel", {
+    Size = UDim2.new(1, 0, 0, 34), BackgroundColor3 = Color3.fromRGB(35, 35, 46), BorderSizePixel = 0,
+    Text = "Creator Finder", TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.GothamBold, TextSize = 15,
+}, main)
+make("UICorner", { CornerRadius = UDim.new(0, 10) }, title)
+
+local close = make("TextButton", {
+    Size = UDim2.new(0, 30, 0, 24), Position = UDim2.new(1, -34, 0, 5),
+    BackgroundColor3 = Color3.fromRGB(190, 55, 55), Text = "X", TextColor3 = Color3.new(1, 1, 1),
+    Font = Enum.Font.GothamBold, TextSize = 13, BorderSizePixel = 0,
+}, main)
+make("UICorner", { CornerRadius = UDim.new(0, 6) }, close)
+close.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+local input = make("TextBox", {
+    Size = UDim2.new(1, -16, 0, 34), Position = UDim2.new(0, 8, 0, 42),
+    BackgroundColor3 = Color3.fromRGB(38, 38, 50), TextColor3 = Color3.new(1, 1, 1),
+    PlaceholderText = "ID or link (asset / animation / bundle...)", PlaceholderColor3 = Color3.fromRGB(140, 140, 160),
+    Text = "", ClearTextOnFocus = false, Font = Enum.Font.Gotham, TextSize = 13, BorderSizePixel = 0,
+}, main)
+make("UICorner", { CornerRadius = UDim.new(0, 8) }, input)
+
+local btn = make("TextButton", {
+    Size = UDim2.new(1, -16, 0, 34), Position = UDim2.new(0, 8, 0, 82),
+    BackgroundColor3 = Color3.fromRGB(70, 110, 220), Text = "Find Creator", TextColor3 = Color3.new(1, 1, 1),
+    Font = Enum.Font.GothamBold, TextSize = 14, BorderSizePixel = 0,
+}, main)
+make("UICorner", { CornerRadius = UDim.new(0, 8) }, btn)
+
+local status = make("TextLabel", {
+    Size = UDim2.new(1, -16, 0, 22), Position = UDim2.new(0, 8, 0, 120), BackgroundTransparency = 1,
+    Text = "Waiting for an ID...", TextColor3 = Color3.fromRGB(170, 170, 190), Font = Enum.Font.Gotham,
+    TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
+}, main)
+
+local results = make("ScrollingFrame", {
+    Size = UDim2.new(1, -16, 1, -152), Position = UDim2.new(0, 8, 0, 146), BackgroundTransparency = 1,
+    BorderSizePixel = 0, ScrollBarThickness = 4, CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+}, main)
+make("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder }, results)
+
+local order = 0
+local function addRow(label, value)
+    order += 1
+    local row = make("Frame", {
+        Size = UDim2.new(1, -6, 0, 52), BackgroundColor3 = Color3.fromRGB(32, 32, 42),
+        BorderSizePixel = 0, LayoutOrder = order,
+    }, results)
+    make("UICorner", { CornerRadius = UDim.new(0, 8) }, row)
+    make("TextLabel", {
+        Size = UDim2.new(1, -10, 0, 16), Position = UDim2.new(0, 8, 0, 3), BackgroundTransparency = 1,
+        Text = label, TextColor3 = Color3.fromRGB(120, 160, 255), Font = Enum.Font.GothamBold,
+        TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left,
+    }, row)
+    make("TextBox", {
+        Size = UDim2.new(1, -72, 0, 26), Position = UDim2.new(0, 8, 0, 21), BackgroundColor3 = Color3.fromRGB(22, 22, 30),
+        TextColor3 = Color3.new(1, 1, 1), Text = tostring(value), TextEditable = false, ClearTextOnFocus = false,
+        Font = Enum.Font.Gotham, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd, BorderSizePixel = 0,
+    }, row)
+    local copy = make("TextButton", {
+        Size = UDim2.new(0, 52, 0, 26), Position = UDim2.new(1, -58, 0, 21), BackgroundColor3 = Color3.fromRGB(60, 160, 100),
+        Text = "Copy", TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.GothamBold, TextSize = 12, BorderSizePixel = 0,
+    }, row)
+    make("UICorner", { CornerRadius = UDim.new(0, 6) }, copy)
+    copy.MouseButton1Click:Connect(function()
+        if setclipboard then pcall(setclipboard, tostring(value)) end
+        copy.Text = "OK"
+        task.delay(1, function() if copy.Parent then copy.Text = "Copy" end end)
+    end)
+end
+
+local function clearRows()
+    order = 0
+    for _, c in ipairs(results:GetChildren()) do
+        if c:IsA("Frame") then c:Destroy() end
+    end
+end
+
+------------------------------------------------------------ main logic
+local busy = false
+local function run()
+    if busy then return end
+    local id, hint = parseInput(input.Text)
+    if not id then
+        status.Text = "No valid number found."
+        status.TextColor3 = Color3.fromRGB(255, 120, 120)
+        return
+    end
+    busy = true
+    clearRows()
+    status.TextColor3 = Color3.fromRGB(170, 170, 190)
+    status.Text = "Searching..."
+
+    task.spawn(function()
+        local r = lookup(id, hint)
+        if not r then
+            status.Text = "Not found (private/deleted, or ID invalid)."
+            status.TextColor3 = Color3.fromRGB(255, 120, 120)
+            busy = false
+            return
+        end
+
+        local isGroup = tostring(r.creatorType):lower() == "group"
+        status.Text = "Found via " .. tostring(r.source) .. (isGroup and " | Creator is a Group" or "")
+        status.TextColor3 = Color3.fromRGB(120, 230, 150)
+
+        addRow("Creator", r.creatorName)
+        addRow("Creator Type", r.creatorType)
+        addRow("Creator ID", r.creatorId or "?")
+
+        -- اگر Group بود، اینجا مالک گروه نشان داده می‌شود
+        for _, e in ipairs(creatorExtra(r)) do addRow(e[1], e[2]) end
+
+        addRow("Item Name", r.name)
+        addRow("Item Type", r.typeName)
+        addRow("Item ID", id)
+        if r.created then addRow("Created", tostring(r.created):sub(1, 10)) end
+        if r.updated then addRow("Updated", tostring(r.updated):sub(1, 10)) end
+        if r.description and r.description ~= "" then addRow("Description", r.description) end
+
+        busy = false
+    end)
+end
+
+btn.MouseButton1Click:Connect(run)
+input.FocusLost:Connect(function(enter) if enter then run() end end)
+
+------------------------------------------------------------ dragging
+local dragging, dragStart, startPos
+title.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        dragging, dragStart, startPos = true, i.Position, main.Position
+        i.Changed:Connect(function()
+            if i.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+UIS.InputChanged:Connect(function(i)
+    if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        local d = i.Position - dragStart
+        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+    end
+end)
