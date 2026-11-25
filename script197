@@ -126,16 +126,16 @@ local defaultAnims = {
 local filteredIds = {
     ["180435571"] = true,
     ["180436148"] = true,
-	["180426354"] = true,
-	["180435792"] = true,
-	["125750702"] = true,
-	["182393478"] = true,
-	["129967478"] = true,
-	["129967390"] = true,
-	["913376220"] = true,
-	["180436334"] = true,
-	["507766666"] = true,
-	["507766388"] = true
+    ["180426354"] = true,
+    ["180435792"] = true,
+    ["125750702"] = true,
+    ["182393478"] = true,
+    ["129967478"] = true,
+    ["129967390"] = true,
+    ["913376220"] = true,
+    ["180436334"] = true,
+    ["507766666"] = true,
+    ["507766388"] = true
 }
 
 local function logAnim(track)
@@ -359,10 +359,42 @@ local function StopTrack()
     if CurrentTrack then isManualStop = true; CurrentTrack:Stop(0.1); CurrentTrack = nil; currentGlitchId = currentGlitchId + 1 end
 end
 
+-- ===== Catalog link / ID support =====
+local function extractId(text)
+    text = tostring(text or "")
+    local id = string.match(text, "catalog/(%d+)")
+        or string.match(text, "library/(%d+)")
+        or string.match(text, "[?&]id=(%d+)")
+        or string.match(text, "rbxassetid://(%d+)")
+    if id then return id end
+    -- otherwise take the longest number in the text
+    local best = ""
+    for num in string.gmatch(text, "%d+") do
+        if #num > #best then best = num end
+    end
+    return best ~= "" and best or nil
+end
+
+-- Opens the asset and returns the real AnimationId inside it
+local function anim2track(asset)
+    local ok, objs = pcall(function() return game:GetObjects(asset) end)
+    if ok and objs and objs[1] then
+        local obj = objs[1]
+        local an = obj:IsA("Animation") and obj or obj:FindFirstChildWhichIsA("Animation", true)
+        if an and an.AnimationId ~= "" then
+            return an.AnimationId
+        end
+    end
+    return asset
+end
+
 local function LoadTrack(id)
     if CurrentTrack then isManualStop = true; CurrentTrack:Stop(0) end
     isManualStop = false
-    local anim = Instance.new("Animation"); anim.AnimationId = "rbxassetid://"..tostring(id)
+
+    local animid = anim2track("rbxassetid://" .. tostring(id))
+    local anim = Instance.new("Animation")
+    anim.AnimationId = animid
     local track = getAnimator():LoadAnimation(anim)
     track.Priority = Enum.AnimationPriority.Action4
     track.Looped = Settings["Looped"]
@@ -397,7 +429,10 @@ local function LoadTrack(id)
     end)
 end
 
-playBtn.MouseButton1Click:Connect(function() local id = string.match(emoteBox.Text, "%d+"); if id then LoadTrack(id) end end)
+playBtn.MouseButton1Click:Connect(function()
+    local id = extractId(emoteBox.Text)
+    if id then task.spawn(LoadTrack, id) end
+end)
 stopBtn.MouseButton1Click:Connect(StopTrack)
 
 RunService.Heartbeat:Connect(function()
